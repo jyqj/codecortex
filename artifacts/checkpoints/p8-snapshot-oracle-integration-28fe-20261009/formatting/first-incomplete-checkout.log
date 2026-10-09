@@ -1,0 +1,716 @@
+﻿2026-10-09T07:20:41.6722858Z Current runner version: '2.337.0'
+2026-10-09T07:20:41.6756390Z ##[group]Runner Image Provisioner
+2026-10-09T07:20:41.6757910Z Hosted Compute Agent
+2026-10-09T07:20:41.6759118Z Version: 20261002.596
+2026-10-09T07:20:41.6760347Z Commit: c3d12f3313a95f25162a1503be624f3b0617f8c0
+2026-10-09T07:20:41.6761578Z Build Date: 2026-10-02T22:28:27Z
+2026-10-09T07:20:41.6763084Z Worker ID: {e76c1651-cfcd-4342-a020-603dc9c48cf7}
+2026-10-09T07:20:41.6764434Z Region: northcentralus
+2026-10-09T07:20:41.6765538Z Cloud: Azure
+2026-10-09T07:20:41.6766409Z ##[endgroup]
+2026-10-09T07:20:41.6769040Z ##[group]Operating System
+2026-10-09T07:20:41.6770381Z Ubuntu
+2026-10-09T07:20:41.6771360Z 24.04.5
+2026-10-09T07:20:41.6772362Z LTS
+2026-10-09T07:20:41.6773290Z ##[endgroup]
+2026-10-09T07:20:41.6774214Z ##[group]Runner Image
+2026-10-09T07:20:41.6775569Z Image: ubuntu-24.04
+2026-10-09T07:20:41.6776831Z Version: 20261004.327.1
+2026-10-09T07:20:41.6779683Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-09T07:20:41.6782381Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327
+2026-10-09T07:20:41.6784252Z ##[endgroup]
+2026-10-09T07:20:41.6786193Z ##[group]GITHUB_TOKEN Permissions
+2026-10-09T07:20:41.6789479Z Contents: read
+2026-10-09T07:20:41.6790586Z Metadata: read
+2026-10-09T07:20:41.6791774Z ##[endgroup]
+2026-10-09T07:20:41.6794678Z Secret source: Actions
+2026-10-09T07:20:41.6796402Z Cache mode: write
+2026-10-09T07:20:41.6798574Z Prepare workflow directory
+2026-10-09T07:20:41.7205207Z Prepare all required actions
+2026-10-09T07:20:41.7274283Z Getting action download info
+2026-10-09T07:20:41.9770885Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-09T07:20:42.0636004Z Download action repository 'dtolnay/rust-toolchain@stable' (SHA:686976e191b89faba57d3206551f0f330d8cb249)
+2026-10-09T07:20:42.2496187Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-10-09T07:20:42.4912092Z Complete job name: format
+2026-10-09T07:20:42.5697344Z ##[group]Run actions/checkout@v4
+2026-10-09T07:20:42.5698283Z with:
+2026-10-09T07:20:42.5698764Z   ref: 2104f9b5ad68a8002ff06127a7ff15c37e0eb821
+2026-10-09T07:20:42.5699402Z   sparse-checkout-cone-mode: false
+2026-10-09T07:20:42.5699974Z   sparse-checkout: /*
+!/artifacts/
+
+2026-10-09T07:20:42.5700530Z   repository: jyqj/codecortex
+2026-10-09T07:20:42.5704230Z   token: ***
+2026-10-09T07:20:42.5704669Z   ssh-strict: true
+2026-10-09T07:20:42.5705114Z   ssh-user: git
+2026-10-09T07:20:42.5705562Z   persist-credentials: true
+2026-10-09T07:20:42.5706055Z   clean: true
+2026-10-09T07:20:42.5706684Z   fetch-depth: 1
+2026-10-09T07:20:42.5707143Z   fetch-tags: false
+2026-10-09T07:20:42.5707605Z   show-progress: true
+2026-10-09T07:20:42.5708059Z   lfs: false
+2026-10-09T07:20:42.5708475Z   submodules: false
+2026-10-09T07:20:42.5708940Z   set-safe-directory: true
+2026-10-09T07:20:42.5709447Z   allow-unsafe-pr-checkout: false
+2026-10-09T07:20:42.5710246Z ##[endgroup]
+2026-10-09T07:20:42.6757535Z Syncing repository: jyqj/codecortex
+2026-10-09T07:20:42.6760320Z ##[group]Getting Git version info
+2026-10-09T07:20:42.6761157Z Working directory is '/home/runner/work/codecortex/codecortex'
+2026-10-09T07:20:42.6762213Z [command]/usr/bin/git version
+2026-10-09T07:20:42.6814958Z git version 2.55.0
+2026-10-09T07:20:42.6838444Z ##[endgroup]
+2026-10-09T07:20:42.6853638Z Temporarily overriding HOME='/home/runner/work/_temp/4ca21017-e035-4124-89a5-8fba21ec25dc' before making global git config changes
+2026-10-09T07:20:42.6856323Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-09T07:20:42.6859593Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/codecortex/codecortex
+2026-10-09T07:20:42.6904728Z Deleting the contents of '/home/runner/work/codecortex/codecortex'
+2026-10-09T07:20:42.6910411Z ##[group]Initializing the repository
+2026-10-09T07:20:42.6914653Z [command]/usr/bin/git init /home/runner/work/codecortex/codecortex
+2026-10-09T07:20:42.7010988Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-09T07:20:42.7012820Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-09T07:20:42.7014464Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-09T07:20:42.7015392Z hint: call:
+2026-10-09T07:20:42.7016167Z hint:
+2026-10-09T07:20:42.7017065Z hint: 	git config --global init.defaultBranch <name>
+2026-10-09T07:20:42.7017702Z hint:
+2026-10-09T07:20:42.7018538Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-09T07:20:42.7020027Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-09T07:20:42.7020788Z hint:
+2026-10-09T07:20:42.7021228Z hint: 	git branch -m <name>
+2026-10-09T07:20:42.7021714Z hint:
+2026-10-09T07:20:42.7022348Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-09T07:20:42.7023675Z Initialized empty Git repository in /home/runner/work/codecortex/codecortex/.git/
+2026-10-09T07:20:42.7027593Z [command]/usr/bin/git remote add origin https://github.com/jyqj/codecortex
+2026-10-09T07:20:42.7073128Z ##[endgroup]
+2026-10-09T07:20:42.7073921Z ##[group]Disabling automatic garbage collection
+2026-10-09T07:20:42.7079053Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-09T07:20:42.7111781Z ##[endgroup]
+2026-10-09T07:20:42.7112539Z ##[group]Setting up auth
+2026-10-09T07:20:42.7122026Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T07:20:42.7157052Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T07:20:42.7493989Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T07:20:42.7525865Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T07:20:42.7740948Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T07:20:42.7772477Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T07:20:42.7992966Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-09T07:20:42.8027737Z ##[endgroup]
+2026-10-09T07:20:42.8029143Z ##[group]Fetching the repository
+2026-10-09T07:20:42.8037695Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --filter=blob:none --depth=1 origin 2104f9b5ad68a8002ff06127a7ff15c37e0eb821
+2026-10-09T07:20:43.1921939Z From https://github.com/jyqj/codecortex
+2026-10-09T07:20:43.1923598Z  * branch            2104f9b5ad68a8002ff06127a7ff15c37e0eb821 -> FETCH_HEAD
+2026-10-09T07:20:43.1927336Z ##[endgroup]
+2026-10-09T07:20:43.1929048Z ##[group]Determining the checkout info
+2026-10-09T07:20:43.1930867Z ##[endgroup]
+2026-10-09T07:20:43.1932488Z ##[group]Setting up sparse checkout
+2026-10-09T07:20:43.1935523Z [command]/usr/bin/git config core.sparseCheckout true
+2026-10-09T07:20:43.1970480Z [command]/usr/bin/git rev-parse --git-path info/sparse-checkout
+2026-10-09T07:20:43.1992113Z .git/info/sparse-checkout
+2026-10-09T07:20:43.2000725Z ##[endgroup]
+2026-10-09T07:20:43.2002341Z ##[group]Checking out the ref
+2026-10-09T07:20:43.2015702Z [command]/usr/bin/git checkout --progress --force 2104f9b5ad68a8002ff06127a7ff15c37e0eb821
+2026-10-09T07:20:45.1971351Z Updating files:   0% (1/1653)
+2026-10-09T07:20:45.1995430Z Updating files:   1% (17/1653)
+2026-10-09T07:20:45.2013682Z Updating files:   2% (34/1653)
+2026-10-09T07:20:45.2032362Z Updating files:   3% (50/1653)
+2026-10-09T07:20:45.2045493Z Updating files:   4% (67/1653)
+2026-10-09T07:20:45.2056723Z Updating files:   5% (83/1653)
+2026-10-09T07:20:45.2065756Z Updating files:   6% (100/1653)
+2026-10-09T07:20:45.2103907Z Updating files:   7% (116/1653)
+2026-10-09T07:20:45.2161486Z Updating files:   8% (133/1653)
+2026-10-09T07:20:45.2185652Z Updating files:   9% (149/1653)
+2026-10-09T07:20:45.2204056Z Updating files:  10% (166/1653)
+2026-10-09T07:20:45.2213766Z Updating files:  11% (182/1653)
+2026-10-09T07:20:45.2223686Z Updating files:  12% (199/1653)
+2026-10-09T07:20:45.2232840Z Updating files:  13% (215/1653)
+2026-10-09T07:20:45.2249060Z Updating files:  14% (232/1653)
+2026-10-09T07:20:45.2268824Z Updating files:  15% (248/1653)
+2026-10-09T07:20:45.2282473Z Updating files:  16% (265/1653)
+2026-10-09T07:20:45.2295946Z Updating files:  17% (282/1653)
+2026-10-09T07:20:45.2321636Z Updating files:  18% (298/1653)
+2026-10-09T07:20:45.2343864Z Updating files:  19% (315/1653)
+2026-10-09T07:20:45.2370143Z Updating files:  20% (331/1653)
+2026-10-09T07:20:45.2386182Z Updating files:  21% (348/1653)
+2026-10-09T07:20:45.2402698Z Updating files:  22% (364/1653)
+2026-10-09T07:20:45.2423233Z Updating files:  23% (381/1653)
+2026-10-09T07:20:45.2442451Z Updating files:  24% (397/1653)
+2026-10-09T07:20:45.2449698Z Updating files:  25% (414/1653)
+2026-10-09T07:20:45.2455650Z Updating files:  26% (430/1653)
+2026-10-09T07:20:45.2461887Z Updating files:  27% (447/1653)
+2026-10-09T07:20:45.2468779Z Updating files:  28% (463/1653)
+2026-10-09T07:20:45.2474690Z Updating files:  29% (480/1653)
+2026-10-09T07:20:45.2481737Z Updating files:  30% (496/1653)
+2026-10-09T07:20:45.2491899Z Updating files:  31% (513/1653)
+2026-10-09T07:20:45.2500017Z Updating files:  32% (529/1653)
+2026-10-09T07:20:45.2514445Z Updating files:  33% (546/1653)
+2026-10-09T07:20:45.2527792Z Updating files:  34% (563/1653)
+2026-10-09T07:20:45.2542386Z Updating files:  35% (579/1653)
+2026-10-09T07:20:45.2547151Z Updating files:  36% (596/1653)
+2026-10-09T07:20:45.2557734Z Updating files:  36% (599/1653)
+2026-10-09T07:20:45.2571195Z Updating files:  37% (612/1653)
+2026-10-09T07:20:45.2581704Z Updating files:  38% (629/1653)
+2026-10-09T07:20:45.2594713Z Updating files:  39% (645/1653)
+2026-10-09T07:20:45.2608633Z Updating files:  40% (662/1653)
+2026-10-09T07:20:45.2626237Z Updating files:  41% (678/1653)
+2026-10-09T07:20:45.2638472Z Updating files:  42% (695/1653)
+2026-10-09T07:20:45.2653852Z Updating files:  43% (711/1653)
+2026-10-09T07:20:45.2674902Z Updating files:  44% (728/1653)
+2026-10-09T07:20:45.2687967Z Updating files:  45% (744/1653)
+2026-10-09T07:20:45.2703961Z Updating files:  46% (761/1653)
+2026-10-09T07:20:45.2718981Z Updating files:  47% (777/1653)
+2026-10-09T07:20:45.2730549Z Updating files:  48% (794/1653)
+2026-10-09T07:20:45.2742961Z Updating files:  49% (810/1653)
+2026-10-09T07:20:45.2754917Z Updating files:  50% (827/1653)
+2026-10-09T07:20:45.2765443Z Updating files:  51% (844/1653)
+2026-10-09T07:20:45.2778465Z Updating files:  52% (860/1653)
+2026-10-09T07:20:45.2794194Z Updating files:  53% (877/1653)
+2026-10-09T07:20:45.2812105Z Updating files:  54% (893/1653)
+2026-10-09T07:20:45.2823471Z Updating files:  55% (910/1653)
+2026-10-09T07:20:45.2845811Z Updating files:  56% (926/1653)
+2026-10-09T07:20:45.2861391Z Updating files:  57% (943/1653)
+2026-10-09T07:20:45.2882213Z Updating files:  58% (959/1653)
+2026-10-09T07:20:45.2903324Z Updating files:  59% (976/1653)
+2026-10-09T07:20:45.2922066Z Updating files:  60% (992/1653)
+2026-10-09T07:20:45.2941547Z Updating files:  61% (1009/1653)
+2026-10-09T07:20:45.2959960Z Updating files:  62% (1025/1653)
+2026-10-09T07:20:45.2970953Z Updating files:  63% (1042/1653)
+2026-10-09T07:20:45.2992985Z Updating files:  64% (1058/1653)
+2026-10-09T07:20:45.3009414Z Updating files:  65% (1075/1653)
+2026-10-09T07:20:45.3025533Z Updating files:  66% (1091/1653)
+2026-10-09T07:20:45.3040139Z Updating files:  67% (1108/1653)
+2026-10-09T07:20:45.3051911Z Updating files:  68% (1125/1653)
+2026-10-09T07:20:45.3070741Z Updating files:  69% (1141/1653)
+2026-10-09T07:20:45.3086552Z Updating files:  70% (1158/1653)
+2026-10-09T07:20:45.3094338Z Updating files:  71% (1174/1653)
+2026-10-09T07:20:45.3117906Z Updating files:  72% (1191/1653)
+2026-10-09T07:20:45.3134083Z Updating files:  73% (1207/1653)
+2026-10-09T07:20:45.3149774Z Updating files:  74% (1224/1653)
+2026-10-09T07:20:45.3164616Z Updating files:  75% (1240/1653)
+2026-10-09T07:20:45.3174587Z Updating files:  76% (1257/1653)
+2026-10-09T07:20:45.3183276Z Updating files:  77% (1273/1653)
+2026-10-09T07:20:45.3194943Z Updating files:  78% (1290/1653)
+2026-10-09T07:20:45.3207025Z Updating files:  79% (1306/1653)
+2026-10-09T07:20:45.3236928Z Updating files:  80% (1323/1653)
+2026-10-09T07:20:45.3246275Z Updating files:  81% (1339/1653)
+2026-10-09T07:20:45.3343720Z Updating files:  82% (1356/1653)
+2026-10-09T07:20:45.3358634Z Updating files:  83% (1372/1653)
+2026-10-09T07:20:45.3359341Z Updating files:  84% (1389/1653)
+2026-10-09T07:20:45.3359998Z Updating files:  85% (1406/1653)
+2026-10-09T07:20:45.3360625Z Updating files:  86% (1422/1653)
+2026-10-09T07:20:45.3361244Z Updating files:  87% (1439/1653)
+2026-10-09T07:20:45.3369583Z Updating files:  88% (1455/1653)
+2026-10-09T07:20:45.3382038Z Updating files:  89% (1472/1653)
+2026-10-09T07:20:45.3398303Z Updating files:  90% (1488/1653)
+2026-10-09T07:20:45.3441256Z Updating files:  91% (1505/1653)
+2026-10-09T07:20:45.3459723Z Updating files:  92% (1521/1653)
+2026-10-09T07:20:45.3481391Z Updating files:  93% (1538/1653)
+2026-10-09T07:20:45.3494386Z Updating files:  94% (1554/1653)
+2026-10-09T07:20:45.3512191Z Updating files:  95% (1571/1653)
+2026-10-09T07:20:45.3527175Z Updating files:  96% (1587/1653)
+2026-10-09T07:20:45.3541792Z Updating files:  97% (1604/1653)
+2026-10-09T07:20:45.3555984Z Updating files:  98% (1620/1653)
+2026-10-09T07:20:45.3567105Z Updating files:  99% (1637/1653)
+2026-10-09T07:20:45.3567638Z Updating files: 100% (1653/1653)
+2026-10-09T07:20:45.3568026Z Updating files: 100% (1653/1653), done.
+2026-10-09T07:20:45.3821815Z Note: switching to '2104f9b5ad68a8002ff06127a7ff15c37e0eb821'.
+2026-10-09T07:20:45.3822294Z 
+2026-10-09T07:20:45.3822926Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-09T07:20:45.3823749Z changes and commit them, and you can discard any commits you make in this
+2026-10-09T07:20:45.3824535Z state without impacting any branches by switching back to a branch.
+2026-10-09T07:20:45.3824995Z 
+2026-10-09T07:20:45.3825327Z If you want to create a new branch to retain commits you create, you may
+2026-10-09T07:20:45.3826086Z do so (now or later) by using -c with the switch command. Example:
+2026-10-09T07:20:45.3826923Z 
+2026-10-09T07:20:45.3827205Z   git switch -c <new-branch-name>
+2026-10-09T07:20:45.3827517Z 
+2026-10-09T07:20:45.3827707Z Or undo this operation with:
+2026-10-09T07:20:45.3827982Z 
+2026-10-09T07:20:45.3828141Z   git switch -
+2026-10-09T07:20:45.3828360Z 
+2026-10-09T07:20:45.3828758Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-09T07:20:45.3829269Z 
+2026-10-09T07:20:45.3829761Z HEAD is now at 2104f9b Prepare bounded snapshot dependency inserts and reusable oracle row projections
+2026-10-09T07:20:45.3841619Z ##[endgroup]
+2026-10-09T07:20:45.3882790Z [command]/usr/bin/git log -1 --format=%H
+2026-10-09T07:20:45.3905006Z 2104f9b5ad68a8002ff06127a7ff15c37e0eb821
+2026-10-09T07:20:45.4277089Z ##[group]Run dtolnay/rust-toolchain@stable
+2026-10-09T07:20:45.4277583Z with:
+2026-10-09T07:20:45.4277909Z   components: rustfmt
+2026-10-09T07:20:45.4278251Z   toolchain: stable
+2026-10-09T07:20:45.4278577Z ##[endgroup]
+2026-10-09T07:20:45.4350009Z ##[start-action display=Parse toolchain version;id=__dtolnay_rust-toolchain.parse]
+2026-10-09T07:20:45.4409072Z ##[group]Run if [[ -z $toolchain ]]; then
+2026-10-09T07:20:45.4409620Z [36;1mif [[ -z $toolchain ]]; then[0m
+2026-10-09T07:20:45.4410322Z [36;1m  # GitHub does not enforce `required: true` inputs itself. https://github.com/actions/runner/issues/1070[0m
+2026-10-09T07:20:45.4411055Z [36;1m  echo "'toolchain' is a required input" >&2[0m
+2026-10-09T07:20:45.4411489Z [36;1m  exit 1[0m
+2026-10-09T07:20:45.4412169Z [36;1melif [[ $toolchain =~ ^stable' '[0-9]+' '(year|month|week|day)s?' 'ago$ ]]; then[0m
+2026-10-09T07:20:45.4412733Z [36;1m  if [[ Linux == macOS ]]; then[0m
+2026-10-09T07:20:45.4413463Z [36;1m    echo "toolchain=1.$((($(date -v-$(sed 's/stable \([0-9]*\) \(.\).*/\1\2/' <<< $toolchain) +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT[0m
+2026-10-09T07:20:45.4414130Z [36;1m  else[0m
+2026-10-09T07:20:45.4414696Z [36;1m    echo "toolchain=1.$((($(date --date "${toolchain#stable }" +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT[0m
+2026-10-09T07:20:45.4415311Z [36;1m  fi[0m
+2026-10-09T07:20:45.4415750Z [36;1melif [[ $toolchain =~ ^stable' 'minus' '[0-9]+' 'releases?$ ]]; then[0m
+2026-10-09T07:20:45.4416440Z [36;1m  echo "toolchain=1.$((($(date +%s)/60/60/24-16569)/7/6-${toolchain//[^0-9]/}))" >> $GITHUB_OUTPUT[0m
+2026-10-09T07:20:45.4417256Z [36;1melif [[ $toolchain =~ ^1\.[0-9]+$ ]]; then[0m
+2026-10-09T07:20:45.4417947Z [36;1m  echo "toolchain=1.$((i=${toolchain#1.}, c=($(date +%s)/60/60/24-16569)/7/6, i+9*i*(10*i<=c)+90*i*(100*i<=c)))" >> $GITHUB_OUTPUT[0m
+2026-10-09T07:20:45.4418610Z [36;1melse[0m
+2026-10-09T07:20:45.4418929Z [36;1m  delimiter=EOF[0m
+2026-10-09T07:20:45.4419383Z [36;1m  while [[ $toolchain == *$delimiter* ]]; do delimiter+=_; done[0m
+2026-10-09T07:20:45.4420056Z [36;1m  printf 'toolchain<<%s\n%s\n%s\n' "$delimiter" "$toolchain" "$delimiter" >> $GITHUB_OUTPUT[0m
+2026-10-09T07:20:45.4420622Z [36;1mfi[0m
+2026-10-09T07:20:45.4654540Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T07:20:45.4655064Z env:
+2026-10-09T07:20:45.4655386Z   toolchain: stable
+2026-10-09T07:20:45.4655717Z ##[endgroup]
+2026-10-09T07:20:45.4788136Z ##[end-action id=__dtolnay_rust-toolchain.parse;outcome=success;conclusion=success;duration_ms=43]
+2026-10-09T07:20:45.4793382Z ##[start-action display=Set $CARGO_HOME;id=__dtolnay_rust-toolchain.__run]
+2026-10-09T07:20:45.4829861Z ##[group]Run echo CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV
+2026-10-09T07:20:45.4830521Z [36;1mecho CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV[0m
+2026-10-09T07:20:45.4885897Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T07:20:45.4886392Z ##[endgroup]
+2026-10-09T07:20:45.4971750Z ##[end-action id=__dtolnay_rust-toolchain.__run;outcome=success;conclusion=success;duration_ms=17]
+2026-10-09T07:20:45.4974569Z ##[start-action display=Install rustup if needed;id=__dtolnay_rust-toolchain.__run_2]
+2026-10-09T07:20:45.5005453Z ##[group]Run if ! command -v rustup &>/dev/null; then
+2026-10-09T07:20:45.5005968Z [36;1mif ! command -v rustup &>/dev/null; then[0m
+2026-10-09T07:20:45.5007193Z [36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://sh.rustup.rs | sh -s -- --default-toolchain none -y[0m
+2026-10-09T07:20:45.5008110Z [36;1m  echo "$CARGO_HOME/bin" >> $GITHUB_PATH[0m
+2026-10-09T07:20:45.5008508Z [36;1mfi[0m
+2026-10-09T07:20:45.5063606Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T07:20:45.5064079Z env:
+2026-10-09T07:20:45.5064391Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:20:45.5064748Z ##[endgroup]
+2026-10-09T07:20:45.5148772Z ##[end-action id=__dtolnay_rust-toolchain.__run_2;outcome=success;conclusion=success;duration_ms=17]
+2026-10-09T07:20:45.5151563Z ##[start-action display=Install rustup if needed on windows;id=__dtolnay_rust-toolchain.__run_3]
+2026-10-09T07:20:45.5159686Z ##[end-action id=__dtolnay_rust-toolchain.__run_3;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-10-09T07:20:45.5174323Z ##[start-action display=rustup toolchain install stable;id=__dtolnay_rust-toolchain.__run_4]
+2026-10-09T07:20:45.5197109Z ##[group]Run set -f  # split targets and components on commas and whitespace, without glob expansion
+2026-10-09T07:20:45.5197959Z [36;1mset -f  # split targets and components on commas and whitespace, without glob expansion[0m
+2026-10-09T07:20:45.5198532Z [36;1mflags=()[0m
+2026-10-09T07:20:45.5198927Z [36;1mfor t in ${targets//,/ }; do flags+=(--target "$t"); done[0m
+2026-10-09T07:20:45.5199654Z [36;1mfor c in ${components//,/ }; do flags+=(--component "$c"); done[0m
+2026-10-09T07:20:45.5200331Z [36;1mif [[ $toolchain == nightly && -n $components ]]; then flags+=(--allow-downgrade); fi[0m
+2026-10-09T07:20:45.5200906Z [36;1mlog=$(mktemp)[0m
+2026-10-09T07:20:45.5201254Z [36;1mtrap 'rm -f "$log"' EXIT[0m
+2026-10-09T07:20:45.5201629Z [36;1mfor attempt in 1 2 3 4 5; do[0m
+2026-10-09T07:20:45.5202362Z [36;1m  if rustup toolchain install "$toolchain" "${flags[@]}" --profile minimal --no-self-update --force-non-host 2>&1 | tee "$log"; then[0m
+2026-10-09T07:20:45.5203079Z [36;1m    break[0m
+2026-10-09T07:20:45.5203381Z [36;1m  else[0m
+2026-10-09T07:20:45.5203682Z [36;1m    status=$?[0m
+2026-10-09T07:20:45.5204005Z [36;1m  fi[0m
+2026-10-09T07:20:45.5204425Z [36;1m  if [[ $attempt == 5 ]] || ! grep -Fq 'checksum failed for ' "$log" \[0m
+2026-10-09T07:20:45.5205133Z [36;1m      || ! grep -Fq 'this is likely due to an ongoing update of the official release server' "$log"; then[0m
+2026-10-09T07:20:45.5205748Z [36;1m    exit "$status"[0m
+2026-10-09T07:20:45.5206090Z [36;1m  fi[0m
+2026-10-09T07:20:45.5206877Z [36;1m  echo "Retrying rustup toolchain install in 30 seconds (retry $attempt of 4)" >&2[0m
+2026-10-09T07:20:45.5207453Z [36;1m  sleep 30[0m
+2026-10-09T07:20:45.5207763Z [36;1mdone[0m
+2026-10-09T07:20:45.5262885Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T07:20:45.5263352Z env:
+2026-10-09T07:20:45.5263670Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:20:45.5264041Z   toolchain: stable
+2026-10-09T07:20:45.5264365Z   targets: 
+2026-10-09T07:20:45.5264662Z   components: rustfmt
+2026-10-09T07:20:45.5265007Z   RUSTUP_PERMIT_COPY_RENAME: 1
+2026-10-09T07:20:45.5265362Z ##[endgroup]
+2026-10-09T07:20:45.7899287Z info: syncing channel updates for stable-x86_64-unknown-linux-gnu
+2026-10-09T07:20:46.0472910Z info: latest update on 2026-10-01 for version 1.99.0 (b940084d7 2026-09-28)
+2026-10-09T07:20:46.0721176Z info: component rustfmt is up to date
+2026-10-09T07:20:46.0733981Z 
+2026-10-09T07:20:46.0810553Z   stable-x86_64-unknown-linux-gnu unchanged - rustc 1.99.0 (b940084d7 2026-09-28)
+2026-10-09T07:20:46.0811104Z 
+2026-10-09T07:20:46.0857989Z ##[end-action id=__dtolnay_rust-toolchain.__run_4;outcome=success;conclusion=success;duration_ms=568]
+2026-10-09T07:20:46.0864482Z ##[start-action display=rustup default stable;id=__dtolnay_rust-toolchain.__run_5]
+2026-10-09T07:20:46.0884423Z ##[group]Run rustup default "$toolchain" --force-non-host
+2026-10-09T07:20:46.0884849Z [36;1mrustup default "$toolchain" --force-non-host[0m
+2026-10-09T07:20:46.0950552Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T07:20:46.0950901Z env:
+2026-10-09T07:20:46.0951116Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:20:46.0951374Z   toolchain: stable
+2026-10-09T07:20:46.0951593Z ##[endgroup]
+2026-10-09T07:20:46.1069584Z info: using existing install for stable-x86_64-unknown-linux-gnu
+2026-10-09T07:20:46.1079393Z info: default toolchain set to stable-x86_64-unknown-linux-gnu
+2026-10-09T07:20:46.1079722Z 
+2026-10-09T07:20:46.1149713Z   stable-x86_64-unknown-linux-gnu unchanged - rustc 1.99.0 (b940084d7 2026-09-28)
+2026-10-09T07:20:46.1150499Z 
+2026-10-09T07:20:46.1165524Z ##[end-action id=__dtolnay_rust-toolchain.__run_5;outcome=success;conclusion=success;duration_ms=30]
+2026-10-09T07:20:46.1169328Z ##[start-action display=Create cachekey;id=__dtolnay_rust-toolchain.rustc-version]
+2026-10-09T07:20:46.1188906Z ##[group]Run DATE=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')
+2026-10-09T07:20:46.1189803Z [36;1mDATE=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')[0m
+2026-10-09T07:20:46.1190494Z [36;1mHASH=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-hash: //p')[0m
+2026-10-09T07:20:46.1191023Z [36;1mecho "cachekey=$(echo $DATE$HASH | head -c12)" >> $GITHUB_OUTPUT[0m
+2026-10-09T07:20:46.1250508Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T07:20:46.1250870Z env:
+2026-10-09T07:20:46.1251077Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:20:46.1251379Z   toolchain: stable
+2026-10-09T07:20:46.1251599Z ##[endgroup]
+2026-10-09T07:20:46.1809549Z ##[end-action id=__dtolnay_rust-toolchain.rustc-version;outcome=success;conclusion=success;duration_ms=63]
+2026-10-09T07:20:46.1833167Z ##[start-action display=Disable incremental compilation;id=__dtolnay_rust-toolchain.__run_6]
+2026-10-09T07:20:46.1855332Z ##[group]Run if [ -z "${CARGO_INCREMENTAL+set}" ]; then
+2026-10-09T07:20:46.1855751Z [36;1mif [ -z "${CARGO_INCREMENTAL+set}" ]; then[0m
+2026-10-09T07:20:46.1856081Z [36;1m  echo CARGO_INCREMENTAL=0 >> $GITHUB_ENV[0m
+2026-10-09T07:20:46.1856366Z [36;1mfi[0m
+2026-10-09T07:20:46.1921009Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T07:20:46.1921348Z env:
+2026-10-09T07:20:46.1921553Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:20:46.1921818Z ##[endgroup]
+2026-10-09T07:20:46.2008003Z ##[end-action id=__dtolnay_rust-toolchain.__run_6;outcome=success;conclusion=success;duration_ms=17]
+2026-10-09T07:20:46.2010165Z ##[start-action display=Enable colors in Cargo output;id=__dtolnay_rust-toolchain.__run_7]
+2026-10-09T07:20:46.2028524Z ##[group]Run if [ -z "${CARGO_TERM_COLOR+set}" ]; then
+2026-10-09T07:20:46.2028898Z [36;1mif [ -z "${CARGO_TERM_COLOR+set}" ]; then[0m
+2026-10-09T07:20:46.2029238Z [36;1m  echo CARGO_TERM_COLOR=always >> $GITHUB_ENV[0m
+2026-10-09T07:20:46.2029536Z [36;1mfi[0m
+2026-10-09T07:20:46.2088979Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T07:20:46.2089345Z env:
+2026-10-09T07:20:46.2089546Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:20:46.2089799Z   CARGO_INCREMENTAL: 0
+2026-10-09T07:20:46.2090010Z ##[endgroup]
+2026-10-09T07:20:46.2173247Z ##[end-action id=__dtolnay_rust-toolchain.__run_7;outcome=success;conclusion=success;duration_ms=16]
+2026-10-09T07:20:46.2176879Z ##[start-action display=Enable Cargo sparse registry;id=__dtolnay_rust-toolchain.__run_8]
+2026-10-09T07:20:46.2197857Z ##[group]Run # implemented in 1.66, stabilized in 1.68, made default in 1.70
+2026-10-09T07:20:46.2198510Z [36;1m# implemented in 1.66, stabilized in 1.68, made default in 1.70[0m
+2026-10-09T07:20:46.2199246Z [36;1mif [ -z "${CARGO_REGISTRIES_CRATES_IO_PROTOCOL+set}" -o -f "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol ]; then[0m
+2026-10-09T07:20:46.2200015Z [36;1m  if rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.6[89]\.'; then[0m
+2026-10-09T07:20:46.2200615Z [36;1m    touch "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol || true[0m
+2026-10-09T07:20:46.2201167Z [36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse >> $GITHUB_ENV[0m
+2026-10-09T07:20:46.2201703Z [36;1m  elif rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.6[67]\.'; then[0m
+2026-10-09T07:20:46.2202297Z [36;1m    touch "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol || true[0m
+2026-10-09T07:20:46.2202842Z [36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=git >> $GITHUB_ENV[0m
+2026-10-09T07:20:46.2203367Z [36;1m  fi[0m
+2026-10-09T07:20:46.2203573Z [36;1mfi[0m
+2026-10-09T07:20:46.2261840Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T07:20:46.2262188Z env:
+2026-10-09T07:20:46.2262395Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:20:46.2262659Z   CARGO_INCREMENTAL: 0
+2026-10-09T07:20:46.2262887Z   CARGO_TERM_COLOR: always
+2026-10-09T07:20:46.2263115Z   toolchain: stable
+2026-10-09T07:20:46.2263319Z ##[endgroup]
+2026-10-09T07:20:46.2582860Z ##[end-action id=__dtolnay_rust-toolchain.__run_8;outcome=success;conclusion=success;duration_ms=40]
+2026-10-09T07:20:46.2586854Z ##[start-action display=Work around spurious network errors in curl 8.0;id=__dtolnay_rust-toolchain.__run_9]
+2026-10-09T07:20:46.2606327Z ##[group]Run # https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation
+2026-10-09T07:20:46.2607563Z [36;1m# https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation[0m
+2026-10-09T07:20:46.2608229Z [36;1mif rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.7[01]\.'; then[0m
+2026-10-09T07:20:46.2608726Z [36;1m  echo CARGO_HTTP_MULTIPLEXING=false >> $GITHUB_ENV[0m
+2026-10-09T07:20:46.2609049Z [36;1mfi[0m
+2026-10-09T07:20:46.2670985Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T07:20:46.2671339Z env:
+2026-10-09T07:20:46.2671548Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:20:46.2671811Z   CARGO_INCREMENTAL: 0
+2026-10-09T07:20:46.2672045Z   CARGO_TERM_COLOR: always
+2026-10-09T07:20:46.2672278Z   toolchain: stable
+2026-10-09T07:20:46.2672483Z ##[endgroup]
+2026-10-09T07:20:46.2871380Z ##[end-action id=__dtolnay_rust-toolchain.__run_9;outcome=success;conclusion=success;duration_ms=28]
+2026-10-09T07:20:46.2875686Z ##[start-action display=rustc +stable --version --verbose;id=__dtolnay_rust-toolchain.__run_10]
+2026-10-09T07:20:46.2894595Z ##[group]Run rustc +"$toolchain" --version --verbose
+2026-10-09T07:20:46.2894966Z [36;1mrustc +"$toolchain" --version --verbose[0m
+2026-10-09T07:20:46.2953226Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T07:20:46.2953572Z env:
+2026-10-09T07:20:46.2953796Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:20:46.2954067Z   CARGO_INCREMENTAL: 0
+2026-10-09T07:20:46.2954303Z   CARGO_TERM_COLOR: always
+2026-10-09T07:20:46.2954533Z   toolchain: stable
+2026-10-09T07:20:46.2954739Z ##[endgroup]
+2026-10-09T07:20:46.3132051Z rustc 1.99.0 (b940084d7 2026-09-28)
+2026-10-09T07:20:46.3132600Z binary: rustc
+2026-10-09T07:20:46.3133088Z commit-hash: b940084d7eb6a299eb4bfeb8e34901bc051e7ac4
+2026-10-09T07:20:46.3133700Z commit-date: 2026-09-28
+2026-10-09T07:20:46.3134142Z host: x86_64-unknown-linux-gnu
+2026-10-09T07:20:46.3134595Z release: 1.99.0
+2026-10-09T07:20:46.3134994Z LLVM version: 23.1.1
+2026-10-09T07:20:46.3153368Z ##[end-action id=__dtolnay_rust-toolchain.__run_10;outcome=success;conclusion=success;duration_ms=27]
+2026-10-09T07:20:46.3211367Z ##[group]Run python3 - <<'PY'
+2026-10-09T07:20:46.3211716Z [36;1mpython3 - <<'PY'[0m
+2026-10-09T07:20:46.3212011Z [36;1mimport hashlib, json, os, pathlib, subprocess[0m
+2026-10-09T07:20:46.3212409Z [36;1mroot = pathlib.Path(os.environ["GITHUB_WORKSPACE"])[0m
+2026-10-09T07:20:46.3212887Z [36;1mout = pathlib.Path(os.environ["RUNNER_TEMP"]) / "p8-candidate-format"[0m
+2026-10-09T07:20:46.3213285Z [36;1mout.mkdir()[0m
+2026-10-09T07:20:46.3214660Z [36;1mpaths = ["crates/cc-db/src/index_db_multi_insert.rs","crates/cc-db/src/index_db_snapshot_insert.rs","crates/cc-db/src/resolution_dependency_store.rs","crates/cc-db/src/public_surface_store.rs","crates/cc-db/src/index_db_write_batch.rs","crates/cc-db/tests/p2b_resolution_store.rs","crates/cc-eval/src/benchmark/oracle.rs","crates/cc-eval/src/benchmark/oracle/streaming.rs"][0m
+2026-10-09T07:20:46.3216175Z [36;1msource = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()[0m
+2026-10-09T07:20:46.3217021Z [36;1mif source != os.environ["EXPECTED_SOURCE"]:[0m
+2026-10-09T07:20:46.3217368Z [36;1m    raise SystemExit("source mismatch")[0m
+2026-10-09T07:20:46.3217922Z [36;1midentity = {"source": source, "run_id": os.environ["GITHUB_RUN_ID"], "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"]}[0m
+2026-10-09T07:20:46.3218666Z [36;1m(out / "start-identity.json").write_text(json.dumps(identity, indent=2, sort_keys=True) + "\n")[0m
+2026-10-09T07:20:46.3219161Z [36;1mif identity["run_attempt"] != "1":[0m
+2026-10-09T07:20:46.3219622Z [36;1m    raise SystemExit("this formatter controller permits its original attempt only")[0m
+2026-10-09T07:20:46.3220135Z [36;1mbefore = {p: (root / p).read_bytes() for p in paths}[0m
+2026-10-09T07:20:46.3220611Z [36;1mtoolchain = subprocess.check_output(["rustfmt", "--version"], text=True)[0m
+2026-10-09T07:20:46.3221316Z [36;1mcheck = subprocess.run(["cargo", "fmt", "--all", "--", "--check"], cwd=root, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)[0m
+2026-10-09T07:20:46.3222157Z [36;1m(out / "original-format-check.log").write_bytes(check.stdout)[0m
+2026-10-09T07:20:46.3222626Z [36;1mprint(check.stdout.decode("utf-8", errors="replace"), end="")[0m
+2026-10-09T07:20:46.3223233Z [36;1mapplied = subprocess.run(["cargo", "fmt", "--all"], cwd=root, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)[0m
+2026-10-09T07:20:46.3223813Z [36;1m(out / "format-apply.log").write_bytes(applied.stdout)[0m
+2026-10-09T07:20:46.3224276Z [36;1mpatch = subprocess.check_output(["git", "diff", "--binary"], cwd=root)[0m
+2026-10-09T07:20:46.3224738Z [36;1m(out / "original-rustfmt.patch").write_bytes(patch)[0m
+2026-10-09T07:20:46.3225270Z [36;1mchanged = subprocess.check_output(["git", "diff", "--name-only"], cwd=root, text=True).splitlines()[0m
+2026-10-09T07:20:46.3225769Z [36;1mif not set(changed) <= set(paths):[0m
+2026-10-09T07:20:46.3226169Z [36;1m    raise SystemExit("formatter changed an unexpected source path")[0m
+2026-10-09T07:20:46.3226814Z [36;1mdef describe(raw):[0m
+2026-10-09T07:20:46.3227193Z [36;1m    return {"bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest(),[0m
+2026-10-09T07:20:46.3227751Z [36;1m            "git_blob": hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()}[0m
+2026-10-09T07:20:46.3228362Z [36;1mfiles = {p: {"before": describe(before[p]), "after": describe((root / p).read_bytes()),[0m
+2026-10-09T07:20:46.3228858Z [36;1m             "content": (root / p).read_text()} for p in paths}[0m
+2026-10-09T07:20:46.3229422Z [36;1mreceipt = {"source": source, "rustfmt": toolchain.strip(), "original_check_exit_code": check.returncode,[0m
+2026-10-09T07:20:46.3230126Z [36;1m           "formatter_exit_code": applied.returncode, "source_files": files, "changed_paths": changed,[0m
+2026-10-09T07:20:46.3230779Z [36;1m           "execution_scope": "formatter_only_no_compile_test_or_benchmark", "TODO_closed": 0}[0m
+2026-10-09T07:20:46.3231610Z [36;1m(out / "formatting-result.json").write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n")[0m
+2026-10-09T07:20:46.3232286Z [36;1mprint(json.dumps({k: v for k, v in receipt.items() if k != "source_files"}, sort_keys=True))[0m
+2026-10-09T07:20:46.3232780Z [36;1mprint("changed_files=" + json.dumps(changed))[0m
+2026-10-09T07:20:46.3233424Z [36;1mprint("formatted_file_metadata=" + json.dumps({p: {k: v for k, v in info.items() if k != "content"} for p, info in files.items()}, sort_keys=True))[0m
+2026-10-09T07:20:46.3234049Z [36;1mprint("ORIGINAL_RUSTFMT_PATCH_BEGIN")[0m
+2026-10-09T07:20:46.3234366Z [36;1mprint(patch.decode("utf-8"), end="")[0m
+2026-10-09T07:20:46.3234679Z [36;1mprint("ORIGINAL_RUSTFMT_PATCH_END")[0m
+2026-10-09T07:20:46.3235059Z [36;1mraise SystemExit(check.returncode or applied.returncode)[0m
+2026-10-09T07:20:46.3235408Z [36;1mPY[0m
+2026-10-09T07:20:46.3297141Z shell: /usr/bin/bash -e {0}
+2026-10-09T07:20:46.3297411Z env:
+2026-10-09T07:20:46.3297623Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:20:46.3297906Z   CARGO_INCREMENTAL: 0
+2026-10-09T07:20:46.3298149Z   CARGO_TERM_COLOR: always
+2026-10-09T07:20:46.3298446Z   EXPECTED_SOURCE: 2104f9b5ad68a8002ff06127a7ff15c37e0eb821
+2026-10-09T07:20:46.3298776Z ##[endgroup]
+2026-10-09T07:20:56.6480831Z Diff in /home/runner/work/codecortex/codecortex/crates/cc-db/src/index_db_multi_insert.rs:114:
+2026-10-09T07:20:56.6481812Z              3,
+2026-10-09T07:20:56.6482107Z              rows,
+2026-10-09T07:20:56.6482456Z              |stmt, base, dependency| {
+2026-10-09T07:20:56.6483140Z -                bind_row!(stmt, base, [file_path, dependency.kind.as_str(), &dependency.key]);
+2026-10-09T07:20:56.6483794Z +                bind_row!(
+2026-10-09T07:20:56.6484162Z +                    stmt,
+2026-10-09T07:20:56.6484482Z +                    base,
+2026-10-09T07:20:56.6484934Z +                    [file_path, dependency.kind.as_str(), &dependency.key]
+2026-10-09T07:20:56.6485446Z +                );
+2026-10-09T07:20:56.6486034Z                  Ok(())
+2026-10-09T07:20:56.6486375Z              },
+2026-10-09T07:20:56.6486890Z          )
+2026-10-09T07:20:56.6487484Z Diff in /home/runner/work/codecortex/codecortex/crates/cc-db/src/index_db_snapshot_insert.rs:440:
+2026-10-09T07:20:56.6488467Z              .prepare("SELECT rowid,file_path,kind,key FROM resolution_dependencies ORDER BY rowid")
+2026-10-09T07:20:56.6489140Z              .unwrap();
+2026-10-09T07:20:56.6489456Z          statement
+2026-10-09T07:20:56.6489923Z -            .query_map([], |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?)))
+2026-10-09T07:20:56.6490523Z +            .query_map([], |row| {
+2026-10-09T07:20:56.6491053Z +                Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?))
+2026-10-09T07:20:56.6491596Z +            })
+2026-10-09T07:20:56.6491917Z              .unwrap()
+2026-10-09T07:20:56.6497090Z              .collect::<rusqlite::Result<Vec<_>>>()
+2026-10-09T07:20:56.6497593Z              .unwrap()
+2026-10-09T07:20:56.6498342Z Diff in /home/runner/work/codecortex/codecortex/crates/cc-db/tests/p2b_resolution_store.rs:239:
+2026-10-09T07:20:56.6499358Z      assert!(db.reads().resolution_manifests(&["a.py".into()]).is_err());
+2026-10-09T07:20:56.6499972Z  }
+2026-10-09T07:20:56.6500255Z  
+2026-10-09T07:20:56.6500532Z -
+2026-10-09T07:20:56.6501064Z  fn snapshot_dependency_unit(path: &str, count: usize) -> FileWriteUnit {
+2026-10-09T07:20:56.6501750Z      let mut file = unit(path);
+2026-10-09T07:20:56.6502265Z      file.outcome.resolution.dependencies.clear();
+2026-10-09T07:20:56.6503152Z Diff in /home/runner/work/codecortex/codecortex/crates/cc-db/tests/p2b_resolution_store.rs:310:
+2026-10-09T07:20:56.6503971Z          .unwrap();
+2026-10-09T07:20:56.6504321Z      new.admin()
+2026-10-09T07:20:56.6504657Z          .rebuild_with_temp_db(|conn| {
+2026-10-09T07:20:56.6505158Z -            cc_db::SnapshotWriteTxn::new(conn)
+2026-10-09T07:20:56.6505657Z -                .write_file_data(&files, &Default::default())
+2026-10-09T07:20:56.6506416Z +            cc_db::SnapshotWriteTxn::new(conn).write_file_data(&files, &Default::default())
+2026-10-09T07:20:56.6507554Z          })
+2026-10-09T07:20:56.6507877Z          .unwrap();
+2026-10-09T07:20:56.6508510Z -    assert_eq!(old.reads().generation().unwrap().index_epoch, old_before.index_epoch + 1);
+2026-10-09T07:20:56.6509437Z -    assert_eq!(new.reads().generation().unwrap().index_epoch, new_before.index_epoch + 1);
+2026-10-09T07:20:56.6510397Z -    assert_eq!(snapshot_dependency_tables(&old), snapshot_dependency_tables(&new));
+2026-10-09T07:20:56.6511060Z +    assert_eq!(
+2026-10-09T07:20:56.6511455Z +        old.reads().generation().unwrap().index_epoch,
+2026-10-09T07:20:56.6511961Z +        old_before.index_epoch + 1
+2026-10-09T07:20:56.6512365Z +    );
+2026-10-09T07:20:56.6512659Z +    assert_eq!(
+2026-10-09T07:20:56.6513057Z +        new.reads().generation().unwrap().index_epoch,
+2026-10-09T07:20:56.6513554Z +        new_before.index_epoch + 1
+2026-10-09T07:20:56.6513950Z +    );
+2026-10-09T07:20:56.6514239Z +    assert_eq!(
+2026-10-09T07:20:56.6514585Z +        snapshot_dependency_tables(&old),
+2026-10-09T07:20:56.6515060Z +        snapshot_dependency_tables(&new)
+2026-10-09T07:20:56.6515487Z +    );
+2026-10-09T07:20:56.6515966Z      let paths: Vec<_> = files.iter().map(|file| file.rel_path.clone()).collect();
+2026-10-09T07:20:56.6516963Z      let original = old.reads().resolution_manifests(&paths).unwrap();
+2026-10-09T07:20:56.6517676Z      let batched = new.reads().resolution_manifests(&paths).unwrap();
+2026-10-09T07:20:56.6518592Z Diff in /home/runner/work/codecortex/codecortex/crates/cc-db/tests/p2b_resolution_store.rs:329:
+2026-10-09T07:20:56.6519371Z      new.writes()
+2026-10-09T07:20:56.6519882Z          .replace_files_batch(&[snapshot_dependency_unit("n-73.py", 8)])
+2026-10-09T07:20:56.6520502Z          .unwrap();
+2026-10-09T07:20:56.6521109Z -    assert_eq!(new.reads().generation().unwrap().index_epoch, before.index_epoch + 1);
+2026-10-09T07:20:56.6521819Z      assert_eq!(
+2026-10-09T07:20:56.6522529Z -        new.reads().resolution_manifests(&["n-73.py".into()]).unwrap()["n-73.py"]
+2026-10-09T07:20:56.6523223Z -            .dependencies.len(),
+2026-10-09T07:20:56.6523718Z +        new.reads().generation().unwrap().index_epoch,
+2026-10-09T07:20:56.6524228Z +        before.index_epoch + 1
+2026-10-09T07:20:56.6524610Z +    );
+2026-10-09T07:20:56.6524904Z +    assert_eq!(
+2026-10-09T07:20:56.6525218Z +        new.reads()
+2026-10-09T07:20:56.6525614Z +            .resolution_manifests(&["n-73.py".into()])
+2026-10-09T07:20:56.6526103Z +            .unwrap()["n-73.py"]
+2026-10-09T07:20:56.6526798Z +            .dependencies
+2026-10-09T07:20:56.6527191Z +            .len(),
+2026-10-09T07:20:56.6527519Z          8
+2026-10-09T07:20:56.6527799Z      );
+2026-10-09T07:20:56.6528067Z  }
+2026-10-09T07:20:56.6528729Z Diff in /home/runner/work/codecortex/codecortex/crates/cc-db/tests/p2b_resolution_store.rs:344:
+2026-10-09T07:20:56.6529524Z      for snapshot in [false, true] {
+2026-10-09T07:20:56.6530128Z          let path = directory.path().join(format!("failure-{snapshot}.db"));
+2026-10-09T07:20:56.6530903Z          let db = IndexDb::open_with_read_pool_size(&path, 1).unwrap().0;
+2026-10-09T07:20:56.6531607Z -        db.writes().replace_files_batch(&[unit("retained.py")]).unwrap();
+2026-10-09T07:20:56.6532158Z +        db.writes()
+2026-10-09T07:20:56.6532535Z +            .replace_files_batch(&[unit("retained.py")])
+2026-10-09T07:20:56.6533009Z +            .unwrap();
+2026-10-09T07:20:56.6533400Z          let before = db.reads().generation().unwrap();
+2026-10-09T07:20:56.6534011Z          let retained = snapshot_dependency_tables(&db);
+2026-10-09T07:20:56.6534535Z          let mut mode_errors = Vec::new();
+2026-10-09T07:20:56.6535817Z error: couldn't find file `/home/runner/work/codecortex/codecortex/crates/cc-server/tests/../../../artifacts/checkpoints/capability-snapshot-optimization-20261003/current-status-under-test.rs`
+2026-10-09T07:20:56.6537814Z   --> /home/runner/work/codecortex/codecortex/crates/cc-server/tests/p7_status_snapshot_independent_review.rs:30:1
+2026-10-09T07:20:56.6538701Z    |
+2026-10-09T07:20:56.6539145Z 30 | mod actual_status;
+2026-10-09T07:20:56.6539490Z    | ^^^^^^^^^^^^^^^^^^
+2026-10-09T07:20:56.6539698Z 
+2026-10-09T07:20:56.6541033Z Error writing files: failed to resolve mod `actual_status`: /home/runner/work/codecortex/codecortex/crates/cc-server/tests/../../../artifacts/checkpoints/capability-snapshot-optimization-20261003/current-status-under-test.rs does not exist
+2026-10-09T07:20:56.6544719Z {"TODO_closed": 0, "changed_paths": ["crates/cc-db/src/index_db_multi_insert.rs", "crates/cc-db/src/index_db_snapshot_insert.rs", "crates/cc-db/tests/p2b_resolution_store.rs"], "execution_scope": "formatter_only_no_compile_test_or_benchmark", "formatter_exit_code": 1, "original_check_exit_code": 1, "rustfmt": "rustfmt 1.10.0-stable (b940084d7e 2026-09-28)", "source": "2104f9b5ad68a8002ff06127a7ff15c37e0eb821"}
+2026-10-09T07:20:56.6548059Z changed_files=["crates/cc-db/src/index_db_multi_insert.rs", "crates/cc-db/src/index_db_snapshot_insert.rs", "crates/cc-db/tests/p2b_resolution_store.rs"]
+2026-10-09T07:20:56.6561611Z formatted_file_metadata={"crates/cc-db/src/index_db_multi_insert.rs": {"after": {"bytes": 30100, "git_blob": "a881c73c46693bb4ff098b283a05f57f04cb1ee4", "sha256": "62224f028852c6c7230d3a4d72151f9daf4d86f3c91d41fe30928e67acd0ab6c"}, "before": {"bytes": 30022, "git_blob": "8bd7d944d93a9a3c0660d0b1755d05cd90727948", "sha256": "dfe605426d4401904b2b4e731f24f73d03fe62aaf6bb39b28c951b1f22ccff72"}}, "crates/cc-db/src/index_db_snapshot_insert.rs": {"after": {"bytes": 19048, "git_blob": "9829e095d8e2310a4d3373c77a5184166a32f686", "sha256": "a461358a0a6b9cdfa058e2c45a4582e0033599c8d8b586256e358b10a9e2548b"}, "before": {"bytes": 19016, "git_blob": "35b709285974446ad050a19964693e6270b8bd6f", "sha256": "193e97be8c5b663c61766badab61f72dd29ccf3fda67bb3f4859d196b44764a3"}}, "crates/cc-db/src/index_db_write_batch.rs": {"after": {"bytes": 56246, "git_blob": "f1c7d161db2d3d09a3f30c5917490ec18338041d", "sha256": "62832b8bb77011b0c2afd9d83599ac840aeb5473b631ffb6f0470e64d48fb569"}, "before": {"bytes": 56246, "git_blob": "f1c7d161db2d3d09a3f30c5917490ec18338041d", "sha256": "62832b8bb77011b0c2afd9d83599ac840aeb5473b631ffb6f0470e64d48fb569"}}, "crates/cc-db/src/public_surface_store.rs": {"after": {"bytes": 8957, "git_blob": "d0fa4c622876197bbb8c14b7d94f0d8ab3e1f318", "sha256": "76d8f7bb89f99abf5cbb4b75e0ccb486720e187e9b46014b5bccde439bdb95e5"}, "before": {"bytes": 8957, "git_blob": "d0fa4c622876197bbb8c14b7d94f0d8ab3e1f318", "sha256": "76d8f7bb89f99abf5cbb4b75e0ccb486720e187e9b46014b5bccde439bdb95e5"}}, "crates/cc-db/src/resolution_dependency_store.rs": {"after": {"bytes": 10939, "git_blob": "97d3d9519fe10ed7cd30b9783164348998c02abc", "sha256": "c37a7c44ed1aa5c2897fcb387eee5fb1007a60cb53c0de4abc6488dafde9ebbf"}, "before": {"bytes": 10939, "git_blob": "97d3d9519fe10ed7cd30b9783164348998c02abc", "sha256": "c37a7c44ed1aa5c2897fcb387eee5fb1007a60cb53c0de4abc6488dafde9ebbf"}}, "crates/cc-db/tests/p2b_resolution_store.rs": {"after": {"bytes": 14608, "git_blob": "f698d3427ad90c194cfdb5b7c241e0802c1267d1", "sha256": "2c99786a75ac5df604ca2481e799ef9bc8da84d6bf138781b1cbbfa6b9693d3c"}, "before": {"bytes": 14473, "git_blob": "4d0e690939c510f172cee713e8d532aba411b981", "sha256": "0a107c65f6039b976f2416e4859eb93641701d84d28c0c6a7114bbe24fc79f5b"}}, "crates/cc-eval/src/benchmark/oracle.rs": {"after": {"bytes": 14710, "git_blob": "4c7fdb879e039af164b3b10ea1491d538c69ac68", "sha256": "7b6438d212bd22471fedfb9ffd3a37a0c1d491f8e7846af3ba5c5850c622bc15"}, "before": {"bytes": 14710, "git_blob": "4c7fdb879e039af164b3b10ea1491d538c69ac68", "sha256": "7b6438d212bd22471fedfb9ffd3a37a0c1d491f8e7846af3ba5c5850c622bc15"}}, "crates/cc-eval/src/benchmark/oracle/streaming.rs": {"after": {"bytes": 29924, "git_blob": "6c60e6244fe1f316b180f8ea656d2b9f1ad17aa3", "sha256": "9d9ef3624af2f1a27107baf3c625b7ee29643b8dbedcbf3b39b8a662c98e82a4"}, "before": {"bytes": 29924, "git_blob": "6c60e6244fe1f316b180f8ea656d2b9f1ad17aa3", "sha256": "9d9ef3624af2f1a27107baf3c625b7ee29643b8dbedcbf3b39b8a662c98e82a4"}}}
+2026-10-09T07:20:56.6572044Z ORIGINAL_RUSTFMT_PATCH_BEGIN
+2026-10-09T07:20:56.6572619Z diff --git a/crates/cc-db/src/index_db_multi_insert.rs b/crates/cc-db/src/index_db_multi_insert.rs
+2026-10-09T07:20:56.6573093Z index 8bd7d94..a881c73 100644
+2026-10-09T07:20:56.6573361Z --- a/crates/cc-db/src/index_db_multi_insert.rs
+2026-10-09T07:20:56.6573692Z +++ b/crates/cc-db/src/index_db_multi_insert.rs
+2026-10-09T07:20:56.6573991Z @@ -114,7 +114,11 @@ impl IndexDb {
+2026-10-09T07:20:56.6574239Z              3,
+2026-10-09T07:20:56.6574426Z              rows,
+2026-10-09T07:20:56.6574636Z              |stmt, base, dependency| {
+2026-10-09T07:20:56.6575049Z -                bind_row!(stmt, base, [file_path, dependency.kind.as_str(), &dependency.key]);
+2026-10-09T07:20:56.6575458Z +                bind_row!(
+2026-10-09T07:20:56.6575676Z +                    stmt,
+2026-10-09T07:20:56.6575889Z +                    base,
+2026-10-09T07:20:56.6576181Z +                    [file_path, dependency.kind.as_str(), &dependency.key]
+2026-10-09T07:20:56.6576775Z +                );
+2026-10-09T07:20:56.6576986Z                  Ok(())
+2026-10-09T07:20:56.6577193Z              },
+2026-10-09T07:20:56.6577388Z          )
+2026-10-09T07:20:56.6577800Z diff --git a/crates/cc-db/src/index_db_snapshot_insert.rs b/crates/cc-db/src/index_db_snapshot_insert.rs
+2026-10-09T07:20:56.6578293Z index 35b7092..9829e09 100644
+2026-10-09T07:20:56.6578564Z --- a/crates/cc-db/src/index_db_snapshot_insert.rs
+2026-10-09T07:20:56.6578891Z +++ b/crates/cc-db/src/index_db_snapshot_insert.rs
+2026-10-09T07:20:56.6579181Z @@ -440,7 +440,9 @@ mod tests {
+2026-10-09T07:20:56.6579600Z              .prepare("SELECT rowid,file_path,kind,key FROM resolution_dependencies ORDER BY rowid")
+2026-10-09T07:20:56.6580032Z              .unwrap();
+2026-10-09T07:20:56.6580243Z          statement
+2026-10-09T07:20:56.6580574Z -            .query_map([], |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?)))
+2026-10-09T07:20:56.6580962Z +            .query_map([], |row| {
+2026-10-09T07:20:56.6581414Z +                Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?))
+2026-10-09T07:20:56.6581731Z +            })
+2026-10-09T07:20:56.6582010Z              .unwrap()
+2026-10-09T07:20:56.6582310Z              .collect::<rusqlite::Result<Vec<_>>>()
+2026-10-09T07:20:56.6582586Z              .unwrap()
+2026-10-09T07:20:56.6582990Z diff --git a/crates/cc-db/tests/p2b_resolution_store.rs b/crates/cc-db/tests/p2b_resolution_store.rs
+2026-10-09T07:20:56.6583458Z index 4d0e690..f698d34 100644
+2026-10-09T07:20:56.6583721Z --- a/crates/cc-db/tests/p2b_resolution_store.rs
+2026-10-09T07:20:56.6584036Z +++ b/crates/cc-db/tests/p2b_resolution_store.rs
+2026-10-09T07:20:56.6584357Z @@ -239,7 +239,6 @@ fn corrupt_payload_is_rejected() {
+2026-10-09T07:20:56.6584746Z      assert!(db.reads().resolution_manifests(&["a.py".into()]).is_err());
+2026-10-09T07:20:56.6585093Z  }
+2026-10-09T07:20:56.6585260Z  
+2026-10-09T07:20:56.6585429Z -
+2026-10-09T07:20:56.6585723Z  fn snapshot_dependency_unit(path: &str, count: usize) -> FileWriteUnit {
+2026-10-09T07:20:56.6586112Z      let mut file = unit(path);
+2026-10-09T07:20:56.6586408Z      file.outcome.resolution.dependencies.clear();
+2026-10-09T07:20:56.6587151Z @@ -310,13 +309,21 @@ fn snapshot_dependency_manifest_and_rows_match_original_full_writer() {
+2026-10-09T07:20:56.6587569Z          .unwrap();
+2026-10-09T07:20:56.6587765Z      new.admin()
+2026-10-09T07:20:56.6587977Z          .rebuild_with_temp_db(|conn| {
+2026-10-09T07:20:56.6588269Z -            cc_db::SnapshotWriteTxn::new(conn)
+2026-10-09T07:20:56.6588620Z -                .write_file_data(&files, &Default::default())
+2026-10-09T07:20:56.6589072Z +            cc_db::SnapshotWriteTxn::new(conn).write_file_data(&files, &Default::default())
+2026-10-09T07:20:56.6589463Z          })
+2026-10-09T07:20:56.6589642Z          .unwrap();
+2026-10-09T07:20:56.6590113Z -    assert_eq!(old.reads().generation().unwrap().index_epoch, old_before.index_epoch + 1);
+2026-10-09T07:20:56.6590835Z -    assert_eq!(new.reads().generation().unwrap().index_epoch, new_before.index_epoch + 1);
+2026-10-09T07:20:56.6591713Z -    assert_eq!(snapshot_dependency_tables(&old), snapshot_dependency_tables(&new));
+2026-10-09T07:20:56.6592247Z +    assert_eq!(
+2026-10-09T07:20:56.6592587Z +        old.reads().generation().unwrap().index_epoch,
+2026-10-09T07:20:56.6593056Z +        old_before.index_epoch + 1
+2026-10-09T07:20:56.6593431Z +    );
+2026-10-09T07:20:56.6593692Z +    assert_eq!(
+2026-10-09T07:20:56.6594082Z +        new.reads().generation().unwrap().index_epoch,
+2026-10-09T07:20:56.6594475Z +        new_before.index_epoch + 1
+2026-10-09T07:20:56.6594919Z +    );
+2026-10-09T07:20:56.6646117Z +    assert_eq!(
+2026-10-09T07:20:56.6646690Z +        snapshot_dependency_tables(&old),
+2026-10-09T07:20:56.6647095Z +        snapshot_dependency_tables(&new)
+2026-10-09T07:20:56.6647461Z +    );
+2026-10-09T07:20:56.6647786Z      let paths: Vec<_> = files.iter().map(|file| file.rel_path.clone()).collect();
+2026-10-09T07:20:56.6648283Z      let original = old.reads().resolution_manifests(&paths).unwrap();
+2026-10-09T07:20:56.6648748Z      let batched = new.reads().resolution_manifests(&paths).unwrap();
+2026-10-09T07:20:56.6649262Z @@ -329,10 +336,16 @@ fn snapshot_dependency_manifest_and_rows_match_original_full_writer() {
+2026-10-09T07:20:56.6649679Z      new.writes()
+2026-10-09T07:20:56.6649971Z          .replace_files_batch(&[snapshot_dependency_unit("n-73.py", 8)])
+2026-10-09T07:20:56.6650325Z          .unwrap();
+2026-10-09T07:20:56.6650668Z -    assert_eq!(new.reads().generation().unwrap().index_epoch, before.index_epoch + 1);
+2026-10-09T07:20:56.6651067Z      assert_eq!(
+2026-10-09T07:20:56.6651381Z -        new.reads().resolution_manifests(&["n-73.py".into()]).unwrap()["n-73.py"]
+2026-10-09T07:20:56.6651785Z -            .dependencies.len(),
+2026-10-09T07:20:56.6652078Z +        new.reads().generation().unwrap().index_epoch,
+2026-10-09T07:20:56.6652379Z +        before.index_epoch + 1
+2026-10-09T07:20:56.6652799Z +    );
+2026-10-09T07:20:56.6652973Z +    assert_eq!(
+2026-10-09T07:20:56.6653164Z +        new.reads()
+2026-10-09T07:20:56.6653408Z +            .resolution_manifests(&["n-73.py".into()])
+2026-10-09T07:20:56.6653697Z +            .unwrap()["n-73.py"]
+2026-10-09T07:20:56.6653934Z +            .dependencies
+2026-10-09T07:20:56.6654147Z +            .len(),
+2026-10-09T07:20:56.6654335Z          8
+2026-10-09T07:20:56.6654509Z      );
+2026-10-09T07:20:56.6654672Z  }
+2026-10-09T07:20:56.6655026Z @@ -344,7 +357,9 @@ fn snapshot_dependency_failure_keeps_live_rows_and_generation_like_original() {
+2026-10-09T07:20:56.6655475Z      for snapshot in [false, true] {
+2026-10-09T07:20:56.6655831Z          let path = directory.path().join(format!("failure-{snapshot}.db"));
+2026-10-09T07:20:56.6656298Z          let db = IndexDb::open_with_read_pool_size(&path, 1).unwrap().0;
+2026-10-09T07:20:56.6656892Z -        db.writes().replace_files_batch(&[unit("retained.py")]).unwrap();
+2026-10-09T07:20:56.6657237Z +        db.writes()
+2026-10-09T07:20:56.6657498Z +            .replace_files_batch(&[unit("retained.py")])
+2026-10-09T07:20:56.6657789Z +            .unwrap();
+2026-10-09T07:20:56.6658034Z          let before = db.reads().generation().unwrap();
+2026-10-09T07:20:56.6658374Z          let retained = snapshot_dependency_tables(&db);
+2026-10-09T07:20:56.6658690Z          let mut mode_errors = Vec::new();
+2026-10-09T07:20:56.6658960Z ORIGINAL_RUSTFMT_PATCH_END
+2026-10-09T07:20:56.6668520Z ##[error]Process completed with exit code 1.
+2026-10-09T07:20:56.6757216Z ##[group]Run actions/upload-artifact@v4
+2026-10-09T07:20:56.6757516Z with:
+2026-10-09T07:20:56.6757734Z   name: p8-candidate-format-37898399013
+2026-10-09T07:20:56.6758067Z   path: /home/runner/work/_temp/p8-candidate-format
+2026-10-09T07:20:56.6758385Z   if-no-files-found: error
+2026-10-09T07:20:56.6758621Z   compression-level: 6
+2026-10-09T07:20:56.6758835Z   overwrite: false
+2026-10-09T07:20:56.6759046Z   include-hidden-files: false
+2026-10-09T07:20:56.6759279Z env:
+2026-10-09T07:20:56.6759477Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:20:56.6759720Z   CARGO_INCREMENTAL: 0
+2026-10-09T07:20:56.6759934Z   CARGO_TERM_COLOR: always
+2026-10-09T07:20:56.6760149Z ##[endgroup]
+2026-10-09T07:20:56.8379299Z (node:2461) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-09T07:20:56.8380023Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-09T07:20:56.8437665Z With the provided path, there will be 5 files uploaded
+2026-10-09T07:20:56.8442805Z Artifact name is valid!
+2026-10-09T07:20:56.8443448Z Root directory input is valid!
+2026-10-09T07:20:57.0925873Z Beginning upload of artifact content to blob storage
+2026-10-09T07:20:57.1250387Z (node:2461) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-09T07:20:57.2380539Z Uploaded bytes 46012
+2026-10-09T07:20:57.2672213Z Finished uploading artifact content to blob storage!
+2026-10-09T07:20:57.2673193Z SHA256 digest of uploaded artifact zip is e11ea49e4e159747649f35235d2fac16d62ba49b348ff2afab8788ca1cce7c27
+2026-10-09T07:20:57.2675345Z Finalizing artifact upload
+2026-10-09T07:20:57.5083033Z Artifact p8-candidate-format-37898399013.zip successfully finalized. Artifact ID 11600982555
+2026-10-09T07:20:57.5083965Z Artifact p8-candidate-format-37898399013 has been successfully uploaded! Final size is 46012 bytes. Artifact ID is 11600982555
+2026-10-09T07:20:57.5089694Z Artifact download URL: https://github.com/jyqj/codecortex/actions/runs/37898399013/artifacts/11600982555
+2026-10-09T07:20:57.5269986Z Post job cleanup.
+2026-10-09T07:20:57.6078321Z [command]/usr/bin/git version
+2026-10-09T07:20:57.6113398Z git version 2.55.0
+2026-10-09T07:20:57.6150348Z Temporarily overriding HOME='/home/runner/work/_temp/3119441b-fedf-47ec-84cc-150da1d5620a' before making global git config changes
+2026-10-09T07:20:57.6151763Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-09T07:20:57.6156095Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/codecortex/codecortex
+2026-10-09T07:20:57.6191273Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T07:20:57.6223171Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T07:20:57.6468954Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T07:20:57.6493047Z http.https://github.com/.extraheader
+2026-10-09T07:20:57.6503238Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-09T07:20:57.6533964Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T07:20:57.6770635Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T07:20:57.6800131Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T07:20:57.7168726Z Cleaning up orphan processes
+2026-10-09T07:20:57.7439838Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

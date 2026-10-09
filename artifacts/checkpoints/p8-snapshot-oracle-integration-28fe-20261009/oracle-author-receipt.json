@@ -1,0 +1,198 @@
+{
+  "schema_version": 1,
+  "status": "prepared_candidate_frozen_pending_independent_review_and_actual_controls",
+  "created_utc": "2026-10-09 07:07:19 UTC",
+  "author": "runtime_review",
+  "repository": "jyqj/codecortex",
+  "base": {
+    "commit": "7b1fc54485bfda1b00f5e316617052900b99fb63",
+    "tree": "2c492ccc4028468d4f11d51af678d75495492176",
+    "pull_request": 176,
+    "commit_parent": "c6c8030d359107c82f0f738d8ef270778b5f887d",
+    "api_readback": true,
+    "base_two_sources_equal_to_reviewed_P59": true
+  },
+  "scope": {
+    "only_two_existing_files": true,
+    "no_new_source_file": true,
+    "refs_changed": false,
+    "branch_changed": false,
+    "product_commit_created": false,
+    "base_PR176_changed": false,
+    "other_candidate_files_changed": false,
+    "tests_executed": false,
+    "format_executed": false,
+    "parse_or_compile_executed": false,
+    "native_executed": false,
+    "performance_measured": false
+  },
+  "files": [
+    {
+      "path": "crates/cc-eval/src/benchmark/oracle.rs",
+      "mode": "100644",
+      "base_blob": "d6324b3003b5a3c3e8a1680536260ea99a950152",
+      "base_bytes": 8780,
+      "base_sha256": "adccf4f437e637aaee6bd368109d0b41af1855f3e50c84c48f7cc8b5cf3dc711",
+      "candidate_blob": "4c7fdb879e039af164b3b10ea1491d538c69ac68",
+      "candidate_bytes": 14710,
+      "candidate_sha256": "7b6438d212bd22471fedfb9ffd3a37a0c1d491f8e7846af3ba5c5850c622bc15",
+      "official_readback_exact": true
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+      "mode": "100644",
+      "base_blob": "3c05342f976f534861347c098c3229ce988dfb61",
+      "base_bytes": 29842,
+      "base_sha256": "5a51a72e8cb49c033754f860a3f5dc6366748ffe45a440da55cf7776cde7da0c",
+      "candidate_blob": "6c60e6244fe1f316b180f8ea656d2b9f1ad17aa3",
+      "candidate_bytes": 29924,
+      "candidate_sha256": "9d9ef3624af2f1a27107baf3c625b7ee29643b8dbedcbf3b39b8a662c98e82a4",
+      "official_readback_exact": true
+    }
+  ],
+  "problem": "spool called the original project_row for every row of both inputs. project_row allocated a new Map and cloned each column name per row before serialization. This candidate retains only that per-layout container and column keys between rows; it does not reduce compared data.",
+  "design": {
+    "single_owner": "RowProjection::project is the sole SQL ValueRef -> serde_json Value match. Legacy project_row constructs a fresh projector, calls that same owner and moves the Object out. Streaming uses one projector for one spool.",
+    "column_layout": "cols is an immutable borrowed slice produced by the unchanged columns(source,table) and used by the unchanged SELECT. Each spool/table/side constructs its own projector. No schema cache or cross-table/state reuse is introduced.",
+    "lazy_keys": "new creates an empty Map. Keys first allocate inside project, which in production streaming is called only after unchanged row-count and check_row_size admission. Empty tables do not preallocate all keys or row bodies.",
+    "reuse": "get_mut replaces each existing slot; only a not-yet-seen key is cloned/inserted. Exact column iteration/insertion order is preserved for both ordinary sorted Map and preserve_order feature behavior.",
+    "value_semantics": "The original Null, Integer(json!), Real(json!), Text(strict UTF8 then json!), Blob({blob_digest:manifest::digest}) branches are retained in the single owner. No field projection, number normalization, hash shortcut or custom JSON encoder.",
+    "serialization": "serde_json::to_string(&Map<String,Value>) uses the same Map serialization used by Value::Object(Map). Independent literal expected tests pin result values/bytes; original strings sorted/compared exactly as before.",
+    "value_lifetime": "serialize_row obtains the same owned serialized String, resets every Map value to Null, then returns that String. Column keys/map nodes remain, old text/blob-derived Value bodies do not. CanonicalInsert continues to own the String and never borrows projector storage.",
+    "failure": "A get_ref/UTF8 conversion error resets all already-held/partially-updated values then returns the original error. Serialization error also resets values before propagation. Streaming aborts exactly as before; no catch/retry/new result is added. A deliberately reused projector can process a later valid row without stale contents, as the negative control specifies.",
+    "resource_limits": "Existing check_row_size before conversion, serialized-row limit, checked cumulative canonical bytes, row count, ordinal, scratch page limits, current capacity-profile gates, CanonicalInsert64/8/1 and64KiB pending limit all remain unchanged. No changed512MiB output/plan or external supervisor budget.",
+    "legacy_api": "project_row signature and returned owned Value remain unchanged; canonical and reference_spool callers remain source-compatible."
+  },
+  "exact_replacements": {
+    "oracle_one_production_replacement": {
+      "before": "fn project_row(row: &rusqlite::Row<'_>, cols: &[String]) -> Result<Value> {\n    let mut values = serde_json::Map::new();\n    for (i, col) in cols.iter().enumerate() {\n        let v = match row.get_ref(i).map_err(db_error)? {\n            ValueRef::Null => Value::Null,\n            ValueRef::Integer(v) => json!(v),\n            ValueRef::Real(v) => json!(v),\n            ValueRef::Text(v) => {\n                json!(std::str::from_utf8(v).map_err(|_| invalid(\"oracle UTF8\"))?)\n            }\n            ValueRef::Blob(v) => json!({\"blob_digest\":manifest::digest(v)}),\n        };\n        values.insert(col.clone(), v);\n    }\n    Ok(Value::Object(values))\n}",
+      "after": "/// One immutable SELECT layout, reused only within one table and input side.\n/// Keys are allocated lazily, after the streaming caller checks the first row's\n/// size. Values are released after serialization; only keys/map nodes survive.\nstruct RowProjection<'a> {\n    cols: &'a [String],\n    values: serde_json::Map<String, Value>,\n}\n\nimpl<'a> RowProjection<'a> {\n    fn new(cols: &'a [String]) -> Self {\n        Self {\n            cols,\n            values: serde_json::Map::new(),\n        }\n    }\n\n    fn project(&mut self, row: &rusqlite::Row<'_>) -> Result<()> {\n        let result: Result<()> = (|| {\n            for (i, col) in self.cols.iter().enumerate() {\n                let value = match row.get_ref(i).map_err(db_error)? {\n                    ValueRef::Null => Value::Null,\n                    ValueRef::Integer(v) => json!(v),\n                    ValueRef::Real(v) => json!(v),\n                    ValueRef::Text(v) => {\n                        json!(std::str::from_utf8(v).map_err(|_| invalid(\"oracle UTF8\"))?)\n                    }\n                    ValueRef::Blob(v) => json!({\"blob_digest\":manifest::digest(v)}),\n                };\n                if let Some(slot) = self.values.get_mut(col) {\n                    *slot = value;\n                } else {\n                    self.values.insert(col.clone(), value);\n                }\n            }\n            Ok(())\n        })();\n        if result.is_err() {\n            self.clear_values();\n        }\n        result\n    }\n\n    fn clear_values(&mut self) {\n        for value in self.values.values_mut() {\n            *value = Value::Null;\n        }\n    }\n\n    fn serialize_row(&mut self, row: &rusqlite::Row<'_>) -> Result<String> {\n        self.project(row)?;\n        let serialized: Result<String> = serde_json::to_string(&self.values).map_err(Into::into);\n        self.clear_values();\n        serialized\n    }\n}\n\nfn project_row(row: &rusqlite::Row<'_>, cols: &[String]) -> Result<Value> {\n    let mut projection = RowProjection::new(cols);\n    projection.project(row)?;\n    Ok(Value::Object(projection.values))\n}"
+    },
+    "oracle_append_only_controls": {
+      "module": "projection_tests",
+      "tests": [
+        "reused_projection_keeps_exact_sql_value_bytes_and_only_its_layout",
+        "projection_error_clears_partial_and_prior_values_before_recovery"
+      ],
+      "source_sha256": "265df1f76582eb80343f306a0f8d544aa24983b0c6c1478e87bef8fec2ad0e3e",
+      "source_bytes": 4498
+    },
+    "streaming": [
+      {
+        "before": "use super::{columns, db_error, project_row, select_columns, snapshot, TABLES};",
+        "after": "use super::{columns, db_error, select_columns, snapshot, RowProjection, TABLES};",
+        "before_occurrences": 1,
+        "first_only": true
+      },
+      {
+        "before": "    let cols = columns(source, table)?;\n    let mut statement = source",
+        "after": "    let cols = columns(source, table)?;\n    let mut projection = RowProjection::new(&cols);\n    let mut statement = source",
+        "before_occurrences": 1,
+        "first_only": true
+      },
+      {
+        "before": "        let serialized = serde_json::to_string(&project_row(row, &cols)?)?;",
+        "after": "        let serialized = projection.serialize_row(row)?;",
+        "before_occurrences": 2,
+        "first_only": true
+      },
+      {
+        "before": "mod tests {\n    use super::*;",
+        "after": "mod tests {\n    use super::*;\n    use crate::benchmark::oracle::project_row;",
+        "before_occurrences": 1,
+        "first_only": true
+      }
+    ]
+  },
+  "static_conservation": {
+    "canonical_insert_bytes_equal": true,
+    "limits_check_rows_equal": true,
+    "entire_production_after_spool_equal": true,
+    "original_reference_spool_bytes_equal": true,
+    "original_test_bodies_equal": true,
+    "old_oracle_after_project_row_equal": true,
+    "no_new_files": true,
+    "executed": false
+  },
+  "control_design": [
+    {
+      "name": "reused_projection_keeps_exact_sql_value_bytes_and_only_its_layout",
+      "independent_expectation": "Literal JSON parsed into Value and serialized only to respect the same compiled Map-order feature. No SQL-value conversion helper derives expected values. Known empty-BLOB BLAKE3 digest af1349... is a literal.",
+      "covered": [
+        "NULL",
+        "i64::MIN and i64::MAX preserving exact integers",
+        "REAL -0.0 and +0.0 without normalization",
+        "UTF8 text with accented/non-Latin characters, embedded NUL, newline and quotation",
+        "BLOB digest object",
+        "escaped/non-ASCII column key",
+        "continuous changes of SQL type and nullness",
+        "identical repeated row bytes (no deduplication)",
+        "same key String buffer addresses reused",
+        "owned row values cleared after successful serialization",
+        "separate one-column layout has no old keys"
+      ],
+      "not_claimed": "This control is prepared, not executed. Existing test suite covers additional tier/byte limits and row multiplicity; it has not been rerun."
+    },
+    {
+      "name": "projection_error_clears_partial_and_prior_values_before_recovery",
+      "covered": [
+        "first valid row deliberately leaves old values populated",
+        "next row writes its first field then fails on invalid UTF8 in second field",
+        "original error spelling contains oracle UTF8",
+        "error equality between retained public wrapper and reused owner",
+        "all partial/old values reset to Null after error",
+        "subsequent valid NULL/integer row yields exact literal JSON with no old value"
+      ],
+      "production_boundary": "Spool still returns the first error; this test probes helper state integrity and does not add runtime recovery/retry."
+    }
+  ],
+  "independence_limit": "The original reference_spool body is byte-for-byte preserved, but its project_row callee now delegates to the shared new owner. Actual==reference alone would therefore be same-owner evidence. The added literal expected values and UTF8 failure/dirty-state controls are the separate semantic anchors; no second production converter was introduced.",
+  "existing_controls_preserved": "All original streaming test function bodies, limits, check_row_size, CanonicalInsert, sorted traversal, equal_rows/Value fallback, duplicate ordinals, digests/examples and canonical implementation after project_row are exact original bytes.",
+  "suggested_future_validation_not_executed": [
+    "cargo fmt --all -- --check",
+    "cargo test -p cc-eval --lib benchmark::oracle::projection_tests",
+    "cargo test -p cc-eval --lib benchmark::oracle::streaming::tests",
+    "cargo test -p cc-eval --test benchmark_oracle_streaming",
+    "cargo test -p cc-eval --test p8_scale"
+  ],
+  "performance_evidence_boundary": {
+    "prior_source": "a23bb72d3c954f385b99fe81ce9189885c208557",
+    "artifact_id": 11593548201,
+    "prior_report_blob": "caa77cb1905d59777fcb044f3ac5387c9904085c",
+    "prior_validated_blob": "d21688e5acea04a9bc92c06c4737c02a779df2c5",
+    "prior_validated_sha256": "12f3ca24c2e38182fac1c94c5b61e15c4fb12e445d88931c9d5685e8de93c3d6",
+    "prior_parity_us": 1613085973,
+    "prior_worker_wall_ms": 4214047,
+    "prior_cold_table_rows": 3327413,
+    "per_table_or_projection_timing_available": false,
+    "candidate_timing_available": false,
+    "claim": "The prior aggregate makes oracle allocation an appropriate engineering target, but does not measure how much parity time is spent on Map allocation. No speedup or100k/pass claim."
+  },
+  "integration_boundary": "Unreferenced blobs only. Non-author review and actual original controls must precede any independent source-admission chain. The candidate is not added to frozen176G, and no old A23/G2/D0 measurement is relabeled.",
+  "task_ledger": {
+    "total": 192,
+    "completed": 163,
+    "remaining": 29,
+    "newly_completed": 0
+  },
+  "version": 2,
+  "supersedes_prepared_receipt": {
+    "git_blob": "e5a8b8d4f95eddd7ad268e273e99d613f43f3790",
+    "sha256": "5a00503e026632f63a05617feab35b438fdb1fe4676d4e17dddc99135773bb67",
+    "retained": true
+  },
+  "review_feedback_change": {
+    "from_oracle_blob": "750b6bcd654072dee8e5dbcbf3db5f59c2753654",
+    "before": "projection.values.keys().map(String::as_ptr).collect()",
+    "after": "projection.values.keys().map(|key| key.as_ptr()).collect()",
+    "occurrences": 1,
+    "reason": "Use ordinary method-call deref instead of relying on String::as_ptr associated-item resolution. This is a reviewer-identified compile risk avoided before execution, not a claimed reproduced compiler error.",
+    "production_byte_identical_to_v1": true,
+    "streaming_unchanged": true,
+    "old_blob_retained": true
+  },
+  "metadata_correction": {
+    "prior_unreferenced_receipt_blob": "304499699682adc756671387a21b9ed3e5db0e86",
+    "reason": "Replace an estimated minute with the actual clock observation; source blobs unchanged."
+  }
+}

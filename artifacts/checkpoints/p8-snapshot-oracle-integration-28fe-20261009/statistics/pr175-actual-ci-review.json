@@ -1,0 +1,370 @@
+{
+  "schema": "p8-pr175-formatting-followup-independent-review-v1",
+  "repository": "jyqj/codecortex",
+  "pull_request": 175,
+  "observed_at_utc": "2026-10-09 07:20:02 UTC",
+  "verdict": "accepted_scoped_formatting_and_source_binding_followup",
+  "scope": "Independent read-only review of old head to new head and actual ordinary CI; not original P8-017 functional acceptance or approval to merge.",
+  "reviewer": "acceptance_review (non-author)",
+  "fixed_old_head": "9a52cd24337294e70281badc861bda7bdf0a9f0a",
+  "fixed_head": "840fa2e0a26ab60c138747a4309aba5df506edc1",
+  "base_at_observation": "60e5ce3ccc86f5cccb40f6f9c32bbc7b77bf1e9d",
+  "actual_chain": [
+    {
+      "sha": "98173d7bf3a4709d0309907ec85ff5674c23c921",
+      "tree": "98b1bd6ddc631f00e77936689685f78c314f958e",
+      "parents": [
+        "9a52cd24337294e70281badc861bda7bdf0a9f0a"
+      ]
+    },
+    {
+      "sha": "13610caf2904f7656fa45ccbf20f61a313b708b8",
+      "tree": "9118867b4bde521a25607e6d927d777736192d12",
+      "parents": [
+        "98173d7bf3a4709d0309907ec85ff5674c23c921"
+      ]
+    },
+    {
+      "sha": "840fa2e0a26ab60c138747a4309aba5df506edc1",
+      "tree": "54d66ff6a15661c64d2a05df48f14e9aa09fc13c",
+      "parents": [
+        "13610caf2904f7656fa45ccbf20f61a313b708b8"
+      ]
+    }
+  ],
+  "actual_complete_old_to_new_files": [
+    {
+      "path": "artifacts/checkpoints/p8-runtime-statistics-owner-20261009/formatting-followup/first-check-failure.log",
+      "status": "added",
+      "git_blob": "8c4f6da82dbe7703c3f53fd4a9f9ecf7836c8ad2",
+      "additions": 566,
+      "deletions": 0
+    },
+    {
+      "path": "artifacts/checkpoints/p8-runtime-statistics-owner-20261009/formatting-followup/independent-source-review.json",
+      "status": "added",
+      "git_blob": "42c6240930f139e3bd736de68012f004cf780474",
+      "additions": 1482,
+      "deletions": 0
+    },
+    {
+      "path": "crates/cc-eval/src/bin/p8-runtime-statistics.rs",
+      "status": "modified",
+      "git_blob": "6273b16ebc403602b5aaf3eb0a9699b5cdfdca70",
+      "additions": 40,
+      "deletions": 26
+    },
+    {
+      "path": "scripts/reviewed-source-registry-v15.json",
+      "status": "modified",
+      "git_blob": "668ab05c479457b08a482c50241ccd21dff644e3",
+      "additions": 5,
+      "deletions": 5
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v15.py",
+      "status": "modified",
+      "git_blob": "3cca26982bbc8232d55aea2ad8934be33f93aedc",
+      "additions": 4,
+      "deletions": 4
+    }
+  ],
+  "source": {
+    "path": "crates/cc-eval/src/bin/p8-runtime-statistics.rs",
+    "old_git_blob": "3d76b95d6364d03298a17b6f25e1f295fd78818d",
+    "old_sha256": "93b7173e009adbdc039568a3381a94a7b7d2c2deb700d1e0daa7095406804437",
+    "new_git_blob": "6273b16ebc403602b5aaf3eb0a9699b5cdfdca70",
+    "new_bytes": 20760,
+    "new_sha256": "d6595a2c01fd31fc9635f3110b1887d49df98b1e9988e089c98298a52c3a20a9",
+    "exact_expected_blob": true,
+    "independent_format_proof": {
+      "hunks": 2,
+      "whole_file_equal": true,
+      "production_prefix_equal": true,
+      "headers": [
+        "Diff in /home/runner/work/codecortex/codecortex/crates/cc-eval/src/bin/p8-runtime-statistics.rs:451:",
+        "Diff in /home/runner/work/codecortex/codecortex/crates/cc-eval/src/bin/p8-runtime-statistics.rs:484:"
+      ],
+      "method": "Parsed both original failed rustfmt log hunks after stripping GitHub timestamps and ANSI; each before-context matched uniquely; applying both to the fixed old source reconstructs the complete fixed new source byte-for-byte.",
+      "changes": "Only formatting inside cfg(test): block layout of JSON closure and assertion layout. Production prefix before cfg(test), expected numbers and assertions retained.",
+      "caveat": "No local rustfmt/compiler/AST/test execution by this reviewer."
+    }
+  },
+  "source_binding": {
+    "product": "98173d7bf3a4709d0309907ec85ff5674c23c921",
+    "review": "13610caf2904f7656fa45ccbf20f61a313b708b8",
+    "review_path": "artifacts/checkpoints/p8-runtime-statistics-owner-20261009/formatting-followup/independent-source-review.json",
+    "review_git_blob": "42c6240930f139e3bd736de68012f004cf780474",
+    "review_sha256": "1a1838ee0cd7a1aa29f9e9f90573bc361147e7d670ea247f8fd691428d436c80",
+    "registry_git_blob": "668ab05c479457b08a482c50241ccd21dff644e3",
+    "registry_sha256": "8ce8af4c7e3e3e475ae5961850882f04b782607caa7c0f80d40e9afc8948cf81",
+    "exact_registry_leaf_changes": [
+      {
+        "path": "/complete_inputs/crates/cc-eval/src/bin/p8-runtime-statistics.rs",
+        "before": "93b7173e009adbdc039568a3381a94a7b7d2c2deb700d1e0daa7095406804437",
+        "after": "d6595a2c01fd31fc9635f3110b1887d49df98b1e9988e089c98298a52c3a20a9"
+      },
+      {
+        "path": "/delta/crates/cc-eval/src/bin/p8-runtime-statistics.rs/sha256",
+        "before": "93b7173e009adbdc039568a3381a94a7b7d2c2deb700d1e0daa7095406804437",
+        "after": "d6595a2c01fd31fc9635f3110b1887d49df98b1e9988e089c98298a52c3a20a9"
+      },
+      {
+        "path": "/product_source",
+        "before": "bbe7a9e77f332448b610c54460b355c5936e8c2a",
+        "after": "98173d7bf3a4709d0309907ec85ff5674c23c921"
+      },
+      {
+        "path": "/review_sha256",
+        "before": "fe7677709b105120e9a130c7943e1be30d28a3234a5b38d52758acf740637f99",
+        "after": "1a1838ee0cd7a1aa29f9e9f90573bc361147e7d670ea247f8fd691428d436c80"
+      },
+      {
+        "path": "/review_source",
+        "before": "4e4671482333c1762efa9c5ab9aeceadc0f3e295",
+        "after": "13610caf2904f7656fa45ccbf20f61a313b708b8"
+      }
+    ],
+    "complete_input_count": 1089,
+    "unchanged_other_complete_inputs": 1088,
+    "validation_input_count": 138,
+    "all_validation_inputs_byte_hashes_unchanged": true,
+    "review_complete_inputs_equal_registry": true,
+    "review_validation_inputs_equal_registry": true,
+    "guard_git_blob": "3cca26982bbc8232d55aea2ad8934be33f93aedc",
+    "guard_changed_constant_assignments_only": [
+      "PRODUCT",
+      "REVIEW",
+      "REVIEW_PATH",
+      "REGISTRY_SHA256"
+    ],
+    "guard_bytes_after_removing_these_four_assignment_lines_equal": true,
+    "source_version_unchanged": "p8-completion-source-20261009-v15"
+  },
+  "original_failed_ci": {
+    "run_id": 37894025756,
+    "job_id": 113701134990,
+    "head": "9a52cd24337294e70281badc861bda7bdf0a9f0a",
+    "actual_checkout": "71d5f8fe85da29df0f0be490aac50bed1c2bb727",
+    "actual_tree": "fa6cd9511a9bebd7699eddd9c98d47438416005d",
+    "failed_command": "cargo fmt --all -- --check",
+    "exit_code": 1,
+    "failed_at": "2026-10-09T06:33:09.9496887Z",
+    "original_log": {
+      "bytes": 42309,
+      "sha256": "175e41777d2dc3180943bbdea0eb36be259fc44ba0eeabe88a5a313854ceaec1",
+      "git_blob": "8c4f6da82dbe7703c3f53fd4a9f9ecf7836c8ad2"
+    },
+    "semantics": "The initial failure remains a failure; new-run success neither overwrites it nor claims its skipped steps passed."
+  },
+  "current_ci": {
+    "run_id": 37895459464,
+    "event": "pull_request",
+    "attempt": 1,
+    "head": "840fa2e0a26ab60c138747a4309aba5df506edc1",
+    "status": "completed",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "id": 113705685045,
+        "name": "msrv",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T06:51:23Z",
+        "completed_at": "2026-10-09T06:52:55Z"
+      },
+      {
+        "id": 113705685283,
+        "name": "security",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T06:57:51Z",
+        "completed_at": "2026-10-09T07:01:25Z"
+      },
+      {
+        "id": 113705685289,
+        "name": "check",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T06:53:57Z",
+        "completed_at": "2026-10-09T07:18:31Z"
+      }
+    ],
+    "actual_checkout": "79989b25dc90e067d2f85b605780cfe93aa6c60c",
+    "actual_checkout_parents": [
+      "60e5ce3ccc86f5cccb40f6f9c32bbc7b77bf1e9d",
+      "840fa2e0a26ab60c138747a4309aba5df506edc1"
+    ],
+    "actual_checkout_tree": "54d66ff6a15661c64d2a05df48f14e9aa09fc13c",
+    "entire_tree_equals_fixed_head": true,
+    "checkout_evidence": {
+      "check_log_line": 181,
+      "msrv_log_also_names_same_checkout": true,
+      "official_commit_endpoint": "https://api.github.com/repos/jyqj/codecortex/git/commits/79989b25dc90e067d2f85b605780cfe93aa6c60c"
+    },
+    "check_log": {
+      "bytes": 1067053,
+      "sha256": "8af56f0137b3fea332dad94a6938c2c79e55adb2ea09c9e1d18234349618efed",
+      "calculated_git_blob": "2dec65c3ee571802fc3245113481e26b1f96de8e",
+      "uploaded_as_blob": false,
+      "official_job_url": "https://github.com/jyqj/codecortex/actions/runs/37895459464/job/113705685289"
+    },
+    "msrv_log": {
+      "bytes": 39041,
+      "sha256": "7e80d66f3f9ec97b638c122a7cd45e2ab60652264be5fa5a935097a14d41d4c3",
+      "git_blob": "e863ff77e95ae13acc12c60fdf2a44476f53193a",
+      "git_blob_note": "calculated from complete decoded original log; not uploaded"
+    },
+    "security_log": {
+      "bytes": 64634,
+      "sha256": "62bfbc53c001b877ac50df660e20938df4720c5c1f35a7d63c3ac1e0d42c2d76",
+      "git_blob": "9c8e98b2096914871458d9bd9adfc7714d05a8ca",
+      "git_blob_note": "calculated from complete decoded original log; not uploaded"
+    },
+    "directly_read_results": {
+      "format_check": "success (official step and subsequent executed commands)",
+      "runtime_statistics_original_unit_tests": {
+        "count": 5,
+        "passed": 5,
+        "failed": 0,
+        "ignored": 0,
+        "log_lines": [
+          1270,
+          1279
+        ],
+        "new_test_names": [
+          "legacy_ns_empty_operation_stays_null_without_admitting_an_empty_plan",
+          "legacy_ns_keeps_every_terminal_outcome_and_original_precision"
+        ],
+        "both_named_tests_actual_ok": true
+      },
+      "resource_harness": {
+        "tests": 46,
+        "result": "OK",
+        "elapsed_seconds": 3.049
+      },
+      "p8_python": {
+        "tests": 410,
+        "result": "OK",
+        "elapsed_seconds": 42.38,
+        "log_lines": [
+          5690,
+          5692
+        ]
+      },
+      "source_integrity": {
+        "tests": 181,
+        "result": "OK",
+        "elapsed_seconds": 455.794,
+        "log_lines": [
+          5902,
+          5904
+        ]
+      },
+      "v15": {
+        "schema_version": 10,
+        "source_version": "p8-completion-source-20261009-v15",
+        "previous_source_version": "p8-oracle-compat-source-20261008-v14",
+        "base_source": "7354db236c9d9850a75f31672697ae9eab44565e",
+        "product_source": "98173d7bf3a4709d0309907ec85ff5674c23c921",
+        "review_source": "13610caf2904f7656fa45ccbf20f61a313b708b8",
+        "scope": "independently_reviewed_source_and_validation_inputs",
+        "runtime_and_quality_claims": "require_separate_execution_evidence",
+        "status": "passed",
+        "complete_inputs": 1089,
+        "executed_previous_proof": "p8-oracle-compat-source-20261008-v14"
+      },
+      "code_index_plan": {
+        "status": "passed",
+        "task_count": 192,
+        "states": {
+          "done": 163,
+          "blocked": 1,
+          "in_progress": 16,
+          "todo": 12
+        },
+        "task_sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207",
+        "views": 4
+      },
+      "p8_facts": {
+        "status": "passed",
+        "errors": [],
+        "runtime_certified": false,
+        "scope": "declared_documentation_facts_only",
+        "log_line": 5695
+      },
+      "historical_integrations": {
+        "status": "passed",
+        "scope": "historical_integrity_and_current_task_definitions_only",
+        "evidence_content_acceptance": "not_granted_by_this_verifier",
+        "quality_and_100k": "not_inherited",
+        "log_line": 5915
+      },
+      "msrv": "Both original workspace/all-targets --locked and cc-eval eval-http --locked commands finished successfully.",
+      "security": "Actual audit returned vulnerabilities.found=false/count=0 and No vulnerabilities were found."
+    }
+  },
+  "other_workflows_at_same_observation": [
+    {
+      "run_id": 37895459427,
+      "name": "P7 engineering regressions",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "840fa2e0a26ab60c138747a4309aba5df506edc1",
+      "attempt": 1
+    },
+    {
+      "run_id": 37895459498,
+      "name": "P8 original failure gates",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "840fa2e0a26ab60c138747a4309aba5df506edc1",
+      "attempt": 1
+    },
+    {
+      "run_id": 37895459475,
+      "name": "P8 platform cold builds",
+      "status": "queued",
+      "conclusion": null,
+      "head": "840fa2e0a26ab60c138747a4309aba5df506edc1",
+      "attempt": 1
+    },
+    {
+      "run_id": 37895459543,
+      "name": "P8 runtime observations",
+      "status": "in_progress",
+      "conclusion": null,
+      "head": "840fa2e0a26ab60c138747a4309aba5df506edc1",
+      "attempt": 1
+    },
+    {
+      "run_id": 37895459412,
+      "name": "P7 closeout evidence",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "840fa2e0a26ab60c138747a4309aba5df506edc1",
+      "attempt": 1
+    },
+    {
+      "run_id": 37895459466,
+      "name": "P8 lifecycle and resource observations",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "840fa2e0a26ab60c138747a4309aba5df506edc1",
+      "attempt": 1
+    }
+  ],
+  "remaining_and_limits": {
+    "concrete_new_head_failure_identified": false,
+    "minimal_source_fix_required": null,
+    "runtime_and_platform_final_acceptance": false,
+    "reason": "At observed time runtime was in_progress and platform queued. Their original artifacts were not audited here.",
+    "task_total": 192,
+    "done": 163,
+    "remaining": 29,
+    "newly_closed_by_this_review": 0,
+    "task_scope": "PR175 pertains to P8-017; it is not one of the current ten targeted original TODOs and introduces no gate for their separate candidate.",
+    "merge_or_release_approval": false,
+    "actions_performed": "Read official Git/API/log bytes; in-memory diff/hash/reconstruction; create only an unreferenced report blob. No refs, PR mutation, comments, merge, rerun, native or local tests."
+  }
+}

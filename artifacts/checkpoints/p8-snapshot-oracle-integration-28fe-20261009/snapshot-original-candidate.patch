@@ -1,0 +1,476 @@
+diff --git a/crates/cc-db/src/index_db_multi_insert.rs b/crates/cc-db/src/index_db_multi_insert.rs
+--- a/crates/cc-db/src/index_db_multi_insert.rs
++++ b/crates/cc-db/src/index_db_multi_insert.rs
+@@ -102,6 +102,24 @@
+ }
+ 
+ impl IndexDb {
++    /// One file's already normalized dependency order; snapshot caller only.
++    pub(crate) fn insert_resolution_dependencies_multi(
++        conn: &Connection,
++        file_path: &str,
++        rows: &[&cc_model::resolution::ResolutionDependency],
++    ) -> CcResult<()> {
++        multi_insert(
++            conn,
++            "INSERT INTO resolution_dependencies(file_path,kind,key) VALUES",
++            3,
++            rows,
++            |stmt, base, dependency| {
++                bind_row!(stmt, base, [file_path, dependency.kind.as_str(), &dependency.key]);
++                Ok(())
++            },
++        )
++    }
++
+     /// Table-major batched insert of every [`FileWriteUnit`]'s rows, with the
+     /// `files_fts` / `literal_fts` mirrors deferred (the caller must run
+     /// [`Self::insert_files_literal_fts_batch`] over the same paths in the
+diff --git a/crates/cc-db/src/index_db_snapshot_insert.rs b/crates/cc-db/src/index_db_snapshot_insert.rs
+--- a/crates/cc-db/src/index_db_snapshot_insert.rs
++++ b/crates/cc-db/src/index_db_snapshot_insert.rs
+@@ -23,8 +23,8 @@
+     }
+ }
+ 
++// Bound the actual bound-value payload, not a JSON estimate. The model rows
++// bind only primitive/optional values; borrowed text stays borrowed.
+-// Bound the actual bound-value payload, not a JSON estimate. These six model
+-// rows bind only primitive/optional values; borrowed text stays borrowed.
+ // SQLite's own statement/index allocations are not an RSS bound.
+ fn payload_bytes(values: &[&dyn ToSql]) -> CcResult<usize> {
+     values.iter().try_fold(0usize, |total, value| {
+@@ -41,15 +41,16 @@
+     })
+ }
+ 
++fn bounded_rows<'a, T: 'a>(
++    rows: impl IntoIterator<Item = &'a T>,
+-fn bounded_rows<T>(
+-    rows: &[T],
+     size: impl Fn(&T) -> CcResult<usize>,
+     write: impl Fn(&[&T]) -> CcResult<()>,
+ ) -> CcResult<()> {
++    let rows = rows.into_iter();
++    if rows.size_hint().1 == Some(0) {
+-    if rows.is_empty() {
+         return Ok(());
+     }
++    let mut pending = Vec::with_capacity(MAX_ROWS.min(rows.size_hint().0));
+-    let mut pending = Vec::with_capacity(MAX_ROWS.min(rows.len()));
+     let mut bytes = 0usize;
+     for row in rows {
+         let row_bytes = size(row)?;
+@@ -74,6 +75,26 @@
+     Ok(())
+ }
+ 
++/// Borrow the normalized BTreeSet directly; do not collect the whole file or
++/// carry rows across file boundaries. Large legal rows keep the single-row path.
++pub(crate) fn resolution_dependencies(
++    conn: &Connection,
++    file_path: &str,
++    rows: &std::collections::BTreeSet<cc_model::resolution::ResolutionDependency>,
++) -> CcResult<()> {
++    bounded_rows(
++        rows,
++        |dependency| {
++            payload_bytes(rusqlite::params![
++                file_path,
++                dependency.kind.as_str(),
++                &dependency.key,
++            ])
++        },
++        |batch| IndexDb::insert_resolution_dependencies_multi(conn, file_path, batch),
++    )
++}
++
+ pub(crate) fn symbols(conn: &Connection, rows: &[cc_model::symbol::SymbolRecord]) -> CcResult<()> {
+     bounded_rows(
+         rows,
+@@ -401,4 +422,124 @@
+         };
+         assert_eq!(read(&old), read(&new));
+     }
++
++    fn dependency_test_db() -> Connection {
++        let conn = Connection::open_in_memory().unwrap();
++        conn.set_prepared_statement_cache_capacity(64);
++        conn.execute_batch(
++            "CREATE TABLE resolution_dependencies(
++                file_path TEXT NOT NULL,kind TEXT NOT NULL,key TEXT NOT NULL,
++                PRIMARY KEY(file_path,kind,key));",
++        )
++        .unwrap();
++        conn
++    }
++
++    fn dependency_rows(conn: &Connection) -> Vec<(i64, String, String, String)> {
++        let mut statement = conn
++            .prepare("SELECT rowid,file_path,kind,key FROM resolution_dependencies ORDER BY rowid")
++            .unwrap();
++        statement
++            .query_map([], |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?)))
++            .unwrap()
++            .collect::<rusqlite::Result<Vec<_>>>()
++            .unwrap()
++    }
++
++    fn dependency_insert_runs(conn: &Connection) -> i32 {
++        [64, 8, 1]
++            .into_iter()
++            .map(|n| {
++                let sql = format!(
++                    "INSERT INTO resolution_dependencies(file_path,kind,key) VALUES{}",
++                    vec!["(?,?,?)"; n].join(",")
++                );
++                conn.prepare_cached(&sql)
++                    .unwrap()
++                    .get_status(StatementStatus::Run)
++            })
++            .sum()
++    }
++
++    #[test]
++    fn resolution_snapshot_batches_match_original_order_and_statement_work() {
++        use cc_model::resolution::{DependencyKind, ResolutionDependency};
++        use std::collections::BTreeSet;
++
++        const ORIGINAL: &str =
++            "INSERT INTO resolution_dependencies(file_path,kind,key) VALUES(?1,?2,?3)";
++        let old = dependency_test_db();
++        let new = dependency_test_db();
++        let mut expected_rows = 0usize;
++        for count in [0usize, 1, 7, 8, 9, 63, 64, 65, 73, 129, 4096] {
++            let path = format!("file-{count}.py");
++            let mut dependencies = BTreeSet::new();
++            for n in (0..count).rev() {
++                let kind = match n % 7 {
++                    0 => DependencyKind::TargetSurface,
++                    1 => DependencyKind::NameBucket,
++                    2 => DependencyKind::MissingPath,
++                    3 => DependencyKind::ModuleConfig,
++                    4 => DependencyKind::PackageFiles,
++                    5 => DependencyKind::SymbolInventory,
++                    _ => DependencyKind::FileInventory,
++                };
++                let dependency = ResolutionDependency::new(kind, format!("键-{n:05}"));
++                dependencies.insert(dependency.clone());
++                dependencies.insert(dependency);
++            }
++            expected_rows += dependencies.len();
++            for dependency in &dependencies {
++                IndexDb::execute_cached(
++                    &old,
++                    ORIGINAL,
++                    rusqlite::params![path, dependency.kind.as_str(), dependency.key],
++                )
++                .unwrap();
++            }
++            resolution_dependencies(&new, &path, &dependencies).unwrap();
++            assert_eq!(dependency_rows(&old), dependency_rows(&new));
++        }
++        let old_runs = old
++            .prepare_cached(ORIGINAL)
++            .unwrap()
++            .get_status(StatementStatus::Run);
++        let new_runs = dependency_insert_runs(&new);
++        assert_eq!(old_runs, expected_rows as i32);
++        assert!(new_runs > 0 && new_runs < old_runs);
++        eprintln!("resolution INSERT runs: original={old_runs}, snapshot={new_runs}");
++    }
++
++    #[test]
++    fn resolution_snapshot_byte_windows_keep_legal_large_rows_single() {
++        use cc_model::resolution::{DependencyKind, ResolutionDependency};
++        use std::collections::BTreeSet;
++
++        let db = dependency_test_db();
++        // Each legal 4096-byte key counts its repeated file and kind bindings,
++        // so this window is byte-limited before the 64-row cap.
++        let dependencies: BTreeSet<_> = (0..64)
++            .map(|n| {
++                ResolutionDependency::new(
++                    DependencyKind::NameBucket,
++                    format!("{n:04}{}", "x".repeat(4092)),
++                )
++            })
++            .collect();
++        let before = dependency_insert_runs(&db);
++        resolution_dependencies(&db, "bytes.py", &dependencies).unwrap();
++        assert!(dependency_insert_runs(&db) - before > 1);
++        assert_eq!(dependency_rows(&db).len(), dependencies.len());
++
++        // The existing byte bound limits batching, not acceptance of a bound
++        // value. This helper receives SQL values, not filesystem paths.
++        let large_file_value = "p".repeat(MAX_BOUND_BYTES + 1);
++        let three: BTreeSet<_> = dependencies.into_iter().take(3).collect();
++        let before = dependency_insert_runs(&db);
++        resolution_dependencies(&db, &large_file_value, &three).unwrap();
++        assert_eq!(dependency_insert_runs(&db) - before, 3);
++        let rows = dependency_rows(&db);
++        assert_eq!(rows.len(), 67);
++        assert!(rows[64..].iter().all(|row| row.1 == large_file_value));
++    }
+ }
+diff --git a/crates/cc-db/src/resolution_dependency_store.rs b/crates/cc-db/src/resolution_dependency_store.rs
+--- a/crates/cc-db/src/resolution_dependency_store.rs
++++ b/crates/cc-db/src/resolution_dependency_store.rs
+@@ -13,6 +13,20 @@
+ use rusqlite::Connection;
+ use std::collections::{BTreeMap, BTreeSet, HashMap};
+ pub(crate) fn replace_on(conn: &Connection, file: &FileWriteUnit) -> CcResult<()> {
++    replace_with(conn, file, false)
++}
++
++/// Only the full-snapshot seam opts into bounded dependency INSERTs. Both
++/// paths retain the exact manifest preparation and table-write order below.
++pub(crate) fn replace_snapshot_on(conn: &Connection, file: &FileWriteUnit) -> CcResult<()> {
++    replace_with(conn, file, true)
++}
++
++fn replace_with(
++    conn: &Connection,
++    file: &FileWriteUnit,
++    snapshot_leaf_batches: bool,
++) -> CcResult<()> {
+     let mut m = file.outcome.resolution.clone();
+     m.normalize();
+     m.validate()
+@@ -29,12 +43,22 @@
+         [&file.rel_path],
+     )?;
+     IndexDb::execute_cached(conn,"INSERT OR REPLACE INTO resolution_manifests(file_path,version,payload,digest) VALUES(?1,?2,?3,?4)",rusqlite::params![file.rel_path,m.version,payload,blake3::hash(payload.as_bytes()).to_hex().to_string()])?;
++    if snapshot_leaf_batches && m.dependencies.len() >= 8 {
++        crate::index_db_snapshot_insert::resolution_dependencies(
++            conn,
++            &file.rel_path,
++            &m.dependencies,
++        )?;
++    } else {
++        let mut stmt = conn
++            .prepare_cached(
++                "INSERT INTO resolution_dependencies(file_path,kind,key) VALUES(?1,?2,?3)",
++            )
+-    let mut stmt = conn
+-        .prepare_cached("INSERT INTO resolution_dependencies(file_path,kind,key) VALUES(?1,?2,?3)")
+-        .map_err(db_err)?;
+-    for d in &m.dependencies {
+-        stmt.execute(rusqlite::params![file.rel_path, d.kind.as_str(), d.key])
+             .map_err(db_err)?;
++        for d in &m.dependencies {
++            stmt.execute(rusqlite::params![file.rel_path, d.kind.as_str(), d.key])
++                .map_err(db_err)?;
++        }
+     }
+     Ok(())
+ }
+diff --git a/crates/cc-db/src/public_surface_store.rs b/crates/cc-db/src/public_surface_store.rs
+--- a/crates/cc-db/src/public_surface_store.rs
++++ b/crates/cc-db/src/public_surface_store.rs
+@@ -12,6 +12,22 @@
+ pub type BoundSurfaceAddresses = HashMap<String, HashSet<(String, String)>>;
+ 
+ pub(crate) fn insert_on(conn: &Connection, file: &FileWriteUnit) -> CcResult<()> {
++    insert_with(conn, file, crate::resolution_dependency_store::replace_on)
++}
++
++pub(crate) fn insert_snapshot_on(conn: &Connection, file: &FileWriteUnit) -> CcResult<()> {
++    insert_with(
++        conn,
++        file,
++        crate::resolution_dependency_store::replace_snapshot_on,
++    )
++}
++
++fn insert_with(
++    conn: &Connection,
++    file: &FileWriteUnit,
++    replace_resolution: fn(&Connection, &FileWriteUnit) -> CcResult<()>,
++) -> CcResult<()> {
+     let mut surface = file.outcome.public_surface.clone();
+     surface.normalize();
+     surface.validate()?;
+@@ -25,7 +41,7 @@
+         cc_model::package_surface::PackageKey::from_surface(&surface).map(|k| k.storage_key());
+     conn.prepare_cached("INSERT INTO public_surfaces(file_path,format_version,payload,fingerprint,package_key) VALUES(?1,?2,?3,?4,?5)")
+         .map_err(db_err)?.execute(rusqlite::params![file.rel_path, surface.format_version, payload, surface.fingerprint(),package]).map_err(db_err)?;
++    replace_resolution(conn, file)
+-    crate::resolution_dependency_store::replace_on(conn, file)
+ }
+ 
+ impl ReadOps<'_> {
+diff --git a/crates/cc-db/src/index_db_write_batch.rs b/crates/cc-db/src/index_db_write_batch.rs
+--- a/crates/cc-db/src/index_db_write_batch.rs
++++ b/crates/cc-db/src/index_db_write_batch.rs
+@@ -847,7 +847,11 @@
+             )?;
+         }
+ 
++        if snapshot_leaf_batches {
++            crate::public_surface_store::insert_snapshot_on(conn, file)?;
++        } else {
++            crate::public_surface_store::insert_on(conn, file)?;
++        }
+-        crate::public_surface_store::insert_on(conn, file)?;
+ 
+         // chunks + chunks_fts
+         for (chunk_idx, c) in outcome.chunks.iter().enumerate() {
+diff --git a/crates/cc-db/tests/p2b_resolution_store.rs b/crates/cc-db/tests/p2b_resolution_store.rs
+--- a/crates/cc-db/tests/p2b_resolution_store.rs
++++ b/crates/cc-db/tests/p2b_resolution_store.rs
+@@ -238,3 +238,154 @@
+         .unwrap();
+     assert!(db.reads().resolution_manifests(&["a.py".into()]).is_err());
+ }
++
++
++fn snapshot_dependency_unit(path: &str, count: usize) -> FileWriteUnit {
++    let mut file = unit(path);
++    file.outcome.resolution.dependencies.clear();
++    for n in (0..count).rev() {
++        file.outcome
++            .resolution
++            .dependency(DependencyKind::NameBucket, format!("key-{n:05}"));
++        // The manifest's original BTreeSet deduplication remains authoritative.
++        file.outcome
++            .resolution
++            .dependency(DependencyKind::NameBucket, format!("key-{n:05}"));
++    }
++    let record = file.outcome.resolution.records[0].clone();
++    file.outcome.resolution.records.push(record);
++    file
++}
++
++fn snapshot_dependency_tables(db: &IndexDb) -> Vec<Vec<Vec<rusqlite::types::Value>>> {
++    let conn = rusqlite::Connection::open_with_flags(
++        db.admin().db_path(),
++        rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY,
++    )
++    .unwrap();
++    [
++        "SELECT rowid,* FROM resolution_dependencies ORDER BY rowid",
++        "SELECT * FROM resolution_manifests ORDER BY file_path",
++        "SELECT * FROM public_surfaces ORDER BY file_path",
++    ]
++    .into_iter()
++    .map(|sql| {
++        let mut statement = conn.prepare(sql).unwrap();
++        let columns = statement.column_count();
++        statement
++            .query_map([], |row| {
++                (0..columns)
++                    .map(|column| row.get::<_, rusqlite::types::Value>(column))
++                    .collect::<rusqlite::Result<Vec<_>>>()
++            })
++            .unwrap()
++            .collect::<rusqlite::Result<Vec<_>>>()
++            .unwrap()
++    })
++    .collect()
++}
++
++#[test]
++fn snapshot_dependency_manifest_and_rows_match_original_full_writer() {
++    let directory = tempfile::tempdir().unwrap();
++    let old = IndexDb::open_with_read_pool_size(&directory.path().join("old.db"), 1)
++        .unwrap()
++        .0;
++    let new = IndexDb::open_with_read_pool_size(&directory.path().join("new.db"), 1)
++        .unwrap()
++        .0;
++    let files: Vec<_> = [0usize, 1, 7, 8, 9, 63, 64, 65, 73]
++        .into_iter()
++        .map(|count| snapshot_dependency_unit(&format!("n-{count}.py"), count))
++        .collect();
++    let old_before = old.reads().generation().unwrap();
++    let new_before = new.reads().generation().unwrap();
++    old.admin()
++        .rebuild_with_temp_db(|conn| {
++            for file in &files {
++                IndexDb::insert_file_data(conn, file)?;
++            }
++            Ok(())
++        })
++        .unwrap();
++    new.admin()
++        .rebuild_with_temp_db(|conn| {
++            cc_db::SnapshotWriteTxn::new(conn)
++                .write_file_data(&files, &Default::default())
++        })
++        .unwrap();
++    assert_eq!(old.reads().generation().unwrap().index_epoch, old_before.index_epoch + 1);
++    assert_eq!(new.reads().generation().unwrap().index_epoch, new_before.index_epoch + 1);
++    assert_eq!(snapshot_dependency_tables(&old), snapshot_dependency_tables(&new));
++    let paths: Vec<_> = files.iter().map(|file| file.rel_path.clone()).collect();
++    let original = old.reads().resolution_manifests(&paths).unwrap();
++    let batched = new.reads().resolution_manifests(&paths).unwrap();
++    assert_eq!(original, batched);
++    assert!(batched.values().all(|manifest| manifest.records.len() == 1));
++
++    // An ordinary live replacement after the snapshot keeps the unchanged
++    // incremental writer, delete behavior and one generation bump.
++    let before = new.reads().generation().unwrap();
++    new.writes()
++        .replace_files_batch(&[snapshot_dependency_unit("n-73.py", 8)])
++        .unwrap();
++    assert_eq!(new.reads().generation().unwrap().index_epoch, before.index_epoch + 1);
++    assert_eq!(
++        new.reads().resolution_manifests(&["n-73.py".into()]).unwrap()["n-73.py"]
++            .dependencies.len(),
++        8
++    );
++}
++
++#[test]
++fn snapshot_dependency_failure_keeps_live_rows_and_generation_like_original() {
++    let directory = tempfile::tempdir().unwrap();
++    let mut errors = Vec::new();
++    for snapshot in [false, true] {
++        let path = directory.path().join(format!("failure-{snapshot}.db"));
++        let db = IndexDb::open_with_read_pool_size(&path, 1).unwrap().0;
++        db.writes().replace_files_batch(&[unit("retained.py")]).unwrap();
++        let before = db.reads().generation().unwrap();
++        let retained = snapshot_dependency_tables(&db);
++        let mut mode_errors = Vec::new();
++        for invalid_manifest in [false, true] {
++            let good = snapshot_dependency_unit("first.py", 73);
++            let mut failed = snapshot_dependency_unit("failed.py", 73);
++            if invalid_manifest {
++                failed.outcome.resolution.version = 999;
++            }
++            let result = db.admin().rebuild_with_temp_db(|conn| {
++                if !invalid_manifest {
++                    conn.execute_batch(
++                        "CREATE TRIGGER fail_dependency BEFORE INSERT ON resolution_dependencies
++                         WHEN NEW.file_path='failed.py' AND NEW.key='key-00070'
++                         BEGIN SELECT RAISE(ABORT,'injected dependency failure'); END;",
++                    )
++                    .map_err(|error| cc_model::CcError::Database(error.to_string()))?;
++                }
++                let files = [good, failed, snapshot_dependency_unit("never.py", 8)];
++                if snapshot {
++                    cc_db::SnapshotWriteTxn::new(conn)
++                        .write_file_data(&files, &Default::default())?;
++                } else {
++                    for file in &files {
++                        IndexDb::insert_file_data(conn, file)?;
++                    }
++                }
++                Ok(())
++            });
++            let error = result.unwrap_err().to_string();
++            assert!(error.contains(if invalid_manifest {
++                "unsupported version"
++            } else {
++                "injected dependency failure"
++            }));
++            mode_errors.push(error);
++            assert_eq!(db.reads().generation().unwrap(), before);
++            assert_eq!(db.reads().list_file_paths().unwrap(), vec!["retained.py"]);
++            assert_eq!(snapshot_dependency_tables(&db), retained);
++        }
++        errors.push(mode_errors);
++    }
++    assert_eq!(errors[0], errors[1]);
++}

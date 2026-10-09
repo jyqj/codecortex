@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-10-09 07:09:58 UTC",
+  "reviewer": "recovery_audit",
+  "role": "non_author",
+  "repository": "jyqj/codecortex",
+  "verdict": "accepted_scoped",
+  "scope": "static_review_of_two_frozen_candidate_blobs_only",
+  "base": {
+    "commit": "7b1fc54485bfda1b00f5e316617052900b99fb63",
+    "tree": "2c492ccc4028468d4f11d51af678d75495492176",
+    "pull_request": 176
+  },
+  "inputs": [
+    {
+      "path": "crates/cc-eval/src/benchmark/oracle.rs",
+      "before": {
+        "git_blob": "d6324b3003b5a3c3e8a1680536260ea99a950152",
+        "bytes": 8780,
+        "sha256": "adccf4f437e637aaee6bd368109d0b41af1855f3e50c84c48f7cc8b5cf3dc711"
+      },
+      "after": {
+        "git_blob": "4c7fdb879e039af164b3b10ea1491d538c69ac68",
+        "bytes": 14710,
+        "sha256": "7b6438d212bd22471fedfb9ffd3a37a0c1d491f8e7846af3ba5c5850c622bc15"
+      }
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+      "before": {
+        "git_blob": "3c05342f976f534861347c098c3229ce988dfb61",
+        "bytes": 29842,
+        "sha256": "5a51a72e8cb49c033754f860a3f5dc6366748ffe45a440da55cf7776cde7da0c"
+      },
+      "after": {
+        "git_blob": "6c60e6244fe1f316b180f8ea656d2b9f1ad17aa3",
+        "sha256": "9d9ef3624af2f1a27107baf3c625b7ee29643b8dbedcbf3b39b8a662c98e82a4",
+        "bytes": 29924
+      }
+    }
+  ],
+  "author_receipt": {
+    "git_blob": "8db241f98b812c017c38a3da6de4e7f46a859ab2",
+    "bytes": 14640,
+    "sha256": "5683a66abc7b26865962982c9ec87e0603ea285756cb62b9e35ea740c127e829"
+  },
+  "independent_checks": {
+    "oracleOriginalBodyExact": true,
+    "oracleProductionReplacementCount": 1,
+    "oracleAppend": {
+      "bytes": 4498,
+      "sha256": "265df1f76582eb80343f306a0f8d544aa24983b0c6c1478e87bef8fec2ad0e3e"
+    },
+    "streamingFourChangesOnly": true,
+    "oracleV1OnlyClosureChange": true,
+    "wholeBase": {
+      "oracle": "d6324b3003b5a3c3e8a1680536260ea99a950152",
+      "streaming": "3c05342f976f534861347c098c3229ce988dfb61"
+    }
+  },
+  "findings": [
+    {
+      "topic": "fixed_layout_and_ownership",
+      "conclusion": "One RowProjection is constructed after the unchanged columns lookup for one spool/table/input side. It borrows the immutable columns vector, lazily inserts each original key in original order, and updates existing slots. It is not a schema cache and does not cross tables or sides."
+    },
+    {
+      "topic": "SQL_value_semantics",
+      "conclusion": "All five original ValueRef conversion arms are unchanged: strict UTF8 errors, exact integer and REAL json! conversion, NULL, and original BLAKE3 blob-digest object. The legacy project_row wrapper retains owned Value::Object output. No normalization, excluded field, table set, deduplication or hash-equality shortcut was added."
+    },
+    {
+      "topic": "serialized_bytes_and_order",
+      "conclusion": "The new serializer receives the same Map that Value::Object serializes. Column insertion order remains unchanged, including preserve_order builds; ordinary Map ordering also remains unchanged. The original equal_rows fallback, signed-zero behavior, byte sorting, ordinals and duplicate retention are unchanged."
+    },
+    {
+      "topic": "value_lifetime_and_error",
+      "conclusion": "An owned String is produced before values are cleared. Only key storage/map nodes survive; CanonicalInsert never borrows projector values. Conversion failures clear partial/prior values and propagate the same error. Serialization failure clears values before propagation. Production spool still stops at the first error; helper recovery controls introduce no runtime retry."
+    },
+    {
+      "topic": "budgets_and_atomicity",
+      "conclusion": "Row-count admission and check_row_size still precede conversion. Serialized row/cumulative byte bounds, checked arithmetic, ordinal creation, CanonicalInsert 64/8/1 and 64KiB buffering, scratch transaction commit and disposal remain original bytes. No budget was widened."
+    },
+    {
+      "topic": "independent_controls",
+      "conclusion": "The two added tests contain literal expected JSON independently of SQL conversion, including integer extrema, signed zero, Unicode/control characters, NULL and fixed empty-BLOB digest; repeated serialization and separate layouts are checked. The invalid-UTF8 control exercises partial updates, original error text and clearing. Existing reference_spool calls the new shared owner, so that comparison alone is not claimed to establish old semantics."
+    },
+    {
+      "topic": "actual_diff",
+      "conclusion": "Independently reconstructed both complete candidates from the fetched base bodies. Oracle has exactly the one reviewed production replacement plus the 4498-byte appended test module. Streaming has exactly four reviewed replacements; all remaining bytes match the base. V2 differs from V1 only by the test method-call closure."
+    }
+  ],
+  "feedback": {
+    "old_candidate_blob": "750b6bcd654072dee8e5dbcbf3db5f59c2753654",
+    "risk": "Associated-item spelling map(String::as_ptr) was avoided before execution by map(|key| key.as_ptr()).",
+    "status": "resolved_in_v2",
+    "reproduced_compile_failure": false
+  },
+  "unresolved_findings": [],
+  "allowed_next_step": "Root may combine these frozen blobs with the independently reviewed resolution batching candidate and construct a new source-admission chain for the existing original CI. This review does not modify or certify frozen PR176 G.",
+  "execution": {
+    "parse": "not_run",
+    "format": "not_run",
+    "compile": "not_run",
+    "tests": "not_run",
+    "native": "not_run",
+    "performance": "not_run",
+    "new_source_integration": "not_created_by_reviewer"
+  },
+  "limits": [
+    "Static approval is not a claim that candidate controls or original regression gates passed.",
+    "No measured allocation, RSS, latency or 100k speedup is established.",
+    "Original source/proof/CI and scale gates remain required for any new combined source.",
+    "No old A23, G2 or D0 measurement is relabeled."
+  ],
+  "repository_mutations": {
+    "created_unreferenced_report_blob_only": true,
+    "refs_changed": false,
+    "tests_run": false
+  },
+  "tasks": {
+    "total": 192,
+    "completed": 163,
+    "remaining": 29,
+    "newly_completed": 0
+  }
+}

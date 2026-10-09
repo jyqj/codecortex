@@ -1,0 +1,190 @@
+{
+  "schema": "p8-pr175-five-path-composition-and-log-custody-v1",
+  "repository": "jyqj/codecortex",
+  "reviewer": "acceptance_review (non-author of PR175)",
+  "verdict": "accepted_scoped_five_path_preparation_on_176_plus_eight",
+  "scope": "Read-only compatibility map, not approval of an uncreated combined product or its execution.",
+  "base_main": "60e5ce3ccc86f5cccb40f6f9c32bbc7b77bf1e9d",
+  "existing_integration": "7b1fc54485bfda1b00f5e316617052900b99fb63",
+  "incoming_pr": 175,
+  "incoming_head": "840fa2e0a26ab60c138747a4309aba5df506edc1",
+  "complete_incoming_nonartifact_delta": {
+    "product_paths": 2,
+    "validation_paths": 2,
+    "documentation_paths": 1,
+    "pin_metadata_paths_excluded": 2
+  },
+  "exact_reusable_filemap": [
+    {
+      "path": "crates/cc-eval/src/benchmark/statistics.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "415fbdc0a254729e4b7fa5f2fe040b3019d90aa9",
+      "bytes": 15854,
+      "sha256": "ad331897b23e067909c21a0b4848b1ac39ea208453e340c922c6830cb9264264",
+      "main60_and_176_before_blob": "869d8494d8b22fff029b5203a9ce73736e2ee368",
+      "domain": "product_input"
+    },
+    {
+      "path": "crates/cc-eval/src/bin/p8-runtime-statistics.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6273b16ebc403602b5aaf3eb0a9699b5cdfdca70",
+      "bytes": 20760,
+      "sha256": "d6595a2c01fd31fc9635f3110b1887d49df98b1e9988e089c98298a52c3a20a9",
+      "main60_and_176_before_blob": "34f5cf8a67962edd94c277cf0e9dd299aa004235",
+      "domain": "product_input"
+    },
+    {
+      "path": "docs/P8_RUNTIME_EVIDENCE.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "46027ad45782e6ad6919ed8c4fa1ce94fb8d06a8",
+      "bytes": 8911,
+      "sha256": "ca11059f1da6060ac9b31320efd8a4637d2b5a16968ee2e2795c3341f1b54a9d",
+      "main60_and_176_before_blob": "fc03daf57dfe36a7b61a9e960b3fbc46f73c4be9",
+      "domain": "documentation"
+    },
+    {
+      "path": "scripts/p8_runtime.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "031ebdc4c604fd39ab2d647b652ca533180bf818",
+      "bytes": 58530,
+      "sha256": "9f052e72615f084463c3bd4d29c561c088d20ffcb38bb0de351c5d408a17387b",
+      "main60_and_176_before_blob": "3fe09616768cf35ecc3b76f348ef9eca88d98cd8",
+      "domain": "validation_input"
+    },
+    {
+      "path": "scripts/tests/test_p8_runtime.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "797dda75c3d23f4bca92996a8e316c279d82b6e4",
+      "bytes": 53872,
+      "sha256": "cc0255c3d6a5396f61ca0d080401da1c936bcef1dff741437a1c6ce155a3ee2f",
+      "main60_and_176_before_blob": "38cf6a820391854a2fab6ba8d6daf8d7076ff4a1",
+      "domain": "validation_input"
+    }
+  ],
+  "comparisons": {
+    "both_compares_have_main60_as_exact_merge_base": true,
+    "complete_pr175_compare_files": 12,
+    "complete_176_compare_files": 78,
+    "source_blobs_independently_read_and_git_sha_sha256_bytes_verified": true,
+    "actual_head_shallow_trees_confirm_all_five_mode_100644": true,
+    "overlap176": [],
+    "overlap8": [],
+    "eight": [
+      "crates/cc-db/src/index_db_multi_insert.rs",
+      "crates/cc-db/src/index_db_snapshot_insert.rs",
+      "crates/cc-db/src/resolution_dependency_store.rs",
+      "crates/cc-db/src/public_surface_store.rs",
+      "crates/cc-db/src/index_db_write_batch.rs",
+      "crates/cc-db/tests/p2b_resolution_store.rs",
+      "crates/cc-eval/src/benchmark/oracle.rs",
+      "crates/cc-eval/src/benchmark/oracle/streaming.rs"
+    ],
+    "validation_differences": [
+      {
+        "path": "scripts/p8_runtime.py",
+        "base176": "0656766656ad73b69e6e28db742115ec9b3dd0440c515f694b7568d3cf87c79d",
+        "pr175": "9f052e72615f084463c3bd4d29c561c088d20ffcb38bb0de351c5d408a17387b"
+      },
+      {
+        "path": "scripts/tests/test_p8_runtime.py",
+        "base176": "7443e63377f34f6f2340270425c61106e9a8a4ffa4d354cbfa47d6703db543b7",
+        "pr175": "cc0255c3d6a5396f61ca0d080401da1c936bcef1dff741437a1c6ce155a3ee2f"
+      }
+    ],
+    "validation_only176": [
+      ".github/workflows/p8-surface-window-controls.yml"
+    ],
+    "explanation": "The complete official main60-to-176 comparison does not contain any of the five incoming source/doc paths. All five before blobs therefore remain the exact main60 versions. None overlaps the six dependency batching candidates or the two oracle projection candidates. No full-file replacement discards a 176 or eight-candidate modification at these paths."
+  },
+  "semantic_assessment": {
+    "incoming_change": "Move the original report's nanosecond nearest-rank summaries from duplicate Python computation to the existing Rust statistics owner.",
+    "rust": "New additive legacy_latency_ns uses unchanged nearest_rank on exact u64 finished_ns-offered_ns after unchanged full plan/row validation. No microsecond conversion, success-only filtering, changed workload/limit, or changed original replay exit rule.",
+    "python": "Existing two-run byte-identical replay and plan/raw/executable bindings remain; read statistics bytes once, require their SHA to equal the verified replay result, parse those same bytes, then copy legacy_ns. Failure paths/sealing/owned-writer rules remain.",
+    "docs": "One explanatory paragraph; no task or performance claim.",
+    "tests": "Four added Rust controls plus two Python protocol controls replace the removed duplicate-Python algorithm control. The PR175 actual ordinary CI runs the fixed final formatter bytes, including all five runtime-statistics Rust tests, 410 P8 Python tests, and 181 source controls.",
+    "interaction_boundary": "Dependency snapshot batching changes database writes and the oracle candidates change row projection/serialization internals. The five incoming paths change runtime statistics after original raw generation, and no incoming diff changes their APIs. The shared nearest_rank/distribution/quantile_interval implementations remain unchanged. No concrete semantic conflict identified; combined-source compilation, original controls, source binding and actual workload evidence remain to execute.",
+    "own_authorship_limit": "The six dependency batching candidate files were authored by this reviewer. This report only checks the incoming PR175 file-set intersection and compatibility boundary; it does not self-approve those six files. Their separate non-author review remains 37fe1f8d59b95a83423d32fc5f126f030e70e39a."
+  },
+  "original_reviews": [
+    {
+      "git_blob": "532e86c436038e118051a3ad33e02d7e876aa289",
+      "scope": "pr_audit independent five-path source and actual P assembly review",
+      "sha256": "6f40ba421ebd9f8a6c9a65ef062db0f834842bd2330449f4a9f59e335849ef4d"
+    },
+    {
+      "git_blob": "bbf6b5909df08ad2e3d47c8a6389f01f40444cec",
+      "scope": "scale_closeout independent static five-blob semantics review",
+      "sha256": "0977ad5a5686b2cf9bbe32184b7795ff199f49d9a3723cbedf51fc6f74507bcb"
+    },
+    {
+      "git_blob": "02d768b5876a63fcb1331891fb19b76a5b9f6180",
+      "scope": "This reviewer's fixed formatter/P-R-G follow-up and complete actual ordinary-CI log review",
+      "sha256": "c86e258e188901b70e8f80cfc14400e2dafcb1f7614123949f6b99614d426416"
+    }
+  ],
+  "required_new_binding": {
+    "copy_incoming_registry_or_guard": false,
+    "rationale": "PR175's 138 validation inputs exclude 176's surface-window workflow. Copying its full registry would lose the required existing 139th input.",
+    "retain_176_workflow": {
+      "path": ".github/workflows/p8-surface-window-controls.yml",
+      "git_blob": "34a96f91e550313659cd598ce3466b82bfc310d8",
+      "sha256": "f27250c1c66238aa2b60b7ff53c013611198e8653227851c76311f2efa56ed0a"
+    },
+    "expected_product_input_count": 1089,
+    "expected_validation_input_count": 139,
+    "method": "Start from the 176/current eight-candidate manifests. Replace exactly the two incoming existing Rust hashes and two incoming existing validation hashes; keep all other existing entries and all historical review chains. Bind an actual new product, independent composition review and final pins using the existing unchanged source-guard logic.",
+    "source_and_execution": "PR175 ordinary CI remains evidence for its actual 79989 checkout/tree54d66 (equal to840fa), not for a new combined tree. Run the original full CI on the eventual fixed combination. No old native evidence is relabelled.",
+    "five_archived_pr175_evidence_files": "Preserve the existing fixed PR175 review/failure originals by reference or original blob as part of the new review chain. They are evidence, not additional product changes."
+  },
+  "log_persistence_addendum": {
+    "prior_report": "02d768b5876a63fcb1331891fb19b76a5b9f6180",
+    "timing": "That immutable report was created before the following three complete original logs were uploaded. Its not-uploaded fields accurately describe that earlier point; this append records subsequent preservation without changing it.",
+    "uploaded_complete_logs": [
+      {
+        "label": "check",
+        "git_blob": "2dec65c3ee571802fc3245113481e26b1f96de8e",
+        "bytes": 1067053,
+        "sha256": "8af56f0137b3fea332dad94a6938c2c79e55adb2ea09c9e1d18234349618efed",
+        "readback_byte_equal": true
+      },
+      {
+        "label": "msrv",
+        "git_blob": "e863ff77e95ae13acc12c60fdf2a44476f53193a",
+        "bytes": 39041,
+        "sha256": "7e80d66f3f9ec97b638c122a7cd45e2ab60652264be5fa5a935097a14d41d4c3",
+        "readback_byte_equal": true
+      },
+      {
+        "label": "security",
+        "git_blob": "9c8e98b2096914871458d9bd9adfc7714d05a8ca",
+        "bytes": 64634,
+        "sha256": "62bfbc53c001b877ac50df660e20938df4720c5c1f35a7d63c3ac1e0d42c2d76",
+        "readback_byte_equal": true
+      }
+    ],
+    "first_failed_original_already_preserved": {
+      "git_blob": "8c4f6da82dbe7703c3f53fd4a9f9ecf7836c8ad2",
+      "bytes": 42309,
+      "sha256": "175e41777d2dc3180943bbdea0eb36be259fc44ba0eeabe88a5a313854ceaec1",
+      "status": "failed",
+      "exit_code": 1
+    }
+  },
+  "boundary": {
+    "refs_or_commits_created": false,
+    "pr_mutation": false,
+    "tests_or_native_executed_by_reviewer": false,
+    "product_combination_not_yet_reviewed_as_actual_git_object": true,
+    "no_task_dependency_or_budget_change": true,
+    "pr175_task": "P8-017",
+    "not_a_new_gate_for_the_original_ten": true,
+    "done": 163,
+    "remaining": 29,
+    "closed_by_this_review": 0
+  }
+}

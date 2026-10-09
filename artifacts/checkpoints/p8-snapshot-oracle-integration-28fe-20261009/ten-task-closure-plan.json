@@ -1,0 +1,695 @@
+{
+  "schema": "p8-original-ten-minimum-closure-checklist-v1",
+  "reviewer": "acceptance_review",
+  "mode": "read_only_preparation",
+  "inspected_product_commit": "3c5e47a1f4087a487ce2134357459afe4f700196",
+  "final_G": null,
+  "final_G_note": "This checks existing entrypoints at actual P3. The final G and its official run/artifact IDs must be filled from actual execution; no future outcome is assumed.",
+  "verdict": "Existing original drivers and reports are sufficient for the declared ten-task scope; no new mandatory assertion/resource-ledger field or new framework identified.",
+  "original_task_authority": {
+    "path": "docs/roadmap/code-index-v2/tasks.json",
+    "git_blob": "f400eb2b5a3f8c524978bee1dfa87f98efe4bce8",
+    "sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207",
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "newly_closed": 0
+  },
+  "source_binding_and_common_gates": {
+    "fixed_execution": "Use the final whole GitSHA for original build/preflight/measure/aggregate; source/observer/compiler/Cargo features/profile/binary/plan/seed/budgets exact. A23/D0/G2/175 prior successes remain their own identities.",
+    "CI": "Actual original CI source_integrity, v15, historical-integrations, facts, plan and related Rust/Python/stdio regressions must pass for the exact G inputs. Record actual merge-ref checkout and whole-tree equality where applicable; ready labels/review prose do not substitute for execution.",
+    "existing_original_execution_set": [
+      "p8-scale complete150 + existingaggregate",
+      "p8-runtime fourmixed+onehour+backfill",
+      "p8-lifecycle1230 samples",
+      "p8-platform8cold+collector+recovery/rollback",
+      "p8-gates6controls",
+      "original CI and already-planned related regression workflows"
+    ],
+    "no_extra_execution": "A successful existing workflow's original validator/collector execution and complete byte-bound artifacts suffice; there is no new mandatory duplicate run, second study, helper rewrite, or waiting for unrelated old G2 terminal.",
+    "preserve_failure": "Record actual CLI/job status as well as report fields, complete errors/raw/stderr/seals; do not treat report written before failed sealing as success. Keep old failures and any new failed/missing/incomplete/cancelled observations.",
+    "boundary": "G8, heldout/live-provider quality, M4/release/paid approval remain separate. Allowedunknown fields and per-profile nulls are not invented zeros. Deterministic fake-provider counts do not certify monetary charges."
+  },
+  "tasks": [
+    {
+      "id": "P8-005",
+      "title": "完整规模1k到100k",
+      "current_status": "in_progress",
+      "original_steps": [
+        "固定seed与release构建测1k/5k/10k/50k/100k",
+        "同时报chunk/edge/vector"
+      ],
+      "original_acceptance": [
+        "不存在只报文件数或把不同工作量直接算倍数",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V20"
+      ],
+      "depends_on": [
+        "P8-004"
+      ],
+      "definition_line": 11716,
+      "workflow": ".github/workflows/p8-scale.yml / build, preflight, measure, aggregate",
+      "existing_entrypoints": [
+        "scripts/p8_scale_matrix.py: validate_build, validate_shard, inspect_raw, combine, aggregate"
+      ],
+      "existing_command": "python3 scripts/p8_scale_matrix.py aggregate --build <original-build-directory> --inputs <all-150-original-shard-directories> --output <new-review-directory> --repetitions 30 --shard-count 30 --capacity-profile scale_capacity_v1",
+      "artifacts": [
+        "p8-scale-build-<run-id>/build.json + source/compiler/Cargo/binary receipts",
+        "p8-scale-shard-<scale>-<index>-<run-id>/shard.json, registered-plan.json, source-before.json, source-after.json, native/{plan.json,raw.jsonl,worker.stderr,worker-summary.json,report.json}",
+        "p8-scale-matrix-<run-id>/matrix.json"
+      ],
+      "minimum_terminal_facts": [
+        "matrix.status=complete_measurement_coverage; passed=true; registered_repetitions=30; shard_count_per_scale=30; sample_count=1500; exactly150 evidence entries",
+        "50 exact groups: five scales × nine main stages plus five fanouts; each n=30 and original global repetition IDs0..29 appear exactly once",
+        "Every shard passes existing inventory/source/driver/build/binary/plan/native supervisor checks; native/report.json exit_code=worker_exit_code=0,status=measurement_complete,stderr_complete=true",
+        "All table/edge/chunk/symbol counts remain reported. vectors.state=disabled,count=null is the original declared local workload; not0/not semantic certification.",
+        "Record all host/CPU/kernel strata and sample mapping. N30 global coverage does not confer a stable tail or pooled same-host performance claim."
+      ],
+      "proof_locations": [
+        "scripts/p8_scale_matrix.py:477-490,754-820,861-966",
+        "docs/roadmap/code-index-v2/P8-SCALE.md:49,150-156,213-255,259-281"
+      ],
+      "current_pending": "The eventual fixed G's complete original150/1500 study and original related CI are not available in this preparation. Earlier A23 four shards or failed D0/A23 runs cannot substitute.",
+      "implementation_gap_found": false
+    },
+    {
+      "id": "P8-006",
+      "title": "增量规模与fanout曲线",
+      "current_status": "in_progress",
+      "original_steps": [
+        "测no-op/body/API/config/batch和超预算闭包",
+        "输出各phase计数"
+      ],
+      "original_acceptance": [
+        "时间可归因且闭包完成后full parity，未完成有显式status",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V07",
+        "V20"
+      ],
+      "depends_on": [
+        "P7-020",
+        "P8-001",
+        "P8-005"
+      ],
+      "definition_line": 11800,
+      "workflow": ".github/workflows/p8-scale.yml; same original150-shard execution as P8-005",
+      "existing_entrypoints": [
+        "scripts/p8_scale_matrix.py: check_build_report, check_parity, inspect_raw, combine"
+      ],
+      "artifacts": [
+        "Same scale raw/validated shards/matrix; no separate extra scale study is needed."
+      ],
+      "minimum_terminal_facts": [
+        "All no_op/body/api/config/batch_1/batch_10/batch_100/batch_1000 stages retain original phase counts/timings and event identity",
+        "Each completed closure has full independent control and all15 canonical tables equal, with multiplicity/digests/integrity/FK checks; unfinished state is not successful",
+        "Five fanout populations1/4/16/64/128 eachN30; original independent call truth and at least one actual first-build-incomplete witness required by combine",
+        "Keep exact200/1024 main dirty/resume and8/128 fanout settings, raw budget/native deadline/oracle limits; no skipping validation to speed execution."
+      ],
+      "proof_locations": [
+        "scripts/p8_scale_matrix.py:435-475,493-525,548-751,906-930",
+        "02-CONTRACTS.md:C05/C16"
+      ],
+      "current_pending": "Same new G full matrix; P8-005 then must be done. Existing raw validation/aggregation already implements the assertions.",
+      "implementation_gap_found": false
+    },
+    {
+      "id": "P8-007",
+      "title": "多并发与混合负载",
+      "current_status": "in_progress",
+      "original_steps": [
+        "C1/4/8/16 mixed read/build/backfill",
+        "记录offered load和排队"
+      ],
+      "original_acceptance": [
+        "无死锁饥饿，吞吐不能隐藏timeout与尾部",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V11",
+        "V20"
+      ],
+      "depends_on": [
+        "P8-006"
+      ],
+      "definition_line": 11867,
+      "workflow": ".github/workflows/p8-runtime.yml / mixed C1,4,8,16 + fake_backfill",
+      "existing_entrypoints": [
+        "scripts/p8_runtime_build.py",
+        "scripts/p8_runtime.py run/default CLI and verify",
+        "scripts/p8_backfill.py and verify"
+      ],
+      "existing_commands": [
+        "python3 scripts/p8_runtime.py --binary <build>/codecortex --oracle <build>/p8-oracle --statistics <build>/p8-runtime-statistics --build-receipt <build>/build-receipt.json --concurrency <1|4|8|16> --operations 900 --files 1000 --interval-ms 500 --output <new-output>",
+        "python3 scripts/p8_runtime.py verify --output <retained-runtime> --build-output <retained-build>",
+        "python3 scripts/p8_backfill.py --output <new-backfill>",
+        "python3 scripts/p8_backfill.py verify --output <retained-backfill>"
+      ],
+      "artifacts": [
+        "Four p8-mixed-c<C>-<G> artifacts: build receipts/binaries, plan/raw.jsonl/RPC/resources/report.json/statistics.json/statistics-replay.json/parity.json/seal",
+        "p8-backfill-<G>: receipt.json, actual Cargo artifact/test executable, execution stdout/stderr, raw/seed-7,seed-19,seed-43,seal"
+      ],
+      "minimum_terminal_facts": [
+        "Each mixed actual CLI0 AND verify0; final status=passed_observation,exit_code=0,failures=[],offered900,outcomes success900 and original unique IDs0..899",
+        "600read/300build per mixed; original offered schedule, timing/queue/dispatch/operation denominators retained; C>1 actual read_build_overlap, observed maximum kept distinct from planned concurrency",
+        "All original raw/probe/parity facts retained; report's passed value alone is insufficient if sealing/verify/outer CLI failed",
+        "Fresh original backfill real_slow_backfill_preserves_local_progress_and_records_every_request actually executed1passed0failed0ignored, three seeds × quiet/held × C1/4/8/16 ×32=768 original observations; successful source/compiler/executable binding and verify",
+        "PR175 final owner: Rust emits legacy_ns in statistics.json; Python copies exact verified bytes into latency/latency_by_operation, preserving integer ns/all terminal outcomes/nulls. Original microsecond N/distribution/CI remain separate."
+      ],
+      "proof_locations": [
+        "scripts/p8_runtime.py:425-447,785-827,829-913",
+        "scripts/p8_backfill.py:44-117",
+        ".github/workflows/p8-runtime.yml"
+      ],
+      "current_pending": "New G's four actual mixed plus backfill and source/related regressions; then hard dependency006. Do not relabel prior A23 or PR175 runs as combined G.",
+      "implementation_gap_found": false
+    },
+    {
+      "id": "P8-008",
+      "title": "冷建/重开/热查分层",
+      "current_status": "in_progress",
+      "original_steps": [
+        "分离OS cache、process cold、result-cache hit与uncached warm",
+        "采全部样本"
+      ],
+      "original_acceptance": [
+        "无best-of，sample N/分布/CI齐全",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V20"
+      ],
+      "depends_on": [
+        "P8-007"
+      ],
+      "definition_line": 11922,
+      "workflow": ".github/workflows/p8-lifecycle.yml / lifecycle",
+      "existing_entrypoints": [
+        "scripts/p8_lifecycle.py + verify",
+        "crates/cc-eval/src/bin/p8-measurements.rs"
+      ],
+      "existing_command": "python3 scripts/p8_lifecycle.py --binary <product>/codecortex --build-receipt <product>/build-receipt.json --evaluator <p8-measurements> --evaluator-build-receipt <replay-build-receipt.json> --profile release --cold-samples 30 --query-samples 400 --files 32 --run-timeout-seconds 3600 --artifact-budget-bytes 536870912 --output-dir <new-measurement>",
+      "artifacts": [
+        "p8-lifecycle-<G>: product and evaluator exact build receipts, measurement/{plan.json,events.jsonl,raw queries/RPC,receipt.json,replay-input.json,report.json,report-replayed.json,repeat-replay-receipt.json}"
+      ],
+      "minimum_terminal_facts": [
+        "receipt.status=complete_observation,exit_code=0,failures=[],sample_counts expected=recorded=1230 (30cold+400reopen+400warm-uncached+400true-hit)",
+        "report.measurement_status=complete_observation,exit_code=0,latency_layers has complete original populations/distributions/N/CI; original source/query/cache witnesses validate",
+        "No sample selection; same inputs' second replay bytes identical; actual lifecycle verify success",
+        "os_page_cache=not_cleared_unknown_not_cold_disk, process-cold/reopen/cache evidence remain distinct; coldN30 not falsely stablep99. Existing release floor30cold/200each query does not reduce actual registered400."
+      ],
+      "proof_locations": [
+        "scripts/p8_lifecycle.py:470-560",
+        "crates/cc-eval/src/bin/p8-measurements.rs:115-149",
+        "09-BENCHMARK.md:173"
+      ],
+      "current_pending": "New G lifecycle1230 original samples and verify, then007. No extra cold-OS-cache experiment required to truthfully retain unknown.",
+      "implementation_gap_found": false
+    },
+    {
+      "id": "P8-009",
+      "title": "内存/磁盘/费用总账",
+      "current_status": "in_progress",
+      "original_steps": [
+        "分别client/server/process-tree和artifact/FTS大小",
+        "成本reported/estimated分栏"
+      ],
+      "original_acceptance": [
+        "单位和归属正确，不把unavailable填0或把runner当server",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V20"
+      ],
+      "depends_on": [
+        "P8-008"
+      ],
+      "definition_line": 11975,
+      "workflow": "Same p8-lifecycle-<G> plus original mixed/soak/backfill resource scope",
+      "existing_entrypoints": [
+        "scripts/p8_lifecycle.py:resource,disk_objects,finish",
+        "scripts/p8_resources.py:OwnedProcessProbe,self_usage",
+        "p8-measurements.rs:memory_ledger,disk_ledger,cost_ledger"
+      ],
+      "artifacts": [
+        "measurement/report.json {memory_ledger,disk_ledger,cost_ledger}",
+        "receipt.json {storage,resource_scope,disk_scope,provider_cost,artifact_bytes_observed,artifact_inventory,driver_resource_usage}",
+        "events.jsonl per-stage resource/closed-fixture storage + exact original files/official ZIP metadata"
+      ],
+      "minimum_terminal_facts": [
+        "Client/runner SELF is separate from server SELF through owned stdio; process-tree only when identity mapping succeeds. Keep unavailable and stage-vs-continuous-peak limits explicit.",
+        "Each retained SQLite/WAL/SHM object has byte attribution; logical FTS pages are within shared physical SQLite, never added twice; all30retainedfixture inventories are not one active-index size.",
+        "artifact_bytes_observed has fixture_source/fixture_storage/raw_and_reports components and honest before-final-receipt scope; original inventory plus ZIP size can give retained-file/transport totals without pretending allocated disk or runtime peak.",
+        "provider_cost reported/estimated/tokens/requests_billed remain null for disabled profile; cost_ledger unknown is legitimate. Backfill observed no paid provider calls is not a live monetary-cost receipt.",
+        "Do not rewrite actual availability/FTS nulls to0; no whole-tree peak or paid-provider experiment is newly required by these original clauses."
+      ],
+      "proof_locations": [
+        "scripts/p8_lifecycle.py:231-271,330-346,470-548",
+        "crates/cc-eval/src/bin/p8-measurements.rs:143-149",
+        "09-BENCHMARK.md:177"
+      ],
+      "current_pending": "New G bound resource/accounting originals; then008. Existing ledger fields are sufficient for the original declared scope; no missing required field found.",
+      "implementation_gap_found": false
+    },
+    {
+      "id": "P8-010",
+      "title": "长时soak与连续修改",
+      "current_status": "in_progress",
+      "original_steps": [
+        "持续编辑、删除、切分支、catalog压实、cache/worker复用",
+        "终点完整对账"
+      ],
+      "original_acceptance": [
+        "内存/队列不无界增长，长期索引和全量一致",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V07",
+        "V17",
+        "V20"
+      ],
+      "depends_on": [
+        "P8-009"
+      ],
+      "definition_line": 12028,
+      "workflow": ".github/workflows/p8-runtime.yml / soak",
+      "existing_entrypoints": [
+        "scripts/p8_runtime.py:soak_read,soak_cache_summary,rss_trend,sample_coverage,run,verify"
+      ],
+      "existing_command": "python3 scripts/p8_runtime.py --binary <build>/codecortex --oracle <build>/p8-oracle --statistics <build>/p8-runtime-statistics --build-receipt <build>/build-receipt.json --profile soak --concurrency 4 --operations 3601 --files 1000 --interval-ms 1000 --output <new-output>",
+      "artifacts": [
+        "p8-soak-<G>: complete build/source/binary, plan/raw/RPC/resources/statistics/parity/report/seal; verify output"
+      ],
+      "minimum_terminal_facts": [
+        "Actual CLI0 AND verify0,passed_observation/exit0/failures[]; offered3601 with2400reads/1201builds and observed_work_ns>=3600000000000",
+        "Body/add/rename/delete/API/restore plus actual Git branch switches>=2 and observed_catalog_compactions>0 retained; one long product/worker lifecycle and original all15-table terminal parity",
+        "rss.passed=true under existing warmed+25%+32MiB rule; resource_time_coverage.passed; bounded admission/queue and all submitted workers/reader/sampler stopped before sealing",
+        "cache_reuse.passed=true,expected_offered_reads=recorded_offered_reads=validated_reads=2400,errors=[]; each actual-completion-time quarter has hit/miss/invalidation witnesses; four RPC roles stay within each original offered read",
+        "No use of the old all-symbol/zero-result-cache soak as cache-reuse proof; no extra latency samples from compound RPCs."
+      ],
+      "proof_locations": [
+        "scripts/p8_runtime.py:238-376,804-827,829-913",
+        ".github/workflows/p8-runtime.yml:soak"
+      ],
+      "current_pending": "New G actual full hour + verify and009. A lost session/running receipt or report written before failed finalization cannot satisfy it.",
+      "implementation_gap_found": false
+    },
+    {
+      "id": "P8-011",
+      "title": "端到端故障与恢复认证",
+      "current_status": "in_progress",
+      "original_steps": [
+        "kill进程/网络断开/缓存损坏/数据库忙/换库",
+        "保持raw故障工件"
+      ],
+      "original_acceptance": [
+        "没有假ready或删除复活，恢复与费用影响清楚",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V14",
+        "V17",
+        "V18"
+      ],
+      "depends_on": [
+        "P7-020",
+        "P8-007",
+        "P8-010"
+      ],
+      "definition_line": 12084,
+      "workflow": ".github/workflows/p8-platform.yml / recovery",
+      "existing_entrypoints": [
+        "scripts/p8_recovery.py --full-matrix"
+      ],
+      "existing_command": "python3 scripts/p8_recovery.py --full-matrix --expected-commit <G> --previous-source-root <exact-277f-checkout> --previous-commit 277f2490fad3fa30f2812b5547bad033867c9ea5 --jobs 2 --output-dir <new-full-recovery>",
+      "artifacts": [
+        "p8-full-recovery-<G>/full-recovery.json,source-inputs.json,runner-source/,product-*/build-receipt.json",
+        "local-recovery/{recovery.json,cases/raw/RPC/DB},active-stdio-223/227/229/active-faults.json and HTTP/RPC, fault-test-00..06 exact build/test/raw receipts"
+      ],
+      "minimum_terminal_facts": [
+        "full-recovery.status=passed_declared_fault_matrix; exact source and full evidence_files_sha256; three local kill/busy/delete cases pass",
+        "Each actual active HTTP/stdin seed223/227/229 passes disconnect/cache corruption/unknown-format rejection/database replacement; paid_cost/actual_paid_cost=null with local fake-provider scope retained",
+        "Seven original production fault tests actually execute, covering internal SIGKILL/swap windows and cache metadata/space/namespace isolation; actual code0 and expected named test, no ignored substitution",
+        "No false ready or deletion resurrection; preserve capability/query/DB/source witnesses and actual request/recovery effects; no real paid-provider or power-loss claim."
+      ],
+      "proof_locations": [
+        "scripts/p8_recovery.py:34-44,492-696,775-895"
+      ],
+      "reused_existing_detailed_mapping": "Git blob723f09045d6ff5a5a3265fdfb76f9f2a49d46b44 is the existing A23 011/012/013/016 mapping; reuse its clause interpretation, replace only actual source/run/evidence bindings.",
+      "current_pending": "New G full recovery original products/raw and related CI;007+010 andalreadydoneP7-020.",
+      "implementation_gap_found": false
+    },
+    {
+      "id": "P8-012",
+      "title": "MSRV与平台冷构建矩阵",
+      "current_status": "in_progress",
+      "original_steps": [
+        "Linux/macOS、当前声明MSRV与stable、默认/semantic features",
+        "全新target"
+      ],
+      "original_acceptance": [
+        "SDK blocker解决或发布平台范围明确，缓存测试不替冷构建",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V01",
+        "V21"
+      ],
+      "depends_on": [
+        "P8-011"
+      ],
+      "definition_line": 12140,
+      "workflow": ".github/workflows/p8-platform.yml / 8cold-build jobs + complete-matrix",
+      "existing_entrypoints": [
+        "scripts/p8_cold_build.py --execute --stdio-smoke; --export-selected; --collect-cells"
+      ],
+      "existing_command": "python3 scripts/p8_cold_build.py --collect-cells <all-eight-original-bundles> --expected-commit <G> --output-dir <new-complete-matrix>",
+      "artifacts": [
+        "8 p8-platform-cell-<linux|macos>-<1.95|stable>-<default|semantic>-<G> bundles",
+        "p8-platform-complete-<G>/matrix.json",
+        "Retained raw build/probe/compiler/stdio/EOF evidence and source manifests per cell"
+      ],
+      "minimum_terminal_facts": [
+        "Collector statuspassed,counts passed8/failed0/not_run0; all8unique exact cells bindG source and actual compiler/profile/features/binary",
+        "Each original build target_initially_absent=true,build_exit_code0,stop_reasonnull,source-before=after; strict portable original Cargo/target/product/RPC/EOF contracts pass",
+        "Per-host one-cell driver's exit2 represents intentional7not_run only if original selected exporter verifies the executed cell; do not require that partial matrix itself exit0 or label8pass prematurely",
+        "Document actual measured OS/arch/toolchain/Xcode/SDK where present; unknown if missing. Proven eight cold-build+smoke scope does not certify every macOS SDK/workspace combination.",
+        "Known old user MacSDK15.4 failure remains failed/rootcauseunknown. Original clause explicitly allows resolved SDK blocker OR clearly stated certified platform scope. Do not use a historical A23singlecase success to certify newG fullworkspace."
+      ],
+      "proof_locations": [
+        "scripts/p8_cold_build.py:652-710",
+        ".github/workflows/p8-platform.yml",
+        "tasks.json:P8-012 original acceptance"
+      ],
+      "current_pending": "New G all8fresh cells+collector andactualscope declaration, then011. No extra wholeworkspace-Mac platform gate is introduced.",
+      "implementation_gap_found": false
+    },
+    {
+      "id": "P8-013",
+      "title": "指标/门槛与失败退出最终认证",
+      "current_status": "in_progress",
+      "original_steps": [
+        "故意注入quality/perf/lock失败",
+        "验证退出和raw报告仍保留"
+      ],
+      "original_acceptance": [
+        "红线失败必非零，inconclusive不被自动passed",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V03",
+        "V04",
+        "V20"
+      ],
+      "depends_on": [
+        "P8-012"
+      ],
+      "definition_line": 12204,
+      "workflow": ".github/workflows/p8-gates.yml / gate_controls",
+      "existing_entrypoints": [
+        "scripts/p8_gate_controls.py"
+      ],
+      "existing_command": "python3 scripts/p8_gate_controls.py --output <new-gates> --target <new-private-target>",
+      "artifacts": [
+        "p8-gates-<G>/report.json,cc-eval,case-00..05/{test-receipt.json,build/execute logs,retained-fixtures/}"
+      ],
+      "minimum_terminal_facts": [
+        "report.status=passed_original_failure_gates,exit_code0; all6named original production test controls executed using exact original CLI/binary/source",
+        "Nested deliberately invalid quality/performance/lock/policy/zero-plan/zero-latency/inconclusive cases have their original nonzero exits and retained raw; parent successful test exit does not turn those cases green",
+        "Bad-policy/output-overwrite refusal retained; full files hash inventory and original crate regressions; inconclusive notautopassed"
+      ],
+      "proof_locations": [
+        "scripts/p8_gate_controls.py:CASES,run",
+        "scripts/p8_recovery.py:production_fault_test"
+      ],
+      "current_pending": "New G six actual controls plus source/CLI provenance and012. No live heldout/paid quality experiment is needed to exercise these original fault-control clauses.",
+      "implementation_gap_found": false
+    },
+    {
+      "id": "P8-016",
+      "title": "数据库/配置/包回滚演练",
+      "current_status": "in_progress",
+      "original_steps": [
+        "旧binary开新schema的受控重建、cache版本隔离、disable语义回退"
+      ],
+      "original_acceptance": [
+        "回滚不误读新向量/丢用户源码，恢复步骤实测",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V13",
+        "V17",
+        "V21"
+      ],
+      "depends_on": [
+        "P7-020",
+        "P8-012",
+        "P8-013"
+      ],
+      "definition_line": 12364,
+      "workflow": "Same .github/workflows/p8-platform.yml / recovery",
+      "existing_entrypoints": [
+        "scripts/p8_recovery.py:run_full_matrix",
+        "scripts/p8_rollback.py:run_drill,run_version_pair"
+      ],
+      "artifacts": [
+        "full-recovery.json.rollback + rollback/rollback.json and originals",
+        "full-recovery.json.actual_source_version_pair + actual-version-pair/version-pair.json + previous/default/semantic actual build receipts",
+        "fault-test cache corruption/space/namespaces original controls and active cache-reader unknown-format rejection"
+      ],
+      "minimum_terminal_facts": [
+        "rollback.status=passed_limited_local_drill: controlled future-schema rebuild,semantic-to-default disabled fallback,actual DBbackuprestore,source/configbytepreservation",
+        "actual_source_version_pair.status=passed_actual_source_version_pair with actual historical277f schema24/current schema25 binary transitions25→24→25→25 and each process/source/DB/query/restore receipt",
+        "Original three cache metadata/space/namespace tests execute; active unknown-format reader proof comes from full recovery, while the limited-drill's not_run row is preserved",
+        "No user source loss/new-vector misread; exact config/backup/restore steps tested; public-source binaries need not be mislabelled released package pair."
+      ],
+      "proof_locations": [
+        "scripts/p8_rollback.py:335-464,468-590",
+        "scripts/p8_recovery.py:863-890"
+      ],
+      "current_pending": "New G actual previous/current pair+limited drill/cache tests,then012+013 (P7-020 alreadydone). Same recovery job serves011 and016; no second duplicate recovery run.",
+      "implementation_gap_found": false
+    }
+  ],
+  "no_new_gate_examples": [
+    "150shards is the current already-registered scale_capacity_v1 execution contract, not wording literally present in originaltask005. It must be fulfilled for this study; four partialshards are not acceptance.",
+    "Scale vectorsdisabled/countnull and whole-tree peaksunknown are explicitly declared scope, not positive vector measurements or hiddenzeros.",
+    "Lifecycle originalworkflow uses400perquerystratum; source's200minimum does not permit dropping200executedplanned samples.",
+    "Soak original four cache completion quarters and RSS limits already exist; no new thresholds.",
+    "P8-012 actual measured platform scope is allowed by its original wording; it neither retroactively fixes SDK15.4 nor requires a new wholeworkspace Mac matrix.",
+    "Six failure-gate tests are deliberately failing-inner-observation controls, not a demand to execute paid/heldout quality workloads.",
+    "P8-016 requires actual tested old/current behavior and cache isolation, not an added requirement that both are released packages."
+  ],
+  "writeback_after_acceptance": {
+    "current_action": "No tasks,source,workflow,refs or execution changed by this preparation.",
+    "legal_topological_order": [
+      "P8-005",
+      "P8-006",
+      "P8-007",
+      "P8-008",
+      "P8-009",
+      "P8-010",
+      "P8-011",
+      "P8-012",
+      "P8-013",
+      "P8-016"
+    ],
+    "existing_external_harddeps": {
+      "P8-004": "done",
+      "P7-020": "done",
+      "P8-001": "done"
+    },
+    "allowed_changes": "Append exact finalG/run/artifact/raw/validator/independent acceptance evidence per original task, append implementation_notes retaining old failures, then set the ten status fields done only after original conditions and deps are actually accepted.",
+    "single_commit_allowed": "All ten can be updated atomically in one evidence/task commit after their evidence is accepted. code_index_plan validates final dependency states; no ten sequential native reruns or ten mandatory commits.",
+    "immutable_warning": "verify_historical_integrations_v2.py TASK_PROGRESS allows only status/evidence/implementation_notes. Do not mutate scope/steps/acceptance/depends_on/validations or the historical acceptance_subgates object. P8-005 old subgate fields including historical full-scale=open remain frozen history; new evidence/notes explicitly record the new actual closure instead of altering that object.",
+    "derived_views": [
+      "docs/roadmap/code-index-v2/05-TODO.md",
+      "README.md marked progress only",
+      "docs/roadmap/code-index-v2/README.md marked progress only",
+      "docs/roadmap/code-index-v2/08-HANDOFF.md marked progress only"
+    ],
+    "commands": [
+      "python3 scripts/code_index_plan.py --write",
+      "python3 scripts/code_index_plan.py",
+      "python3 scripts/verify_historical_integrations_v2.py",
+      "python3 scripts/p8_facts.py --check",
+      "git diff --check"
+    ],
+    "navigation": "Keep overallplanin_progress; update next_task to an actuallyready unclosed original ID (P8-017 is a possible dependency-ready choice after016, not automatically done). Do not mark G8/releasecomplete.",
+    "expected_counts_if_all_ten_pass": {
+      "total": 192,
+      "done": 173,
+      "remaining": 19
+    },
+    "measurements_identity": "The later evidence/task-only commit records the tested G; it does not rewrite build receipts to itself or claim a new native execution."
+  },
+  "implementation_gaps": {
+    "new_required_code_or_resource_field": null,
+    "meaning": "No concrete missing assertion or ledger field found in this limited reading. This is not a promise that future actual executions will pass; any real failure remains to fix under original gates."
+  },
+  "original_definitions_and_driver_bindings": [
+    {
+      "key": "tasks",
+      "path": "docs/roadmap/code-index-v2/tasks.json",
+      "git_blob": "f400eb2b5a3f8c524978bee1dfa87f98efe4bce8",
+      "bytes": 802282,
+      "sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207"
+    },
+    {
+      "key": "benchmark",
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "git_blob": "5ced0c455e7e774a9d95da23187c64dcefc37314",
+      "bytes": 20488,
+      "sha256": "0c8bcbed17ea4e83b1dc55e9828f93a27e2a334a0d0eaa056302944260d0a731"
+    },
+    {
+      "key": "contracts",
+      "path": "docs/roadmap/code-index-v2/02-CONTRACTS.md",
+      "git_blob": "82262dd868ae36b906e57ac10244544af1721d5e",
+      "bytes": 14819,
+      "sha256": "66cca99c35f7f9ff1c9d1a7832ab71adec074058e126b188f6e06aff65adb0ad"
+    },
+    {
+      "key": "validation",
+      "path": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+      "git_blob": "fcbcf9e9280d41a4e8e138543d2bd217137a2c5e",
+      "bytes": 10172,
+      "sha256": "64a9fde995077f8349edc76ee501825feca6717c6c60ab7c03cc535142016aad"
+    },
+    {
+      "key": "scaleDoc2",
+      "path": "docs/roadmap/code-index-v2/P8-SCALE.md",
+      "git_blob": "d23c80666c8885ee7274cdffc3c023e6a0ef9e08",
+      "bytes": 26078,
+      "sha256": "7093bcdb74a7bcd6ff32e05f5cd2c7a7bd6576c90fff42b36251884cfbfe1442"
+    },
+    {
+      "key": "scaleWorkflow",
+      "path": ".github/workflows/p8-scale.yml",
+      "git_blob": "f667b72d7abc63c6aa06f92e453a3e2d14b505d7",
+      "bytes": 8621,
+      "sha256": "4c5e7a9b59a39edfb5628dc1ef60fde4345a3a658d424087925f0b331de98378"
+    },
+    {
+      "key": "runtimeWorkflow",
+      "path": ".github/workflows/p8-runtime.yml",
+      "git_blob": "ad73ee803df6936c2750b3e1045bc397e5d154f3",
+      "bytes": 5782,
+      "sha256": "82e39dadd5557d800450ead6cf1d861e382283447af2fd35eb4c952d7897c09f"
+    },
+    {
+      "key": "lifecycleWorkflow",
+      "path": ".github/workflows/p8-lifecycle.yml",
+      "git_blob": "577ba891ec1eb56da364087c1ad180045185f61c",
+      "bytes": 5387,
+      "sha256": "1c29a376003afd380c09f75e3ab17569449aa3b83cb45a637866e14aebb083ec"
+    },
+    {
+      "key": "platformWorkflow",
+      "path": ".github/workflows/p8-platform.yml",
+      "git_blob": "795ae46324c451cb8736c77c19229f285783eec8",
+      "bytes": 6812,
+      "sha256": "9f1bc4bd1cf715836987332906d4c72f85bd835652bfe196de56a9f1945a0ff4"
+    },
+    {
+      "key": "gatesWorkflow2",
+      "path": ".github/workflows/p8-gates.yml",
+      "git_blob": "91c3f8fc631c01bbcd326ec17c74f83a75f28d34",
+      "bytes": 1255,
+      "sha256": "4cdea43584221217acc7b33b2489b91b7dc4e6f02cfb5e42330b0d64c9cc65ca"
+    },
+    {
+      "key": "scale",
+      "path": "scripts/p8_scale_matrix.py",
+      "git_blob": "b4ba4b57f8d23a16128ef82927e78799ae70f886",
+      "bytes": 65092,
+      "sha256": "f169b0f26cf2a87d3e2548d734431c530cbf63d353ac054045ec8be80889f957"
+    },
+    {
+      "key": "lifecycle",
+      "path": "scripts/p8_lifecycle.py",
+      "git_blob": "4d413c2b23930f2856139a4bfef0f9c114254df3",
+      "bytes": 38417,
+      "sha256": "820a63c0dd76a6cfd52dfbf633afe66a72c7eee152cbe08db69971b39d896f5d"
+    },
+    {
+      "key": "resources",
+      "path": "scripts/p8_resources.py",
+      "git_blob": "4ed93b4b1c73002fe592da63ad7d7481a563cad4",
+      "bytes": 15915,
+      "sha256": "ceb2fb5323688a6c30692f01830e7e3d6e0df4697300eca90003a8ce5b7ae6b1"
+    },
+    {
+      "key": "backfill",
+      "path": "scripts/p8_backfill.py",
+      "git_blob": "380b775c0de6141ed8b4f63d2fb4a223bba54221",
+      "bytes": 8799,
+      "sha256": "c6f75ab31b226b7fea6ef7f14adc66d823015d909f57b0bd47a8e7f10b47a4dd"
+    },
+    {
+      "key": "recovery",
+      "path": "scripts/p8_recovery.py",
+      "git_blob": "aae54fe62ba3aa81cea84daa3a9307240e4700b3",
+      "bytes": 58272,
+      "sha256": "a290e87dcd1420ca37d4a32fc0e4ddbd2b269b407e8775a3de42c6cf7de61f42"
+    },
+    {
+      "key": "cold",
+      "path": "scripts/p8_cold_build.py",
+      "git_blob": "ed454b6d29e727c87b0b26e4a975a840d0dec310",
+      "bytes": 52649,
+      "sha256": "f910326658b5539c539d1c02cd29a1236e11911b581f1beaf2495a42b53319fa"
+    },
+    {
+      "key": "gates",
+      "path": "scripts/p8_gate_controls.py",
+      "git_blob": "5e988ac23537ff7bb8e5b3c764ad2b2eb46b913b",
+      "bytes": 4238,
+      "sha256": "0ea7c6544392b5cbe87fede2dc01ed0912e6da4ddc6f5ced621b9c595f1ec6f7"
+    },
+    {
+      "key": "rollback",
+      "path": "scripts/p8_rollback.py",
+      "git_blob": "61ff1d61c0fc9f14b92daf522faa0d9d5e04be56",
+      "bytes": 38818,
+      "sha256": "4aa129fb9f2cd72b591d5c26a3b5e87aae0e2c3c6d03717c199fa612a322de50"
+    },
+    {
+      "key": "plan",
+      "path": "scripts/code_index_plan.py",
+      "git_blob": "378ff47434a67a78dd1194b1fdf15dffda3fbfc3",
+      "bytes": 11526,
+      "sha256": "7524e974e32317d263563dbb63a506479c9e50e61c754432aed88f236d39a54c"
+    },
+    {
+      "key": "historical",
+      "path": "scripts/verify_historical_integrations_v2.py",
+      "git_blob": "24b068c0e17ac3b49f98e8fb57843d3286ce264a",
+      "bytes": 16896,
+      "sha256": "bdf0713772d3514614b4916854c425c1183d31212c1ff115205431bed0f01288"
+    },
+    {
+      "key": "measurementBin",
+      "path": "crates/cc-eval/src/bin/p8-measurements.rs",
+      "git_blob": "bcb794513cb7f30958ab648134d2de2276005bb5",
+      "bytes": 7590,
+      "sha256": "b2d937ee0d3e88febe0c497422d073e3f9a42a9640faa31bed265d4ac5787882"
+    }
+  ],
+  "reused_prior_mapping": {
+    "four_later_tasks": "723f09045d6ff5a5a3265fdfb76f9f2a49d46b44",
+    "pr175_source_and_actual_CI": "02d768b5876a63fcb1331891fb19b76a5b9f6180",
+    "pr175_composition": "e528626fc0bfcf6045e573ad50173d3ae09c1bef",
+    "scope": "Reuse existing clause interpretation and source-level controls; do not relabel earlier runtime/platform measurements as the new combination."
+  },
+  "actions": {
+    "read_official_fixed_source": true,
+    "new_large_archives_downloaded": 0,
+    "native_or_tests_executed": 0,
+    "remote_refs_modified": 0,
+    "tasks_modified": false
+  }
+}

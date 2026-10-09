@@ -1,0 +1,173 @@
+{
+  "schema_version": 1,
+  "status": "original_engineering_run_failed_raw_receipt_not_yet_received",
+  "observer": "/root/pr_audit",
+  "observed_at_utc": "2026-10-09 08:39:14 UTC",
+  "source": "0272a1fb152fd76a7cfb22386a580629d4038a64",
+  "run_id": 37877604259,
+  "run_attempt": 1,
+  "full_API_observation": [
+    {
+      "kind": "run",
+      "id": 37877604259,
+      "status": "completed",
+      "conclusion": "failure",
+      "head_sha": "0272a1fb152fd76a7cfb22386a580629d4038a64",
+      "run_attempt": 1
+    },
+    {
+      "kind": "jobs",
+      "total_count": 4,
+      "jobs": [
+        {
+          "id": 113649666693,
+          "name": "controls_and_build",
+          "status": "completed",
+          "conclusion": "success",
+          "steps": []
+        },
+        {
+          "id": 113651970350,
+          "name": "engineering scale 1000 repetition 0 only",
+          "status": "completed",
+          "conclusion": "success",
+          "steps": []
+        },
+        {
+          "id": 113651970386,
+          "name": "engineering scale 10000 repetition 0 only",
+          "status": "completed",
+          "conclusion": "success",
+          "steps": []
+        },
+        {
+          "id": 113654983347,
+          "name": "engineering scale 100000 repetition 0 only",
+          "status": "completed",
+          "conclusion": "failure",
+          "steps": [
+            {
+              "number": 7,
+              "name": "Execute the original single repetition with every phase and parity check",
+              "status": "completed",
+              "conclusion": "failure",
+              "started_at": "2026-10-09T03:29:05Z",
+              "completed_at": "2026-10-09T08:30:07Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "artifacts",
+      "total_count": 8,
+      "artifacts": [
+        {
+          "id": 11604421042,
+          "name": "p8-snapshot-leaf-shard-100000-0-37877604259",
+          "size_in_bytes": 5206420,
+          "digest": "sha256:fe9bb645c4d7036c542beaa708572793105825ae1ec11244d9293701e3da58af",
+          "expired": false
+        },
+        {
+          "id": 11593830434,
+          "name": "p8-snapshot-leaf-shard-1000-0-37877604259",
+          "size_in_bytes": 952740,
+          "digest": "sha256:0e324738c55876bdcc90018996249095d7212f1a40293f3c11c15aa9c91b170a",
+          "expired": false
+        },
+        {
+          "id": 11593802228,
+          "name": "p8-snapshot-leaf-shard-10000-0-37877604259",
+          "size_in_bytes": 853987,
+          "digest": "sha256:a9f132e1e238008d741078b3869ec8f6de6e439b083d6fa37cb652b63307f0df",
+          "expired": false
+        },
+        {
+          "id": 11593721035,
+          "name": "p8-snapshot-leaf-capacity-1000-37877604259",
+          "size_in_bytes": 788,
+          "digest": "sha256:5bded5e06c4214c1b2c22a2e7d9a0e4f4601780a59d55474c1ee8827d453e40a",
+          "expired": false
+        },
+        {
+          "id": 11593531643,
+          "name": "p8-snapshot-leaf-capacity-10000-37877604259",
+          "size_in_bytes": 788,
+          "digest": "sha256:3c198cc882340ff6da6c0d611fca99e6ff70926b6c5dfefa4ebb4606f8a4d2d0",
+          "expired": false
+        },
+        {
+          "id": 11593453453,
+          "name": "p8-snapshot-leaf-capacity-100000-37877604259",
+          "size_in_bytes": 788,
+          "digest": "sha256:007909c7e1bded55a49d22ece0cfd05cccfdde512a4c73e762ff87e23e1fa845",
+          "expired": false
+        },
+        {
+          "id": 11593340748,
+          "name": "p8-snapshot-leaf-controls-37877604259",
+          "size_in_bytes": 127927,
+          "digest": "sha256:2f511b61f5ce369f4aafcf59d8650b67f175b6c3bb25cbac0c0739b931f44701",
+          "expired": false
+        },
+        {
+          "id": 11592902690,
+          "name": "p8-snapshot-leaf-scale-build-37877604259",
+          "size_in_bytes": 9218675,
+          "digest": "sha256:a8ec8f88d57948bbacb929b1627b9bde7ada59ade92f57998771ec0c9d1d2607",
+          "expired": false
+        }
+      ]
+    }
+  ],
+  "actual_job_checkout_verified_in_original_log": true,
+  "measure_step": {
+    "started_at": "2026-10-09T03:29:05Z",
+    "completed_at": "2026-10-09T08:30:07Z",
+    "wall_seconds": 18062,
+    "conclusion": "failure",
+    "CLI_exit_code": 1,
+    "reported_error": "native shard failed",
+    "reported_passed": null,
+    "reported_sample_count": null
+  },
+  "native_failure_cause": "not established by the job log; native artifact receipt still requires complete original reception",
+  "artifact": {
+    "id": 11604421042,
+    "name": "p8-snapshot-leaf-shard-100000-0-37877604259",
+    "bytes": 5206420,
+    "sha256": "fe9bb645c4d7036c542beaa708572793105825ae1ec11244d9293701e3da58af",
+    "original_job_claim_uploaded_files": 12,
+    "complete_zip_received": false
+  },
+  "original_log": {
+    "blob": "cbe4d98391c8cc0303acea74f03fdb15b43c0570",
+    "bytes": 46773,
+    "sha256": "628986607ea14b2cb6ce3b7d1c461e323f7347980ca354d1ea3ee8b11c9b3912",
+    "full_readback_equal": true,
+    "signed_query_urls_found": 0
+  },
+  "original_argv": {
+    "scale": 100000,
+    "shard_index": 0,
+    "shard_count": 30,
+    "repetitions": 30,
+    "seed": 12648430,
+    "deadline_ms": 18000000,
+    "capacity_profile": "scale_capacity_v1"
+  },
+  "limits": {
+    "no_rerun": true,
+    "no_cancellation": true,
+    "no_source_change": true,
+    "not_a_formal_N150_success": true,
+    "not_relabelled_to_275e": true,
+    "original_controls_1k_10k_success_remain_separate": true,
+    "no_OOM_runner_loss_or_deadline_cause_claim": true
+  },
+  "TODO": {
+    "newly_closed": 0,
+    "remaining": 29
+  }
+}

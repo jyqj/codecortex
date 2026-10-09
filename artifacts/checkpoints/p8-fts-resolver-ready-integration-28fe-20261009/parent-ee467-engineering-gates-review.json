@@ -1,0 +1,218 @@
+{
+  "schema": "p8-PR180-ee467-two-completed-jobs-independent-log-review-v1",
+  "reviewer": "/root/acceptance_review",
+  "observed_utc": "2026-10-09 08:07:52 UTC",
+  "scope": "Finite read-only official completed-job/API/commit/source inspection, full original log preservation. No native/test/CI execution by reviewer, no queued-job polling, no old175/176 re-review or artifact-ZIP download.",
+  "verdict": "Both specified completed original jobs genuinely succeeded within their executed scope. None of the six new snapshot-resolution/oracle tests was executed by these two jobs.",
+  "claimed_PR_head": "ee467290785a4c8906d11d6d8764d2f1b4b92241",
+  "source_binding": {
+    "gate_controls_actual_checkout": "ee467290785a4c8906d11d6d8764d2f1b4b92241",
+    "engineering_actual_checkout": "4de2717bf21f80a2d885416a4170d54954d307a0",
+    "engineering_actual_parents": [
+      "bd4693351149a443bd0054a37508c53f74ed7b52",
+      "ee467290785a4c8906d11d6d8764d2f1b4b92241"
+    ],
+    "whole_tree_both": "440bf2de01da66b2dc52a572e0a0fa7ecbf38291",
+    "official_both_commit_tree_equal": true,
+    "engineering_identity": "Actual GitHub test-merge checkout retained, with exact whole-tree equality to ee467. Do not rewrite its checkout SHA to ee467.",
+    "source_stability": "Engineering Record exact input source and Verify final input identity steps succeeded; log records source_snapshot before and after and an equality assertion. Actual snapshot JSONs are uploaded by original job but were not downloaded in this finite review. Gate driver enforces source_snapshot equality before returning passed.",
+    "new_product": "86a6e8eb88ddc97ee50a534452839bea25d92d16",
+    "new_product_execution_credit": false
+  },
+  "runs": [
+    {
+      "run": 37900794895,
+      "name": "P7 engineering regressions",
+      "event": "pull_request",
+      "attempt": 1,
+      "head_sha": "ee467290785a4c8906d11d6d8764d2f1b4b92241",
+      "status": "completed",
+      "conclusion": "success",
+      "job": 113722626073,
+      "job_name": "engineering",
+      "job_started_at": "2026-10-09T07:55:27Z",
+      "job_completed_at": "2026-10-09T08:00:09Z",
+      "checkout_log_line": 189,
+      "actual_checkout": "4de2717bf21f80a2d885416a4170d54954d307a0",
+      "toolchain": {
+        "setup_label": "stable",
+        "observed_rustc": "1.95.0 (59807616e 2026-04-14)",
+        "host": "x86_64-unknown-linux-gnu"
+      },
+      "original_cargo_commands": [
+        "cargo test -p cc-server --features semantic-http --locked \\\n  --test p7_dense_artifact_coverage --test p7_gc_retention_config \\\n  --test p7_v05_all_lane_scope --test p7_v05_scope_public \\\n  --test p7_v16_exact_oracle --test p7_v16_oracle_independent_review \\\n  -- --nocapture 2>&1 | tee \"$RUNNER_TEMP/p7-engineering/coverage-config.log\"",
+        "cargo test -p cc-server --features semantic-http --locked --no-fail-fast \\\n  --test cache_key_review_behavior --test p7_acceptance_matrix \\\n  --test p7_production_fairness_model_review --test p7_query_deadline_public \\\n  --test p7_status_snapshot_independent_review --test p7_v05_v11_independent_review \\\n  --test p7_v11_cache_consumption --test p7_v11_cache_key_matrix \\\n  --test p7_v11_generation_public --test p7_v11_ready_epoch_independent_review \\\n  --test v11_consumption_independent_review \\\n  -- --nocapture 2>&1 | tee \"$RUNNER_TEMP/p7-engineering/deadline-cache.log\"",
+        "cargo test -p cc-server --features semantic-http --locked --lib \\\n  semantic_query_encoding::tests:: -- --nocapture \\\n  2>&1 | tee \"$RUNNER_TEMP/p7-engineering/query-encoding.log\"",
+        "cargo test -p cc-search --locked --lib execution::tests:: -- --nocapture \\\n  2>&1 | tee \"$RUNNER_TEMP/p7-engineering/execution-deadline.log\"",
+        "cargo test -p cc-semantic --locked \\\n  --test gc_unlink_accounting --test semantic_gc \\\n  -- --nocapture 2>&1 | tee \"$RUNNER_TEMP/p7-engineering/gc-unlink.log\"",
+        "cargo test -p cc-eval --features semantic --locked \\\n  --test p7_worker_contention --test semantic_lifecycle --test p7_strategy_ablation \\\n  -- --nocapture 2>&1 | tee \"$RUNNER_TEMP/p7-engineering/worker-strategy.log\""
+      ],
+      "logged_rust_harness_totals": {
+        "groups": 24,
+        "passed_test_instances": 95,
+        "failed": 0,
+        "ignored": 1,
+        "measured": 0,
+        "filtered_out_sum": 657
+      },
+      "explicit_ignored": "actual_stdio_local_and_auto_have_equal_effective_budget_and_verified_source: requires explicit current product path and SHA256; mechanism smoke, no quality certification",
+      "benchmark_lock_step": {
+        "name": "Benchmark input lock controls",
+        "conclusion": "success",
+        "scope": "Reported separately; not added into Rust harness count."
+      },
+      "input_checks": [
+        "Record exact input source: success",
+        "Verify final input identity: success"
+      ],
+      "artifact": {
+        "id": 11602878419,
+        "name": "p7-engineering-4de2717bf21f80a2d885416a4170d54954d307a0",
+        "logged_zip_bytes": 270587,
+        "logged_zip_sha256": "b5e83c10faf5f5c8e6950e468cfa674da1fbd0f6f8a2b833d2812abd6871bd86",
+        "scope": "Original upload log locator; no ZIP downloaded/rehashed here."
+      }
+    },
+    {
+      "run": 37900795081,
+      "name": "P8 original failure gates",
+      "event": "pull_request",
+      "attempt": 1,
+      "head_sha": "ee467290785a4c8906d11d6d8764d2f1b4b92241",
+      "status": "completed",
+      "conclusion": "success",
+      "job": 113722626882,
+      "job_name": "gate_controls",
+      "job_started_at": "2026-10-09T07:53:04Z",
+      "job_completed_at": "2026-10-09T07:55:28Z",
+      "checkout_log_line": 185,
+      "actual_checkout": "ee467290785a4c8906d11d6d8764d2f1b4b92241",
+      "original_command": "python3 scripts/p8_gate_controls.py --output \"$RUNNER_TEMP/p8-gates\" --target \"$RUNNER_TEMP/p8-gates-target\"",
+      "command_step_started_at": "2026-10-09T07:54:02Z",
+      "command_step_completed_at": "2026-10-09T07:55:23Z",
+      "logged_terminal": {
+        "status": "passed_original_failure_gates",
+        "exit_code": 0,
+        "error": null
+      },
+      "gate_driver_blob": "5e988ac23537ff7bb8e5b3c764ad2b2eb46b913b",
+      "gate_driver_cases": [
+        "unmeasurable_latency_cannot_pass_comparison",
+        "zero_measurement_gate_is_invalid",
+        "cli_quality_and_latency_failures_are_nonzero_and_keep_raw",
+        "cli_inconclusive_is_nonzero",
+        "cli_lock_failure_preserves_machine_readable_failure_and_raw",
+        "cli_bad_policy_is_recorded_without_overwriting_existing_report"
+      ],
+      "case_selection": "Fixed driver loops production_fault_test(root,case,env,'cc-eval','benchmark_cli',name). This is six original benchmark_cli failure controls, not cc-db unit/integration or cc-eval library oracle unit tests.",
+      "inner_failure_boundary": "Parent gate success means the original rejection controls succeeded. It does not convert deliberately invalid inner reports or nonzero CLI outcomes to passes.",
+      "artifact": {
+        "id": 11602642176,
+        "name": "p8-gates-ee467290785a4c8906d11d6d8764d2f1b4b92241",
+        "logged_uploaded_files": 337,
+        "logged_zip_bytes": 33014110,
+        "logged_zip_sha256": "fe14ab1d105bd8f8f56a0b94048f9ecdf1f599f7abca33f2f594c0de9b9ef619",
+        "scope": "Original upload log locator; no ZIP downloaded/rehashed here."
+      }
+    }
+  ],
+  "six_new_controls": [
+    {
+      "name": "resolution_snapshot_batches_match_original_order_and_statement_work",
+      "source": "crates/cc-db/src/index_db_snapshot_insert.rs",
+      "source_blob": "9829e095d8e2310a4d3373c77a5184166a32f686",
+      "engineering_log_occurrences": 0,
+      "gate_controls_log_occurrences": 0,
+      "execution_in_these_two_jobs": "not_run",
+      "reason": "No cc-db --lib test harness selected."
+    },
+    {
+      "name": "resolution_snapshot_byte_windows_keep_legal_large_rows_single",
+      "source": "crates/cc-db/src/index_db_snapshot_insert.rs",
+      "source_blob": "9829e095d8e2310a4d3373c77a5184166a32f686",
+      "engineering_log_occurrences": 0,
+      "gate_controls_log_occurrences": 0,
+      "execution_in_these_two_jobs": "not_run",
+      "reason": "No cc-db --lib test harness selected."
+    },
+    {
+      "name": "snapshot_dependency_manifest_and_rows_match_original_full_writer",
+      "source": "crates/cc-db/tests/p2b_resolution_store.rs",
+      "source_blob": "f698d3427ad90c194cfdb5b7c241e0802c1267d1",
+      "engineering_log_occurrences": 0,
+      "gate_controls_log_occurrences": 0,
+      "execution_in_these_two_jobs": "not_run",
+      "reason": "No cc-db --test p2b_resolution_store target selected."
+    },
+    {
+      "name": "snapshot_dependency_failure_keeps_live_rows_and_generation_like_original",
+      "source": "crates/cc-db/tests/p2b_resolution_store.rs",
+      "source_blob": "f698d3427ad90c194cfdb5b7c241e0802c1267d1",
+      "engineering_log_occurrences": 0,
+      "gate_controls_log_occurrences": 0,
+      "execution_in_these_two_jobs": "not_run",
+      "reason": "No cc-db --test p2b_resolution_store target selected."
+    },
+    {
+      "name": "reused_projection_keeps_exact_sql_value_bytes_and_only_its_layout",
+      "source": "crates/cc-eval/src/benchmark/oracle.rs",
+      "source_blob": "4c7fdb879e039af164b3b10ea1491d538c69ac68",
+      "engineering_log_occurrences": 0,
+      "gate_controls_log_occurrences": 0,
+      "execution_in_these_two_jobs": "not_run",
+      "reason": "No cc-eval --lib oracle unit-test harness selected."
+    },
+    {
+      "name": "projection_error_clears_partial_and_prior_values_before_recovery",
+      "source": "crates/cc-eval/src/benchmark/oracle.rs",
+      "source_blob": "4c7fdb879e039af164b3b10ea1491d538c69ac68",
+      "engineering_log_occurrences": 0,
+      "gate_controls_log_occurrences": 0,
+      "execution_in_these_two_jobs": "not_run",
+      "reason": "No cc-eval --lib oracle unit-test harness selected."
+    }
+  ],
+  "six_control_conclusion": "Absence was checked against the complete logs, and confirmed from the actual Cargo target/filter inventory and the fixed gate driver. Compiling cc-db/cc-eval as dependencies does not execute their #[cfg(test)] unit/integration controls. These two completed successes are not evidence that the six new controls passed. This review makes no claim about their execution in other CI jobs.",
+  "full_original_logs": [
+    {
+      "job": 113722626073,
+      "git_blob": "f04cc87d6df6f966fa3c711b9d4794e1cda30829",
+      "bytes": 1537955,
+      "sha256": "73082f0ee91ff5eb1706873e247cf5c851b030a8e39e8a4a4b421e7b5da1d6ef",
+      "official_decoded_log_full": true,
+      "unmodified": true,
+      "unreferenced_blob_created": true,
+      "official_full_readback_equal": true
+    },
+    {
+      "job": 113722626882,
+      "git_blob": "3105d5694ab2da75eb67ec1411dbf44c040f00a1",
+      "bytes": 58734,
+      "sha256": "e63ca44ed9466649f62906167c31dfb9d2e91acc8f3437399e8ce65f639a9a6c",
+      "official_decoded_log_full": true,
+      "unmodified": true,
+      "unreferenced_blob_created": true,
+      "official_full_readback_equal": true
+    }
+  ],
+  "actual_observation_sources": [
+    "https://api.github.com/repos/jyqj/codecortex/actions/runs/37900794895",
+    "https://api.github.com/repos/jyqj/codecortex/actions/runs/37900794895/jobs?per_page=100",
+    "https://api.github.com/repos/jyqj/codecortex/actions/runs/37900795081",
+    "https://api.github.com/repos/jyqj/codecortex/actions/runs/37900795081/jobs?per_page=100",
+    "https://api.github.com/repos/jyqj/codecortex/git/commits/ee467290785a4c8906d11d6d8764d2f1b4b92241",
+    "https://api.github.com/repos/jyqj/codecortex/git/commits/4de2717bf21f80a2d885416a4170d54954d307a0"
+  ],
+  "limits": [
+    "No original ZIP/member verification in this report; upload metadata copied from exact official logs, not relabelled as local rehash.",
+    "No full ordinary CI/source-gate or full-scale acceptance inferred from these two jobs.",
+    "No test execution credit transferred to new P86a6 or a later source.",
+    "Independent #173 scale37896198208 not queried, cancelled, retried, modified or attributed to180.",
+    "Source/tree/task/ref unchanged by reviewer."
+  ],
+  "original_tasks": {
+    "done": 163,
+    "remaining": 29,
+    "newly_closed": 0
+  }
+}

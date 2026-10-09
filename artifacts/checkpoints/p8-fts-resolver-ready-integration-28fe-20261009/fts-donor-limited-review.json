@@ -1,0 +1,481 @@
+{
+  "schema": "p8-pr178-versus-pr180-limited-independent-review-v1",
+  "reviewer": "/root/acceptance_review",
+  "observed_utc": "2026-10-09 07:59:42 UTC",
+  "repository": "jyqj/codecortex",
+  "pr178": {
+    "head": "9f7b16f0758eb79f306cf44605b84550f02de441",
+    "draft": true,
+    "product": "9d13cb30dd618bc5d106186711c1d98e01b47995",
+    "review": "6f11ae6904fd8d08fec4b4abd83f510cedcba6c8",
+    "declared_base": "60e5ce3ccc86f5cccb40f6f9c32bbc7b77bf1e9d"
+  },
+  "fixed_pr180": "ee467290785a4c8906d11d6d8764d2f1b4b92241",
+  "verdict": "scoped_static_FTS_candidate_reasonable_no_confirmed_logic_defect; insufficient_current_performance_evidence_to_recommend_replacing_fixed_180_before_study",
+  "recommendation": {
+    "now": "Keep PR180 fixed and PR178 draft. Do not make this optional optimization a new prerequisite for the ten original TODOs. Its current engineering checks and statement-count controls are real, but no wall-time/RSS benefit on the exact source combination has been established. Do not attribute A23 100k lost-runner failure to FTS.",
+    "conditional_integration": "If root separately elects to adopt it, compose only the five listed FTS paths onto 180, preserving its dependency batching/oracle/statistics/workflow changes. Rebind actual composed P/R/G and run its original engineering gates. A small direct old/new-window BM25 and post-rebuild incremental query comparison would address the specific unexercised seam; this is change-review advice, not a new original-task threshold.",
+    "do_not": "Do not replace the two overlapping files wholesale, copy 178's old registry/pins, remove 180's 139th validation workflow, import its absent 180 improvements, reuse prototype timing as current timing, or mark any TODO done."
+  },
+  "actions": {
+    "native_or_tests_executed": false,
+    "new_workflow_run": false,
+    "refs_commits_tasks_modified": false,
+    "unreferenced_reports_only": true
+  },
+  "exact_scope": {
+    "comparison_method": "Both GitHub recursive crates and scripts trees independently read, truncated=false. The 60e-to-178 compare is three-dot with merge base 26768b5e..., so actual endpoint subtree maps—not that compare alone—determine the 180 differences.",
+    "crates_trees": {
+      "pr178": "848227417e8c55be6a87b389d4b2c4ee32db71b4",
+      "pr180": "d18e8dc9aae30a38dde4d0452ec0998c5c115911"
+    },
+    "scripts_trees": {
+      "pr178": "1f685f923e28d3f51787f11d14b63f7501f33090",
+      "pr180": "6d2b0c8ded12862796dc022f7302206489fdd1cb"
+    },
+    "actual_crates_differences": [
+      {
+        "path": "crates/cc-db/src/index_db_multi_insert.rs",
+        "p178": "539b9d19f1034a8cfd918090b1b48dacc177494c",
+        "p180": "a881c73c46693bb4ff098b283a05f57f04cb1ee4",
+        "mode178": "100644",
+        "mode180": "100644"
+      },
+      {
+        "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+        "p178": "c4eee424e815aafce896379387fb894d99d490e6",
+        "p180": "9829e095d8e2310a4d3373c77a5184166a32f686",
+        "mode178": "100644",
+        "mode180": "100644"
+      },
+      {
+        "path": "crates/cc-db/src/index_db_write_batch.rs",
+        "p178": "32ed0414d16321032a45aa6b8f0a5333da7acf81",
+        "p180": "f1c7d161db2d3d09a3f30c5917490ec18338041d",
+        "mode178": "100644",
+        "mode180": "100644"
+      },
+      {
+        "path": "crates/cc-db/src/public_surface_store.rs",
+        "p178": "df522a327e68a820699ce21f4c5b9880f48d519c",
+        "p180": "d0fa4c622876197bbb8c14b7d94f0d8ab3e1f318",
+        "mode178": "100644",
+        "mode180": "100644"
+      },
+      {
+        "path": "crates/cc-db/src/resolution_dependency_store.rs",
+        "p178": "6e90d4e85aae79d73d5d59b8defbd39d02c61097",
+        "p180": "97d3d9519fe10ed7cd30b9783164348998c02abc",
+        "mode178": "100644",
+        "mode180": "100644"
+      },
+      {
+        "path": "crates/cc-db/src/snapshot_fts_tests.rs",
+        "p178": "c7cf6e2d7fd61a1e6a33aad772c3c0530484d0b8",
+        "p180": null,
+        "mode178": "100644",
+        "mode180": null
+      },
+      {
+        "path": "crates/cc-db/src/snapshot_write_txn.rs",
+        "p178": "e850a30b549fcd1f0bda38fb2900d61add6db029",
+        "p180": "20dc6ffc60d2a63320b56d1bd8e010e2937ffe26",
+        "mode178": "100644",
+        "mode180": "100644"
+      },
+      {
+        "path": "crates/cc-db/tests/p2b_resolution_store.rs",
+        "p178": "babd9caa60308b9f9dda8d34770eb1fefd4d48d9",
+        "p180": "f698d3427ad90c194cfdb5b7c241e0802c1267d1",
+        "mode178": "100644",
+        "mode180": "100644"
+      },
+      {
+        "path": "crates/cc-eval/src/benchmark/oracle.rs",
+        "p178": "d6324b3003b5a3c3e8a1680536260ea99a950152",
+        "p180": "4c7fdb879e039af164b3b10ea1491d538c69ac68",
+        "mode178": "100644",
+        "mode180": "100644"
+      },
+      {
+        "path": "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+        "p178": "3c05342f976f534861347c098c3229ce988dfb61",
+        "p180": "6c60e6244fe1f316b180f8ea656d2b9f1ad17aa3",
+        "mode178": "100644",
+        "mode180": "100644"
+      },
+      {
+        "path": "crates/cc-eval/src/benchmark/statistics.rs",
+        "p178": "869d8494d8b22fff029b5203a9ce73736e2ee368",
+        "p180": "415fbdc0a254729e4b7fa5f2fe040b3019d90aa9",
+        "mode178": "100644",
+        "mode180": "100644"
+      },
+      {
+        "path": "crates/cc-eval/src/bin/p8-runtime-statistics.rs",
+        "p178": "34f5cf8a67962edd94c277cf0e9dd299aa004235",
+        "p180": "6273b16ebc403602b5aaf3eb0a9699b5cdfdca70",
+        "mode178": "100644",
+        "mode180": "100644"
+      },
+      {
+        "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+        "p178": "7aefc0bb357b97df3c8ba45257d2b45509f3e483",
+        "p180": "f54e02421b71259abd6c2b3b1e0ab6de48f7c883",
+        "mode178": "100644",
+        "mode180": "100644"
+      }
+    ],
+    "actual_scripts_differences": [
+      {
+        "path": "scripts/p8_runtime.py",
+        "p178": "3fe09616768cf35ecc3b76f348ef9eca88d98cd8",
+        "p180": "031ebdc4c604fd39ab2d647b652ca533180bf818",
+        "mode178": "100644",
+        "mode180": "100644"
+      },
+      {
+        "path": "scripts/reviewed-source-registry-v15.json",
+        "p178": "591c46132065cd1f1055169ff12e70df6bd47196",
+        "p180": "77d884eb3e8fb633d24fe61f0c954b993216def0",
+        "mode178": "100644",
+        "mode180": "100644"
+      },
+      {
+        "path": "scripts/tests/test_p8_runtime.py",
+        "p178": "38cf6a820391854a2fab6ba8d6daf8d7076ff4a1",
+        "p180": "797dda75c3d23f4bca92996a8e316c279d82b6e4",
+        "mode178": "100644",
+        "mode180": "100644"
+      },
+      {
+        "path": "scripts/verify_reviewed_source_v15.py",
+        "p178": "1d0ef393a39839bb3d7c23f16a5202bf18bfb895",
+        "p180": "12959c5499f785178fab52ca587e982c3789a0e2",
+        "mode178": "100644",
+        "mode180": "100644"
+      }
+    ],
+    "new_FTS_files": [
+      {
+        "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+        "blob": "c4eee424e815aafce896379387fb894d99d490e6",
+        "bytes": 18581,
+        "sha256": "1dbc014e9798dfac6d1d2b82bc9913fb4603e6aeb301e9e0fd22c8823a2cb1ee",
+        "matches_prior_review": true,
+        "mode": "100644",
+        "base180_blob": "9829e095d8e2310a4d3373c77a5184166a32f686",
+        "action": "merge only FTS additions; preserve 180 generic bounded_rows and resolution_dependencies"
+      },
+      {
+        "path": "crates/cc-db/src/index_db_write_batch.rs",
+        "blob": "32ed0414d16321032a45aa6b8f0a5333da7acf81",
+        "bytes": 56514,
+        "sha256": "25f82e53d9479c357cbe7a02741f24cb92114f580e2dcddd8b1056e2080b52d7",
+        "matches_prior_review": true,
+        "mode": "100644",
+        "base180_blob": "f1c7d161db2d3d09a3f30c5917490ec18338041d",
+        "action": "add 408-byte private helper only; preserve 180 insert_snapshot_on dispatch"
+      },
+      {
+        "path": "crates/cc-db/src/snapshot_write_txn.rs",
+        "blob": "e850a30b549fcd1f0bda38fb2900d61add6db029",
+        "bytes": 9084,
+        "sha256": "7c941b0e7fca4c48ec0c8b44ee81108a2c201e0b28ab7a69f285dbc329eb446f",
+        "matches_prior_review": true,
+        "mode": "100644",
+        "base180_blob": "20dc6ffc60d2a63320b56d1bd8e010e2937ffe26",
+        "action": "exact source candidate possible; combination still unexecuted"
+      },
+      {
+        "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+        "blob": "7aefc0bb357b97df3c8ba45257d2b45509f3e483",
+        "bytes": 10144,
+        "sha256": "bca23a73b0a2de0ca38f9593fbb526b69a7acc138b9ec8a680001fb79e666e9e",
+        "matches_prior_review": true,
+        "mode": "100644",
+        "base180_blob": "f54e02421b71259abd6c2b3b1e0ab6de48f7c883",
+        "action": "exact source candidate possible; combination still unexecuted"
+      },
+      {
+        "path": "crates/cc-db/src/snapshot_fts_tests.rs",
+        "blob": "c7cf6e2d7fd61a1e6a33aad772c3c0530484d0b8",
+        "bytes": 22068,
+        "sha256": "c0454c8325a0691cc9caa0b2d9d99e017483b56991fd76dabde371869bfe428d",
+        "matches_prior_review": true,
+        "mode": "100644",
+        "base180_blob": null,
+        "action": "exact source candidate possible; combination still unexecuted"
+      }
+    ],
+    "known_mac_four_and_reconcile": "All five Rust paths equal PR180's Git blobs; not re-reviewed here.",
+    "native_input_effect": "One new Rust test source path; 180's 1089 native/source-map inputs would become 1090 if and only if this exact five-path addition is composed without other changes. Existing 139 validation inputs remain; the new Rust test is in the Rust/native inventory.",
+    "semantic_overlap": "Two textual overlaps only: snapshot_insert helper module and write_batch dispatch. Other 180 changes to resolution storage/insert helpers/oracle/statistics/runtime remain in force."
+  },
+  "static_findings": [
+    {
+      "id": "real_FTS_tables",
+      "source": "crates/cc-db/src/sql/index_v1.sql",
+      "blob": "998608d9c6d07eb4afec0ce7e13c1f85bfc7a441",
+      "lines": "327-351",
+      "finding": "files_fts and literal_fts are ordinary content-storing FTS5 virtual tables, without content= external-content declaration. Both retain unicode61 remove_diacritics 2 and identical column/UNINDEXED definitions. SELECT over logical FTS rows still does not by itself prove postings/ranking."
+    },
+    {
+      "id": "triggers",
+      "finding": "Schema SQL is unchanged in both endpoints. files/literal mirrors remain application-maintained; symbols_fts and file_paths_fts triggers remain active and unchanged; chunks_fts remains immediate. Candidate compares full non-index main schema SQL and rejects any TEMP object before deferring, so extra/altered triggers/views/tables/FKs fall back to the original path. It does not drop/rewrite FTS triggers."
+    },
+    {
+      "id": "window_correctness",
+      "source": "index_db_snapshot_insert.rs:33-148",
+      "finding": "An already active transaction and canonical schema are required. At most 256 input files/window; checked maximum-rowid capacity counts every attempted literal, falling back before random-rowid overflow. Base inserts keep order and OR IGNORE survivor behavior. Flush selects actual surviving base rows in (before,after] by rowid, preserving cross-window literals that point to an older file and not reindexing ignored losers."
+    },
+    {
+      "id": "transaction_failure_boundary",
+      "source": "snapshot_write_txn.rs:65-128; indexer_phases/snapshot.rs:111; index_db_rebuild.rs:274-278,351-358; direct_writer.rs:97-102",
+      "finding": "Old public write_file_data method is byte-identical. New opt-in method explicitly requires owner abort/discard; sole changed production call keeps ?. WAL staging commits only after write_fn success; rebuild swaps only after successful staging. DirectWriter OFF may leave disposable physical pages after error; code and tests do not claim physical rollback, only no publication. Failures can occur after additional base writes inside a window, which is why the new method must not be used for error-then-commit callers."
+    },
+    {
+      "id": "unchanged_incremental",
+      "finding": "No incremental entry, delete/update statement, transaction/CAS/epoch/freshness code is modified. PR178 adds one private insert_file_data_impl(...,true,true) helper. Existing ordinary false/false and deferred true/false paths stay unchanged. Combining with 180 must retain its snapshot_leaf_batches-controlled public_surface::insert_snapshot_on branch."
+    },
+    {
+      "id": "exact_composition_checks",
+      "finding": "Removing precisely the added 408-byte helper from 178 write_batch and replacing its old single public_surface insert with 180's branch recovers the entire 180 file byte-for-byte. Removing the 2026-byte new method recovers 180 snapshot_write_txn; replacing the sole caller recovers 180 snapshot.rs. For snapshot_insert, transplant only new schema/window block and new test module; retain generic iterator helper and resolution_dependencies."
+    },
+    {
+      "id": "boundedness",
+      "finding": "File count is bounded, not literal count, FTS-internal buffer bytes or process RSS. 256 files may contain many literal rows. Same O(files+literals) postings work remains; statement dispatch changes from per-row to per-window. MAX uses rowid tail lookup and range scan; no new whole-base scan in flush."
+    },
+    {
+      "id": "query_coverage_limit",
+      "finding": "Nine added tests execute real MATCH on files/chunks/literals/file_paths, including winner/loser and cross-window terms. They do not execute bm25 or FTS5 integrity-check. The existing successful fts_file_summaries_orders_by_bm25 inserts via the old insert_file_with_summary helper, so it is not a direct old-vs-new-window BM25 proof. Existing PRAGMA integrity/FK and all original parity gates are retained, not a substitute for postings/ranking-specific evidence. Narrow cross-check with runtime_review found no separately held direct deferred-full-rebuild→BM25→incremental artifact; this is a statement about the examined scope, not an exhaustive repository-wide absence proof."
+    }
+  ],
+  "execution_evidence": {
+    "prior_non_author_review": {
+      "blob": "cb1f74ebd38c5e96b7bff984f2d82830b8cb6561",
+      "all_five_current_bytes_equal_its_manifest": true,
+      "execution_credit": false
+    },
+    "completed_engineering": {
+      "blob": "b112f98e63c6712480524cb0ee98a3a082a3baa9",
+      "bridge": "46b6051dc99df6b83009d29ba7b7c09ddc04075b",
+      "actual_identity": "G173 checkout 275e8799... plus nine frozen uncommitted files, followed by committed-P exact bridge; not direct P/G checkout execution",
+      "cache": "APFS clone of previous terminal target; not fresh cold-build performance"
+    },
+    "raw_workspace_stdout": {
+      "blob": "a667b49e9bb807e0ecb66b09ac1c6ec35bbaca29",
+      "bytes": 239750,
+      "sha256": "9deeebd18822deaef0e2902fa7b2da8f197f30133d4b6b4af7650cda4efea3ce",
+      "independently_rehashed": true,
+      "summary_groups": 218,
+      "passed": 2727,
+      "failed": 0,
+      "ignored": 73,
+      "measured": 0,
+      "filtered": 0
+    },
+    "raw_workspace_stderr": {
+      "blob": "3c3092faa03eaa8e5985099891c5782dbb7d98fe",
+      "bytes": 138059,
+      "sha256": "824d91607a0604b84ec7783cc33d80cd9b28ab5b3f6a25e4614b5e2c7e59e957",
+      "independently_rehashed": true
+    },
+    "nine_ordinary_tests": [
+      {
+        "name": "windows_preserve_all_rows_fts_search_and_cross_path_survivors",
+        "actual_raw_result": "ok"
+      },
+      {
+        "name": "checked_capacity_and_near_maximum_rowids_use_original_fallback",
+        "actual_raw_result": "ok"
+      },
+      {
+        "name": "public_entry_preserves_partial_state_when_caller_commits_after_error",
+        "actual_raw_result": "ok"
+      },
+      {
+        "name": "autocommit_keeps_original_partial_failure_and_immediate_mirrors",
+        "actual_raw_result": "ok"
+      },
+      {
+        "name": "noncanonical_or_temp_schema_falls_back_without_losing_mirrors",
+        "actual_raw_result": "ok"
+      },
+      {
+        "name": "late_failure_rolls_back_flushed_windows_and_preserves_live_generation",
+        "actual_raw_result": "ok"
+      },
+      {
+        "name": "private_fts_flush_full_error_abandons_actual_rebuild_without_publication",
+        "actual_raw_result": "ok"
+      },
+      {
+        "name": "max_rowid_boundaries_use_tail_lookup_with_a_real_scan_control",
+        "actual_raw_result": "ok"
+      },
+      {
+        "name": "rowid_range_uses_primary_key_and_reduces_mirror_statement_runs",
+        "actual_raw_result": "ok"
+      }
+    ],
+    "query_positive_cases": "n=0,1,199,200,255,256,257,513; content/rowid dump, MATCH, FK check; duplicate losers absent; cross-window literal present.",
+    "actual_max_control": "For files and literal_index at 0/1/257 rows: max_fullscan_steps=0; EXPLAIN contains Last; 257-row SUM fullscan_steps=256. Raw direct-stderr JSON read and decoded.",
+    "statement_control": "Executed ordinary test asserts original 257+257 mirror statements versus candidate 2+2 and range-query INTEGER PRIMARY KEY plan. This is SQL run-count evidence, not wall time.",
+    "failure_controls": "WAL late duplicate/FK error after first 256-file flush rolls back; real live generation and reopened DB unchanged. Private-flush SQLITE_FULL is inside real temp rebuild owner and preserves live DB; not public-entry end-to-end injection or DirectWriter OFF physical rollback.",
+    "current_exact_source_same_environment_AB_timing": null,
+    "current_exact_source_RSS_comparison": null,
+    "performance_conclusion": "None found for the exact current five-file combination in its frozen evidence. Earlier prototype AB/BA timings explicitly excluded by owner/independent review and not transferred. No 50k/100k benefit percentage or cause attribution can be derived."
+  },
+  "actual_CI": {
+    "source_head": "9f7b16f0758eb79f306cf44605b84550f02de441",
+    "ordinary": {
+      "run": 37896539769,
+      "msrv": {
+        "job": 113709067574,
+        "conclusion": "success"
+      },
+      "security": {
+        "job": 113709067861,
+        "conclusion": "success"
+      },
+      "check": {
+        "job": 113709067893,
+        "status": "in_progress",
+        "conclusion": null,
+        "last_observed_active_step": "P4-A source fidelity and real MCP indexing"
+      },
+      "scope": "Official API steps; no claim remaining gates passed"
+    },
+    "P7closeout": {
+      "run": 37896539239,
+      "job": 113709066322,
+      "conclusion": "failure",
+      "command": "cargo test -p cc-semantic --locked --all-targets -- --nocapture",
+      "exit": 101,
+      "failed_test": "independently_observed_sigkill_boundaries",
+      "raw_error": "called `Result::unwrap()` on an `Err` value: ParseIntError { kind: Empty }",
+      "raw_location": "crates/cc-semantic/tests/crash_independent_review.rs:229:18",
+      "log_blob": "93ebefb560b74534bd3ac64d035b4bc818b8fd91",
+      "log_bytes": 187462,
+      "log_sha256": "bbc7c659020b24f702ddeb5fb172f7ec4d97a3b749d2b0482173e3093823d45c",
+      "official_log_uploaded_and_full_readback_equal": true
+    },
+    "other_observed_runs": [
+      {
+        "id": 37896539353,
+        "conclusion": "success",
+        "name": "P8 failure gates"
+      },
+      {
+        "id": 37896539337,
+        "conclusion": "success",
+        "name": "P8 lifecycle"
+      },
+      {
+        "id": 37896539277,
+        "conclusion": "success",
+        "name": "P7 engineering"
+      },
+      {
+        "id": 37896539291,
+        "status": "queued",
+        "name": "P8 runtime"
+      },
+      {
+        "id": 37896539450,
+        "status": "in_progress",
+        "name": "P8 platform"
+      }
+    ],
+    "not_all_ci_green": true
+  },
+  "ready_file_defect": {
+    "actual_source_blob_both_178_180": "47a9abd36f8a4348b4c3c8731565da94833f69cb",
+    "original_introducing_default_branch_commit": "0406095d2224b416b9837f849833f243a8713593",
+    "code": "durable: File::create(final ready) -> write_all(PID) -> sync_all, lines92-102; parent lines217-229 waits only exists then read_to_string.parse. This can expose empty ready contents; log proves empty parse, not exact seed/PID/scheduling interleaving.",
+    "minimal_fix": "Write complete PID into a newly created same-directory temporary file; sync/close it; atomically rename to final ready. Keep 15-second limit, PID equality, 3x5 cases, child ownership/SIGKILL/recovery/assertions. Do not retry/ignore empty parse or broaden deadline.",
+    "publication_observation": "Superseded by the fresh c8 follow-up below. Initial checked head9f had no committed fix; during this audit PR178 advanced to c8 with an atomic-ready publication fix. Original 9f failure and its execution identity remain preserved.",
+    "unrelated_to_FTS": "Same original source exists in 180. This failure is not evidence that FTS caused it, and 178's other successes do not erase the failure."
+  },
+  "remaining_original_todos": 29,
+  "new_original_todos_completed": 0,
+  "release_or_fullscale_acceptance": false,
+  "limitations": [
+    "No new native, tests, SQL, benchmark or CI run executed by reviewer.",
+    "No whole 110-artifact body audit and no holdout/provider data inspection.",
+    "Current ordinary CI ongoing; its eventual result must be refreshed before any merge.",
+    "Current branch was not merged, and no source/registry/guard/task/ref changed."
+  ],
+  "pr178_followup": {
+    "head": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+    "product": "35a7b3412e5fdee9e8ff88951735c06b0e371465",
+    "review": "a9706a90a72226cb59c3bfd374ef9c1e3d66cbcb",
+    "compare_status": "ahead",
+    "total_changed_paths": 117,
+    "native_changed_paths": [
+      {
+        "path": "crates/cc-semantic/tests/crash_independent_review.rs",
+        "blob": "412bfb88b7d10dcf0f324d916e4a8671c1abd482",
+        "scope": "Replace final-ready write with same-directory ready.pending durable write (File dropped at durable return), then rename to final ready; entire remaining file unchanged by official patch."
+      }
+    ],
+    "other_changes": "Two registry/guard bindings plus 114 added artifact paths. FTS five native/test files are unchanged.",
+    "separate_review_assigned_to": "/root/recovery_audit",
+    "source_review": "449d11b3a2df3e6f073d7f85994eb02bbc40f49a",
+    "engineering_review": "c2cdf5d95d9f77d955d7b3ba965b1ef6da6eab01",
+    "actual_bridge": "7c0ac829222625e4d72951a9dd96679385ea1957",
+    "current_runs": [
+      {
+        "id": 37901930820,
+        "name": "CI",
+        "status": "queued",
+        "conclusion": null,
+        "attempt": 1
+      },
+      {
+        "id": 37901930843,
+        "name": "P8 original failure gates",
+        "status": "queued",
+        "conclusion": null,
+        "attempt": 1
+      },
+      {
+        "id": 37901931021,
+        "name": "P8 platform cold builds",
+        "status": "queued",
+        "conclusion": null,
+        "attempt": 1
+      },
+      {
+        "id": 37901930897,
+        "name": "P8 runtime observations",
+        "status": "queued",
+        "conclusion": null,
+        "attempt": 1
+      },
+      {
+        "id": 37901930990,
+        "name": "P7 engineering regressions",
+        "status": "queued",
+        "conclusion": null,
+        "attempt": 1
+      },
+      {
+        "id": 37901931093,
+        "name": "P7 closeout evidence",
+        "status": "queued",
+        "conclusion": null,
+        "attempt": 1
+      },
+      {
+        "id": 37901930818,
+        "name": "P8 lifecycle and resource observations",
+        "status": "queued",
+        "conclusion": null,
+        "attempt": 1
+      }
+    ],
+    "scope_warning": "This FTS audit does not re-label original 9f engineering/CI runs as c8, or certify c8's new engineering archive. Root/recovery audit that ready-only update separately."
+  }
+}

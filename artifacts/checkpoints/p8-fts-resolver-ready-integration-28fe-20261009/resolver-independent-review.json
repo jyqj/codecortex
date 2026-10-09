@@ -1,0 +1,238 @@
+{
+  "schema_version": 1,
+  "reviewed_at_utc": "2026-10-09T07:50:16Z",
+  "reviewer": "/root/recovery_audit",
+  "repository": "jyqj/codecortex",
+  "pull_request": 179,
+  "status": "open_non_draft",
+  "fixed_head": "edd00e7618ec4dba921d5c80d57a31a732463c46",
+  "fixed_base": "840fa2e0a26ab60c138747a4309aba5df506edc1",
+  "comparison_target_PR180": "ee467290785a4c8906d11d6d8764d2f1b4b92241",
+  "verdict": "accepted_scoped_static_two_path_delta",
+  "recommendation": "Worth integrating the exact two resolver files before the new full study is first frozen/run, subject to the actual new combined P/R/G and original CI. No direct merge/full-head replacement or performance approval is granted; current PR179 ordinary check is still queued.",
+  "actual_delta": {
+    "relative_fixed_175_base": {
+      "product_paths": 2,
+      "new_validation_or_workflow_paths": 0,
+      "added_archive_paths": 8,
+      "pin_paths": 2,
+      "official_compare_ahead": 6,
+      "official_compare_behind": 0
+    },
+    "files": [
+      {
+        "path": "crates/cc-index/src/resolver/catalog.rs",
+        "mode": "100644",
+        "before_on_PR175_and_PR180": {
+          "git_blob": "78d9b810708ec45bff6ae42f1bb440850908fa92",
+          "bytes": 35558,
+          "sha256": "e377d824a40a648338477a16d47eaabebfc61a5d8c68d8c8ab86f5a5622854a1"
+        },
+        "after_at_fixed_PR179": {
+          "git_blob": "69ca350784614fcc3df3b93eac981023d18eaea0",
+          "bytes": 39427,
+          "sha256": "6b9116062c9cd345b4a5a56595ce6d2bac966a1465e8406901313a0750b086be"
+        },
+        "fixed_base_raw_equal": true,
+        "fixed_head_raw_equal": true
+      },
+      {
+        "path": "crates/cc-index/src/resolver/helpers.rs",
+        "mode": "100644",
+        "before_on_PR175_and_PR180": {
+          "git_blob": "6d1f5c90aa27e573dcf2d885cee7fbeea96371c8",
+          "bytes": 11363,
+          "sha256": "48423f474abd90ad11c6e943036793ff5b01faf710cd412037e77a686ff7f2a0"
+        },
+        "after_at_fixed_PR179": {
+          "git_blob": "417e940d4682cc41c9adbeb2fb14b24d1d1fa8e2",
+          "bytes": 15113,
+          "sha256": "5f37cf6b0aaf47da076c9ce8bc3929cb627b0f13037dab1bc3e560157c8c7c88"
+        },
+        "fixed_base_raw_equal": true,
+        "fixed_head_raw_equal": true
+      }
+    ]
+  },
+  "semantic_review": [
+    {
+      "area": "export_registration",
+      "finding": "Same mandatory lowercase name, optional lowercase export alias and conditional default key. Pre-filter default equality and alias/name equality preserve one append per distinct key; original per-symbol append order, empty names/aliases, Unicode lowercase expansion and default collisions remain. The temporaryHashSet and repeated file bucket lookup/clones are removed. Direct export queries remain exact map lookups, not key iteration."
+    },
+    {
+      "area": "catalog_lifecycle",
+      "finding": "Entry allocation, tombstoned slots, remove_files, lookup APIs and other indices are byte-identical outside the sole export registration replacement. Existing symbol numbering, removal/re-add semantics and candidate identities remain; no global cache or lifetime extension was introduced."
+    },
+    {
+      "area": "path_prefix",
+      "finding": "Lazy split/zip computes the same maximal common prefix over original strip_ext output, including empty path segments, separators, case-sensitive unknown extensions and Unicode. Only intermediate Vec<&str> allocations are removed."
+    },
+    {
+      "area": "candidate_selection",
+      "finding": "Every candidate is still scanned. The monotonically increasing best-distance tracker retains every tie for the final maximum in original input order, then calls unchanged stable_candidates. Original sorting, adjacent identity deduplication, uniqueness decision, confidence and candidate_count_penalty remain. Empty input still yields empty/None. No candidate early-drop rule, best-of execution or shortened external file scan was added."
+    },
+    {
+      "area": "boundary_preservation",
+      "finding": "Complete fixed-base comparison contains no other production file. External-edit detection, dependency closure, root pending, epoch/CAS, fallback, transaction/drop and workload/acceptance budgets are not edited. Resolver outputs remain the semantic input to those unchanged mechanisms."
+    },
+    {
+      "area": "performance_limit",
+      "finding": "Explicit repeated work is removed, but no timing/RSS improvement is measured. One-pass best.clear() keeps allocated capacity: many earlier low-distance ties followed by one better candidate can retain a larger temporary index buffer than the old final-ties-only collection. Worst-case remainsO(C); do not claim allocation/peakRSS improves for every input or that this fixes the prior100k failures."
+    }
+  ],
+  "prepared_controls": {
+    "names": [
+      "export_registration_matches_legacy_for_alias_collisions",
+      "export_registration_matches_legacy_after_remove_and_readd",
+      "streamed_prefix_matches_original_path_segment_semantics",
+      "one_pass_distance_preserves_original_ties_duplicates_and_order"
+    ],
+    "scope": "Actual final test code read, non-ignored; original HashSet and two-pass/Vec algorithms retained as independent test-only references. Covers alias/default/Unicode/empty collisions, chunked append, tombstones/remove-readd, path edges and exhaustive candidate sequences length0..4.",
+    "current_execution": "Not observed executed. Current MSRV checks compile alltargets; ordinary full check remains queued."
+  },
+  "interaction_with_180": {
+    "before_OID_bridge": "Both target files at fixed175base and actual180G have identical mode/OID/bytes; actual fixedref raw bodies independently match.",
+    "overlap_with_snapshot_oracle_eight": [],
+    "overlap_with_175_statistics_five": [],
+    "overlap_with_173_reconcile_and_174_mac": [],
+    "no_changed_API_between_groups": true,
+    "do_not_copy_PR179_pins": "PR179 pins bind its own1089/42/138 domain. PR180 retains139validation inputs including surface controls plus its scale maxparallel20. Replacing the whole179 tree or copying its registry would discard already reviewed180 changes. Use only the exact two target file blobs and separately retained original archive evidence, then create newP/R/G.",
+    "prospective_two_file_only_map": {
+      "product_manifest_sha256": "b01e38ad32c5d13ae327f2b6986e039d9ca0911304ae0e7bec65ebdd41f7d5b0",
+      "complete_count": 1089,
+      "delta_count": 46,
+      "validation_count": 139,
+      "validation_manifest_sha256": "e2bfd5f7c64a1e8ab3db5cf43ac166dfd2ae7f591dfaa482e3e687bee3b16389",
+      "actual_combination_exists": false
+    }
+  },
+  "source_review_evidence": {
+    "current_canonical": {
+      "git_blob": "2e95d14ca4e6b98171dcf0e2722b31722f690c1d",
+      "bytes": 176667,
+      "sha256": "798f89e9faccaf235043775e885eef8a42226011d68ae87b495764b16aed3abd"
+    },
+    "current_review_source": "7e978288745f19d36279fa4d796deacb506938ba",
+    "current_product": "dc714a384cdde70ee326fafd1d9f0a04fbb9e117",
+    "semantic_review": {
+      "git_blob": "749bbdcb0b8aa220c512cc4877daa258c2850a0c",
+      "bytes": 4008,
+      "sha256": "efced8a5e1447dd91c836811cc0b748b24552a3c184dcd67c89be97a5a44fb36"
+    },
+    "original_composition_review": {
+      "git_blob": "b13a0ca87d1495c7bbd319aaabe11e586cabd388",
+      "bytes": 4790,
+      "sha256": "6aa7c498b8e271f7e3c02dd2f5284b47e99795bfbcd26d960d2a2db4c4f8d9cd"
+    },
+    "formatter_review": {
+      "git_blob": "89ee6ef6b759d6613c8d27296b2fb1be536de88c",
+      "bytes": 5269,
+      "sha256": "c69e18bbc9312702b37f46b65972d3ee004ba4ae9bdee90f64d9e80bf4840d74"
+    },
+    "author_facts": {
+      "git_blob": "c1ffd36fd0f9d017b3dc38832bf1b673743eeef9",
+      "bytes": 7177,
+      "sha256": "880090ba07f27b38e9e3afdc13e49794518d1b9f13c157c2068c1d82c1a9dade"
+    },
+    "method": "Read immutable review records, both complete current/baseline source bodies and every actual line difference. Prior independent reviews support but do not replace this target180 compatibility review."
+  },
+  "actual_CI": {
+    "snapshot": "Official current-head checks/jobs read during this review; not a promise about future status.",
+    "total_checks": 25,
+    "successful_checks": 2,
+    "queued_checks": 23,
+    "ordinary_check": {
+      "run": 37900454012,
+      "job": 113721515480,
+      "status": "queued",
+      "steps": []
+    },
+    "security": {
+      "job": 113721515236,
+      "status": "queued"
+    },
+    "checkout": {
+      "commit": "19442f6663ca6aa3be547db00a84537b305861db",
+      "tree": "6d9c1fe209aac4254c1b1c9af0231cde1754c799",
+      "parents": [
+        "840fa2e0a26ab60c138747a4309aba5df506edc1",
+        "edd00e7618ec4dba921d5c80d57a31a732463c46"
+      ],
+      "tree_exactly_equals_PR179_head": true
+    },
+    "msrv": {
+      "run": 37900454012,
+      "job": 113721515383,
+      "status": "success",
+      "rustc": "1.95.0 (59807616e 2026-04-14)",
+      "commands": [
+        "cargo check --workspace --all-targets --locked",
+        "cargo check -p cc-eval --all-targets --features eval-http --locked"
+      ],
+      "full_log": {
+        "bytes": 38729,
+        "sha256": "361496f0095e4b3885742c8bcbf42cbae95900920ecd07585c37ef613e436d4a",
+        "git_blob": "6e2a9bc8e8b7fe7d727e54bdb236d1c798f91786",
+        "official_readback_exact": true
+      }
+    },
+    "engineering": {
+      "run": 37900453981,
+      "job": 113721515287,
+      "status": "success",
+      "scope": "Original P7engineering regression matrix. Fullactual log read; preserves one preexisting ignored test. This is not execution of the4newresolver controls or a performance benchmark.",
+      "full_log": {
+        "bytes": 1540248,
+        "sha256": "067b80472b700268ae618b6a5e15fe29a4accfe5594e4ab9291854cd3da0f1c4",
+        "git_blob": "d6199d1f8ee3d7aeb5ce89436da4017444e97fd1",
+        "official_readback_exact": true
+      },
+      "artifact": [
+        {
+          "id": 11602705808,
+          "name": "p7-engineering-19442f6663ca6aa3be547db00a84537b305861db",
+          "size_in_bytes": 271034,
+          "digest": "sha256:cd260285388a277fe9c7662b3dd3f45f9f1d512e4795f9a07b6f5d0749a9c2c5",
+          "zip_read_by_this_review": false
+        }
+      ]
+    }
+  },
+  "original_failure_preserved": {
+    "source": "26888651b9eedcd1f784463ce54f9cef46b703ee",
+    "run": 37896625594,
+    "job": 113709327167,
+    "reason": "Originalcargo fmt --all -- --check exit1; three test-only formatting requests later repaired.",
+    "log": {
+      "git_blob": "9f345794222c578345d36dbe5f2091b6560f961e",
+      "bytes": 38796,
+      "sha256": "2af980744ee7016fd23bf6f92cfd158138496b2ac2f89af269beca1444a862b5"
+    },
+    "scope": "Immutable source tree and independent formatter record retain the firstfailure; it is never rewritten passed."
+  },
+  "performance_evidence": {
+    "candidate_benchmark_run_found": false,
+    "new_scale_run_in_head_runlist": false,
+    "measured_speedup": null,
+    "original100k_failure_cause": "not addressed or reclassified",
+    "basis": "PR179 official7current-head runs contain normalCI/P7/P8matrix jobs and no scale study; all8 newly archived files are source/fmt/review evidence, not measured performance. Author explicitly reports benchmark not_run. This is not a repository-wide claim that no unrelated experiment exists."
+  },
+  "unresolved_source_blockers": [],
+  "remaining_execution_requirements": [
+    "Current final179format/fullcheck/namedcontrols have not been observed passed.",
+    "Any new180+179 combination needs its own actual source proof and originalCI; neither179nor180results can be relabeled as that uncreatedsource.",
+    "No source change may be mixed into a scale study after its fixed source is launched."
+  ],
+  "task_accounting": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "newly_completed": 0
+  },
+  "actions": {
+    "created_unreferenced_report_and_original_log_blobs_only": true,
+    "refs_changed": false,
+    "PRs_changed": false,
+    "tests_or_native_executed": false
+  }
+}

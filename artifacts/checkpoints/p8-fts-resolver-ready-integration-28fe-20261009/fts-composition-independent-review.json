@@ -1,0 +1,224 @@
+{
+  "schema": "p8-FTS-on-PR180-independent-composition-review-v1",
+  "reviewer": "/root/runtime_review",
+  "reviewed_utc": "2026-10-09 08:04:47 UTC",
+  "verdict": "accepted_scoped_static",
+  "scope": "Five exact FTS paths composed onto fixed PR180; finite non-author source/interface/transaction review. No complete-source admission or new execution is claimed.",
+  "base": "ee467290785a4c8906d11d6d8764d2f1b4b92241",
+  "donor": "9f7b16f0758eb79f306cf44605b84550f02de441",
+  "author_receipt": {
+    "git_blob": "07be033e681aed55cc5c8cbd7f3d27d0f4cf65d9",
+    "bytes": 9071,
+    "sha256": "f8acdb1cd5d069e3ce959f7fe4048d11f6233edc0cfbcf6b239e7644813ad8dd",
+    "filemap_independently_matched": true
+  },
+  "files": [
+    {
+      "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+      "mode": "100644",
+      "base": {
+        "git_blob": "9829e095d8e2310a4d3373c77a5184166a32f686",
+        "bytes": 19048,
+        "sha256": "a461358a0a6b9cdfa058e2c45a4582e0033599c8d8b586256e358b10a9e2548b"
+      },
+      "donor": {
+        "git_blob": "c4eee424e815aafce896379387fb894d99d490e6",
+        "bytes": 18581,
+        "sha256": "1dbc014e9798dfac6d1d2b82bc9913fb4603e6aeb301e9e0fd22c8823a2cb1ee"
+      },
+      "candidate": {
+        "git_blob": "9cd3320336e1ee9eeeb8b279d0a97448f61a4563",
+        "bytes": 24457,
+        "sha256": "949fdaf5015703e4f55950c42cca28fcc527defc52c195894ed19bb5f125590b",
+        "exact_donor": false
+      }
+    },
+    {
+      "path": "crates/cc-db/src/index_db_write_batch.rs",
+      "mode": "100644",
+      "base": {
+        "git_blob": "f1c7d161db2d3d09a3f30c5917490ec18338041d",
+        "bytes": 56246,
+        "sha256": "62832b8bb77011b0c2afd9d83599ac840aeb5473b631ffb6f0470e64d48fb569"
+      },
+      "donor": {
+        "git_blob": "32ed0414d16321032a45aa6b8f0a5333da7acf81",
+        "bytes": 56514,
+        "sha256": "25f82e53d9479c357cbe7a02741f24cb92114f580e2dcddd8b1056e2080b52d7"
+      },
+      "candidate": {
+        "git_blob": "c732fab2d5cc62209a89317f42a5a4adc4edf0fb",
+        "bytes": 56654,
+        "sha256": "f9961e718523a83db99f6ce0911aceae3465a9ddd511f8b752d8a98fea43964c",
+        "exact_donor": false
+      }
+    },
+    {
+      "path": "crates/cc-db/src/snapshot_write_txn.rs",
+      "mode": "100644",
+      "base": {
+        "git_blob": "20dc6ffc60d2a63320b56d1bd8e010e2937ffe26",
+        "bytes": 7058,
+        "sha256": "408fdf68044a2e37d493df71aff7be6140464368fd86e980107f370573c004c7"
+      },
+      "donor": {
+        "git_blob": "e850a30b549fcd1f0bda38fb2900d61add6db029",
+        "bytes": 9084,
+        "sha256": "7c941b0e7fca4c48ec0c8b44ee81108a2c201e0b28ab7a69f285dbc329eb446f"
+      },
+      "candidate": {
+        "git_blob": "e850a30b549fcd1f0bda38fb2900d61add6db029",
+        "bytes": 9084,
+        "sha256": "7c941b0e7fca4c48ec0c8b44ee81108a2c201e0b28ab7a69f285dbc329eb446f",
+        "exact_donor": true
+      }
+    },
+    {
+      "path": "crates/cc-db/src/snapshot_fts_tests.rs",
+      "mode": "100644",
+      "base": null,
+      "donor": {
+        "git_blob": "c7cf6e2d7fd61a1e6a33aad772c3c0530484d0b8",
+        "bytes": 22068,
+        "sha256": "c0454c8325a0691cc9caa0b2d9d99e017483b56991fd76dabde371869bfe428d"
+      },
+      "candidate": {
+        "git_blob": "c7cf6e2d7fd61a1e6a33aad772c3c0530484d0b8",
+        "bytes": 22068,
+        "sha256": "c0454c8325a0691cc9caa0b2d9d99e017483b56991fd76dabde371869bfe428d",
+        "exact_donor": true
+      }
+    },
+    {
+      "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+      "mode": "100644",
+      "base": {
+        "git_blob": "f54e02421b71259abd6c2b3b1e0ab6de48f7c883",
+        "bytes": 10132,
+        "sha256": "d52e1fd86dfcb3234944fc9ed1bc72b6d2b39da3255805db945fc7ef1af0a847"
+      },
+      "donor": {
+        "git_blob": "7aefc0bb357b97df3c8ba45257d2b45509f3e483",
+        "bytes": 10144,
+        "sha256": "bca23a73b0a2de0ca38f9593fbb526b69a7acc138b9ec8a680001fb79e666e9e"
+      },
+      "candidate": {
+        "git_blob": "7aefc0bb357b97df3c8ba45257d2b45509f3e483",
+        "bytes": 10144,
+        "sha256": "bca23a73b0a2de0ca38f9593fbb526b69a7acc138b9ec8a680001fb79e666e9e",
+        "exact_donor": true
+      }
+    }
+  ],
+  "exact_composition_proofs": {
+    "helperBytes": 5267,
+    "helperExactlyOnce": true,
+    "testmoduleExactlyOnce": true,
+    "restoreInsert": true,
+    "writeHelperBytes": 408,
+    "writeHelperExactlyOnce": true,
+    "restoreWrite": true,
+    "baseInsertSha": "a461358a0a6b9cdfa058e2c45a4582e0033599c8d8b586256e358b10a9e2548b",
+    "newInsertSha": "949fdaf5015703e4f55950c42cca28fcc527defc52c195894ed19bb5f125590b",
+    "baseWriteSha": "62832b8bb77011b0c2afd9d83599ac840aeb5473b631ffb6f0470e64d48fb569",
+    "newWriteSha": "f9961e718523a83db99f6ce0911aceae3465a9ddd511f8b752d8a98fea43964c",
+    "txn_only_add_new_entry": true,
+    "indexer_only_change_opt_in": true,
+    "new_method_once": true,
+    "new_helper_no_drop_implementation": true,
+    "donor_path_bindings": "Read official Contents directory maps at fixed donor and base; source bytes fetched from fixed blobs or fixed-base Contents; no floating branch substitution.",
+    "insert_helper_sha256": "087804eb0cd9655026d3593fc71712bc9bd407f17ce640fcbfcc6fc8ba43543f",
+    "write_helper_sha256": "f6f9136f596dc38bc9836f789029fe7081ccbf383156eb0bf31426754cda4c6b"
+  },
+  "findings": [
+    {
+      "id": "preserve_180_resdeps",
+      "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+      "lines": "152-226 and old tests after new test-module",
+      "finding": "Only the donor schema/window helper, test-module and accurate top comment were added. Removing them reconstructs all actual180 bytes, including generic IntoIterator bounded_rows, resolution_dependencies, six other leaf writers, old tests and 64-row/64KiB policy. No downgrade to donor's older bounded_rows implementation."
+    },
+    {
+      "id": "both_flags_active",
+      "path": "crates/cc-db/src/index_db_write_batch.rs",
+      "lines": "803-864",
+      "finding": "Only added408B private helper invokes insert_file_data_impl(conn,file,chunk_blobs,true,true): defer files/literal FTS plus snapshot leaf path. Existing insert_snapshot_file_data_precompressed stays(false,true); ordinary/public/incremental calls retain original flags. The second true still routes through180 insert_snapshot_on -> replace_snapshot_on -> bounded dependencies, preserving manifest normalization/validation/payload limit/DELETE/manifestINSERT/dependencyINSERT order."
+    },
+    {
+      "id": "interface_visibility",
+      "path": "crates/cc-db/src/snapshot_write_txn.rs",
+      "lines": "80-121",
+      "finding": "New FTS helpers and IndexDb seam are pub(crate), caller is within cc-db; public SnapshotWriteTxn::write_file_data_for_rebuild supplies the existing cross-crate indexer call. Test module resolves sibling snapshot_fts_tests.rs via explicit path. Referenced types/Connection/CcResult/imports exist, and no duplicate definition was found. Static interface review only, not compiler validation."
+    },
+    {
+      "id": "old_public_and_incremental",
+      "path": "crates/cc-db/src/snapshot_write_txn.rs",
+      "lines": "64-78; 80-121",
+      "finding": "Deleting the added opt-in method restores180 verbatim; original public write_file_data failure/immediate-mirror semantics unchanged. Incremental write_batch's FTS delete-before-base/insert-after-base operations are original bytes. No incremental entry was redirected to the new window."
+    },
+    {
+      "id": "transaction_and_error",
+      "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+      "lines": "102-140; 158-170; 191-203; 222-234",
+      "finding": "Only common full-snapshot writer opts in, with ? propagation before routes/hierarchy/config/metadata/signature. Caller continues borrowing the same owned staging transaction. Read180 index_db_rebuild.rs:write_fn(&tx)? precedes commit; error drops connection/removes staging, and run_rebuild_protocol builds successfully before swap. DirectWriter propagates the callback error before swap. No window Drop flush exists; flush consumes its window, and error cannot silently flush/commit/publish."
+    },
+    {
+      "id": "no_physical_rollback_claim",
+      "finding": "Opt-in method documents partial mirrors on an error and requires owner abandonment. journal_mode=OFF is not treated as physical rollback; no existing PRAGMAs, sync/close/rename/epoch semantics changed. Public callers who catch an error and commit must continue using the unchanged original method."
+    },
+    {
+      "id": "bounded_rowid_window",
+      "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+      "lines": "20-150",
+      "finding": "Deferral requires an active transaction, zero TEMP objects and exact full non-index main-schema equality with fresh same-library FULL_SCHEMA_SQL. Up to256 files per window; checked sum of all attempted literals and checked signed rowid headroom force original fallback before SQLite random-rowid range. Flush selects actual surviving base rows in (before,after] ORDER BY rowid, retaining OR IGNORE first winners and literals associated with a prior-window file. This is a file-count window, not a total byte/RSS cap."
+    },
+    {
+      "id": "FTS_schema_triggers",
+      "path": "crates/cc-db/src/sql/index_v1.sql",
+      "lines": "327-351",
+      "finding": "Actual180 files_fts/literal_fts are ordinary content-storing FTS5 tables with unchanged unicode61 remove_diacritics2 and UNINDEXED columns. Deferred SELECT supplies the same rowid/text/field values as original immediate insert. symbols_fts and file_paths_fts schema triggers remain active and unchanged; chunks_fts remains immediate with uncompressed text. Extra/changed triggers/views/tables/FKs or TEMP objects disable deferral; candidate does not drop/recreate triggers.",
+      "sha256": "6d7ee2193f388281aeef3dc98b914f0fa6f9478dda90833bf41f6bc12350cd06"
+    },
+    {
+      "id": "controls_and_limits",
+      "path": "crates/cc-db/src/snapshot_fts_tests.rs",
+      "finding": "Exact donor nine controls retained: logical rows and real MATCH across0/1/199/200/255/256/257/513 files, duplicate and cross-window literal winners, nearMAX/overflow fallback, old public/autocommit errors, noncanonical/TEMP fallback, late failure/no-live-publication, private flush SQLITE_FULL owner propagation, real max-rowid access and mirror-statement counts. This reviewer read their source but did not rerun. Existing original donor results remain donor-specific. This nine-test source does not add a direct candidate-window BM25+subsequent incremental ranking differential; no observed defect or new original-task gate is asserted from that scope limitation."
+    }
+  ],
+  "supporting_fixed_sources": [
+    {
+      "path": "crates/cc-db/src/public_surface_store.rs",
+      "git_blob": "d0fa4c622876197bbb8c14b7d94f0d8ab3e1f318",
+      "sha256": "76d8f7bb89f99abf5cbb4b75e0ccb486720e187e9b46014b5bccde439bdb95e5"
+    },
+    {
+      "path": "crates/cc-db/src/resolution_dependency_store.rs",
+      "git_blob": "97d3d9519fe10ed7cd30b9783164348998c02abc",
+      "sha256": "c37a7c44ed1aa5c2897fcb387eee5fb1007a60cb53c0de4abc6488dafde9ebbf"
+    },
+    {
+      "path": "crates/cc-db/src/index_db_rebuild.rs",
+      "git_blob": "3dd9692abd16f2a36958c036dd54f0946c94f70d",
+      "sha256": "5ba69e2dc037a57c72c83f8e43d029af34ff790b466eb9b1d54bdeb618e17f1b"
+    }
+  ],
+  "not_run": {
+    "rustfmt": true,
+    "compile": true,
+    "tests": true,
+    "native": true,
+    "measurement": true,
+    "new_combination_true": true
+  },
+  "limits": [
+    "Approval is for exactly the two new blobs plus three fixed donor blobs in this report; not all1089/1090 inputs, PR179, ready-fixture or assembled P/R/G.",
+    "No prototype or donor time/RSS result is relabelled as improvement for the combination. Original scale population/parity/budgets untouched.",
+    "No new test/workflow/native execution/ref/PR/task change by reviewer. Only unreferenced report blob creation.",
+    "Root still binds actual complete product/review/validation source and uses existing CI/execution admission; no extra TODO gate added."
+  ],
+  "task_accounting": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "newly_done": 0
+  }
+}

@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "/workspace/scratch/a217aaae3bde/codecortex-recovered/scripts/verify_reviewed_source_v15.py", line 245, in <module>
+    main()
+  File "/workspace/scratch/a217aaae3bde/codecortex-recovered/scripts/verify_reviewed_source_v15.py", line 231, in main
+    expected = approved_union(load_registry())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/a217aaae3bde/codecortex-recovered/scripts/verify_reviewed_source_v15.py", line 202, in approved_union
+    verify_snapshots(root)
+  File "/workspace/scratch/a217aaae3bde/codecortex-recovered/scripts/verify_reviewed_source_v15.py", line 138, in verify_snapshots
+    history.verify_current_history(root)
+  File "/workspace/scratch/a217aaae3bde/codecortex-recovered/scripts/v15_historical_context.py", line 155, in verify_current_history
+    require(checked_file(root, path).read_bytes() == blobs[path],
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/a217aaae3bde/codecortex-recovered/scripts/v15_historical_context.py", line 146, in checked_file
+    raise AssertionError("historical protection input missing: " + path) from None
+AssertionError: historical protection input missing: artifacts/checkpoints/bounded-integration-20261004/source-guard.json

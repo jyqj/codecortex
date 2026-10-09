@@ -1,0 +1,453 @@
+{
+  "actual_three_source_mapping": {
+    "git_blob_sha1": "0879c6e5ebf3e896358f9410c11254b81d945692",
+    "path": "/workspace/scratch/a217aaae3bde/original-173-runtime/source-applicability/actual-three-source-input-mapping.json",
+    "sha256": "3f4cd41cecc282cf7dcaad85fcc48ae179dd5eb41a9242cb85bbc702f54a15ad",
+    "size": 22676
+  },
+  "already_done_prerequisites": {
+    "P7-020": "done",
+    "P8-001": "done",
+    "P8-004": "done"
+  },
+  "assessment": "read_only_contract_and_actual_source_mapping_no_completion_decision",
+  "created_at": "2026-10-09T09:09:50.315839+00:00",
+  "decision_boundary": [
+    "在记录中明确能力的被测target及原artifact，可以同时列多个来源；这不是把旧源改标为新源。",
+    "若目标改为C3ff，则按实际变更影响判断对应证据；不是仅GitSHA不同就无条件重跑全部十域，也不是observer没变就全部沿用。",
+    "纯文档/artifact/guard pin变化与可执行路径变化不同。已有相同输入/隔离闭包适用性与当前相关回归可引用；这里只查明给定三源的真实变化，不假造全面等义证明。",
+    "任务级测量/工程关账与G8/M4发行批准分开；full_100k/release_certification原not_run历史字段保持，原005 acceptance_subgates所有open/unknown不改。"
+  ],
+  "existing_accepted_evidence": {
+    "platform_gates_173": {
+      "git_blob_sha1": "1efa47296d864f859ca3918251a1a6c1e461b0f9",
+      "path": "/workspace/scratch/a217aaae3bde/original-173-platform-gates/173-platform-gates-final-scoped-review.json",
+      "sha256": "81ef22dd10063fd12b00f06335f5c4ecec5585705c0472ece63fa2eaaece84ed",
+      "size": 4699
+    },
+    "runtime_life_recovery_173": {
+      "git_blob_sha1": "ce1ca20ae2601b68314e9f7368912ac5f8f75d2f",
+      "path": "/workspace/scratch/a217aaae3bde/original-173-runtime/durable-audit/acceptance-index.json",
+      "sha256": "fc7a33a01e6a34e4a1ba1bbef6a566f702963ad121b43857b6250bf71b6af076",
+      "size": 15115
+    },
+    "scale_C8_subset": {
+      "git_blob_sha1": "f13d1baacfdf2759cd7315266c8c517c14832975",
+      "path": "/workspace/scratch/a217aaae3bde/original-173-runtime/external-178-study/accepted-subset-003.json",
+      "sha256": "17d532674465318b3903ad53ce6d072ee340e15ccad186694366fa991cdc64cf",
+      "size": 49036
+    }
+  },
+  "formal_task_completion": false,
+  "hard_dependency_semantics": "depends_on 为硬集成依赖；conditional_dependencies 仅在 when 对应认证范围启用。未启用的条件任务仍标 todo/blocked/deferred，不算 done。optional-judge 不阻塞确定性或语义效果认证。",
+  "ledger": {
+    "done": 163,
+    "remaining": 29,
+    "total": 192
+  },
+  "literal_anchors": [
+    {
+      "interpretation": "限制对应报告对改变后的候选适用性；不能抹掉原候选真实历史，也没有直接写十项一律同一SHA。",
+      "literal": "每份报告精确回到同一候选，后续改动使对应证据失效",
+      "locator": "P8-001.acceptance[0]",
+      "path": "docs/roadmap/code-index-v2/tasks.json"
+    },
+    {
+      "interpretation": "关账须说明当前目标及能力适用性；不能仅列多个历史绿色即自动完成当前组合。",
+      "line": 126,
+      "literal": "一个能力完成必须同时具备：行为规格、实际模型/持久化/编排/MCP 接线、正负回归、旧功能回归、性能/质量对照、配置与文档、故障恢复/回滚、当前目标 SHA 的证据。",
+      "path": "docs/roadmap/code-index-v2/02-CONTRACTS.md"
+    },
+    {
+      "interpretation": "当前gate证据必需；这里不把G8提前变成005前置，也不把run-id理解为所有独立工作流同一个数字。",
+      "line": 61,
+      "literal": "阶段先后见 04-PHASES；同一 gate 的所有任务必须有当前 run-id 证据。",
+      "path": "docs/roadmap/code-index-v2/06-VALIDATION.md"
+    },
+    {
+      "interpretation": "每个suite身份固定，不能跨源拼原样本/比较分母。",
+      "line": 130,
+      "literal": "SuiteManifest 至少锁：engine SHA+binary digest+build profile/features、目标 repo commit、dirty/submodules 状态、corpus/query/gold digest、实际文件 manifest digest、scoring version、adapter/parser version、配置 digest、model revision+encoding space、OS/CPU/RAM/toolchain、随机种子、冷/热定义、timeout/budget、runner version。",
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md"
+    },
+    {
+      "interpretation": "明确适用完整规模研究内部。",
+      "line": 278,
+      "literal": "每次完整执行应先固定最终的 **完整 Git SHA**，再让 build、首片、余下片和\naggregate 全部检出该 SHA。",
+      "path": "docs/roadmap/code-index-v2/P8-SCALE.md"
+    },
+    {
+      "interpretation": "当前目标的冷构建/恢复不由历史记录改身份得到。",
+      "line": 17,
+      "literal": "只有当前候选的实际执行与完整依赖验收支持完成状态。",
+      "path": "docs/roadmap/code-index-v2/P8-PLATFORM-ROLLBACK.md"
+    }
+  ],
+  "mac_negative_disposition": {
+    "current_disposition": "本报告没有作平台排除/发布决定，没有宣称cold失败已修复；对应当前证据及处置仍待root依据实际原件判断。",
+    "known_fact": "旧E在macOS26.6.2/Rust1.95/SDK15.4原workspace及孤立fresh-helper case exit101；173该case仍原字节。cold编译/stdio成功不反证该测试失败。",
+    "permitted_evidence_based_resolution": "按原相关旧功能回归要求，需明确处置该已知失败：真实修复并验证原受影响行为，或经独立诊断证明原失败是未保证的夹具前置并以不削弱实际产品deadline/后代清理契约的当前回归证明修正；旧负例仍按原结果保留。若选择原文允许的发布平台范围路径，必须有真实、明确的范围决定与对应证据，而非把177说明视为已经排除Mac。",
+    "prepared_helper_boundary": "C8/C3ff的fixture先执行单次独立2s readiness，再执行原250ms case。它证明prepared-helper前置下的既有后代stderr监督目标；不能说旧cold-helper在250ms内成功。",
+    "sdk": "已有8格真实host/toolchain与冷构建可陈述；没有采集的OS SDK版本保持unknown，不以rmcp版本替代。",
+    "what_it_is_not": "该负例不是已证明的SDK编译阻塞，也不自动使已验证的173八格冷构建记录失真；不新增每八格fullworkspace要求。"
+  },
+  "main_conclusion": "原定义不设十任务统一Git SHA硬门；允许分任务/能力明确保留固定173、C8等来源。每个run/矩阵内部必须保持原源与binary；最终当前目标的能力须满足C16、P8-001和相关回归，不能把分源已接受事实拼成未经执行/证明的组合源认证。",
+  "original_contract_v2": {
+    "git_blob_sha1": "4cacf4bcb1c42c929cb02accf91348a876ea5697",
+    "path": "/workspace/scratch/a217aaae3bde/original-173-runtime/source-applicability/remaining-task-contracts-v2-original.json",
+    "sha256": "2ce412ec9567795507dbcfa29a50e29c00172aee8c421a3641f5a45e81c2d692",
+    "size": 19931
+  },
+  "peer_scoped_messages": {
+    "platform": "pr_audit独立核011/012/013/016：可分源登记，不自动推出当前组合done；新FTS/snapshot/依赖写入触及恢复；八格collector同源，无八格workspace新门；旧Mac负证及当前gate变化需明确处置。",
+    "scale": "scale_closeout独立核005/006：无十域统一SHA字面门；005 release是实际优化profile/binary/Git而非G8；C16当前目标与相关回归须保留；不能合并两研究或称当前组合已执行旧负载。"
+  },
+  "reviewer": "/root/runtime_closeout",
+  "rows": [
+    {
+      "admitted_scope": "C8仅3/150片、32/1500样本；173的独立规模进度另计，不能相加。",
+      "current_candidate_applicability": "未来C8完整矩阵可证明C8自身005；不能自动说明C3ff的规模性能。C3ff相对C8改变snapshot插入、依赖读写、resolver/dispatch与oracle，实际受测路径不同。若最终声称C3ff该能力已验证，应消费它自己的既有注册研究或充分明确的对应适用性证据，不能给旧分片改来源。",
+      "formal_task_completion": false,
+      "id": "P8-005",
+      "immutable_historical_acceptance_subgates": {
+        "counts_fk_queries_c4_normal_eof_reopen": "closed_declared_local_scope",
+        "fixed_protocol_100k_baseline_once": "closed_declared_local_scope",
+        "fixed_protocol_100k_candidate_once": "closed_declared_local_scope",
+        "full_1k_5k_10k_50k_100k_scale_acceptance": "open",
+        "strict_paired_causal_performance": "not_established",
+        "whole_tree_memory_peak": "unknown"
+      },
+      "not_required": "不要求先有G8批准、产品tag/已发布包、付费liveprovider或严格因果提速。release是实际优化profile与原构建身份；G8/release_certification维持not_evaluated/not_run。",
+      "original_definition": {
+        "acceptance": [
+          "不存在只报文件数或把不同工作量直接算倍数",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "deliverables": [
+          "完整规模1k到100k的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V20 验证证据（实施时生成）"
+        ],
+        "depends_on": [
+          "P8-004"
+        ],
+        "steps": [
+          "固定seed与release构建测1k/5k/10k/50k/100k",
+          "同时报chunk/edge/vector"
+        ],
+        "title": "完整规模1k到100k",
+        "validations": [
+          "V20"
+        ]
+      },
+      "remaining_original_gate": "任一被选择的固定来源完整150片/1500样本/50组、原combine与CIaggregate、数量/分层/相关回归和benchmarks交付；现未到齐。",
+      "run_internal_identity": "一次完整五规模矩阵必须保持同一固定Git、release Cargo产物/复制binary、driver、seed和注册30重复；150片/1500样本及原combine必须属于该矩阵。",
+      "status_action": "no_change",
+      "tasks_json_pointer": "/tasks/164"
+    },
+    {
+      "admitted_scope": "与005同一研究的no-op/body/API/config/batch/fanout原样本；当前C8三片只有1k含五fanout。",
+      "current_candidate_applicability": "C3ff改依赖窗口、snapshot、resolver/dispatch与oracle，正中本任务阶段及判定路径。C8成功仍保留为C8；不足以直接证明C3ff新路径。",
+      "formal_task_completion": false,
+      "id": "P8-006",
+      "original_definition": {
+        "acceptance": [
+          "时间可归因且闭包完成后full parity，未完成有显式status",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "deliverables": [
+          "增量规模与fanout曲线的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V07, V20 验证证据（实施时生成）"
+        ],
+        "depends_on": [
+          "P7-020",
+          "P8-001",
+          "P8-005"
+        ],
+        "steps": [
+          "测no-op/body/API/config/batch和超预算闭包",
+          "输出各phase计数"
+        ],
+        "title": "增量规模与fanout曲线",
+        "validations": [
+          "V07",
+          "V20"
+        ]
+      },
+      "remaining_original_gate": "原全矩阵及005硬依赖；phase计数、嵌套时间口径、未完成显式status和full parity；没有逐stage public search或pool因果speedup的新门。",
+      "run_internal_identity": "不能用来源A的cold/full control加来源B的incremental拼出parity；每次原build计数、闭包完成及完整15表均绑定原二进制/源。",
+      "status_action": "no_change",
+      "tasks_json_pointer": "/tasks/165"
+    },
+    {
+      "admitted_scope": "173四C各900终态+独立backfill768实际原请求全部接受；实际并发峰1/4/7/12，fake-provider标签保留。",
+      "current_candidate_applicability": "可在十项清单中明确引用173这一能力实测；不得写成C8/C3ff mixed已运行。C8改full snapshot/FTS，C3ff另改resolver/dispatch、oracle和Ns统计driver，影响本报告的实际构建/终点/输出。若目标是这些候选的运行结论，应消费其已启动的原六profile及相关回归，而非只凭旧observer同字节转移。",
+      "formal_task_completion": false,
+      "id": "P8-007",
+      "original_definition": {
+        "acceptance": [
+          "无死锁饥饿，吞吐不能隐藏timeout与尾部",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "deliverables": [
+          "多并发与混合负载的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V11, V20 验证证据（实施时生成）"
+        ],
+        "depends_on": [
+          "P8-006"
+        ],
+        "steps": [
+          "C1/4/8/16 mixed read/build/backfill",
+          "记录offered load和排队"
+        ],
+        "title": "多并发与混合负载",
+        "validations": [
+          "V11",
+          "V20"
+        ]
+      },
+      "remaining_original_gate": "173本任务测量范围已接受，006硬依赖未闭合；尚需最终选定目标的相关回归与原benchmarks交付完成。",
+      "run_internal_identity": "四C和backfill可有各自原build收据/实际binary，但每一profile自身source/observer、完整分母、queue/timeout、原Rust统计和parity必须固定；配置C不冒充实际峰。",
+      "status_action": "no_change",
+      "tasks_json_pointer": "/tasks/166"
+    },
+    {
+      "admitted_scope": "173 lifecycle原1230样本、1200源码核对查询、各分层/全部N/分布/CI和原Rust重放已接受；OS cache未控仍unknown。",
+      "current_candidate_applicability": "C8/C3ff修改cold full snapshot路径；既有173层级设计/对照可复用，但latency数值不等于新产品性能。新目标的lifecycle原件存在时应核原件，不需另设OS drop-cache实验。",
+      "formal_task_completion": false,
+      "id": "P8-008",
+      "original_definition": {
+        "acceptance": [
+          "无best-of，sample N/分布/CI齐全",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "deliverables": [
+          "冷建/重开/热查分层的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V20 验证证据（实施时生成）"
+        ],
+        "depends_on": [
+          "P8-007"
+        ],
+        "steps": [
+          "分离OS cache、process cold、result-cache hit与uncached warm",
+          "采全部样本"
+        ],
+        "title": "冷建/重开/热查分层",
+        "validations": [
+          "V20"
+        ]
+      },
+      "remaining_original_gate": "173测量本体已接受，007硬依赖与最终目标相关回归/交付。",
+      "run_internal_identity": "每个lifecycle采样和evaluator须匹配其原product/源码/observer；统计描述对应被测构建，不能跨源合并样本凑N。",
+      "status_action": "no_change",
+      "tasks_json_pointer": "/tasks/167"
+    },
+    {
+      "admitted_scope": "173原client/server/owned-process-tree、1261资源观测、30closed storage/FTS与费用reported/estimated/null账本已接受；有限窗口不称全时峰。",
+      "current_candidate_applicability": "新FTS/snapshot/依赖批次会改变写入过程、分配及可能的磁盘布局；不能静态推导新source资源数值。与008同一新原件即可覆盖，无额外收费/全进程连续峰硬门。",
+      "formal_task_completion": false,
+      "id": "P8-009",
+      "original_definition": {
+        "acceptance": [
+          "单位和归属正确，不把unavailable填0或把runner当server",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "deliverables": [
+          "内存/磁盘/费用总账的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V20 验证证据（实施时生成）"
+        ],
+        "depends_on": [
+          "P8-008"
+        ],
+        "steps": [
+          "分别client/server/process-tree和artifact/FTS大小",
+          "成本reported/estimated分栏"
+        ],
+        "title": "内存/磁盘/费用总账",
+        "validations": [
+          "V20"
+        ]
+      },
+      "remaining_original_gate": "173本体已接受，008硬依赖与最终目标相关回归/交付。",
+      "run_internal_identity": "资源、磁盘与成本必须归属于实际进程/原artifact；不允许旧产品RSS或FTS大小成为新产品的实测值。",
+      "status_action": "no_change",
+      "tasks_json_pointer": "/tasks/168"
+    },
+    {
+      "admitted_scope": "173原3601终态/3600.053700026s，2400compound reads/9600RPC、1400hits/1000misses/999invalidations与四quarter、worker/branch/catalog、queue/RSS和完整终点parity全部接受。",
+      "current_candidate_applicability": "新DB/snapshot/resolver路径实际用于连续修改和full对照；旧173成功仍成立，但不证明新候选1h内存/排队趋势。若完成声明面向C8/C3ff，消费该候选已运行的原soak原件；不新增第二次hour或改变既有协议。",
+      "formal_task_completion": false,
+      "id": "P8-010",
+      "original_definition": {
+        "acceptance": [
+          "内存/队列不无界增长，长期索引和全量一致",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "deliverables": [
+          "长时soak与连续修改的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V07, V17, V20 验证证据（实施时生成）"
+        ],
+        "depends_on": [
+          "P8-009"
+        ],
+        "steps": [
+          "持续编辑、删除、切分支、catalog压实、cache/worker复用",
+          "终点完整对账"
+        ],
+        "title": "长时soak与连续修改",
+        "validations": [
+          "V07",
+          "V17",
+          "V20"
+        ]
+      },
+      "remaining_original_gate": "173本体已接受，009硬依赖与最终目标相关回归/交付；旧296全0cache缺口保持历史。",
+      "run_internal_identity": "一小时证据必须同一真实产品进程/固定binary和观察器；完整原分母、缓存命中代际与隔离边界不能靠另一来源短控替代。",
+      "status_action": "no_change",
+      "tasks_json_pointer": "/tasks/169"
+    },
+    {
+      "admitted_scope": "173完整recovery495封存文件、原7故障测试、5local sessions、3active场景的真实loopback及原raw已接受；没有假ready/删除复活，费用null不填0。",
+      "current_candidate_applicability": "C8和C3ff改变FTS/snapshot事务、C3ff另改依赖/图事实写入；直接触及换库、恢复和失败发布。observer同字节或schema25不变不足以证明新产品实际恢复；新候选原故障证据与相关回归需对应保留，不能用静态等义代替其实际故障声明。",
+      "formal_task_completion": false,
+      "id": "P8-011",
+      "original_definition": {
+        "acceptance": [
+          "没有假ready或删除复活，恢复与费用影响清楚",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "deliverables": [
+          "端到端故障与恢复认证的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V14, V17, V18 验证证据（实施时生成）"
+        ],
+        "depends_on": [
+          "P7-020",
+          "P8-007",
+          "P8-010"
+        ],
+        "steps": [
+          "kill进程/网络断开/缓存损坏/数据库忙/换库",
+          "保持raw故障工件"
+        ],
+        "title": "端到端故障与恢复认证",
+        "validations": [
+          "V14",
+          "V17",
+          "V18"
+        ]
+      },
+      "remaining_original_gate": "173本体已接受；007/010硬依赖与最终目标相关回归/交付。",
+      "run_internal_identity": "故障/恢复原binary、原配置、真实注入/响应、完整raw须绑定同一候选；fake网络不是live认证。",
+      "status_action": "no_change",
+      "tasks_json_pointer": "/tasks/170"
+    },
+    {
+      "admitted_scope": "173八个严格portable-v2冷build/stdio cell+八raw+原collector8/0/0已独立接受；Linux/macOS×1.95.0/1.99.0×default/semantic，实际OS SDK版本未采。",
+      "current_candidate_applicability": "173的8cold只证明173能冷编译/stdio，不等于当前C8/C3ff构建。原文没有8个fullworkspace新要求。新候选已有正常platform/CI可按实际身份消费；旧Mac负例不能被prepared-helper结果或177解释文档改写。",
+      "formal_task_completion": false,
+      "id": "P8-012",
+      "original_definition": {
+        "acceptance": [
+          "SDK blocker解决或发布平台范围明确，缓存测试不替冷构建",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "deliverables": [
+          "MSRV与平台冷构建矩阵的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V01, V21 验证证据（实施时生成）"
+        ],
+        "depends_on": [
+          "P8-011"
+        ],
+        "steps": [
+          "Linux/macOS、当前声明MSRV与stable、默认/semantic features",
+          "全新target"
+        ],
+        "title": "MSRV与平台冷构建矩阵",
+        "validations": [
+          "V01",
+          "V21"
+        ]
+      },
+      "remaining_original_gate": "011硬依赖；相关Mac fresh-helper已知失败须真实处置；最终目标的编译/旧回归与文档范围清楚。SDK未知不写已认证具体SDK。",
+      "run_internal_identity": "平台collector要求同一源码八格，不可拿173的四Linux与C8的四Mac拼成当前矩阵；每格是全新target和真实Cargo/stdio证据。",
+      "status_action": "no_change",
+      "tasks_json_pointer": "/tasks/171"
+    },
+    {
+      "admitted_scope": "173原6nonignored controls+6真实CLI compare保留failed/inconclusive/invalid非零和原raw拒覆盖，已独立接受。",
+      "current_candidate_applicability": "三source的gate.rs、benchmark_cli.rs、report.rs、p8_gate_controls.py逐Gitblob相同，旧证据有明确连续性；但不是整个依赖闭包证明。C3ff统计owner/oracle变更需说明真实调用影响并保留当前既有CI/gates结果。不能无依据要求所有其他测量重跑，也不能只凭四文件相同自动授予当前gate通过。",
+      "formal_task_completion": false,
+      "id": "P8-013",
+      "original_definition": {
+        "acceptance": [
+          "红线失败必非零，inconclusive不被自动passed",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "deliverables": [
+          "指标/门槛与失败退出最终认证的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V03, V04, V20 验证证据（实施时生成）"
+        ],
+        "depends_on": [
+          "P8-012"
+        ],
+        "steps": [
+          "故意注入quality/perf/lock失败",
+          "验证退出和raw报告仍保留"
+        ],
+        "title": "指标/门槛与失败退出最终认证",
+        "validations": [
+          "V03",
+          "V04",
+          "V20"
+        ]
+      },
+      "remaining_original_gate": "012硬依赖与最终目标相关回归/交付。",
+      "run_internal_identity": "每份故意失败收据保留原确切binary/策略/raw锁；不能把预期非零当产品测量通过或失败重试。",
+      "status_action": "no_change",
+      "tasks_json_pointer": "/tasks/172"
+    },
+    {
+      "admitted_scope": "173实际25→旧277/schema24→25+backup25；源码/config保持，disable后local检索可用；3active格式拒读与原cache Rust测试补充limited not_run，已接受。",
+      "current_candidate_applicability": "migration/cache模块本身三source未变，但新版snapshot/FTS写入用于实际重建/换库。旧173版本pair证明173，不足以自动证明新current端；可逐项保留未变cache契约连续性，当前端真实恢复仍应对应自己的原件。不新增任意掉电/live/install认证。",
+      "formal_task_completion": false,
+      "id": "P8-016",
+      "original_definition": {
+        "acceptance": [
+          "回滚不误读新向量/丢用户源码，恢复步骤实测",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "deliverables": [
+          "数据库/配置/包回滚演练的实现/配置或规格变更",
+          "artifacts/benchmarks/<run-id>/ 中对应 V13, V17, V21 验证证据（实施时生成）"
+        ],
+        "depends_on": [
+          "P7-020",
+          "P8-012",
+          "P8-013"
+        ],
+        "steps": [
+          "旧binary开新schema的受控重建、cache版本隔离、disable语义回退"
+        ],
+        "title": "数据库/配置/包回滚演练",
+        "validations": [
+          "V13",
+          "V17",
+          "V21"
+        ]
+      },
+      "remaining_original_gate": "P7-020已done；012/013硬依赖与最终目标相关回归/交付。",
+      "run_internal_identity": "新旧版本本来就有两个明确source；原protocol要求真实二进制配对及恢复步骤，不是所有bytes同SHA，也不要求把源码revision称已发布tag。",
+      "status_action": "no_change",
+      "tasks_json_pointer": "/tasks/175"
+    }
+  ],
+  "schema": "p8-original-ten-per-capability-source-applicability-v1",
+  "source_definitions_identical": true,
+  "sources": {
+    "173": "275e8799d4947d297329073eaa3ca675d3fd0777",
+    "C3ff": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+    "c8": "c8be5afaac568ffd40ef86d3795423c3b73c9f39"
+  },
+  "task_blob": "f400eb2b5a3f8c524978bee1dfa87f98efe4bce8",
+  "task_statuses_changed": false,
+  "work_done": "只读原tasks/合同/冻结v2及实际Gitdiff/已有接受记录；未新增测试、编译、native测量、CI、remote mutation或任务修改。"
+}

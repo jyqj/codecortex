@@ -1,0 +1,622 @@
+{
+  "schema_version": 1,
+  "author": "/root/pr_audit",
+  "created_at_utc": "2026-10-09T08:55:20.574002+00:00",
+  "status": "prepared_pending_exact_execution_C",
+  "frozen_product": "b13ba8c1b738bc9c24b81cad1e88711fc9734283",
+  "product_tree": "618eb8514d111a78bb5559827dc36b29e8190721",
+  "execution_head": null,
+  "workflow": {
+    "path": ".github/workflows/ci.yml",
+    "blob": "8c7325eb88b791f909e72c4b6c79b417185e4386",
+    "sha256": "7e659bc2f8cf1565238b2903864639a2e4bfc0887721d9482f128f6e83b81914",
+    "actual_events": {
+      "push": {
+        "branches": [
+          "main"
+        ]
+      },
+      "pull_request": ""
+    },
+    "runner": "ubuntu-latest",
+    "env": {
+      "CARGO_TERM_COLOR": "always",
+      "RUSTFLAGS": "-D warnings"
+    },
+    "check_steps_original": [
+      {
+        "name": "actions/checkout@v4",
+        "run": null,
+        "uses": "actions/checkout@v4",
+        "timeout_minutes": null,
+        "with": null
+      },
+      {
+        "name": "dtolnay/rust-toolchain@stable",
+        "run": null,
+        "uses": "dtolnay/rust-toolchain@stable",
+        "timeout_minutes": null,
+        "with": {
+          "components": "clippy, rustfmt"
+        }
+      },
+      {
+        "name": "Swatinem/rust-cache@v2",
+        "run": null,
+        "uses": "Swatinem/rust-cache@v2",
+        "timeout_minutes": null,
+        "with": null
+      },
+      {
+        "name": "Format check",
+        "run": "cargo fmt --all -- --check",
+        "uses": null,
+        "timeout_minutes": null,
+        "with": null
+      },
+      {
+        "name": "Clippy",
+        "run": "cargo clippy --workspace --all-targets -- -D warnings",
+        "uses": null,
+        "timeout_minutes": null,
+        "with": null
+      },
+      {
+        "name": "Compile every default test target",
+        "run": "cargo test --workspace --all-targets --locked --no-run",
+        "uses": null,
+        "timeout_minutes": null,
+        "with": null
+      },
+      {
+        "name": "Default regression within authorized scope",
+        "run": "cargo test --workspace --all-targets --exclude cc-semantic --locked\ncargo test -p cc-semantic --lib --locked\ncargo test -p cc-semantic --locked \\\n  --test artifact_cache --test attempt_lease_contract \\\n  --test bounded_parallel --test manifest_exact_integration \\\n  --test p7_cache_allocation_independent_review --test publish_cas \\\n  --test query_cache --test queue_worker --test retry_worker_layering \\\n  --test semantic_degrade --test space_switch\n",
+        "uses": null,
+        "timeout_minutes": null,
+        "with": null
+      },
+      {
+        "name": "Fixed resource driver harmless fixtures and TODO consistency",
+        "run": "# Read-only AST comparator object; never check out or run its driver.\ngit fetch --no-tags origin da8b618cbf8b67683c6b16880419089f7159c15e\nPYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/resource_harness -v\npython3 scripts/code_index_plan.py\nPYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s scripts/tests -p 'test_p8_*.py' -v\npython3 scripts/p8_facts.py --check\nPYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/source_integrity -v\npython3 scripts/verify_reviewed_source_v15.py --source-version p8-completion-source-20261009-v15\npython3 scripts/verify_historical_integrations_v2.py\n",
+        "uses": null,
+        "timeout_minutes": null,
+        "with": null
+      },
+      {
+        "name": "Semantic HTTP capability snapshot and normal stdio query fence",
+        "run": "python3 artifacts/checkpoints/semantic-http-ci-regression-20261003/check.py --output-dir \"$RUNNER_TEMP/semantic-http-ci-regression\"",
+        "uses": null,
+        "timeout_minutes": "30",
+        "with": null
+      },
+      {
+        "name": "Eval suite",
+        "run": "cargo test -p cc-eval -- integration_fixtures_and_corpus --nocapture",
+        "uses": null,
+        "timeout_minutes": null,
+        "with": null
+      },
+      {
+        "name": "P0 benchmark optional HTTP contract tests",
+        "run": "cargo test -p cc-eval --features eval-http --locked",
+        "uses": null,
+        "timeout_minutes": null,
+        "with": null
+      },
+      {
+        "name": "P0 real MCP subprocess adapter",
+        "run": "python3 scripts/p7_stdio_build_receipt.py --package-kind default --output-dir \"$RUNNER_TEMP/p7-017-default\"\nexport P7_017_PACKAGE_KIND=default\nexport P7_017_BUILD_RECEIPT=\"$RUNNER_TEMP/p7-017-default/build-receipt.json\"\nCODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\\nCODECORTEX_BENCH_OBSERVATIONS=\"$RUNNER_TEMP/p7-017-default-observations\" \\\n  cargo test -p cc-eval --features eval-http --test benchmark_adapters --locked -- --ignored\nCODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\\n  cargo test -p cc-eval --test p1a_retrieval --locked -- --ignored\nCODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\\n  cargo test -p cc-eval --test p1b_retrieval --locked -- --ignored\nCODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\\n  cargo test -p cc-eval --test p1c_retrieval --test p1c_contract --locked -- --ignored\nCODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\\n  cargo test -p cc-eval --test p1d_cost --test p1d_docs --test p1d_concurrency --locked -- --ignored\n",
+        "uses": null,
+        "timeout_minutes": null,
+        "with": null
+      },
+      {
+        "name": "P2-A public surface real MCP regression",
+        "run": "CODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\\n  cargo test -p cc-eval --test p2a_incremental --locked -- --ignored\n",
+        "uses": null,
+        "timeout_minutes": null,
+        "with": null
+      },
+      {
+        "name": "P2-B resolution dependency real MCP regression",
+        "run": "CODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\\n  cargo test -p cc-eval --test p2b_incremental --locked -- --ignored\n",
+        "uses": null,
+        "timeout_minutes": null,
+        "with": null
+      },
+      {
+        "name": "P2-C durable recovery and freshness MCP regression",
+        "run": "CODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\\n  cargo test -p cc-eval --test p2c_reconcile --locked -- --ignored\n",
+        "uses": null,
+        "timeout_minutes": null,
+        "with": null
+      },
+      {
+        "name": "P2-D multi-language public truth regression",
+        "run": "CODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\\nCODECORTEX_BENCH_OBSERVATIONS=\"$RUNNER_TEMP/p2d-observations\" \\\n  cargo test -p cc-eval --test p2d_mutations --locked -- --ignored\n",
+        "uses": null,
+        "timeout_minutes": null,
+        "with": null
+      },
+      {
+        "name": "P3-A project config recovery real MCP",
+        "run": "CODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\\nCODECORTEX_BENCH_OBSERVATIONS=\"$RUNNER_TEMP/p3a-observations\" \\\n  cargo test -p cc-eval --test p3a_project_model --locked -- --ignored\n",
+        "uses": null,
+        "timeout_minutes": null,
+        "with": null
+      },
+      {
+        "name": "P3-B package and module recovery real MCP",
+        "run": "CODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\\nCODECORTEX_BENCH_OBSERVATIONS=\"$RUNNER_TEMP/p3b-observations\" \\\n  cargo test -p cc-eval --test p3b_modules --locked -- --ignored\n",
+        "uses": null,
+        "timeout_minutes": null,
+        "with": null
+      },
+      {
+        "name": "P3-C Go package recovery real MCP",
+        "run": "CODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\\nCODECORTEX_BENCH_OBSERVATIONS=\"$RUNNER_TEMP/p3c-observations\" \\\n  cargo test -p cc-eval --test p3c_modules --locked -- --ignored\n",
+        "uses": null,
+        "timeout_minutes": null,
+        "with": null
+      },
+      {
+        "name": "P3-C available independent module oracles",
+        "run": "python3 -I -S scripts/module_oracles.py --output \"$RUNNER_TEMP/p3c-module-oracles\" --toolchain stable",
+        "uses": null,
+        "timeout_minutes": null,
+        "with": null
+      },
+      {
+        "name": "P3-D module boundary and architecture contracts",
+        "run": "python3 scripts/check_module_architecture.py\nCODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\\nCODECORTEX_BENCH_OBSERVATIONS=\"$RUNNER_TEMP/p3d-observations\" \\\n  cargo test -p cc-eval --test p3d_modules --locked -- --ignored\n",
+        "uses": null,
+        "timeout_minutes": null,
+        "with": null
+      },
+      {
+        "name": "P4-A source fidelity and real MCP indexing",
+        "run": "python3 scripts/check_source_architecture.py\nCODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\\nCODECORTEX_BENCH_OBSERVATIONS=\"$RUNNER_TEMP/p4a-observations\" \\\n  cargo test -p cc-eval --test p4a_source --locked -- --ignored\n",
+        "uses": null,
+        "timeout_minutes": null,
+        "with": null
+      },
+      {
+        "name": "P4-B chunk budgets and live-session policy changes",
+        "run": "CODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\\nCODECORTEX_BENCH_OBSERVATIONS=\"$RUNNER_TEMP/p4b-observations\" \\\n  cargo test -p cc-eval --test p4b_chunks --locked -- --ignored\n",
+        "uses": null,
+        "timeout_minutes": null,
+        "with": null
+      },
+      {
+        "name": "P4-C document versions and source freshness",
+        "run": "CODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\\nCODECORTEX_BENCH_OBSERVATIONS=\"$RUNNER_TEMP/p4c-observations\" \\\n  cargo test -p cc-eval --test p4c_documents --locked -- --ignored\n",
+        "uses": null,
+        "timeout_minutes": null,
+        "with": null
+      },
+      {
+        "name": "P4-D identity and chunk-quality gates",
+        "run": "cargo test -p cc-eval \\\n  --test document_identity \\\n  --test p4d_quality \\\n  --locked\n",
+        "uses": null,
+        "timeout_minutes": null,
+        "with": null
+      },
+      {
+        "name": "P5-A versioned retrieval lanes",
+        "run": "CODECORTEX_BENCH_OBSERVATIONS=\"$RUNNER_TEMP/p5a-observations\" \\\n  cargo test -p cc-eval --test p5a_retrieval --test p5a_boundaries --locked\nCODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\\nCODECORTEX_BENCH_OBSERVATIONS=\"$RUNNER_TEMP/p5a-mcp-observations\" \\\n  cargo test -p cc-eval --test p5a_retrieval --locked -- --ignored\n",
+        "uses": null,
+        "timeout_minutes": null,
+        "with": null
+      },
+      {
+        "name": "P5-B bounded query execution and cancellation",
+        "run": "cargo test -p cc-search --lib execution::tests --locked\ncargo test -p cc-server --lib query_tests --locked\ncargo test -p cc-eval --test p5b_execution --locked\nCODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\\nCODECORTEX_BENCH_OBSERVATIONS=\"$RUNNER_TEMP/p5b-observations\" \\\n  cargo test -p cc-eval --test p5b_execution --locked -- --ignored\n",
+        "uses": null,
+        "timeout_minutes": null,
+        "with": null
+      },
+      {
+        "name": "P5-C generation, bounded assembly and final source verification",
+        "run": "cargo test -p cc-db --lib read_generation --locked\ncargo test -p cc-eval --test p5c_selection --test p5c_budget --test p5c_hydration --locked\nCODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\\nCODECORTEX_BENCH_OBSERVATIONS=\"$RUNNER_TEMP/p5c-observations\" \\\n  cargo test -p cc-eval --test p5c_budget --locked -- --ignored\n",
+        "uses": null,
+        "timeout_minutes": null,
+        "with": null
+      },
+      {
+        "name": "P5-D capabilities, query pins and public policies",
+        "run": "cargo test -p cc-eval --test p5d_runtime --test p5d_contract --locked\nCODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\\nCODECORTEX_BENCH_OBSERVATIONS=\"$RUNNER_TEMP/p5d-observations\" \\\n  cargo test -p cc-eval --test p5d_contract --locked -- --ignored\n",
+        "uses": null,
+        "timeout_minutes": null,
+        "with": null
+      },
+      {
+        "name": "P0 plan and corpus locks (historical ten-file DEV subset)",
+        "run": "python3 scripts/code_index_plan.py\ncargo build -p cc-eval --bin cc-eval --locked\nPYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/historical_corpus -v\n# Same validator and six locks; only the historical subset is materialized.\n# Current product integrity uses the explicitly selected reviewed source union.\npython3 scripts/p0_historical_corpus.py --validator target/debug/cc-eval\n",
+        "uses": null,
+        "timeout_minutes": null,
+        "with": null
+      },
+      {
+        "name": "P7 semantic product disabled stdio contract",
+        "run": "python3 scripts/p7_stdio_build_receipt.py --package-kind semantic --output-dir \"$RUNNER_TEMP/p7-017-semantic\"\nCODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-semantic/codecortex\" \\\nP7_017_PACKAGE_KIND=semantic \\\nP7_017_BUILD_RECEIPT=\"$RUNNER_TEMP/p7-017-semantic/build-receipt.json\" \\\nCODECORTEX_BENCH_OBSERVATIONS=\"$RUNNER_TEMP/p7-017-semantic-observations\" \\\n  cargo test -p cc-eval --test benchmark_adapters --locked -- --include-ignored\n",
+        "uses": null,
+        "timeout_minutes": null,
+        "with": null
+      }
+    ],
+    "msrv_original": {
+      "runs-on": "ubuntu-latest",
+      "steps": [
+        {
+          "uses": "actions/checkout@v4"
+        },
+        {
+          "uses": "dtolnay/rust-toolchain@1.95.0"
+        },
+        {
+          "uses": "Swatinem/rust-cache@v2"
+        },
+        {
+          "name": "MSRV check",
+          "run": "cargo check --workspace --all-targets --locked"
+        },
+        {
+          "name": "MSRV optional benchmark HTTP feature",
+          "run": "cargo check -p cc-eval --all-targets --features eval-http --locked"
+        }
+      ]
+    },
+    "security_original": {
+      "runs-on": "ubuntu-latest",
+      "steps": [
+        {
+          "uses": "actions/checkout@v4"
+        },
+        {
+          "uses": "rustsec/audit-check@v2.0.0",
+          "with": {
+            "token": "${{ github.token }}"
+          }
+        }
+      ]
+    }
+  },
+  "selectors": {
+    "new_DB_oracle_controls": 6,
+    "new_interface_config_controls": 10,
+    "all_new_controls": [
+      {
+        "name": "index_db_snapshot_insert::tests::resolution_snapshot_batches_match_original_order_and_statement_work",
+        "function": "resolution_snapshot_batches_match_original_order_and_statement_work",
+        "source_path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+        "package": "cc-db",
+        "target": "lib",
+        "cfg_test": true,
+        "ignored": false,
+        "expected_primary_step": "Default regression within authorized scope",
+        "expected_original_command": "cargo test --workspace --all-targets --exclude cc-semantic --locked",
+        "candidate_execution_status": "pending_exact_C"
+      },
+      {
+        "name": "index_db_snapshot_insert::tests::resolution_snapshot_byte_windows_keep_legal_large_rows_single",
+        "function": "resolution_snapshot_byte_windows_keep_legal_large_rows_single",
+        "source_path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+        "package": "cc-db",
+        "target": "lib",
+        "cfg_test": true,
+        "ignored": false,
+        "expected_primary_step": "Default regression within authorized scope",
+        "expected_original_command": "cargo test --workspace --all-targets --exclude cc-semantic --locked",
+        "candidate_execution_status": "pending_exact_C"
+      },
+      {
+        "name": "snapshot_dependency_manifest_and_rows_match_original_full_writer",
+        "function": "snapshot_dependency_manifest_and_rows_match_original_full_writer",
+        "source_path": "crates/cc-db/tests/p2b_resolution_store.rs",
+        "package": "cc-db",
+        "target": "p2b_resolution_store",
+        "cfg_test": false,
+        "ignored": false,
+        "expected_primary_step": "Default regression within authorized scope",
+        "expected_original_command": "cargo test --workspace --all-targets --exclude cc-semantic --locked",
+        "candidate_execution_status": "pending_exact_C"
+      },
+      {
+        "name": "snapshot_dependency_failure_keeps_live_rows_and_generation_like_original",
+        "function": "snapshot_dependency_failure_keeps_live_rows_and_generation_like_original",
+        "source_path": "crates/cc-db/tests/p2b_resolution_store.rs",
+        "package": "cc-db",
+        "target": "p2b_resolution_store",
+        "cfg_test": false,
+        "ignored": false,
+        "expected_primary_step": "Default regression within authorized scope",
+        "expected_original_command": "cargo test --workspace --all-targets --exclude cc-semantic --locked",
+        "candidate_execution_status": "pending_exact_C"
+      },
+      {
+        "name": "benchmark::oracle::projection_tests::reused_projection_keeps_exact_sql_value_bytes_and_only_its_layout",
+        "function": "reused_projection_keeps_exact_sql_value_bytes_and_only_its_layout",
+        "source_path": "crates/cc-eval/src/benchmark/oracle.rs",
+        "package": "cc-eval",
+        "target": "lib",
+        "cfg_test": true,
+        "ignored": false,
+        "expected_primary_step": "Default regression within authorized scope",
+        "expected_original_command": "cargo test --workspace --all-targets --exclude cc-semantic --locked",
+        "candidate_execution_status": "pending_exact_C"
+      },
+      {
+        "name": "benchmark::oracle::projection_tests::projection_error_clears_partial_and_prior_values_before_recovery",
+        "function": "projection_error_clears_partial_and_prior_values_before_recovery",
+        "source_path": "crates/cc-eval/src/benchmark/oracle.rs",
+        "package": "cc-eval",
+        "target": "lib",
+        "cfg_test": true,
+        "ignored": false,
+        "expected_primary_step": "Default regression within authorized scope",
+        "expected_original_command": "cargo test --workspace --all-targets --exclude cc-semantic --locked",
+        "candidate_execution_status": "pending_exact_C"
+      },
+      {
+        "name": "dispatch_synthesis::interface_dispatch::tests::empty_prerequisites_remove_stale_edges_without_removing_real_calls",
+        "function": "empty_prerequisites_remove_stale_edges_without_removing_real_calls",
+        "source_path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs",
+        "package": "cc-index",
+        "target": "lib",
+        "cfg_test": true,
+        "ignored": false,
+        "expected_primary_step": "Default regression within authorized scope",
+        "expected_original_command": "cargo test --workspace --all-targets --exclude cc-semantic --locked",
+        "candidate_execution_status": "pending_exact_C"
+      },
+      {
+        "name": "dispatch_synthesis::interface_dispatch::tests::no_calls_still_returns_before_reading_symbols_or_implements",
+        "function": "no_calls_still_returns_before_reading_symbols_or_implements",
+        "source_path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs",
+        "package": "cc-index",
+        "target": "lib",
+        "cfg_test": true,
+        "ignored": false,
+        "expected_primary_step": "Default regression within authorized scope",
+        "expected_original_command": "cargo test --workspace --all-targets --exclude cc-semantic --locked",
+        "candidate_execution_status": "pending_exact_C"
+      },
+      {
+        "name": "dispatch_synthesis::interface_dispatch::tests::ordinary_symbols_and_empty_interface_uid_do_not_read_implements",
+        "function": "ordinary_symbols_and_empty_interface_uid_do_not_read_implements",
+        "source_path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs",
+        "package": "cc-index",
+        "target": "lib",
+        "cfg_test": true,
+        "ignored": false,
+        "expected_primary_step": "Default regression within authorized scope",
+        "expected_original_command": "cargo test --workspace --all-targets --exclude cc-semantic --locked",
+        "candidate_execution_status": "pending_exact_C"
+      },
+      {
+        "name": "dispatch_synthesis::interface_dispatch::tests::disabled_pass_does_not_read_or_schedule_cleanup",
+        "function": "disabled_pass_does_not_read_or_schedule_cleanup",
+        "source_path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs",
+        "package": "cc-index",
+        "target": "lib",
+        "cfg_test": true,
+        "ignored": false,
+        "expected_primary_step": "Default regression within authorized scope",
+        "expected_original_command": "cargo test --workspace --all-targets --exclude cc-semantic --locked",
+        "candidate_execution_status": "pending_exact_C"
+      },
+      {
+        "name": "dispatch_synthesis::interface_dispatch::tests::malformed_calls_are_not_hidden_by_empty_implements_or_later_errors",
+        "function": "malformed_calls_are_not_hidden_by_empty_implements_or_later_errors",
+        "source_path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs",
+        "package": "cc-index",
+        "target": "lib",
+        "cfg_test": true,
+        "ignored": false,
+        "expected_primary_step": "Default regression within authorized scope",
+        "expected_original_command": "cargo test --workspace --all-targets --exclude cc-semantic --locked",
+        "candidate_execution_status": "pending_exact_C"
+      },
+      {
+        "name": "dispatch_synthesis::interface_dispatch::tests::malformed_symbols_are_not_hidden_by_empty_implements",
+        "function": "malformed_symbols_are_not_hidden_by_empty_implements",
+        "source_path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs",
+        "package": "cc-index",
+        "target": "lib",
+        "cfg_test": true,
+        "ignored": false,
+        "expected_primary_step": "Default regression within authorized scope",
+        "expected_original_command": "cargo test --workspace --all-targets --exclude cc-semantic --locked",
+        "candidate_execution_status": "pending_exact_C"
+      },
+      {
+        "name": "dispatch_synthesis::interface_dispatch::tests::malformed_implements_and_query_errors_propagate_after_the_original_guards",
+        "function": "malformed_implements_and_query_errors_propagate_after_the_original_guards",
+        "source_path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs",
+        "package": "cc-index",
+        "target": "lib",
+        "cfg_test": true,
+        "ignored": false,
+        "expected_primary_step": "Default regression within authorized scope",
+        "expected_original_command": "cargo test --workspace --all-targets --exclude cc-semantic --locked",
+        "candidate_execution_status": "pending_exact_C"
+      },
+      {
+        "name": "dispatch_synthesis::interface_dispatch::tests::prior_call_overlay_reaches_implementors_and_preserves_fanout_cap",
+        "function": "prior_call_overlay_reaches_implementors_and_preserves_fanout_cap",
+        "source_path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs",
+        "package": "cc-index",
+        "target": "lib",
+        "cfg_test": true,
+        "ignored": false,
+        "expected_primary_step": "Default regression within authorized scope",
+        "expected_original_command": "cargo test --workspace --all-targets --exclude cc-semantic --locked",
+        "candidate_execution_status": "pending_exact_C"
+      },
+      {
+        "name": "empty_config_full_rebuild_clears_old_links_and_can_relink_later",
+        "function": "empty_config_full_rebuild_clears_old_links_and_can_relink_later",
+        "source_path": "crates/cc-index/tests/full_snapshot_empty_config.rs",
+        "package": "cc-index",
+        "target": "full_snapshot_empty_config",
+        "cfg_test": false,
+        "ignored": false,
+        "expected_primary_step": "Default regression within authorized scope",
+        "expected_original_command": "cargo test --workspace --all-targets --exclude cc-semantic --locked",
+        "candidate_execution_status": "pending_exact_C"
+      },
+      {
+        "name": "typed_module_config_still_resolves_when_heuristic_tokens_are_empty",
+        "function": "typed_module_config_still_resolves_when_heuristic_tokens_are_empty",
+        "source_path": "crates/cc-index/tests/full_snapshot_empty_config.rs",
+        "package": "cc-index",
+        "target": "full_snapshot_empty_config",
+        "cfg_test": false,
+        "ignored": false,
+        "expected_primary_step": "Default regression within authorized scope",
+        "expected_original_command": "cargo test --workspace --all-targets --exclude cc-semantic --locked",
+        "candidate_execution_status": "pending_exact_C"
+      }
+    ],
+    "coverage_basis": "No cc-db/cc-index exclusion, filter or required feature in the first default execution. Cargo auto-discovers both new/inherited integration files and cfg(test) modules. cc-eval oracle tests repeat under optional eval-http; repeated invocations must retain context, not inflate distinct-control counts.",
+    "compile_only_is_not_execution": true,
+    "module_chain": [
+      {
+        "path": "crates/cc-db/src/lib.rs",
+        "blob": "f41c91b18b8b6120da4b2ab813a408bf37f16dbd",
+        "relevant_module_lines": [
+          {
+            "line": 27,
+            "text": "mod index_db_snapshot_insert;"
+          }
+        ]
+      },
+      {
+        "path": "crates/cc-index/src/dispatch_synthesis/mod.rs",
+        "blob": "4a67edae340aa86855949579777f2d7fcdb5b3a0",
+        "relevant_module_lines": [
+          {
+            "line": 35,
+            "text": "mod interface_dispatch;"
+          },
+          {
+            "line": 159,
+            "text": "mod tests {"
+          }
+        ]
+      },
+      {
+        "path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch.rs",
+        "blob": "8d230b0a463bd53ab21e80e56af9d7fc9d3a0a2d",
+        "relevant_module_lines": [
+          {
+            "line": 288,
+            "text": "#[path = \"interface_dispatch_tests.rs\"]"
+          },
+          {
+            "line": 289,
+            "text": "mod tests;"
+          }
+        ]
+      },
+      {
+        "path": "crates/cc-eval/src/benchmark/mod.rs",
+        "blob": "61f2fc36962f662dad825047538790b992172c01",
+        "relevant_module_lines": [
+          {
+            "line": 14,
+            "text": "pub mod oracle;"
+          }
+        ]
+      }
+    ],
+    "cargo_manifests": [
+      {
+        "path": "crates/cc-db/Cargo.toml",
+        "blob": "69c83252f99328ab8c5cea62ac1e804d5f29423b",
+        "sha256": "169278d054b2575aae1123650dfa2c8f8e9fe0aabe575fbb2d67e4d168a9b047",
+        "no_global_autotests_or_test_false": true
+      },
+      {
+        "path": "crates/cc-eval/Cargo.toml",
+        "blob": "c2f6dc531a42a5643c866856eae36f312e6f30d1",
+        "sha256": "d79b3b1693130c199c8b803bf555ef94836230c00c28afd499bab1e4ffa99179",
+        "no_global_autotests_or_test_false": true
+      },
+      {
+        "path": "crates/cc-index/Cargo.toml",
+        "blob": "d6025ed7559d69798d955bfa143468767c468bf8",
+        "sha256": "05d8a3cd1c1ef69085901643acc771130d70f0df679189d8b6befdaecfcf4f48",
+        "no_global_autotests_or_test_false": true
+      }
+    ],
+    "source_paths": {
+      "crates/cc-db/src/index_db_snapshot_insert.rs": {
+        "bytes": 24457,
+        "sha256": "949fdaf5015703e4f55950c42cca28fcc527defc52c195894ed19bb5f125590b",
+        "blob": "9cd3320336e1ee9eeeb8b279d0a97448f61a4563"
+      },
+      "crates/cc-db/tests/p2b_resolution_store.rs": {
+        "bytes": 14608,
+        "sha256": "2c99786a75ac5df604ca2481e799ef9bc8da84d6bf138781b1cbbfa6b9693d3c",
+        "blob": "f698d3427ad90c194cfdb5b7c241e0802c1267d1"
+      },
+      "crates/cc-eval/src/benchmark/oracle.rs": {
+        "bytes": 14710,
+        "sha256": "7b6438d212bd22471fedfb9ffd3a37a0c1d491f8e7846af3ba5c5850c622bc15",
+        "blob": "4c7fdb879e039af164b3b10ea1491d538c69ac68"
+      },
+      "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs": {
+        "bytes": 9704,
+        "sha256": "1647126f382e4fed5e47b42780e08348d8239432eefc7c2012efa628df3c7c41",
+        "blob": "d1888e13cb6bc1e4748cf372209b9686a705a1da"
+      },
+      "crates/cc-index/tests/full_snapshot_empty_config.rs": {
+        "bytes": 3850,
+        "sha256": "fc5e8b7f4e8f8b8e3c1245ffcf724e79905413c203ccb298374cb8297a32b4ed",
+        "blob": "c900883bd45b427a605330b6ce4ac359f99506ef"
+      }
+    }
+  },
+  "identity_checks": [
+    "Fetch the actual final C and parent product/review chain from root before using this plan; verify product and all non-trust validation bytes against P2 and compare this CI workflow exact blob.",
+    "Enumerate official workflow runs filtered by exact C, preserve all pages total_count/unique IDs/head/run_attempt/event, never mix E6/C4/275e runs.",
+    "CI actions/checkout@v4 defaults to PR test-merge. Read actual checkout from full logs, GET exact merge object parents/tree, and retain actual merge identity. If main changes, compare relevant actual inputs explicitly; never relabel a different full tree as C.",
+    "MSRV/security also use default checkout; retain each original actual job identity and actual version/audit result.",
+    "Bind executed v15 output to the final PRODUCT/REVIEW/registry pins and full source population; original historical v2/TODO definitions must actually pass without changing the criteria."
+  ],
+  "acceptance_method": [
+    "For each of the 16 methods locate an actual nonignored ok result in the expected cargo target/step. Absence, filter-only listing, compilation, failed predecessor or ignored outcome does not count as execution.",
+    "Preserve the full check log once at terminal completion, including every failure, ignored and filtered result; aggregate counts as invocation occurrences and do not hardcode old totals or call them unique tests.",
+    "Require original formatting, clippy, compile-all-default-targets and all scheduled check steps to conclude successfully; inspect HTTP/status/stdio, historical guard, facts, source integrity, plan/corpus and real MCP steps in their original scopes.",
+    "Retain all existing explicit ignored selections; ordinary ignored occurrences remain ignored. Do not introduce new broad test selectors or omit old ones.",
+    "MSRV is compile compatibility on Rust1.95.0 for workspace/all-targets and optional eval-http, not a test execution. Security is the actual rustsec audit-check result, with warnings/advisories and failures retained.",
+    "New source controls and v15 success are engineering admission, not complete scale/runtime/platform/quality certification or original TODO completion."
+  ],
+  "known_negative_controls": [
+    {
+      "name": "benchmark::sampler::process_probe_tests::linux::live_child_snapshot_is_attributed_monotonic_and_disappears",
+      "applicable_command": "cargo test --workspace --all-targets --exclude cc-semantic --locked",
+      "prior_failure": "PR181 workspace101 original live child snapshot unavailable",
+      "policy": "Original failure remains. Read current terminal full log first; record current result without assuming namespace cause or blanket waiver. No rerun/cancel/ignore/timeout modification."
+    },
+    {
+      "name": "Original Mac fresh-helper 250ms failure",
+      "applicable_scope": "Current CI Linux success and separate prepared-helper/cold matrix cannot erase original Mac result. Preserve environment and fixture boundaries."
+    }
+  ],
+  "separate_semantic_ready_control": {
+    "workflow": ".github/workflows/p7-closeout.yml",
+    "job": "closeout",
+    "command": "cargo test -p cc-semantic --locked --all-targets -- --nocapture",
+    "checkout": "explicit pull_request.head.sha || github.sha",
+    "scope": "Atomic ready publication control is compiled by CI but excluded from the limited normal cc-semantic integration selection; its actual runtime belongs to the original P7 closeout job. Do not infer it passed merely from CI check."
+  },
+  "failure_policy": "On first completed failure obtain complete original job log and official terminal metadata, preserve precise source/toolchain/command/exit/assertion; only then propose a minimal concrete fix. Do not start native studies or repeat jobs.",
+  "remote_actions": [],
+  "new_test_commands_executed": [],
+  "new_gates_or_budgets": false,
+  "formal_task_completion": false,
+  "TODO_done": 163,
+  "TODO_remaining": 29
+}

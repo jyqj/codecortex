@@ -392,6 +392,11 @@ def run_shard(root, build_directory, output, plan):
     if capacity is not None:
         require(capacity == CAPACITY_PROFILE, "unknown capacity profile")
         command.extend(("--capacity-profile", capacity))
+    if "stage_scope" in plan:
+        require(plan["stage_scope"] == "cold_only_v1", "unknown explicit stage scope")
+        command.extend(("--stage-scope", plan["stage_scope"],
+                        "--study-run-id", plan["cold_study"]["run_id"],
+                        "--study-attempt", str(plan["cold_study"]["run_attempt"])))
     record = {"schema": SCHEMA, "kind": "shard", "status": "failed", "started_utc": utc(),
               "command": command, "plan": plan, "build_receipt_sha256": file_sha256(Path(build_directory) / "build.json"),
               "source_commit": built["source_commit"], "source_manifest_sha256": built["source_manifest_sha256"],
@@ -545,10 +550,15 @@ def compact_build(event, started):
     return result
 
 
-def inspect_raw(path, plan):
+def inspect_raw(path, plan, *, cold_only=False):
     """Replay the complete event population, retaining bounded summaries."""
+    require(type(cold_only) is bool and plan.get("stage_scope") ==
+            ("cold_only_v1" if cold_only else None), "raw stage protocol differs")
+    require(not cold_only or plan["skip_fanout"] is True, "cold-only protocol contains fanout")
     scale, reps = plan["files"][0], set(repetition_range(plan))
     stages = ("no_op", "body", "api", "config") + tuple(f"batch_{n}" for n in plan["batch_sizes"])
+    if cold_only:
+        stages = ()
     expected_samples = {f"scale-{scale}/repetition-{r}" for r in reps}
     inputs, starts, builds, mutations, cold, finished = {}, {}, {}, {}, {}, {}
     used_builds, fanout_started, fanout_finished, measurements = set(), {}, {}, []
@@ -752,6 +762,13 @@ def inspect_raw(path, plan):
 
 
 def validate_shard(directory, build_record, binary, build_receipt_sha256):
+    return _validate_shard(directory, build_record, binary, build_receipt_sha256,
+                           protocol_plan=registered_plan, raw_inspector=inspect_raw)
+
+
+def _validate_shard(directory, build_record, binary, build_receipt_sha256, *,
+                    protocol_plan, raw_inspector):
+    """Common immutable evidence checks; public full-stage admission stays fixed."""
     directory = Path(directory).resolve(strict=True)
     record = read_json(directory / "shard.json")
     require(record.get("schema") == SCHEMA and record.get("kind") == "shard" and record.get("status") == "passed" and
@@ -765,7 +782,7 @@ def validate_shard(directory, build_record, binary, build_receipt_sha256):
     require(before == read_json(directory / "source-after.json") and before["source_commit"] == build_record["source_commit"] and
             before["manifest_sha256"] == build_record["source_manifest_sha256"], "shard source drift")
     plan = record["plan"]
-    expected = registered_plan(plan["files"][0], plan["shard"]["index"], plan["shard"]["count"],
+    expected = protocol_plan(plan["files"][0], plan["shard"]["index"], plan["shard"]["count"],
                                plan["repetitions"], plan["seed"], plan["deadline_ms"], plan.get("capacity_profile"))
     require(exact_equal(plan, expected) and plan == read_json(directory / "registered-plan.json") and
             plan == read_json(directory / "native/plan.json"), "shard plan differs from fixed matrix protocol")
@@ -802,7 +819,7 @@ def validate_shard(directory, build_record, binary, build_receipt_sha256):
     require(report.get("release_certification") == summary.get("release_certification") == "not_run" and
             report.get("full_100k_certification") == summary.get("full_100k_certification") == "not_run",
             "a shard cannot certify a full release")
-    inspected = inspect_raw(directory / "native/raw.jsonl", plan)
+    inspected = raw_inspector(directory / "native/raw.jsonl", plan)
     engine = inspected["engine"]
     require(engine.get("eval_debug_assertions") is False and engine.get("engine_head_observed") == build_record["source_commit"] and
             engine.get("binary_digest") == build_record["binary_blake3"] and digest_ok(engine.get("source_files_digest")) and

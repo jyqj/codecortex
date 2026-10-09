@@ -2,7 +2,9 @@
 //! The measured 60-file fixture is not release or tail-latency certification.
 use cc_eval::benchmark::{
     mutation_case,
-    p8_scale::{self, CapacityProfile, Profile, ScalePlan, ScaleShard, RELEASE_SCALES},
+    p8_scale::{
+        self, CapacityProfile, ColdStudy, Profile, ScalePlan, ScaleShard, StageScope, RELEASE_SCALES,
+    },
 };
 use serde_json::{json, Value};
 use std::{collections::BTreeSet, path::Path};
@@ -581,4 +583,99 @@ fn configured_evidence_budget_stops_without_overwriting_partial_raw() {
         "{total} > {}",
         plan.max_output_bytes
     );
+}
+
+#[test]
+fn cold_stage_identity_is_explicit_and_old_plan_wire_stays_unchanged() {
+    let old = ScalePlan::default();
+    let value = serde_json::to_value(&old).unwrap();
+    assert!(value.get("stage_scope").is_none());
+    assert!(value.get("cold_study").is_none());
+    let decoded: ScalePlan = serde_json::from_value(value.clone()).unwrap();
+    assert_eq!(serde_json::to_value(decoded).unwrap(), value);
+    let mut plan = ScalePlan {
+        stage_scope: Some(StageScope::ColdOnlyV1),
+        cold_study: Some(ColdStudy {
+            run_id: "12345".into(),
+            run_attempt: 1,
+        }),
+        shard: Some(ScaleShard { index: 0, count: 1 }),
+        skip_fanout: true,
+        ..ScalePlan::default()
+    };
+    plan.validate().unwrap();
+    plan.cold_study = None;
+    assert!(plan.validate().is_err());
+    plan.cold_study = Some(ColdStudy {
+        run_id: "0".into(),
+        run_attempt: 1,
+    });
+    assert!(plan.validate().is_err());
+    plan.cold_study.as_mut().unwrap().run_id = "12345".into();
+    plan.skip_fanout = false;
+    assert!(plan.validate().is_err());
+    plan.skip_fanout = true;
+    plan.stage_scope = None;
+    assert!(plan.validate().is_err());
+}
+
+#[test]
+fn real_cold_scope_finishes_both_fresh_builds_and_all_fifteen_tables() {
+    let temp = tempfile::tempdir().unwrap();
+    let out = temp.path().join("cold");
+    let plan = ScalePlan {
+        stage_scope: Some(StageScope::ColdOnlyV1),
+        cold_study: Some(ColdStudy {
+            run_id: "12345".into(),
+            run_attempt: 1,
+        }),
+        shard: Some(ScaleShard { index: 0, count: 1 }),
+        skip_fanout: true,
+        ..ScalePlan::default()
+    };
+    let report = p8_scale::run_supervised(&plan, &out, binary()).unwrap();
+    assert_eq!(report["exit_code"], 0, "{report}");
+    assert_eq!(report["status"], "measurement_complete");
+    assert_eq!(report["summary"]["stage_scope"], "cold_only_v1");
+    assert_eq!(report["summary"]["sample_count"], 1);
+    assert_eq!(report["summary"]["passed"], true);
+    let rows: Vec<Value> = std::fs::read_to_string(out.join("raw.jsonl"))
+        .unwrap()
+        .lines()
+        .map(|line| serde_json::from_str(line).unwrap())
+        .collect();
+    assert_eq!(rows[0]["plan"], serde_json::to_value(&plan).unwrap());
+    assert_eq!(
+        rows[0]["cold_environment"]["seed_cache_max_symbols"]["effective"],
+        cc_db::seed_cache_max_symbols()
+    );
+    assert_eq!(
+        rows.iter()
+            .filter(|row| row["event"] == "build_finished")
+            .count(),
+        2
+    );
+    assert!(rows.iter().all(|row| {
+        [
+            "run_started",
+            "input",
+            "build_started",
+            "build_finished",
+            "cold_parity",
+        ]
+        .contains(&row["event"].as_str().unwrap())
+    }));
+    let parity = rows
+        .iter()
+        .find(|row| row["event"] == "cold_parity")
+        .unwrap();
+    assert_eq!(parity["parity"]["equal"], true);
+    assert_eq!(parity["parity"]["tables"].as_array().unwrap().len(), 15);
+    assert_eq!(parity["independent_config_fact"]["passed"], true);
+    for row in rows.iter().filter(|row| row["event"] == "build_finished") {
+        assert_eq!(row["full"], true);
+        assert_eq!(row["report"]["resolution_freshness"]["complete"], true);
+        assert_eq!(row["report"]["parse_errors"], json!([]));
+        assert!(row.get("process_snapshot").is_some());
+    }
 }

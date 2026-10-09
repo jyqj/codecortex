@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "reviewed_at_utc": "2026-10-09T07:43:50Z",
+  "reviewer": "/root/recovery_audit",
+  "role": "non_author",
+  "verdict": "accepted_scoped",
+  "scope": "finite_actual_R_G_installation_check",
+  "P": {
+    "commit": "854df0d02b59d9f09408698bd77f68567bb1dce3",
+    "tree": "04c41a9d325fadeff55a4a481fdb93cfc0a3f7b7",
+    "canonical": {
+      "git_blob": "0c3de8a05c552b78a40046ed13bc4809360c7ddf",
+      "bytes": 175771,
+      "sha256": "95effeae8841662581c1ba5757296b6bb3783d7eba132f2afae4ed726c0d389a"
+    },
+    "details": {
+      "git_blob": "6150e99cdf0997a61d88ad2fa5770a5c31edcaa5",
+      "bytes": 17938,
+      "sha256": "75e5a43efde023202271fb3410c1e8456a775a4be6304b81864c9951da56ec74"
+    }
+  },
+  "R": {
+    "commit": "e5f056b995b7f592fd3de3a1b9d5ab6694f132aa",
+    "tree": "7f7d815b52475a6720d197cfeeb56872fc819873",
+    "sole_parent": "854df0d02b59d9f09408698bd77f68567bb1dce3",
+    "change": "Exactly31added artifact paths; every non-artifact root is P-exact; no source or validation change."
+  },
+  "G": {
+    "commit": "ee467290785a4c8906d11d6d8764d2f1b4b92241",
+    "tree": "440bf2de01da66b2dc52a572e0a0fa7ecbf38291",
+    "sole_parent": "e5f056b995b7f592fd3de3a1b9d5ab6694f132aa",
+    "change": "Exactly registry and guard modified; every non-scripts root is R-exact."
+  },
+  "registry": {
+    "bytes": 172566,
+    "sha256": "09f95739b6c7ad522a4358a838179b8cd5878f5125541ea83ed013d6467f2c02",
+    "git_blob": "77d884eb3e8fb633d24fe61f0c954b993216def0",
+    "path": "scripts/reviewed-source-registry-v15.json",
+    "actual_mode": "100644",
+    "schema_version": 10,
+    "complete_inputs": 1089,
+    "delta": 45,
+    "validation_inputs": 139
+  },
+  "guard": {
+    "bytes": 11098,
+    "sha256": "1d1690984065e53ffeed3533696f95d84ae4510c32571dbdca9f6e5a017b700f",
+    "git_blob": "12959c5499f785178fab52ca587e982c3789a0e2",
+    "path": "scripts/verify_reviewed_source_v15.py",
+    "actual_mode": "100644",
+    "reference_original_blob": "43f2b01324023c0ded2b5ef3cca941a79f67d383",
+    "four_constants": [
+      {
+        "before": "PRODUCT = \"59c2197ebbada4e8cb2091d2fc7a852aa28c9205\"",
+        "after": "PRODUCT = \"854df0d02b59d9f09408698bd77f68567bb1dce3\""
+      },
+      {
+        "before": "REVIEW = \"c6c8030d359107c82f0f738d8ef270778b5f887d\"",
+        "after": "REVIEW = \"e5f056b995b7f592fd3de3a1b9d5ab6694f132aa\""
+      },
+      {
+        "before": "REVIEW_PATH = \"artifacts/checkpoints/p8-combined-surface-mac-28fe-20261009/independent-source-review.json\"",
+        "after": "REVIEW_PATH = \"artifacts/checkpoints/p8-snapshot-oracle-integration-28fe-20261009/independent-source-review.json\""
+      },
+      {
+        "before": "REGISTRY_SHA256 = \"754442a8ff237eedaebac63aeeb1ae03f4baeb462b2ee1f8d84bada3cb56ee73\"",
+        "after": "REGISTRY_SHA256 = \"09f95739b6c7ad522a4358a838179b8cd5878f5125541ea83ed013d6467f2c02\""
+      }
+    ],
+    "all_other_bytes_exact": true
+  },
+  "checks": {
+    "R_sole_parent_P": true,
+    "G_sole_parent_R": true,
+    "R_only_artifact_root_changed": true,
+    "R_exact31_added_artifacts": true,
+    "R_installed_canonical_exact": true,
+    "R_installed_details_exact": true,
+    "G_only_scripts_root_changed": true,
+    "G_exact_registry_guard_modified": true,
+    "both_new_pins_mode100644": true,
+    "actual_tree_pin_OIDs": true,
+    "guard_only_four_constants_exact": true,
+    "registry_identity": true,
+    "registry_complete_exact": true,
+    "registry_delta_exact": true,
+    "registry_validation_exact": true
+  },
+  "passed_checks": 15,
+  "review_path": "artifacts/checkpoints/p8-snapshot-oracle-integration-28fe-20261009/independent-source-review.json",
+  "evidence_basis": "Fetched immutable official commits, root trees, complete P-to-R and R-to-G comparisons, actualGscripts tree, and both raw pin blobs. Recomputed Gitblob/SHA256/bytes and parsed all3 registry maps against this agent's immutable canonical. Reconstructed complete guard via exactly4single-occurrence constant substitutions. No repeated1089-body semantic review or new execution.",
+  "root_reported_rejected_candidate": {
+    "prefix": "7f97",
+    "reported_reason": "An unreferenced earlier candidate assigned guard100755 and was rejected by root pre-publication checks.",
+    "review_boundary": "No verdict is granted to that earlier object; this review independently verifies currentee467 actualguard100644. Root reports no ref/PR/run was created for the rejected object; this report does not claim an independent global-ref scan."
+  },
+  "unresolved_blockers": [],
+  "allowed_next_step": "Root may publish this exactG through the normal new integration branch/PR so the original CI executes. This installation check is not CI, native, scale, quality, platform or release acceptance.",
+  "execution_status": {
+    "new_combined_source_proof": "not_run",
+    "new_combined_compile": "not_run",
+    "new_combined_tests": "not_run",
+    "new_combined_runtime": "not_run",
+    "new_combined_scale": "not_run"
+  },
+  "TODO": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "closed": 0
+  },
+  "reviewer_actions": {
+    "created_report_blob_only": true,
+    "refs_changed": false,
+    "runs_triggered": false,
+    "tests_executed": false
+  }
+}

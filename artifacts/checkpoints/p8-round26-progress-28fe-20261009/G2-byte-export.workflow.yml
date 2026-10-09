@@ -1,0 +1,324 @@
+name: P8 fixed G2 failed artifact original bytes
+
+on:
+  push:
+    branches:
+      - audit/p8-g2-failure-bytes-28fe-20261009
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: p8-g2-failure-bytes-28fe-20261009
+  cancel-in-progress: false
+
+jobs:
+  original_bytes:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Export the fixed original failure bytes without running artifact code
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PYTHONDONTWRITEBYTECODE: "1"
+        shell: bash
+        run: |
+          python3 -B - <<'PY'
+          import base64
+          import datetime
+          import hashlib
+          import io
+          import json
+          import os
+          from pathlib import Path, PurePosixPath
+          import re
+          import stat
+          import struct
+          import time
+          import urllib.error
+          import urllib.parse
+          import urllib.request
+          import zipfile
+          import zlib
+          
+          REPO = "jyqj/codecortex"
+          SOURCE = "0272a1fb152fd76a7cfb22386a580629d4038a64"
+          RUN, JOB, ARTIFACT = 37877604259, 113654983347, 11604421042
+          NAME = "p8-snapshot-leaf-shard-100000-0-37877604259"
+          ZIP_BYTES = 5206420
+          ZIP_SHA = "fe9bb645c4d7036c542beaa708572793105825ae1ec11244d9293701e3da58af"
+          BRANCH = "audit/p8-g2-failure-bytes-28fe-20261009"
+          API = "https://api.github.com/repos/" + REPO
+          SINGLE, TOTAL, FRAME = 256 * 1024, 2 * 1024 * 1024, 16 * 1024
+          
+          def now():
+              return datetime.datetime.now(datetime.timezone.utc).isoformat()
+          
+          class ExportError(Exception):
+              pass
+          
+          def need(ok, reason):
+              if not ok:
+                  raise ExportError(reason)
+          
+          def sha(data):
+              return hashlib.sha256(data).hexdigest()
+          
+          root = Path(os.environ["RUNNER_TEMP"]) / ("p8-g2-failure-bytes-" + os.environ["GITHUB_RUN_ID"] + "-attempt" + os.environ["GITHUB_RUN_ATTEMPT"])
+          root.mkdir(exist_ok=False)
+          receipt = {
+              "schema": "p8_fixed_g2_failure_original_bytes_v1",
+              "started_utc": now(),
+              "controller_run": os.environ["GITHUB_RUN_ID"],
+              "controller_head": os.environ["GITHUB_SHA"],
+              "controller_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
+              "original": {"repository": REPO, "source": SOURCE, "run": RUN, "job": JOB, "attempt": 1,
+                           "artifact": ARTIFACT, "name": NAME, "zip_bytes": ZIP_BYTES, "zip_sha256": ZIP_SHA,
+                           "run_conclusion": "failure", "job_conclusion": "failure"},
+              "limits": {"member_bytes": SINGLE, "exported_original_bytes": TOTAL, "frame_bytes": FRAME},
+              "method": "GET only; original ZIP retained; in-memory bounded byte export; no extraction or code execution",
+              "status": "running", "requests": [], "members": [], "exported_bytes": 0,
+              "errors": [], "all_regular_members_exported": False,
+              "native_measurement_result_changed": False, "task_statuses_changed": False,
+          }
+          
+          def save():
+              (root / "readback-receipt.json").write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+          
+          def emit(kind, value):
+              print(kind + " " + json.dumps(value, ensure_ascii=False, sort_keys=True, allow_nan=False), flush=True)
+          
+          save()
+          token = os.environ.pop("GH_TOKEN", "")
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self, req, fp, code, msg, headers, newurl):
+                  return None
+          
+          opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
+          
+          def request(url, authenticated=False):
+              headers = {"User-Agent": "codecortex-fixed-g2-failure-bytes"}
+              if authenticated:
+                  need(url.startswith(API + "/") and urllib.parse.urlsplit(url).hostname == "api.github.com", "authenticated_origin")
+                  headers.update({"Authorization": "Bearer " + token, "Accept": "application/vnd.github+json",
+                                  "X-GitHub-Api-Version": "2022-11-28"})
+              try:
+                  return opener.open(urllib.request.Request(url, headers=headers, method="GET"), timeout=30)
+              except urllib.error.HTTPError as error:
+                  return error
+              except Exception as error:
+                  raise RuntimeError("network_" + type(error).__name__) from None
+          
+          def api_json(label, suffix):
+              item = {"label": label, "method": "GET", "api_path": suffix, "started_utc": now()}
+              receipt["requests"].append(item)
+              save()
+              with request(API + suffix, True) as response:
+                  data = response.read(2 * 1024 * 1024 + 1)
+                  item["status"] = response.status
+              need(len(data) <= 2 * 1024 * 1024, "metadata_size_limit")
+              need(token.encode() not in data, "credential_in_metadata")
+              (root / (label + ".json")).write_bytes(data)
+              item.update(bytes=len(data), sha256=sha(data), finished_utc=now())
+              save()
+              need(item["status"] == 200, "metadata_http_" + str(item["status"]))
+              return json.loads(data)
+          
+          def download():
+              item = {"label": "original_zip", "method": "GET", "api_path": "/actions/artifacts/" + str(ARTIFACT) + "/zip", "started_utc": now()}
+              receipt["requests"].append(item)
+              save()
+              response = request(API + item["api_path"], True)
+              redirects = 0
+              deadline = time.monotonic() + 240
+              output = root / "original-11604421042.zip"
+              try:
+                  while response.status in (301, 302, 303, 307, 308):
+                      need(redirects < 5, "redirect_limit")
+                      location = response.headers.get("Location", "")
+                      response.close()
+                      parsed = urllib.parse.urlsplit(location)
+                      host = (parsed.hostname or "").lower()
+                      allowed = (host.endswith(".blob.core.windows.net") or host.endswith(".actions.githubusercontent.com")
+                                 or re.fullmatch(r"[a-z0-9.-]+\.s3(?:[.-][a-z0-9-]+)?\.amazonaws\.com", host))
+                      need(parsed.scheme == "https" and parsed.port in (None, 443) and allowed
+                           and parsed.username is None and parsed.password is None and not parsed.fragment, "storage_origin")
+                      decoded = location
+                      for unused in range(16):
+                          need(token not in decoded, "credential_in_redirect")
+                          changed = urllib.parse.unquote(decoded)
+                          if changed == decoded:
+                              break
+                          decoded = changed
+                      else:
+                          raise ExportError("redirect_encoding_depth")
+                      response = request(location, False)
+                      redirects += 1
+                  item["status"] = response.status
+                  need(response.status == 200, "zip_http_" + str(response.status))
+                  size = 0
+                  digest = hashlib.sha256()
+                  partial = root / "original-11604421042.zip.partial"
+                  with partial.open("xb") as handle:
+                      while True:
+                          need(time.monotonic() <= deadline, "download_deadline")
+                          block = response.read(min(64 * 1024, ZIP_BYTES - size + 1))
+                          if not block:
+                              break
+                          size += len(block)
+                          need(size <= ZIP_BYTES, "zip_size_overflow")
+                          digest.update(block)
+                          handle.write(block)
+                  need(size == ZIP_BYTES and digest.hexdigest() == ZIP_SHA, "zip_size_or_hash")
+                  partial.rename(output)
+                  item.update(bytes=size, sha256=digest.hexdigest(), redirects=redirects,
+                              authorization_forwarded_to_storage=False, finished_utc=now())
+                  save()
+                  return output.read_bytes()
+              finally:
+                  response.close()
+          
+          def member_payload(raw, item, central):
+              offset = item.header_offset
+              need(0 <= offset and offset + 30 <= central, "local_header_bounds")
+              header = struct.unpack_from("<4s5H3I2H", raw, offset)
+              need(header[0] == b"PK\x03\x04", "local_header_signature")
+              flags, method, crc, compressed, expanded, name_length, extra_length = header[2], header[3], header[6], header[7], header[8], header[9], header[10]
+              start = offset + 30 + name_length + extra_length
+              stop = start + item.compress_size
+              need(start <= stop <= central and flags == item.flag_bits and method == item.compress_type, "local_central_layout")
+              name = raw[offset + 30:offset + 30 + name_length].decode("utf-8" if flags & 0x800 else "cp437", errors="strict")
+              need(name == item.orig_filename, "local_central_name")
+              if not flags & 8:
+                  need((crc, compressed, expanded) == (item.CRC, item.compress_size, item.file_size), "local_central_sizes")
+              return start, stop
+          
+          def read_small(raw, item, start, stop):
+              payload = raw[start:stop]
+              if item.compress_type == zipfile.ZIP_STORED:
+                  need(len(payload) <= SINGLE, "stored_member_limit")
+                  data = payload
+              elif item.compress_type == zipfile.ZIP_DEFLATED:
+                  inflater = zlib.decompressobj(-15)
+                  data = inflater.decompress(payload, SINGLE + 1)
+                  need(len(data) <= SINGLE and not inflater.unconsumed_tail and inflater.eof
+                       and not inflater.unused_data, "deflate_stream_or_limit")
+              else:
+                  raise ExportError("unsupported_small_member_compression")
+              need(len(data) == item.file_size and (zlib.crc32(data) & 0xffffffff) == item.CRC, "member_size_or_crc")
+              return data
+          
+          exit_code = 2
+          try:
+              need(os.environ.get("GITHUB_REPOSITORY") == REPO and os.environ.get("GITHUB_EVENT_NAME") == "push"
+                   and os.environ.get("GITHUB_REF") == "refs/heads/" + BRANCH
+                   and os.environ.get("GITHUB_RUN_ATTEMPT") == "1", "controller_identity_or_attempt")
+              need(bool(token), "missing_read_token")
+              run = api_json("original-run", "/actions/runs/" + str(RUN))
+              need(run["id"] == RUN and run["head_sha"] == SOURCE and run["run_attempt"] == 1
+                   and run["status"] == "completed" and run["conclusion"] == "failure"
+                   and run["repository"]["full_name"] == REPO and run["head_repository"]["full_name"] == REPO, "run_identity_or_terminal")
+              job = api_json("original-job", "/actions/jobs/" + str(JOB))
+              need(job["id"] == JOB and job["run_id"] == RUN and job["head_sha"] == SOURCE and job["run_attempt"] == 1
+                   and job["status"] == "completed" and job["conclusion"] == "failure", "job_identity_or_terminal")
+              meta = api_json("original-artifact", "/actions/artifacts/" + str(ARTIFACT))
+              need(meta["id"] == ARTIFACT and meta["name"] == NAME and meta["size_in_bytes"] == ZIP_BYTES
+                   and meta["digest"] == "sha256:" + ZIP_SHA and meta["expired"] is False
+                   and meta["workflow_run"]["id"] == RUN and meta["workflow_run"]["head_sha"] == SOURCE
+                   and meta["workflow_run"]["repository_id"] == 1249213794
+                   and meta["workflow_run"]["head_repository_id"] == 1249213794, "artifact_identity")
+              raw = download()
+              token = ""
+              seen, intervals, candidates = set(), [], []
+              with zipfile.ZipFile(io.BytesIO(raw), "r") as archive:
+                  members = archive.infolist()
+                  need(len(members) == 12, "expected_exactly_12_members")
+                  for index, item in enumerate(members):
+                      name = item.orig_filename
+                      parts = name.rstrip("/").split("/")
+                      need(name and not name.startswith("/") and "\\" not in name and "\x00" not in name
+                           and all(part not in ("", ".", "..") and ":" not in part for part in parts), "unsafe_member_name")
+                      need(name.rstrip("/") not in seen, "duplicate_member_name")
+                      seen.add(name.rstrip("/"))
+                      kind = stat.S_IFMT(item.external_attr >> 16)
+                      need(kind in (0, stat.S_IFREG, stat.S_IFDIR) and not item.flag_bits & 1
+                           and (kind != stat.S_IFDIR or item.is_dir()), "special_or_encrypted_member")
+                      start, stop = member_payload(raw, item, archive.start_dir)
+                      intervals.append((item.header_offset, stop))
+                      row = {"index": index, "name": name, "bytes": item.file_size, "compressed_bytes": item.compress_size,
+                             "compression": item.compress_type, "crc32": format(item.CRC, "08x"), "directory": item.is_dir(),
+                             "exported": False, "stream_crc_verified": False}
+                      receipt["members"].append(row)
+                      candidates.append((item, start, stop, row))
+                  for left, right in zip(sorted(intervals), sorted(intervals)[1:]):
+                      need(left[1] <= right[0], "overlapping_zip_members")
+                  files = {item.orig_filename.rstrip("/") for item in members if not item.is_dir()}
+                  need(not any(str(parent) in files for name in seen for parent in PurePosixPath(name).parents), "file_directory_collision")
+                  emit("G2_ORIGINAL_ZIP_DIRECTORY", {"artifact_id": ARTIFACT, "zip_bytes": ZIP_BYTES, "zip_sha256": ZIP_SHA,
+                                                    "count": len(members), "members": receipt["members"]})
+                  save()
+                  for item, start, stop, row in candidates:
+                      suffix = PurePosixPath(item.orig_filename).suffix.lower()
+                      basename = PurePosixPath(item.orig_filename).name.lower()
+                      if item.is_dir():
+                          try:
+                              data = read_small(raw, item, start, stop)
+                              need(not data, "nonempty_directory_payload")
+                              row["stream_crc_verified"] = True
+                              row["excluded_reason"] = "verified_empty_directory_no_file_bytes"
+                          except Exception as error:
+                              row["excluded_reason"] = "directory_read_failed_" + type(error).__name__
+                              receipt["errors"].append({"member_index": row["index"], "error_type": type(error).__name__})
+                      elif suffix not in (".txt", ".log", ".json", ".jsonl", ".csv", ".stdout", ".stderr") and basename not in ("stdout", "stderr"):
+                          row["excluded_reason"] = "not_selected_text_suffix"
+                      elif item.file_size > SINGLE:
+                          row["excluded_reason"] = "member_exceeds_256KiB"
+                      elif receipt["exported_bytes"] + item.file_size > TOTAL:
+                          row["excluded_reason"] = "total_export_would_exceed_2MiB"
+                      else:
+                          try:
+                              data = read_small(raw, item, start, stop)
+                              row["stream_crc_verified"] = True
+                              data.decode("utf-8", errors="strict")
+                              row.update(sha256=sha(data), frame_count=(len(data) + FRAME - 1) // FRAME)
+                              identity = {"artifact_id": ARTIFACT, "zip_sha256": ZIP_SHA, "member_index": row["index"],
+                                          "member": item.orig_filename, "bytes": len(data), "sha256": row["sha256"],
+                                          "frame_count": row["frame_count"]}
+                              emit("G2_ORIGINAL_MEMBER_BEGIN", identity)
+                              for frame_index, offset in enumerate(range(0, len(data), FRAME)):
+                                  block = data[offset:offset + FRAME]
+                                  emit("G2_ORIGINAL_MEMBER_FRAME", dict(identity, frame_index=frame_index, offset=offset,
+                                       frame_bytes=len(block), frame_sha256=sha(block), base64=base64.b64encode(block).decode("ascii")))
+                              emit("G2_ORIGINAL_MEMBER_END", identity)
+                              row["exported"] = True
+                              receipt["exported_bytes"] += len(data)
+                          except Exception as error:
+                              row["excluded_reason"] = "member_read_failed_" + type(error).__name__
+                              receipt["errors"].append({"member_index": row["index"], "error_type": type(error).__name__})
+                      save()
+              missing = [row for row in receipt["members"] if not row["directory"] and not row["exported"]]
+              receipt["all_regular_members_exported"] = not missing
+              receipt["status"] = "complete" if not missing and not receipt["errors"] else "incomplete"
+              receipt["interpretation"] = "Byte transport only. Original native failure is unchanged. Excluded members are not read or certified."
+              exit_code = 0 if receipt["status"] == "complete" else 2
+          except Exception as error:
+              receipt["status"] = "failed"
+              receipt["errors"].append({"error_type": type(error).__name__,
+                                        "reason": str(error) if isinstance(error, ExportError) else "details_not_printed_to_avoid_signed_URL_or_credentials"})
+          finally:
+              token = ""
+              receipt["finished_utc"] = now()
+              receipt["exit_code"] = exit_code
+              save()
+              emit("G2_ORIGINAL_READBACK_RESULT", receipt)
+          raise SystemExit(exit_code)
+          PY
+      - name: Preserve original ZIP, official metadata and incomplete or failed receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-g2-failure-original-bytes-${{ github.run_id }}-attempt${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-g2-failure-bytes-${{ github.run_id }}-attempt${{ github.run_attempt }}/
+          if-no-files-found: error
+          retention-days: 90

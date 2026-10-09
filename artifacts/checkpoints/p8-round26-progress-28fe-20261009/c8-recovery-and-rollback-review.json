@@ -1,0 +1,421 @@
+{
+  "schema": "p8_c8_recovery_actual_collector_log_source_review_v1",
+  "verdict": "actual_original_collector_passed_with_source_and_terminal_log_binding",
+  "scope": "Read-only actual completed job log plus its exact committed original collector; no second validator, replay, fault execution or artifact code execution.",
+  "source": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+  "tasks": [
+    "P8-011",
+    "P8-016"
+  ],
+  "original_run": {
+    "id": 37901931021,
+    "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+    "branch": "task/p8-combined-engineering-bfcc-20261009",
+    "attempt": 1,
+    "path": ".github/workflows/p8-platform.yml",
+    "observed_overall_status": "queued",
+    "observed_overall_conclusion": null,
+    "warning": "overall run queued is not the state of the already completed recovery job; eight platform cells not certified by this report"
+  },
+  "actual_job": {
+    "id": 113726259514,
+    "name": "actual recovery and rollback matrix",
+    "status": "completed",
+    "conclusion": "success",
+    "started_at": "2026-10-09T08:28:53Z",
+    "completed_at": "2026-10-09T08:34:25Z",
+    "steps": [
+      {
+        "number": 1,
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T08:28:54Z",
+        "completed_at": "2026-10-09T08:28:55Z"
+      },
+      {
+        "number": 2,
+        "name": "Run actions/checkout@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T08:28:55Z",
+        "completed_at": "2026-10-09T08:29:13Z"
+      },
+      {
+        "number": 3,
+        "name": "Check out the unmodified public schema-24 revision",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T08:29:13Z",
+        "completed_at": "2026-10-09T08:29:15Z"
+      },
+      {
+        "number": 4,
+        "name": "Run dtolnay/rust-toolchain@1.95.0",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T08:29:15Z",
+        "completed_at": "2026-10-09T08:29:25Z"
+      },
+      {
+        "number": 5,
+        "name": "Prepare locked dependencies and verify recovery controls",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T08:29:25Z",
+        "completed_at": "2026-10-09T08:29:29Z"
+      },
+      {
+        "number": 6,
+        "name": "Execute exact product faults and original persistence tests",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T08:29:29Z",
+        "completed_at": "2026-10-09T08:34:06Z"
+      },
+      {
+        "number": 7,
+        "name": "Preserve exact products and raw fault evidence",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T08:34:06Z",
+        "completed_at": "2026-10-09T08:34:22Z"
+      },
+      {
+        "number": 13,
+        "name": "Post Check out the unmodified public schema-24 revision",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T08:34:22Z",
+        "completed_at": "2026-10-09T08:34:22Z"
+      },
+      {
+        "number": 14,
+        "name": "Post Run actions/checkout@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T08:34:22Z",
+        "completed_at": "2026-10-09T08:34:22Z"
+      },
+      {
+        "number": 15,
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-09T08:34:22Z",
+        "completed_at": "2026-10-09T08:34:22Z"
+      }
+    ]
+  },
+  "actual_log": {
+    "git_blob": "aff14380acf495fed41a0ddbdf7062884d00aa32",
+    "bytes": 72615,
+    "sha256": "20347b3caebe0c0bdbd05435fc9606750246b8a276725ab48aeee42084bf8108",
+    "preservation": "complete connector returned log string, UTF-8 bytes including original BOM/ANSI/newlines; 72613 characters is not its UTF-8 byte count"
+  },
+  "actual_environment": {
+    "os": "Ubuntu 24.04.5 LTS",
+    "image": "ubuntu-24.04",
+    "image_version": "20261004.327.1",
+    "rustc": "1.95.0",
+    "rustc_commit": "59807616e1fa2540724bfbac14d7976d7e4a3860",
+    "compiler_host": "x86_64-unknown-linux-gnu",
+    "llvm": "22.1.2"
+  },
+  "direct_observations": [
+    {
+      "log_lines": [
+        180,
+        183
+      ],
+      "fact": "current checkout resolves to c8be5afaac568ffd40ef86d3795423c3b73c9f39"
+    },
+    {
+      "log_lines": [
+        274,
+        277
+      ],
+      "fact": "previous checkout resolves to unmodified public source277f2490fad3fa30f2812b5547bad033867c9ea5"
+    },
+    {
+      "log_lines": [
+        839,
+        872
+      ],
+      "fact": "29 original test_p8_recovery.py Python controls passed in0.683s, including bound binaries, async failures, bounded busy retries, retained failed command raw logs, source/manifest identity and lifecycle controls"
+    },
+    {
+      "log_lines": [
+        873,
+        885
+      ],
+      "command": "python3 scripts/p8_recovery.py --full-matrix --expected-commit \"$EXACT_SOURCE\" --previous-source-root \"$GITHUB_WORKSPACE/p8-previous-source\" --previous-commit 277f2490fad3fa30f2812b5547bad033867c9ea5 --jobs 2 --output-dir \"$RUNNER_TEMP/p8-full-recovery\"",
+      "EXACT_SOURCE": "c8be5afaac568ffd40ef86d3795423c3b73c9f39"
+    },
+    {
+      "log_lines": [
+        886
+      ],
+      "at_utc": "2026-10-09T08:34:06.4721411Z",
+      "original_json": {
+        "status": "passed_declared_fault_matrix",
+        "error": null,
+        "receipt": "/home/runner/work/_temp/p8-full-recovery/full-recovery.json"
+      }
+    },
+    {
+      "log_lines": [
+        908,
+        929,
+        932
+      ],
+      "fact": "uploader reports499files and finalized original artifact11604900056,121742459bytes and matching official SHA256"
+    }
+  ],
+  "collector_semantics": {
+    "qualification": "These are implications of the exact source's original pass predicate, combined with its actual successful CLI terminal; the individual raw result JSON values have not been independently opened in this review.",
+    "source_file": "scripts/p8_recovery.py",
+    "full_matrix_lines": [
+      817,
+      895
+    ],
+    "cli_lines": [
+      935,
+      945
+    ],
+    "local_cases": {
+      "lines": [
+        33,
+        427,
+        484,
+        853,
+        855
+      ],
+      "count": 3,
+      "names": [
+        "kill_restart",
+        "database_busy",
+        "deleted_source"
+      ],
+      "required_status": "passed_limited_local_recovery"
+    },
+    "active": {
+      "lines": [
+        34,
+        492,
+        697,
+        856,
+        860
+      ],
+      "seeds": [
+        223,
+        227,
+        229
+      ],
+      "seed_runs": 3,
+      "cases_per_seed": 4,
+      "cases": [
+        "active_provider_network_disconnect",
+        "active_semantic_cache_corruption",
+        "active_cache_reader_rejects_unknown_format",
+        "concurrent_database_replacement"
+      ],
+      "notes": [
+        "Actual owned loopback HTTP provider; not live or paid provider.",
+        "Unknown-format rejection runs with enabled semantic reader here, separately from the disabled-cache rollback drill.",
+        "Disconnect recovery explicitly authors new source to supersede failed work, retaining original retry clock policy.",
+        "Replacement verifies incarnation change, no stale document version or resurrection, integral persisted DB, and reopening."
+      ]
+    },
+    "production_fault_tests": {
+      "lines": [
+        35,
+        43,
+        775,
+        814,
+        861,
+        862
+      ],
+      "count": 7,
+      "names": [
+        "isolated_sigkill_reopen_replay_preparation",
+        "independently_observed_sigkill_boundaries",
+        "index_db_rebuild::fault_tests::owned_process_kill_between_sidecar_cleanup_rename_and_reopen_preserves_database",
+        "index_db_rebuild::fault_tests::writer_mutex_spans_rename_reopen_and_connection_installation",
+        "meta_tampering_is_detected_as_corrupt",
+        "different_spaces_never_cross_hit",
+        "namespaces_are_isolated"
+      ],
+      "required_original_predicate": "each source-bound test executable exits0 and stdout matches exactly1 passed,0failed,0ignored; copied executable hash and source unchanged",
+      "not_claimed": "power loss or physical device failure"
+    },
+    "products": {
+      "lines": [
+        722,
+        772,
+        847,
+        852,
+        872,
+        875
+      ],
+      "packages": [
+        "default",
+        "semantic",
+        "semantic-http",
+        "previous-default"
+      ],
+      "profile": "dev opt-level0 with debug_assertions true",
+      "build": "locked offline source-bound Cargo artifacts and retained binary copies",
+      "cold_build_claim": false,
+      "release_certified": false,
+      "binary_sha256_values": "not_visible_in_log; retained in original ZIP receipts"
+    },
+    "observer": {
+      "file": "scripts/p8_cold_build.py",
+      "lines": [
+        90,
+        199
+      ],
+      "binding": "required_git_and_loaded_source",
+      "guarantee": "actual loaded observer paths/bytes/modes match fixed Git inputs; before/after and preserved observer archive match. Failure changes final report status before CLI prints/returns."
+    },
+    "evidence": {
+      "lines": [
+        899,
+        915
+      ],
+      "guarantee": "original full_evidence_manifest SHA256 inventories ordinary evidence and refuses symlinks/nonregular files; disposable cargo-target only is excluded; formal wrapper rescans and cannot retain passed status on observer or evidence scan failure."
+    }
+  },
+  "rollback": {
+    "source_file": "scripts/p8_rollback.py",
+    "controlled_drill": {
+      "lines": [
+        468,
+        590
+      ],
+      "required_status": "passed_limited_local_drill",
+      "scope": "controlled future-schema injection25+1000, config restore, semantic/default disabled local behavior and original database backup restore; future cache root original bytes preserved",
+      "disabled_unknown_format_case": "remains not_run in this subdrill, not rewritten as pass; enabled active reader exercises that requirement separately for each active seed",
+      "network_deny_scope": "disabled config only; syscall denial not measured by this invocation"
+    },
+    "actual_public_source_pair": {
+      "lines": [
+        319,
+        465
+      ],
+      "current_source": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "current_schema": 25,
+      "previous_source": "277f2490fad3fa30f2812b5547bad033867c9ea5",
+      "previous_schema": 24,
+      "source_constant_path": "crates/cc-db/src/index_migrate.rs",
+      "flow": [
+        "current25 builds owned fixture DB",
+        "previous24 opens unchanged DB, emits schema mismatch and rebuilds",
+        "current25 restored, emits mismatch and rebuilds",
+        "original current backup restored and queried"
+      ],
+      "required_status": "passed_actual_source_version_pair",
+      "schema_fault_injection": false,
+      "released_version_pair": false,
+      "assertions": [
+        "public authored marker/path/span",
+        "PRAGMA integrity/foreign keys/schema/indexed content",
+        "source/config unchanged",
+        "original backups unchanged",
+        "product binary identities unchanged"
+      ]
+    }
+  },
+  "preserved_artifact": {
+    "id": 11604900056,
+    "node_id": "MDg6QXJ0aWZhY3QxMTYwNDkwMDA1Ng==",
+    "name": "p8-full-recovery-c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+    "size_in_bytes": 121742459,
+    "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11604900056",
+    "archive_download_url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11604900056/zip",
+    "expired": false,
+    "digest": "sha256:db7ab6f00dcf6c3d0f9a68c27d44388a2c5f601bfb14daace7de870b6dc582ab",
+    "created_at": "2026-10-09T08:34:22Z",
+    "updated_at": "2026-10-09T08:34:22Z",
+    "expires_at": "2027-01-07T07:56:34Z",
+    "workflow_run": {
+      "id": 37901931021,
+      "repository_id": 1249213794,
+      "head_repository_id": 1249213794,
+      "head_branch": "task/p8-combined-engineering-bfcc-20261009",
+      "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39"
+    }
+  },
+  "artifact_observation": {
+    "uploaded_file_count": 499,
+    "zip_digest_source": "both completed original upload log and official artifacts API",
+    "zip_downloaded": false,
+    "zip_member_crc_or_sha_replayed": false,
+    "raw_file_bytes_independently_read": false,
+    "full_recovery_json_independently_read": false,
+    "reason": "current execution/file-ref channel cannot read original ZIP bytes; no download reference is passed off as contents",
+    "original_member_locators_from_source": [
+      "p8-full-recovery/full-recovery.json",
+      "p8-full-recovery/local-recovery/recovery.json",
+      "p8-full-recovery/active-stdio-223/active-faults.json",
+      "p8-full-recovery/active-stdio-227/active-faults.json",
+      "p8-full-recovery/active-stdio-229/active-faults.json",
+      "p8-full-recovery/fault-test-00/test-receipt.json through fault-test-06/test-receipt.json",
+      "p8-full-recovery/rollback/rollback.json",
+      "p8-full-recovery/actual-version-pair/version-pair.json",
+      "p8-full-recovery/product-*/build-receipt.json",
+      "p8-full-recovery/observer-source/",
+      "p8-recovery-preparation/controls.log"
+    ],
+    "locator_scope": "collector and upload source paths, not a claim to have enumerated this ZIP"
+  },
+  "read_source_hashes": [
+    {
+      "name": "workflow",
+      "bytes": 6812,
+      "sha256": "9f1bc4bd1cf715836987332906d4c72f85bd835652bfe196de56a9f1945a0ff4"
+    },
+    {
+      "name": "recovery_source",
+      "bytes": 58272,
+      "sha256": "a290e87dcd1420ca37d4a32fc0e4ddbd2b269b407e8775a3de42c6cf7de61f42"
+    },
+    {
+      "name": "rollback_source",
+      "bytes": 38818,
+      "sha256": "4aa129fb9f2cd72b591d5c26a3b5e87aae0e2c3c6d03717c199fa612a322de50"
+    },
+    {
+      "name": "cold_source",
+      "bytes": 52649,
+      "sha256": "f910326658b5539c539d1c02cd29a1236e11911b581f1beaf2495a42b53319fa"
+    }
+  ],
+  "api_body_hashes": [
+    {
+      "name": "run",
+      "sha256": "b05ddfc06db4ef7546fe2b35da3ec432d09ca2feb5842ca21c8677f100e7b3cf"
+    },
+    {
+      "name": "jobs",
+      "sha256": "fa2d0a41a31fd9de2e1b4154c6453963ecd0015dd8aee7ec1effede2063a20ce"
+    },
+    {
+      "name": "artifacts",
+      "sha256": "d3c9a7f8cbe2b8cba3957d8113a5b77417e9e92cad3e756f33f67e53a44def7d"
+    }
+  ],
+  "review_limits": [
+    "No newly imposed replay gate: this report recognizes the original collector's successful actual execution, while precisely bounding what the accessible log proves.",
+    "No result is relabeled as PR180/e6; C8 source identity stays distinct.",
+    "Original dependencies/source admission/complete N150 scale and any task-level remaining requirements are not closed by this subgate.",
+    "No additional native workload, tests, fault injection, cancellation, retry, workflow dispatch, ref update or task edit performed."
+  ],
+  "ledger": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "new_done": 0
+  }
+}

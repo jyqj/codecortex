@@ -1,0 +1,584 @@
+{
+  "schema": "p8_c8_platform_original_collector_partial_execution_review_v1",
+  "verdict": "three_original_cold_cells_passed_five_pending",
+  "snapshot_utc": "2026-10-09T08:47:49Z",
+  "run_id": 37901931021,
+  "source": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+  "attempt": 1,
+  "scope": "Read complete terminal logs only for completed cold cells; bind their original strict export result to exact source and official ZIP metadata. No new validator/native/test/ZIP replay.",
+  "counts": {
+    "expected_cold_cells": 8,
+    "completed_success": 3,
+    "completed_failure": 0,
+    "in_progress": 3,
+    "queued": 2,
+    "pending": 5,
+    "complete_eight_cell_claim": false
+  },
+  "completed_cells": [
+    {
+      "cell": {
+        "platform": "macos",
+        "toolchain": "1.95",
+        "package": "semantic"
+      },
+      "job_id": 113726259767,
+      "status": "completed",
+      "conclusion": "success",
+      "actual_started_utc": "2026-10-09T08:25:43Z",
+      "actual_completed_utc": "2026-10-09T08:33:21Z",
+      "actual_checkout": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "actual_checkout_log_line": 36,
+      "environment": {
+        "os": "macOS",
+        "os_version": "26.6.2",
+        "os_build": "25G83",
+        "runner_image": "macos-26-arm64",
+        "image_version": "20260907.0351.1",
+        "compiler_host": "aarch64-apple-darwin",
+        "rustc_release": "1.95.0",
+        "rustc_commit_prefix": "59807616e",
+        "llvm": "22.1.2",
+        "sdk_version": null,
+        "xcode_version": null,
+        "sdk_scope": "not printed in these actual job logs; no inference from image label or another execution"
+      },
+      "original_controls": {
+        "tests": 59,
+        "passed": true,
+        "seconds": 88.373,
+        "log_line": 822,
+        "not_a_workspace_regression_claim": true
+      },
+      "actual_collector_outputs": [
+        {
+          "line": 849,
+          "result": {
+            "status": "incomplete",
+            "counts": {
+              "passed": 1,
+              "failed": 0,
+              "not_run": 7
+            },
+            "matrix": "/Users/runner/work/_temp/p8-platform/cold/matrix.json"
+          }
+        },
+        {
+          "line": 850,
+          "result": {
+            "status": "passed",
+            "cell": {
+              "platform": "macos",
+              "toolchain": "1.95",
+              "package": "semantic"
+            }
+          }
+        }
+      ],
+      "original_command": {
+        "execute": "python3 scripts/p8_cold_build.py --execute --stdio-smoke --only-toolchain 1.95 --only-package semantic --profile release --jobs 2 --timeout-seconds 1800 --output-dir \"$RUNNER_TEMP/p8-platform/cold\"",
+        "execute_expected_exit": 2,
+        "export": "python3 scripts/p8_cold_build.py --export-selected \"$RUNNER_TEMP/p8-platform/cold/matrix.json\" --only-platform macos --only-toolchain 1.95 --only-package semantic --output-dir \"$RUNNER_TEMP/p8-platform/bundle\"",
+        "export_observed_result": "passed",
+        "shell_error_propagation": "bash -e -o pipefail; explicit test execute code==2 before export"
+      },
+      "full_log": {
+        "job_id": 113726259767,
+        "git_blob": "86820884966a4dbd9c3a7b3b894ffda6d9b335a2",
+        "bytes": 74195,
+        "sha256": "011ded0630df53d7f994c866aba5f0d0046ef1fb894740cf4170c6655d0a9b7a"
+      },
+      "bundle_artifact": {
+        "id": 11604775379,
+        "node_id": "MDg6QXJ0aWZhY3QxMTYwNDc3NTM3OQ==",
+        "name": "p8-platform-cell-macos-1.95-semantic-c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+        "size_in_bytes": 8278624,
+        "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11604775379",
+        "archive_download_url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11604775379/zip",
+        "expired": false,
+        "digest": "sha256:afa38199824bd4e9f4f3f8402aafb758986f3d3e2deb35890e6e0da5c45f3573",
+        "created_at": "2026-10-09T08:33:15Z",
+        "updated_at": "2026-10-09T08:33:15Z",
+        "expires_at": "2027-01-07T07:56:34Z",
+        "workflow_run": {
+          "id": 37901931021,
+          "repository_id": 1249213794,
+          "head_repository_id": 1249213794,
+          "head_branch": "task/p8-combined-engineering-bfcc-20261009",
+          "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39"
+        }
+      },
+      "raw_artifact": {
+        "id": 11604536450,
+        "node_id": "MDg6QXJ0aWZhY3QxMTYwNDUzNjQ1MA==",
+        "name": "p8-platform-raw-macos-1.95-semantic-c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+        "size_in_bytes": 8366763,
+        "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11604536450",
+        "archive_download_url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11604536450/zip",
+        "expired": false,
+        "digest": "sha256:ada72134267076210e33a6f2544bcfb9eb79a8c18ebfa6b2a2f8eeaded171254",
+        "created_at": "2026-10-09T08:33:17Z",
+        "updated_at": "2026-10-09T08:33:17Z",
+        "expires_at": "2027-01-07T07:56:34Z",
+        "workflow_run": {
+          "id": 37901931021,
+          "repository_id": 1249213794,
+          "head_repository_id": 1249213794,
+          "head_branch": "task/p8-combined-engineering-bfcc-20261009",
+          "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39"
+        }
+      },
+      "upload_observed_files": {
+        "bundle": 19,
+        "raw": 23
+      },
+      "zip_bytes_independently_read": false,
+      "original_binary_sha256": null,
+      "cold_build_only_wall_seconds": null,
+      "raw_detail_scope": "Exact original compiler/binary/Cargo/profile/copy/hash/stdio values are preserved and checked by the original exporter; log does not print their individual receipt values. No substitute values invented.",
+      "warnings": "Original full logs retain nonfatal Python ResourceWarning from negative-control SQLite cleanup; all59tests and actual cell export completed successfully."
+    },
+    {
+      "cell": {
+        "platform": "macos",
+        "toolchain": "stable",
+        "package": "default"
+      },
+      "job_id": 113726259770,
+      "status": "completed",
+      "conclusion": "success",
+      "actual_started_utc": "2026-10-09T08:27:20Z",
+      "actual_completed_utc": "2026-10-09T08:36:00Z",
+      "actual_checkout": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "actual_checkout_log_line": 36,
+      "environment": {
+        "os": "macOS",
+        "os_version": "26.6.2",
+        "os_build": "25G83",
+        "runner_image": "macos-26-arm64",
+        "image_version": "20260907.0351.1",
+        "compiler_host": "aarch64-apple-darwin",
+        "rustc_release": "1.99.0",
+        "rustc_commit_prefix": "b940084d7",
+        "llvm": "23.1.1",
+        "sdk_version": null,
+        "xcode_version": null,
+        "sdk_scope": "not printed in these actual job logs; no inference from image label or another execution"
+      },
+      "original_controls": {
+        "tests": 59,
+        "passed": true,
+        "seconds": 99.683,
+        "log_line": 837,
+        "not_a_workspace_regression_claim": true
+      },
+      "actual_collector_outputs": [
+        {
+          "line": 864,
+          "result": {
+            "status": "incomplete",
+            "counts": {
+              "passed": 1,
+              "failed": 0,
+              "not_run": 7
+            },
+            "matrix": "/Users/runner/work/_temp/p8-platform/cold/matrix.json"
+          }
+        },
+        {
+          "line": 865,
+          "result": {
+            "status": "passed",
+            "cell": {
+              "platform": "macos",
+              "toolchain": "stable",
+              "package": "default"
+            }
+          }
+        }
+      ],
+      "original_command": {
+        "execute": "python3 scripts/p8_cold_build.py --execute --stdio-smoke --only-toolchain stable --only-package default --profile release --jobs 2 --timeout-seconds 1800 --output-dir \"$RUNNER_TEMP/p8-platform/cold\"",
+        "execute_expected_exit": 2,
+        "export": "python3 scripts/p8_cold_build.py --export-selected \"$RUNNER_TEMP/p8-platform/cold/matrix.json\" --only-platform macos --only-toolchain stable --only-package default --output-dir \"$RUNNER_TEMP/p8-platform/bundle\"",
+        "export_observed_result": "passed",
+        "shell_error_propagation": "bash -e -o pipefail; explicit test execute code==2 before export"
+      },
+      "full_log": {
+        "job_id": 113726259770,
+        "git_blob": "d8f26d8ecb475ee4b9fffb970472e89a4bfaa6a7",
+        "bytes": 75318,
+        "sha256": "aeeca2491698a84dccc98fc20cebbe98126754bfaf318d841b830a2a6cd8c1df"
+      },
+      "bundle_artifact": {
+        "id": 11604252892,
+        "node_id": "MDg6QXJ0aWZhY3QxMTYwNDI1Mjg5Mg==",
+        "name": "p8-platform-cell-macos-stable-default-c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+        "size_in_bytes": 8362708,
+        "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11604252892",
+        "archive_download_url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11604252892/zip",
+        "expired": false,
+        "digest": "sha256:a922ee3ab5b446a0d416607a7638aa67bd2738fc2f5cf453bb0f5024429c860f",
+        "created_at": "2026-10-09T08:35:51Z",
+        "updated_at": "2026-10-09T08:35:51Z",
+        "expires_at": "2027-01-07T07:56:34Z",
+        "workflow_run": {
+          "id": 37901931021,
+          "repository_id": 1249213794,
+          "head_repository_id": 1249213794,
+          "head_branch": "task/p8-combined-engineering-bfcc-20261009",
+          "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39"
+        }
+      },
+      "raw_artifact": {
+        "id": 11604870476,
+        "node_id": "MDg6QXJ0aWZhY3QxMTYwNDg3MDQ3Ng==",
+        "name": "p8-platform-raw-macos-stable-default-c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+        "size_in_bytes": 8450243,
+        "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11604870476",
+        "archive_download_url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11604870476/zip",
+        "expired": false,
+        "digest": "sha256:730eb96be0bc39cd179bb975a04121bc6341d6b791fa107386039b0e1b13dff4",
+        "created_at": "2026-10-09T08:35:54Z",
+        "updated_at": "2026-10-09T08:35:54Z",
+        "expires_at": "2027-01-07T07:56:34Z",
+        "workflow_run": {
+          "id": 37901931021,
+          "repository_id": 1249213794,
+          "head_repository_id": 1249213794,
+          "head_branch": "task/p8-combined-engineering-bfcc-20261009",
+          "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39"
+        }
+      },
+      "upload_observed_files": {
+        "bundle": 19,
+        "raw": 23
+      },
+      "zip_bytes_independently_read": false,
+      "original_binary_sha256": null,
+      "cold_build_only_wall_seconds": null,
+      "raw_detail_scope": "Exact original compiler/binary/Cargo/profile/copy/hash/stdio values are preserved and checked by the original exporter; log does not print their individual receipt values. No substitute values invented.",
+      "warnings": "Original full logs retain nonfatal Python ResourceWarning from negative-control SQLite cleanup; all59tests and actual cell export completed successfully."
+    },
+    {
+      "cell": {
+        "platform": "macos",
+        "toolchain": "1.95",
+        "package": "default"
+      },
+      "job_id": 113726259821,
+      "status": "completed",
+      "conclusion": "success",
+      "actual_started_utc": "2026-10-09T08:33:46Z",
+      "actual_completed_utc": "2026-10-09T08:43:25Z",
+      "actual_checkout": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "actual_checkout_log_line": 36,
+      "environment": {
+        "os": "macOS",
+        "os_version": "26.6.2",
+        "os_build": "25G83",
+        "runner_image": "macos-26-arm64",
+        "image_version": "20260907.0351.1",
+        "compiler_host": "aarch64-apple-darwin",
+        "rustc_release": "1.95.0",
+        "rustc_commit_prefix": "59807616e",
+        "llvm": "22.1.2",
+        "sdk_version": null,
+        "xcode_version": null,
+        "sdk_scope": "not printed in these actual job logs; no inference from image label or another execution"
+      },
+      "original_controls": {
+        "tests": 59,
+        "passed": true,
+        "seconds": 136.663,
+        "log_line": 834,
+        "not_a_workspace_regression_claim": true
+      },
+      "actual_collector_outputs": [
+        {
+          "line": 861,
+          "result": {
+            "status": "incomplete",
+            "counts": {
+              "passed": 1,
+              "failed": 0,
+              "not_run": 7
+            },
+            "matrix": "/Users/runner/work/_temp/p8-platform/cold/matrix.json"
+          }
+        },
+        {
+          "line": 862,
+          "result": {
+            "status": "passed",
+            "cell": {
+              "platform": "macos",
+              "toolchain": "1.95",
+              "package": "default"
+            }
+          }
+        }
+      ],
+      "original_command": {
+        "execute": "python3 scripts/p8_cold_build.py --execute --stdio-smoke --only-toolchain 1.95 --only-package default --profile release --jobs 2 --timeout-seconds 1800 --output-dir \"$RUNNER_TEMP/p8-platform/cold\"",
+        "execute_expected_exit": 2,
+        "export": "python3 scripts/p8_cold_build.py --export-selected \"$RUNNER_TEMP/p8-platform/cold/matrix.json\" --only-platform macos --only-toolchain 1.95 --only-package default --output-dir \"$RUNNER_TEMP/p8-platform/bundle\"",
+        "export_observed_result": "passed",
+        "shell_error_propagation": "bash -e -o pipefail; explicit test execute code==2 before export"
+      },
+      "full_log": {
+        "job_id": 113726259821,
+        "git_blob": "a095f30ea748cd0209cae870afbe1a1037d92815",
+        "bytes": 74951,
+        "sha256": "08d52d3f5911d6f65b504b71eda5eb285b3ad3c2d083ba6399ceab541aadab66"
+      },
+      "bundle_artifact": {
+        "id": 11604777455,
+        "node_id": "MDg6QXJ0aWZhY3QxMTYwNDc3NzQ1NQ==",
+        "name": "p8-platform-cell-macos-1.95-default-c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+        "size_in_bytes": 8038037,
+        "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11604777455",
+        "archive_download_url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11604777455/zip",
+        "expired": false,
+        "digest": "sha256:913e5f9112c523410a418c9749e386e4230d4b91d8693b26786ab2dda993ac25",
+        "created_at": "2026-10-09T08:43:19Z",
+        "updated_at": "2026-10-09T08:43:19Z",
+        "expires_at": "2027-01-07T07:56:34Z",
+        "workflow_run": {
+          "id": 37901931021,
+          "repository_id": 1249213794,
+          "head_repository_id": 1249213794,
+          "head_branch": "task/p8-combined-engineering-bfcc-20261009",
+          "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39"
+        }
+      },
+      "raw_artifact": {
+        "id": 11604468186,
+        "node_id": "MDg6QXJ0aWZhY3QxMTYwNDQ2ODE4Ng==",
+        "name": "p8-platform-raw-macos-1.95-default-c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+        "size_in_bytes": 8126121,
+        "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11604468186",
+        "archive_download_url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11604468186/zip",
+        "expired": false,
+        "digest": "sha256:c8901f3b48d4813efc08ae1a9ed754297378359722e982cdbd5d334da64b1cc2",
+        "created_at": "2026-10-09T08:43:22Z",
+        "updated_at": "2026-10-09T08:43:22Z",
+        "expires_at": "2027-01-07T07:56:34Z",
+        "workflow_run": {
+          "id": 37901931021,
+          "repository_id": 1249213794,
+          "head_repository_id": 1249213794,
+          "head_branch": "task/p8-combined-engineering-bfcc-20261009",
+          "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39"
+        }
+      },
+      "upload_observed_files": {
+        "bundle": 19,
+        "raw": 23
+      },
+      "zip_bytes_independently_read": false,
+      "original_binary_sha256": null,
+      "cold_build_only_wall_seconds": null,
+      "raw_detail_scope": "Exact original compiler/binary/Cargo/profile/copy/hash/stdio values are preserved and checked by the original exporter; log does not print their individual receipt values. No substitute values invented.",
+      "warnings": "Original full logs retain nonfatal Python ResourceWarning from negative-control SQLite cleanup; all59tests and actual cell export completed successfully."
+    }
+  ],
+  "pending_cells": [
+    {
+      "job_id": 113726259683,
+      "name": "cold linux / 1.95 / default",
+      "status": "in_progress",
+      "conclusion": null,
+      "created_at": "2026-10-09T07:56:34Z",
+      "official_started_at": "2026-10-09T08:45:38Z",
+      "actually_started": true,
+      "actual_start_utc": "2026-10-09T08:45:38Z",
+      "current_step": "Fresh target build and real product stdio smoke",
+      "queued_started_at_not_execution": false,
+      "completed_log_read": false,
+      "counts_as_pass": false
+    },
+    {
+      "job_id": 113726259824,
+      "name": "cold linux / stable / semantic",
+      "status": "in_progress",
+      "conclusion": null,
+      "created_at": "2026-10-09T07:56:34Z",
+      "official_started_at": "2026-10-09T08:47:28Z",
+      "actually_started": true,
+      "actual_start_utc": "2026-10-09T08:47:28Z",
+      "current_step": "Fetch locked dependencies before the cold interval",
+      "queued_started_at_not_execution": false,
+      "completed_log_read": false,
+      "counts_as_pass": false
+    },
+    {
+      "job_id": 113726259858,
+      "name": "cold linux / 1.95 / semantic",
+      "status": "queued",
+      "conclusion": null,
+      "created_at": "2026-10-09T07:56:34Z",
+      "official_started_at": "2026-10-09T07:56:34Z",
+      "actually_started": false,
+      "actual_start_utc": null,
+      "current_step": null,
+      "queued_started_at_not_execution": true,
+      "completed_log_read": false,
+      "counts_as_pass": false
+    },
+    {
+      "job_id": 113726259878,
+      "name": "cold macos / stable / semantic",
+      "status": "queued",
+      "conclusion": null,
+      "created_at": "2026-10-09T07:56:34Z",
+      "official_started_at": "2026-10-09T07:56:34Z",
+      "actually_started": false,
+      "actual_start_utc": null,
+      "current_step": null,
+      "queued_started_at_not_execution": true,
+      "completed_log_read": false,
+      "counts_as_pass": false
+    },
+    {
+      "job_id": 113726259879,
+      "name": "cold linux / stable / default",
+      "status": "in_progress",
+      "conclusion": null,
+      "created_at": "2026-10-09T07:56:34Z",
+      "official_started_at": "2026-10-09T08:46:59Z",
+      "actually_started": true,
+      "actual_start_utc": "2026-10-09T08:46:59Z",
+      "current_step": "Fresh target build and real product stdio smoke",
+      "queued_started_at_not_execution": false,
+      "completed_log_read": false,
+      "counts_as_pass": false
+    }
+  ],
+  "original_success_coverage": {
+    "qualification": "These are the already existing exact C8 producer/exporter assertions reached in each successful actual job; not a second or newly imposed acceptance scheme.",
+    "workflow": {
+      "path": ".github/workflows/p8-platform.yml",
+      "sha256": "9f1bc4bd1cf715836987332906d4c72f85bd835652bfe196de56a9f1945a0ff4",
+      "selected_cell_lines": [
+        97,
+        115
+      ],
+      "collect_lines": [
+        137,
+        164
+      ]
+    },
+    "collector": {
+      "path": "scripts/p8_cold_build.py",
+      "sha256": "f910326658b5539c539d1c02cd29a1236e11911b581f1beaf2495a42b53319fa",
+      "bytes": 52649
+    },
+    "fresh_build": {
+      "functions": [
+        "build_cell",
+        "cargo_artifact",
+        "validate_cell",
+        "verify_portable_cell"
+      ],
+      "source_lines": [
+        202,
+        320,
+        435,
+        495,
+        713,
+        795
+      ],
+      "profile": "release",
+      "budget_seconds": 1800,
+      "jobs": 2,
+      "requirements": [
+        "new owned target initially absent; unique Cargo bin artifact fresh=false",
+        "exact Cargo source manifest/target/host/feature/profile; successful build-finished",
+        "--locked --offline --no-default-features plus semantic only for that package",
+        "actual rustc/cargo binary hashes and versions, source manifest, Cargo config before/after",
+        "original executable, preserved copy, and Cargo artifact bytes agree",
+        "observer source bound to committed and loaded files before/after"
+      ],
+      "dependency_cache": "reused after prefetch; fresh target cold build, not hermetic dependency-cache coldness"
+    },
+    "stdio": {
+      "functions": [
+        "smoke_product",
+        "validate_smoke"
+      ],
+      "source_lines": [
+        498,
+        590
+      ],
+      "requirements": [
+        "same actual binary initializes via real stdio",
+        "exactly5distinctrequestIDs and matching non-errorresponses",
+        "initialize/tools-list/index/status/search all present",
+        "14distinctadvertisedtools",
+        "fullfixtureindex scans source",
+        "local authored symbol has exact path/span",
+        "semantic state not_configured and dense disabled",
+        "process exit0, expected0, cleanup completed/cleanEOF",
+        "all4raw log hashes and local summary equal rawRPC-derivedvalues"
+      ],
+      "claim_limits": "does not execute every advertised tool; not an external provider or whole-workspace proof"
+    },
+    "export": {
+      "functions": [
+        "selected_inventory",
+        "selected_cell",
+        "export_cell"
+      ],
+      "source_lines": [
+        593,
+        649
+      ],
+      "requirements": [
+        "complete8cellselectioninventory with1actualpass/7explicitnot_run",
+        "receipt hash/path and same requested source/cell",
+        "live strict source/compiler/originaltarget/binary validation and rawstdio replay",
+        "copy all original cell evidence except disposabletarget; refuse symlinks",
+        "exported binary equalsoriginalcopy; completefilehashmanifest"
+      ],
+      "intentional_exit2": "execute reports incomplete because7cells intentionally notrun; workflow explicitly requires2 then accepts only strict passed export"
+    },
+    "collect": {
+      "function": "collect_cells",
+      "source_lines": [
+        652,
+        710
+      ],
+      "status": "pending_not_yet_instantiated_in_snapshot",
+      "requirements": [
+        "exactly8distinctexpectedcells, no duplicates",
+        "exact bundlefileinventory/SHA andv2receipts",
+        "same expectedC8source/manifest",
+        "source/compiler/profile/target/Cargoorigin/copy checks via verify_portable_cell",
+        "binaryhashmatchesreceipt/bundle",
+        "rawstdio validate_smoke again",
+        "returns8passed0failed0notrun onlywhenallpresent"
+      ],
+      "no_new_gate": true
+    }
+  },
+  "source_identity_limits": [
+    "All evidence remains C8, never275e, A23 or PR180/e6.",
+    "Only actual log OS/version/compiler values are stated; Xcode/SDK areunknown here.",
+    "Three cell results do not certify whole Macworkspace, all SDKs or other package/toolchaincombinations.",
+    "No complete platform-matrix receipt or aggregate success was observed in this snapshot."
+  ],
+  "raw_access": "Original ZIPmetadata and full actualuploadlogs agree. NoZIPdownload/CRC/memberreplay performed; this does not negate the actual original collector/exporter's pass.",
+  "recovery": "Separate recovery job113726259514 already reviewed in blob0d9678f586a1091cea7f05b2dedc9b8a8efacb90; not reread or counted as a coldcell.",
+  "api_body_sha256": {
+    "jobs": "b73b6fc327476c8336a9f010be77f7f9e75fb95a749892836ba9d1d18bdeaba9",
+    "artifacts": "d3c9a7f8cbe2b8cba3957d8113a5b77417e9e92cad3e756f33f67e53a44def7d"
+  },
+  "ledger": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "new_done": 0
+  },
+  "writes": "Only unreferenced exact log/report blobs; no refs/workflows/PRs/tasks modified; no retry/dispatch/native/test execution."
+}

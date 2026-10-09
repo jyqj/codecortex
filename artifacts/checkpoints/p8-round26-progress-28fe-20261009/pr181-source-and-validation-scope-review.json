@@ -1,0 +1,695 @@
+{
+  "schema": "p8-pr181-independent-narrow-review-v1",
+  "repository": "jyqj/codecortex",
+  "pr": 181,
+  "reviewer": "/root/acceptance_review",
+  "reviewed_at_utc": "2026-10-09T08:56:11.591Z",
+  "fixed_identity": {
+    "head": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529",
+    "base": "bd4693351149a443bd0054a37508c53f74ed7b52",
+    "original_product": "0fe5f110a3c1c0fd39e83031fc935d3e7cfe1114",
+    "corrected_product": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+    "corrected_product_tree": "8d790cbcfdc56ee2d57001de0d1c79177184b2da",
+    "review": "98fe910f22eb92f8d9f9c8a8043492ba45dc997c",
+    "comparison_status": "ahead",
+    "changed_files": 43,
+    "shape": {
+      "rust": 4,
+      "added_artifact_files": 37,
+      "registry_and_guard": 2
+    }
+  },
+  "verdict": {
+    "production_semantics": "accepted_scoped_static_no_blocking_defect_found",
+    "evidence_wording": "correction_required_for_exact_corrected_product_and_environment_attribution",
+    "merge_approval": false,
+    "reviewer_native_or_test_execution": "not_run",
+    "performance_claim": "none",
+    "full_source_inventory_reaudit": "not_performed; requested limited four-file review",
+    "original_todos_closed": 0,
+    "original_todos_remaining": 29
+  },
+  "scope": "Full four Rust diff/source/control inspection plus necessary unchanged config-linker, typed SQLite getters, schema, prior-delta contract and archived execution logs/receipts. No compilation, test, GC/WAL/native benchmark, file/ref/PR mutation or new study.",
+  "source_files": [
+    {
+      "path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch.rs",
+      "key": "interface",
+      "git_blob": "8d230b0a463bd53ab21e80e56af9d7fc9d3a0a2d",
+      "bytes": 11716,
+      "sha256": "d2fa652cff62511546ad36d67bb402fa9a307ef060223fb12610ef31da69084a",
+      "matches_corrected_receipt": true,
+      "matches_independent_source_review": true
+    },
+    {
+      "path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs",
+      "key": "itests",
+      "git_blob": "d1888e13cb6bc1e4748cf372209b9686a705a1da",
+      "bytes": 9704,
+      "sha256": "1647126f382e4fed5e47b42780e08348d8239432eefc7c2012efa628df3c7c41",
+      "matches_corrected_receipt": true,
+      "matches_independent_source_review": true
+    },
+    {
+      "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+      "key": "snapshot",
+      "git_blob": "b1db699f6597d8a948e3797e153a75fe8f5b07de",
+      "bytes": 10476,
+      "sha256": "f5aba522582adc5f206ab2c3a8a2de2217e0ea99058928396ab0bc473c55b2e5",
+      "matches_corrected_receipt": true,
+      "matches_independent_source_review": true
+    },
+    {
+      "path": "crates/cc-index/tests/full_snapshot_empty_config.rs",
+      "key": "ctests",
+      "git_blob": "c900883bd45b427a605330b6ce4ac359f99506ef",
+      "bytes": 3850,
+      "sha256": "fc5e8b7f4e8f8b8e3c1245ffcf724e79905413c203ccb298374cb8297a32b4ed",
+      "matches_corrected_receipt": true,
+      "matches_independent_source_review": true
+    }
+  ],
+  "production_findings": [
+    {
+      "id": "CONFIG_EMPTY",
+      "conclusion": "No production blocker found",
+      "locations": [
+        "crates/cc-index/src/indexer_phases/snapshot.rs:29",
+        "crates/cc-index/src/indexer_phases/snapshot.rs:50",
+        "crates/cc-index/src/indexer_phases/config_link.rs:43",
+        "crates/cc-index/src/config_linker.rs:208"
+      ],
+      "reason": "The original unconditional signature-then-config-scan and typed-project-config filtering remain before the new guard. The moved collectors only clone immutable write-unit symbol/path values. With zero filtered tokens, resolve_config_links iterates no tokens and produces no links; its snapshot adapter returned empty at line 83 before any per-config filesystem read at line 98. Thus this branch removes unused in-memory preparation, not input validation, filesystem error handling or DB work. Nonempty tokens still receive the original builder and identical values.",
+      "preserved": [
+        "empty-token cache serialization",
+        "config signature and algorithm metadata",
+        "last_indexed_at generation and writes",
+        "typed module/config resolution",
+        "full snapshot replacement and stale config removal",
+        "common staging/temp-db/DirectWriter adapters",
+        "incremental config path"
+      ]
+    },
+    {
+      "id": "INTERFACE_PREREQUISITES",
+      "conclusion": "No production blocker found under the existing production schema",
+      "locations": [
+        "crates/cc-index/src/dispatch_synthesis/interface_dispatch.rs:46",
+        "crates/cc-db/src/index_db_graph.rs:440",
+        "crates/cc-db/src/index_db_graph.rs:479",
+        "crates/cc-db/src/index_db_edges.rs:258",
+        "crates/cc-db/src/sql/index_v1.sql:155"
+      ],
+      "reason": "CALL rows and prior CALL deltas remain first. The no-call return still precedes all symbol reads. All symbol_dispatch_rows are typed-decoded into a Result<Vec<_>> before the new interface test. The schema declares symbols.symbol_uid TEXT UNIQUE, so selecting nonempty interface/trait UIDs directly from decoded rows is equivalent to selecting from the old uid map. With an interface, implements UID pairs are fully typed-decoded before the new empty-pairs return. An empty implements map in the old implementation was equivalent to empty pairs because each pair unconditionally inserts. Only lookup allocations move; no SQL getter is elided beyond the old no-call/no-interface boundaries.",
+      "error_order": "CALL -> symbols -> implements preserved; malformed rows and query errors still propagate at the old read boundaries",
+      "schema_boundary": "No claim for arbitrary manually weakened/replaced tables without the existing UNIQUE constraint."
+    },
+    {
+      "id": "CLEANUP_AND_POSITIVE_PATH",
+      "conclusion": "Preserved",
+      "reason": "Enabled passes set delete_call_kinds=['interface_dispatch'] before prerequisite returns; disabled passes still return default with no cleanup/read. Original prior CALL replacement and overlay, map row insertion order, same-name container candidate vectors, fanout cap, self-reference exclusion, edge fields/UIDs and final edge_id deduplication are unchanged. PassContext explicitly covers CALL overlays only and earlier passes currently do not emit implements; this contract is unchanged. Moving pure maps does not upgrade the existing separate read queries into a transaction-wide snapshot."
+    },
+    {
+      "id": "COST_SCOPE",
+      "conclusion": "Only a conditional avoided-allocation claim is supported statically",
+      "reason": "Empty heuristic tokens avoid cloning all symbol/path catalogs and constructing their lookup indexes; no interface/implements consumer avoids otherwise unused symbol/container maps. Full source/config scanning and typed symbol/implements SQL reads required by original guards remain. No measured elapsed time/RSS gain, no 100k causal attribution, no new capacity or quality acceptance is demonstrated by this PR's local test logs."
+    }
+  ],
+  "ten_control_checklist": [
+    {
+      "name": "empty_config_full_rebuild_clears_old_links_and_can_relink_later",
+      "path": "crates/cc-index/tests/full_snapshot_empty_config.rs",
+      "line": 45,
+      "original_combined_log_line": "test empty_config_full_rebuild_clears_old_links_and_can_relink_later ... ok",
+      "corrected_product_dynamic_run_independently_proved_by_this_review": false
+    },
+    {
+      "name": "typed_module_config_still_resolves_when_heuristic_tokens_are_empty",
+      "path": "crates/cc-index/tests/full_snapshot_empty_config.rs",
+      "line": 78,
+      "original_combined_log_line": "test typed_module_config_still_resolves_when_heuristic_tokens_are_empty ... ok",
+      "corrected_product_dynamic_run_independently_proved_by_this_review": false
+    },
+    {
+      "name": "empty_prerequisites_remove_stale_edges_without_removing_real_calls",
+      "path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs",
+      "line": 71,
+      "original_combined_log_line": "test dispatch_synthesis::interface_dispatch::tests::empty_prerequisites_remove_stale_edges_without_removing_real_calls ... ok",
+      "corrected_product_dynamic_run_independently_proved_by_this_review": false
+    },
+    {
+      "name": "no_calls_still_returns_before_reading_symbols_or_implements",
+      "path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs",
+      "line": 101,
+      "original_combined_log_line": "test dispatch_synthesis::interface_dispatch::tests::no_calls_still_returns_before_reading_symbols_or_implements ... ok",
+      "corrected_product_dynamic_run_independently_proved_by_this_review": false
+    },
+    {
+      "name": "ordinary_symbols_and_empty_interface_uid_do_not_read_implements",
+      "path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs",
+      "line": 115,
+      "original_combined_log_line": "test dispatch_synthesis::interface_dispatch::tests::ordinary_symbols_and_empty_interface_uid_do_not_read_implements ... ok",
+      "corrected_product_dynamic_run_independently_proved_by_this_review": false
+    },
+    {
+      "name": "disabled_pass_does_not_read_or_schedule_cleanup",
+      "path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs",
+      "line": 135,
+      "original_combined_log_line": "test dispatch_synthesis::interface_dispatch::tests::disabled_pass_does_not_read_or_schedule_cleanup ... ok",
+      "corrected_product_dynamic_run_independently_proved_by_this_review": false
+    },
+    {
+      "name": "malformed_calls_are_not_hidden_by_empty_implements_or_later_errors",
+      "path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs",
+      "line": 152,
+      "original_combined_log_line": "test dispatch_synthesis::interface_dispatch::tests::malformed_calls_are_not_hidden_by_empty_implements_or_later_errors ... ok",
+      "corrected_product_dynamic_run_independently_proved_by_this_review": false
+    },
+    {
+      "name": "malformed_symbols_are_not_hidden_by_empty_implements",
+      "path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs",
+      "line": 176,
+      "original_combined_log_line": "test dispatch_synthesis::interface_dispatch::tests::malformed_symbols_are_not_hidden_by_empty_implements ... ok",
+      "corrected_product_dynamic_run_independently_proved_by_this_review": false
+    },
+    {
+      "name": "malformed_implements_and_query_errors_propagate_after_the_original_guards",
+      "path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs",
+      "line": 196,
+      "original_combined_log_line": "test dispatch_synthesis::interface_dispatch::tests::malformed_implements_and_query_errors_propagate_after_the_original_guards ... ok",
+      "corrected_product_dynamic_run_independently_proved_by_this_review": false
+    },
+    {
+      "name": "prior_call_overlay_reaches_implementors_and_preserves_fanout_cap",
+      "path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs",
+      "line": 220,
+      "original_combined_log_line": "test dispatch_synthesis::interface_dispatch::tests::prior_call_overlay_reaches_implementors_and_preserves_fanout_cap ... ok",
+      "corrected_product_dynamic_run_independently_proved_by_this_review": false
+    }
+  ],
+  "controls_review": {
+    "config": "Two real full-index controls cover full-rebuild removal and later incremental relinking/cache metadata, and typed TS alias resolution while heuristic tokens stay empty.",
+    "interface": "Eight real SQLite controls cover stale-edge deletion without real-call removal, no-call skipped reads, empty/non-interface UIDs, disabled no-cleanup behavior, CALL-before-symbol-before-implements typed-error order, prior CALL overlay and 0/1 fanout boundaries.",
+    "limits": [
+      "No new test executed by this reviewer.",
+      "The two config fixtures exercise staged full build; no new separate DirectWriter/temp-db execution is inferred.",
+      "There is no new dedicated same-name-container fixture; equality follows from unchanged row/vector order and downstream membership-only use of interface_uids.",
+      "Tests are semantic/error/cleanup controls, not a measured performance comparison."
+    ]
+  },
+  "evidence_corrections": [
+    {
+      "id": "E1_590_SOURCE_AND_ENVIRONMENT",
+      "severity": "reporting_identity",
+      "claim_in_pr": "On exact corrected P with Rust 1.95.0, four build jobs, incremental disabled and dev/test debug information disabled: cargo test -p cc-index --all-targets --locked --offline ... 590 passed",
+      "observed": {
+        "combined_log": {
+          "key": "indexlog",
+          "git_blob": "f8b4919af6b1364d1281ae5a12b975e29405750f",
+          "bytes": 54725,
+          "sha256": "c70c207f576159c460bbe4e6b37d4d1ad22e9fee00440e5239b17a9528537627"
+        },
+        "parsed_target_summaries": 23,
+        "passed": 590,
+        "failed": 0,
+        "ignored": 3,
+        "all_ten_new_test_names_printed_ok": true,
+        "logged_profile": "test profile [unoptimized + debuginfo]",
+        "logged_target": "/workspace/scratch/50c364fd60b1/codecortex/target/debug",
+        "warning": "corrupt incremental compilation artifact in that target; compiler said ignored/deleted",
+        "bundled_local_source_snapshot": {
+          "key": "localsnapshot",
+          "git_blob": "63f2084baa90a67d3e4541f14d6bc8e4dfdeb332",
+          "bytes": 146680,
+          "sha256": "0545d7b83273386d0dcfba537601baec92f0fb1f23a3633ebc15a8e367252cf7",
+          "source_commit": "6ffce3cea9534d3f253d3d0f7f2c5f9169495cca",
+          "source_tree": "37e957d394a0060969f9f0f47b62a7a7f99f3b23",
+          "input_count": 1091
+        }
+      },
+      "conclusion": "The 590/0/3 result is real in the archived combined log. The bundled original local source snapshot and original interface execution/review belong to local 6ffce3c / original remote P0 0fe5f11, not corrected P2 b4fef72. The combined log itself does not contain a per-command before/after source receipt. Its actual target/profile differ from the corrected target-final/debug0 statement. No exact corrected-P2, target-final 590-test rerun is established by the inspected 37-file evidence bundle.",
+      "minimal_correction": "Keep the 590 result as the original archived combined cc-index run, state its actual target/profile and source-binding limitation, then separately state P2 fmt/clippy/workspace outcomes. Do not discard the log or require a rerun solely to correct prose."
+    },
+    {
+      "id": "E2_CORPUS_COMMAND_VS_TEST",
+      "severity": "reporting_command",
+      "observed": {
+        "wrapper": {
+          "key": "wrapper",
+          "git_blob": "9b3e9ce67510b6930ff844afbf6dedc16b0486b3",
+          "bytes": 2833,
+          "sha256": "1c045b7a8bc0562952242d7433d2a797e3ed045b4d1089c30c23bbf372b9b5b2"
+        },
+        "final_receipt": {
+          "key": "finalreceipt",
+          "git_blob": "55eae3223757d06be554c0f08d45996654a36a2e",
+          "bytes": 300323,
+          "sha256": "74ec6fecd6fc070e36e27e47c9b15d8be14c3b34cf761fd8b0683e0899d81977"
+        },
+        "commands_executed": [
+          {
+            "name": "format",
+            "command": [
+              "cargo",
+              "fmt",
+              "--all",
+              "--",
+              "--check"
+            ],
+            "exit_code": 0,
+            "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "name": "clippy",
+            "command": [
+              "cargo",
+              "clippy",
+              "--workspace",
+              "--all-targets",
+              "--locked",
+              "--offline",
+              "--",
+              "-D",
+              "warnings"
+            ],
+            "exit_code": 0,
+            "log_sha256": "29eb62b1de14d5a2ffae098dbf6b66dfa3b2c05e1fc2352610f515fb837ae093"
+          },
+          {
+            "name": "workspace-tests",
+            "command": [
+              "cargo",
+              "test",
+              "--workspace",
+              "--locked",
+              "--offline"
+            ],
+            "exit_code": 101,
+            "log_sha256": "7a06196e4c466cdb72fca5ced685b5697871352279f0bf97a4afad9bf802c987"
+          }
+        ],
+        "workspace_log": {
+          "key": "workspace",
+          "git_blob": "eb0b02beab9264ea9449ba0fb34faccbdc2e010e",
+          "bytes": 40896,
+          "sha256": "7a06196e4c466cdb72fca5ced685b5697871352279f0bf97a4afad9bf802c987"
+        },
+        "named_test_line": "test tests::integration_fixtures_and_corpus ... ok",
+        "named_test_line_number": 654,
+        "wrapper_control_flow": "For each command, append receipt then if result.returncode: break. Planned eval-corpus follows workspace-tests."
+      },
+      "conclusion": "The named corpus test actually passed inside the P2 workspace execution. The later standalone cargo test -p cc-eval --locked --offline -- integration_fixtures_and_corpus command was not reached by this wrapper after workspace exit 101; no corresponding standalone completed entry/log appears in the inspected final receipt. It must not be reported as a separately executed exit-0 command on the strength of this receipt.",
+      "minimal_correction": "Report the named corpus test as passed within the failed workspace run; mark the planned follow-up standalone corpus command not_run unless a separate actual command receipt is supplied."
+    }
+  ],
+  "corrected_product_actual_execution": {
+    "source_before": {
+      "commit": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+      "tree": "8d790cbcfdc56ee2d57001de0d1c79177184b2da",
+      "input_count": 1091,
+      "manifest_sha256": "3fb49b8dc9465bbb0e4767cae8cda21c9a7c892f9040c1989709e37bdc8c679d"
+    },
+    "source_after_same_inputs": true,
+    "source_four_hashes_matched": true,
+    "started_at_utc": "2026-10-09T07:59:12.755502+00:00",
+    "completed_at_utc": "2026-10-09T08:02:52.600412+00:00",
+    "rustc": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.95.0\nLLVM version: 22.1.2\n",
+    "environment": {
+      "CARGO_BUILD_JOBS": "4",
+      "CARGO_INCREMENTAL": "0",
+      "CARGO_PROFILE_DEV_DEBUG": "0",
+      "CARGO_PROFILE_TEST_DEBUG": "0",
+      "CARGO_TARGET_DIR": "/workspace/scratch/50c364fd60b1/target-final"
+    },
+    "commands": [
+      {
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "elapsed_seconds": 3.127696040999581,
+        "exit_code": 0,
+        "log": "format.log",
+        "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "name": "format"
+      },
+      {
+        "command": [
+          "cargo",
+          "clippy",
+          "--workspace",
+          "--all-targets",
+          "--locked",
+          "--offline",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "elapsed_seconds": 15.727111106998564,
+        "exit_code": 0,
+        "log": "clippy.log",
+        "log_sha256": "29eb62b1de14d5a2ffae098dbf6b66dfa3b2c05e1fc2352610f515fb837ae093",
+        "name": "clippy"
+      },
+      {
+        "command": [
+          "cargo",
+          "test",
+          "--workspace",
+          "--locked",
+          "--offline"
+        ],
+        "elapsed_seconds": 200.1749311099993,
+        "exit_code": 101,
+        "log": "workspace-tests.log",
+        "log_sha256": "7a06196e4c466cdb72fca5ced685b5697871352279f0bf97a4afad9bf802c987",
+        "name": "workspace-tests"
+      }
+    ],
+    "all_commands_passed": false,
+    "workspace_failure": {
+      "name": "benchmark::sampler::process_probe_tests::linux::live_child_snapshot_is_attributed_monotonic_and_disappears",
+      "location": "crates/cc-eval/src/benchmark/sampler.rs:830:17",
+      "message": "live child snapshot unavailable",
+      "exit_code": 101,
+      "cc_eval_lib_summary": {
+        "passed": 59,
+        "failed": 1,
+        "ignored": 5,
+        "filtered": 0
+      },
+      "single_test_diagnostic": {
+        "log": {
+          "key": "targetdiag",
+          "git_blob": "366e7f0aefd39c7392922c377f39c600392703e8",
+          "bytes": 1022,
+          "sha256": "b683185a1ad44e98d219c1b03d649bead6ddf4f3d39d0ba68094a1ff5742102c"
+        },
+        "passed": 0,
+        "failed": 1,
+        "ignored": 0,
+        "filtered": 64
+      },
+      "namespace_observation": {
+        "blob": {
+          "key": "idiag",
+          "git_blob": "2aeed2e920e188d8006f63619f48baa1886517bb",
+          "bytes": 580,
+          "sha256": "28a9e9759b6771cb30e052cf79a6ef0a5de5eb5763b94a7d96eb5310f9c898b0"
+        },
+        "python_spawn_pid": 6,
+        "child_reported_pid": 6,
+        "child_self_stat_pid": 64815,
+        "parent_proc6_comm": "caas-prefix-tra",
+        "causal_attribution": "unknown; observed mismatch does not prove a cause or waive original failure"
+      }
+    }
+  },
+  "correction_bridge": {
+    "original_product": "0fe5f110a3c1c0fd39e83031fc935d3e7cfe1114",
+    "initial_fmt_exit": 0,
+    "initial_clippy_exit": 101,
+    "initial_receipt": {
+      "key": "initialreceipt",
+      "git_blob": "68d61724412e7ebbf4f191f872ce27cd6c8ef8e0",
+      "bytes": 299963,
+      "sha256": "f27f64ace2c1dabad244a59310b8b5135642e6f80238cefd3cc77369f5814fd1"
+    },
+    "initial_clippy_log": {
+      "key": "initialclippy",
+      "git_blob": "8fa46bb2240420e204f1f91bd6271628ce7760f6",
+      "bytes": 7771,
+      "sha256": "6d5e15fbbd19521f5ceb3bfd7091410c91dc1858336f5134ef6b88d79edfa8c3"
+    },
+    "corrected_product": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+    "correction_review": {
+      "key": "correctionreview",
+      "git_blob": "03ea3929a802d5bd5e94c9145a0dc0758741f66e",
+      "bytes": 8563,
+      "sha256": "9e3279a89d52c9cd229102f69b41365992fdf078926db228889d5d2339ed2b3f"
+    },
+    "publication_bridge": {
+      "key": "pubbridge",
+      "git_blob": "6bb92f34ff8b9d1621443a3f6511641b5e87a2c1",
+      "bytes": 924,
+      "sha256": "3478902fa9031494b49805c902b38254ada38076f9a1f241d4e8f58b82ad5dc9"
+    },
+    "only_changed_path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs",
+    "old_blob": "77eb31f25d0daf2c18e6010a6cbd37152f41a4cc",
+    "new_blob": "d1888e13cb6bc1e4748cf372209b9686a705a1da",
+    "correction": "Three expected getter Result .err().expect(message) expressions became .expect_err(message). Err values and comparison assertions are unchanged; an unexpected Ok fails in either form, with extra Debug detail in expect_err. No production-code change.",
+    "evidentiary_limit": "Semantic equivalence/source admission does not rewrite old execution source/environment as a new execution. Original Clippy 101 and all original receipts remain immutable."
+  },
+  "official_ci_snapshot": {
+    "head": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529",
+    "source": "GET /repos/jyqj/codecortex/actions/runs?head_sha=50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529&per_page=100&page=1",
+    "api_content_sha256": "a866c36ed55b77d40ef8ff4f74fc8cf95791066ecf23f673b9f79a29adb166ca",
+    "runs": [
+      {
+        "id": 37903250830,
+        "name": "P7 closeout evidence",
+        "status": "queued",
+        "conclusion": null,
+        "event": "pull_request",
+        "run_attempt": 1,
+        "head_sha": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529"
+      },
+      {
+        "id": 37903250773,
+        "name": "P8 platform cold builds",
+        "status": "queued",
+        "conclusion": null,
+        "event": "pull_request",
+        "run_attempt": 1,
+        "head_sha": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529"
+      },
+      {
+        "id": 37903250875,
+        "name": "P8 runtime observations",
+        "status": "queued",
+        "conclusion": null,
+        "event": "pull_request",
+        "run_attempt": 1,
+        "head_sha": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529"
+      },
+      {
+        "id": 37903250770,
+        "name": "P7 engineering regressions",
+        "status": "completed",
+        "conclusion": "success",
+        "event": "pull_request",
+        "run_attempt": 1,
+        "head_sha": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529"
+      },
+      {
+        "id": 37903250681,
+        "name": "P8 lifecycle and resource observations",
+        "status": "completed",
+        "conclusion": "success",
+        "event": "pull_request",
+        "run_attempt": 1,
+        "head_sha": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529"
+      },
+      {
+        "id": 37903250638,
+        "name": "CI",
+        "status": "in_progress",
+        "conclusion": null,
+        "event": "pull_request",
+        "run_attempt": 1,
+        "head_sha": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529"
+      },
+      {
+        "id": 37903250629,
+        "name": "P8 original failure gates",
+        "status": "completed",
+        "conclusion": "success",
+        "event": "pull_request",
+        "run_attempt": 1,
+        "head_sha": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529"
+      }
+    ],
+    "limit": "This is an official API state read, not a full job-log or checkout-tree certification. No queued polling or new run occurred."
+  },
+  "integration_conditions": [
+    "Keep this optional optimization separate from currently frozen C8/180 and their measured identities; no adoption into either is authorized by this review.",
+    "If adopted later, use the exact four source/test blobs or a newly reviewed narrow composition and the repository's original source-admission/CI process. Do not wholesale copy donor guard/registry into a different product.",
+    "Correct the two execution-attribution statements above; preserve both original strict-Clippy failure and corrected-product workspace/diagnostic failures. Do not label workspace passed or infer a process-namespace waiver.",
+    "Use eventual exact-head ordinary CI as its own new evidence with its actual checkout/tree; this static review neither requires a new business gate nor supplies missing successful execution.",
+    "Do not use these ten new controls as ten original TODO completions or transfer this source's results to another source study."
+  ],
+  "input_blobs": [
+    {
+      "key": "interface",
+      "git_blob": "8d230b0a463bd53ab21e80e56af9d7fc9d3a0a2d",
+      "bytes": 11716,
+      "sha256": "d2fa652cff62511546ad36d67bb402fa9a307ef060223fb12610ef31da69084a"
+    },
+    {
+      "key": "interface_base",
+      "git_blob": "1ec37855f7209426931dd90ae2d483cc1fe2ffc1",
+      "bytes": 11036,
+      "sha256": "6ffc3db9b08993cf4a82923da5488360b8a8ad78a35591d4849fe287226667ec"
+    },
+    {
+      "key": "snapshot",
+      "git_blob": "b1db699f6597d8a948e3797e153a75fe8f5b07de",
+      "bytes": 10476,
+      "sha256": "f5aba522582adc5f206ab2c3a8a2de2217e0ea99058928396ab0bc473c55b2e5"
+    },
+    {
+      "key": "snapshot_base",
+      "git_blob": "f54e02421b71259abd6c2b3b1e0ab6de48f7c883",
+      "bytes": 10132,
+      "sha256": "d52e1fd86dfcb3234944fc9ed1bc72b6d2b39da3255805db945fc7ef1af0a847"
+    },
+    {
+      "key": "itests",
+      "git_blob": "d1888e13cb6bc1e4748cf372209b9686a705a1da",
+      "bytes": 9704,
+      "sha256": "1647126f382e4fed5e47b42780e08348d8239432eefc7c2012efa628df3c7c41"
+    },
+    {
+      "key": "ctests",
+      "git_blob": "c900883bd45b427a605330b6ce4ac359f99506ef",
+      "bytes": 3850,
+      "sha256": "fc5e8b7f4e8f8b8e3c1245ffcf724e79905413c203ccb298374cb8297a32b4ed"
+    },
+    {
+      "key": "phase_config",
+      "git_blob": "d781cfa587b7a33bd555d1ddb3cb086612593712",
+      "bytes": 42105,
+      "sha256": "cc8086f8f4b894c645da222b53df194b22b5516e1a6d9002bea04d40ff00a7ff"
+    },
+    {
+      "key": "cfg_link",
+      "git_blob": "9493ee2e6405422676b4810daee2e7244b414fd4",
+      "bytes": 22223,
+      "sha256": "9a6e56304087a92dc9bbec804e354dc3df6f7b1e863d2276c552ac3b61294e74"
+    },
+    {
+      "key": "schema",
+      "git_blob": "998608d9c6d07eb4afec0ce7e13c1f85bfc7a441",
+      "bytes": 25396,
+      "sha256": "6d7ee2193f388281aeef3dc98b914f0fa6f9478dda90833bf41f6bc12350cd06"
+    },
+    {
+      "key": "graph",
+      "git_blob": "c436e07c26af18bf7e7d9862e35eaaa66e8fcea9",
+      "bytes": 111978,
+      "sha256": "95962a7545c9e13bdbefc5294a60c7ca674db5674ac11a82912113d264655ea0"
+    },
+    {
+      "key": "edges",
+      "git_blob": "b5a56eace2370b9e4c3afab643cfd016b20c4622",
+      "bytes": 75482,
+      "sha256": "d1dd3e4022b5d3e516c200d7cf5c0efd039e220f75b4adde39261aeab8936452"
+    },
+    {
+      "key": "ctx",
+      "git_blob": "4a67edae340aa86855949579777f2d7fcdb5b3a0",
+      "bytes": 43627,
+      "sha256": "6c3dc3e98e5d366ceeb370f3346006647ff57b99c35feba7358022452536c91b"
+    },
+    {
+      "key": "review",
+      "git_blob": "d1937d79ce10f58634156fb491b8ab96b1458892",
+      "bytes": 417012,
+      "sha256": "0c05f39dbea84e5d2158c5bc3c6962bd0b01bbb728d211232ab6415a9641d630"
+    },
+    {
+      "key": "originalreview",
+      "git_blob": "f54578306d2835fdfe0a484c2a40ff7b1cb08220",
+      "bytes": 411566,
+      "sha256": "9b83c897f390dfefc43b7492dcbbb093a6d24f96586d0bdc5eb9e477e51dee9f"
+    },
+    {
+      "key": "clippy",
+      "git_blob": "8ed9ab20fce8325bfb3108422fc5983525e16ca0",
+      "bytes": 599,
+      "sha256": "29eb62b1de14d5a2ffae098dbf6b66dfa3b2c05e1fc2352610f515fb837ae093"
+    },
+    {
+      "key": "finalreceipt",
+      "git_blob": "55eae3223757d06be554c0f08d45996654a36a2e",
+      "bytes": 300323,
+      "sha256": "74ec6fecd6fc070e36e27e47c9b15d8be14c3b34cf761fd8b0683e0899d81977"
+    },
+    {
+      "key": "indexlog",
+      "git_blob": "f8b4919af6b1364d1281ae5a12b975e29405750f",
+      "bytes": 54725,
+      "sha256": "c70c207f576159c460bbe4e6b37d4d1ad22e9fee00440e5239b17a9528537627"
+    },
+    {
+      "key": "workspace",
+      "git_blob": "eb0b02beab9264ea9449ba0fb34faccbdc2e010e",
+      "bytes": 40896,
+      "sha256": "7a06196e4c466cdb72fca5ced685b5697871352279f0bf97a4afad9bf802c987"
+    },
+    {
+      "key": "wrapper",
+      "git_blob": "9b3e9ce67510b6930ff844afbf6dedc16b0486b3",
+      "bytes": 2833,
+      "sha256": "1c045b7a8bc0562952242d7433d2a797e3ed045b4d1089c30c23bbf372b9b5b2"
+    },
+    {
+      "key": "pubbridge",
+      "git_blob": "6bb92f34ff8b9d1621443a3f6511641b5e87a2c1",
+      "bytes": 924,
+      "sha256": "3478902fa9031494b49805c902b38254ada38076f9a1f241d4e8f58b82ad5dc9"
+    },
+    {
+      "key": "manifest",
+      "git_blob": "4dbe6e4ab7ed56d981efd170bee5d5989af27bf6",
+      "bytes": 8694,
+      "sha256": "c81906c80e75ec610e03b153efcc179ef376e40568a50ec10e39ea8d83d50ca0"
+    },
+    {
+      "key": "initialreceipt",
+      "git_blob": "68d61724412e7ebbf4f191f872ce27cd6c8ef8e0",
+      "bytes": 299963,
+      "sha256": "f27f64ace2c1dabad244a59310b8b5135642e6f80238cefd3cc77369f5814fd1"
+    },
+    {
+      "key": "initialclippy",
+      "git_blob": "8fa46bb2240420e204f1f91bd6271628ce7760f6",
+      "bytes": 7771,
+      "sha256": "6d5e15fbbd19521f5ceb3bfd7091410c91dc1858336f5134ef6b88d79edfa8c3"
+    },
+    {
+      "key": "interfacereview",
+      "git_blob": "adf57d1ffa77301b798e5efe3bcc9725ecf5f2a6",
+      "bytes": 8618,
+      "sha256": "3224324e6926ee987751fd0cecbd2f4a9c051e6fc5ce031733b4a913b1aecf21"
+    },
+    {
+      "key": "correctionreview",
+      "git_blob": "03ea3929a802d5bd5e94c9145a0dc0758741f66e",
+      "bytes": 8563,
+      "sha256": "9e3279a89d52c9cd229102f69b41365992fdf078926db228889d5d2339ed2b3f"
+    },
+    {
+      "key": "idiag",
+      "git_blob": "2aeed2e920e188d8006f63619f48baa1886517bb",
+      "bytes": 580,
+      "sha256": "28a9e9759b6771cb30e052cf79a6ef0a5de5eb5763b94a7d96eb5310f9c898b0"
+    },
+    {
+      "key": "targetdiag",
+      "git_blob": "366e7f0aefd39c7392922c377f39c600392703e8",
+      "bytes": 1022,
+      "sha256": "b683185a1ad44e98d219c1b03d649bead6ddf4f3d39d0ba68094a1ff5742102c"
+    },
+    {
+      "key": "localsnapshot",
+      "git_blob": "63f2084baa90a67d3e4541f14d6bc8e4dfdeb332",
+      "bytes": 146680,
+      "sha256": "0545d7b83273386d0dcfba537601baec92f0fb1f23a3633ebc15a8e367252cf7"
+    }
+  ],
+  "manifest_integrity": "The inspected seven key evidence files (combined log, original local snapshot, final receipt, final Clippy/workspace logs, initial receipt/Clippy log) match archived evidence-manifest sizes and SHA-256 exactly; no old evidence was edited.",
+  "mutations": "Only this unreferenced review JSON Git blob is created; no source, refs, branches, tasks, PR text, tests or workflow executions are changed."
+}

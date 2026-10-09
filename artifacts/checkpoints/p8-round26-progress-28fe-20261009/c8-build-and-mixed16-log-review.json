@@ -1,0 +1,396 @@
+{
+  "schema": "p8-C8-completed-build-and-mixed16-original-log-review-v1",
+  "reviewer": "/root/recovery_audit",
+  "reviewed_utc": "2026-10-09 08:27:36 UTC",
+  "verdict": "original_C8_commands_success_log_evidence_only",
+  "source": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+  "official_tree": "9b031be22a430e51e153cce6e80770ed885818e3",
+  "scope": "Only two already-completed original jobs. Complete original UTF8 logs retained byte-for-byte. No ZIP download, replay/native execution, new source admission or other in-progress log.",
+  "logs": {
+    "scale_build": {
+      "git_blob": "bb0a532d4928f91db6a7f7a61765107d37fd4e47",
+      "bytes": 38534,
+      "sha256": "c5b0f2d34f437eb13f398724464e8ef42f9da9efae80be24da037f22adbfe66e",
+      "official_readback_exact": true
+    },
+    "mixed16": {
+      "git_blob": "c3c873e33818bee6cb0ec648b2da72a6ae7a42f2",
+      "bytes": 279085,
+      "sha256": "7a4b389f4f6fc64906dbd7cb0b38f392aa51edc12e0e46f34b651889417b6c38",
+      "official_readback_exact": true
+    }
+  },
+  "scale_build": {
+    "job": {
+      "id": 113727856139,
+      "run_id": 37902429727,
+      "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "run_attempt": 1,
+      "name": "build",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-09T08:09:55Z",
+      "completed_at": "2026-10-09T08:13:59Z",
+      "steps": [
+        {
+          "number": 1,
+          "name": "Set up job",
+          "conclusion": "success"
+        },
+        {
+          "number": 2,
+          "name": "Run actions/checkout@v4",
+          "conclusion": "success"
+        },
+        {
+          "number": 3,
+          "name": "Run dtolnay/rust-toolchain@stable",
+          "conclusion": "success"
+        },
+        {
+          "number": 4,
+          "name": "Compile and bind one immutable release executable",
+          "conclusion": "success"
+        },
+        {
+          "number": 5,
+          "name": "Preserve original build, binary and source receipts",
+          "conclusion": "success"
+        },
+        {
+          "number": 10,
+          "name": "Post Run actions/checkout@v4",
+          "conclusion": "success"
+        },
+        {
+          "number": 11,
+          "name": "Complete job",
+          "conclusion": "success"
+        }
+      ]
+    },
+    "checkout": {
+      "actual_git_log_line": 237,
+      "commit": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "root": "/home/runner/work/codecortex/codecortex"
+    },
+    "compiler": {
+      "rustc": "1.95.0 (59807616e 2026-04-14)",
+      "commit": "59807616e1fa2540724bfbac14d7976d7e4a3860",
+      "host": "x86_64-unknown-linux-gnu",
+      "LLVM": "22.1.2",
+      "RUSTFLAGS": ""
+    },
+    "command": "python3 scripts/p8_scale_matrix.py build --root \"$GITHUB_WORKSPACE\" --output \"$RUNNER_TEMP/p8-scale-build\" --target-directory \"$RUNNER_TEMP/p8-scale-cargo\"",
+    "actual_stdout_projection": {
+      "status": "passed",
+      "passed": null,
+      "error": null,
+      "sample_count": null
+    },
+    "exit_evidence": "Official completed build step success under bash -e. Actual fixed C8 driver main:1004 returns0 for status passed. Its build:280-302 requires same source/driver beforeafter,Cargo0/build-finished true,one releaseartifact,exact checkout/target/copy provenance before setting passed. This is observation of original code+log, not an independent retained-ZIP revalidation.",
+    "driver": {
+      "path": "scripts/p8_scale_matrix.py",
+      "git_blob": "b4ba4b57f8d23a16128ef82927e78799ae70f886",
+      "sha256": "f169b0f26cf2a87d3e2548d734431c530cbf63d353ac054045ec8be80889f957"
+    },
+    "artifact": {
+      "id": 11603522248,
+      "node_id": "MDg6QXJ0aWZhY3QxMTYwMzUyMjI0OA==",
+      "name": "p8-scale-build-37902429727",
+      "size_in_bytes": 9223368,
+      "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11603522248",
+      "archive_download_url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11603522248/zip",
+      "expired": false,
+      "digest": "sha256:5addb32810c97eeb46c22d0d359edbce88c97fe8f99153774461e6ec2914c83b",
+      "created_at": "2026-10-09T08:13:56Z",
+      "updated_at": "2026-10-09T08:13:56Z",
+      "expires_at": "2027-01-07T08:01:32Z",
+      "workflow_run": {
+        "id": 37902429727,
+        "repository_id": 1249213794,
+        "head_repository_id": 1249213794,
+        "head_branch": "task/p8-combined-engineering-bfcc-20261009",
+        "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39"
+      }
+    },
+    "unavailable_from_log": [
+      "Actual p8-scale binary SHA256/BLAKE3/size and compiler-artifact JSON.",
+      "build.json/source-before.json/source-after.json/driver-source detailed retained records.",
+      "Original cargo.jsonl/cargo.stderr and their byte inventory."
+    ],
+    "boundary": "status passed confirms build CLI success; displayed passed:null and sample_count:null are original build summary projection, not measurement failure or scale success. No measurement plan/raw expected from this build-only job. Full binary/source binding still requires its own original build ZIP."
+  },
+  "mixed16": {
+    "job": {
+      "id": 113726259337,
+      "run_id": 37901930897,
+      "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "run_attempt": 1,
+      "name": "mixed (16)",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-09T07:56:38Z",
+      "completed_at": "2026-10-09T08:09:43Z",
+      "steps": [
+        {
+          "number": 1,
+          "name": "Set up job",
+          "conclusion": "success"
+        },
+        {
+          "number": 2,
+          "name": "Run actions/checkout@v4",
+          "conclusion": "success"
+        },
+        {
+          "number": 3,
+          "name": "Run dtolnay/rust-toolchain@1.95.0",
+          "conclusion": "success"
+        },
+        {
+          "number": 4,
+          "name": "Fetch locked dependencies before measurement",
+          "conclusion": "success"
+        },
+        {
+          "number": 5,
+          "name": "Runtime receipt and retained-evidence negative controls",
+          "conclusion": "success"
+        },
+        {
+          "number": 6,
+          "name": "Build an exact release product and complete oracle",
+          "conclusion": "success"
+        },
+        {
+          "number": 7,
+          "name": "Fixed offered read/build schedule and no-repair parity",
+          "conclusion": "success"
+        },
+        {
+          "number": 8,
+          "name": "Verify every retained runtime and build artifact",
+          "conclusion": "success"
+        },
+        {
+          "number": 9,
+          "name": "Preserve every execution including failures",
+          "conclusion": "success"
+        },
+        {
+          "number": 18,
+          "name": "Post Run actions/checkout@v4",
+          "conclusion": "success"
+        },
+        {
+          "number": 19,
+          "name": "Complete job",
+          "conclusion": "success"
+        }
+      ]
+    },
+    "checkout": {
+      "actual_git_log_line": 185,
+      "commit": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "tree": "9b031be22a430e51e153cce6e80770ed885818e3",
+      "official_git_commit_tree_matches": true
+    },
+    "original_controls": {
+      "command": "python3 -m unittest discover -s scripts/tests -p 'test_p8_runtime*.py' -v",
+      "count": 68,
+      "duration_s": 16.827,
+      "result": "OK"
+    },
+    "build": {
+      "command": "python3 scripts/p8_runtime_build.py --output \"$RUNNER_TEMP/p8-build\"",
+      "printed": {
+        "build_exit_code": 0,
+        "cargo_log_sha256": "8f80d99f510ab424b0650d2615eda4ebe30df04dcddcc8297e3388414c98f6a0",
+        "stderr_sha256": "cf2c460c01135bc5721643023e29d9ba6c922f123281bc1bd5ada1c8297a0026",
+        "binary_sha256": "fabff640480276ccd53995a26154af34b63f421269b160ce02fff44949ee5671",
+        "oracle_sha256": "b6c4a90c0746ddde2b4e0b5acbc2ff545b4990dae5f04fe064d4600c3009566e",
+        "statistics_sha256": "11b5a94f4d9197258c5ea57489db9e488c0d25e5da7070e54a2bd2c08738699a"
+      },
+      "original_build_receipt_sha256": "34095d14cce5f8dbcaedfe5bf8b59f905e74ff7db32a581d7902bd48b8cd2d28",
+      "original_build_seal_sha256": "319e5d92c2ff92facc870a756437495dfb419b416a055ecd56d3568d6442cbfb",
+      "compiler": "rustc1.95.0 / Cargo1.95.0 / x86_64-unknown-linux-gnu",
+      "compiler_artifacts": {
+        "codecortex": {
+          "binary_sha256": "fabff640480276ccd53995a26154af34b63f421269b160ce02fff44949ee5671",
+          "binary_bytes": 27092024,
+          "copy_source": {
+            "path": "/home/runner/work/_temp/p8-runtime-target/release/codecortex",
+            "bytes": 27092024,
+            "sha256": "fabff640480276ccd53995a26154af34b63f421269b160ce02fff44949ee5671"
+          },
+          "target": "codecortex",
+          "manifest": "/home/runner/work/codecortex/codecortex/crates/cc-server/Cargo.toml",
+          "source_entry": "/home/runner/work/codecortex/codecortex/crates/cc-server/src/main.rs",
+          "profile": {
+            "opt_level": "3",
+            "debuginfo": 0,
+            "debug_assertions": false,
+            "overflow_checks": false,
+            "test": false
+          },
+          "features": [],
+          "fresh": false
+        },
+        "p8-oracle": {
+          "binary_sha256": "b6c4a90c0746ddde2b4e0b5acbc2ff545b4990dae5f04fe064d4600c3009566e",
+          "binary_bytes": 2964184,
+          "copy_source": {
+            "path": "/home/runner/work/_temp/p8-runtime-target/release/p8-oracle",
+            "bytes": 2964184,
+            "sha256": "b6c4a90c0746ddde2b4e0b5acbc2ff545b4990dae5f04fe064d4600c3009566e"
+          },
+          "target": "p8-oracle",
+          "manifest": "/home/runner/work/codecortex/codecortex/crates/cc-eval/Cargo.toml",
+          "source_entry": "/home/runner/work/codecortex/codecortex/crates/cc-eval/src/bin/p8-oracle.rs",
+          "profile": {
+            "opt_level": "3",
+            "debuginfo": 0,
+            "debug_assertions": false,
+            "overflow_checks": false,
+            "test": false
+          },
+          "features": [],
+          "fresh": false
+        },
+        "p8-runtime-statistics": {
+          "binary_sha256": "11b5a94f4d9197258c5ea57489db9e488c0d25e5da7070e54a2bd2c08738699a",
+          "binary_bytes": 974880,
+          "copy_source": {
+            "path": "/home/runner/work/_temp/p8-runtime-target/release/p8-runtime-statistics",
+            "bytes": 974880,
+            "sha256": "11b5a94f4d9197258c5ea57489db9e488c0d25e5da7070e54a2bd2c08738699a"
+          },
+          "target": "p8-runtime-statistics",
+          "manifest": "/home/runner/work/codecortex/codecortex/crates/cc-eval/Cargo.toml",
+          "source_entry": "/home/runner/work/codecortex/codecortex/crates/cc-eval/src/bin/p8-runtime-statistics.rs",
+          "profile": {
+            "opt_level": "3",
+            "debuginfo": 0,
+            "debug_assertions": false,
+            "overflow_checks": false,
+            "test": false
+          },
+          "features": [],
+          "fresh": false
+        }
+      },
+      "binding": "Each printed build binary digest == final verification binary == original copy_source digest; sizes/target/path/release/no-features/freshfalse consistent. Source and nine-observer manifest digests recomputed from complete printed JSON maps; official C8 tree matches. Bytes in original Cargo stream/copied binaries are not rehashed by this reviewer."
+    },
+    "command": "python3 scripts/p8_runtime.py --binary \"$RUNNER_TEMP/p8-build/codecortex\" --oracle \"$RUNNER_TEMP/p8-build/p8-oracle\" --statistics \"$RUNNER_TEMP/p8-build/p8-runtime-statistics\" --build-receipt \"$RUNNER_TEMP/p8-build/build-receipt.json\" --concurrency 16 --operations 900 --files 1000 --interval-ms 500 --output \"$RUNNER_TEMP/p8-runtime\"",
+    "observed_result": {
+      "status": "passed_observation",
+      "exit_code": 0,
+      "profile": "mixed",
+      "task_complete": false,
+      "release_approval": false,
+      "offered": 900,
+      "outcomes": {
+        "success": 900
+      },
+      "failures": [],
+      "observed_work_ns": 448014190778,
+      "elapsed_ns": 450156469887,
+      "actual_concurrency": {
+        "read": 0,
+        "build": 0,
+        "maximum": 12,
+        "read_build_overlap": true
+      },
+      "real_branch_switches": 50,
+      "observed_catalog_compactions": 6,
+      "statistics": {
+        "path": "statistics.json",
+        "sha256": "4680ffe53de52bd8ba28fbd51ed1d348482dcaec6187d50e78c71dd213a7cd78",
+        "replay_path": "statistics-replay.json",
+        "replay_identical": true,
+        "exit_code": 0,
+        "status": "all_original_terminal_outcomes_successful"
+      },
+      "parity_exit_code": 0,
+      "parity_sha256": "9d0846b14c0fc9cd765ac9d35de0da10602790fbe290daff9997b18e8c375bd9",
+      "raw_sha256": "cb9eafbb49668153eff4c084817f10d263bba5d39744959115cfa031d530e0a2",
+      "plan_sha256": "360fd464b79f9e6494f61a31c897e2dde18825cecd4218a88b7c6c4070cdae22",
+      "artifact_seal_status": "sealed",
+      "owned_cleanup": {
+        "unfinished_work": 0,
+        "sampler_stopped": true,
+        "product_stopped": true,
+        "comparison_product_stopped": true,
+        "product_construction_pending": false,
+        "comparison_product_construction_pending": false
+      },
+      "semantic_backfill": "not_run_in_default_product_profile"
+    },
+    "source_receipt": {
+      "commit": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "tree": "9b031be22a430e51e153cce6e80770ed885818e3",
+      "input_count": 1090,
+      "manifest_sha256": "064e7cfca1eb2fcdaa4e31d004e4da13e5b988fba24af5c3c40f86c41e3bd893",
+      "observer_count": 9,
+      "observer_manifest_sha256": "ca48939e0647dba2f12e9f26ab0bc88860219ddb304574b6386e5d47b8945064"
+    },
+    "original_verifier": {
+      "command": "python3 scripts/p8_runtime.py verify --output \"$RUNNER_TEMP/p8-runtime\" --build-output \"$RUNNER_TEMP/p8-build\"",
+      "printed": {
+        "status": "sealed_artifacts_verified",
+        "files": 2110,
+        "observation_status": "passed_observation",
+        "observation_exit_code": 0
+      },
+      "job_step": "completed/success"
+    },
+    "artifact": {
+      "id": 11602319659,
+      "node_id": "MDg6QXJ0aWZhY3QxMTYwMjMxOTY1OQ==",
+      "name": "p8-mixed-c16-c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "size_in_bytes": 16362855,
+      "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11602319659",
+      "archive_download_url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11602319659/zip",
+      "expired": false,
+      "digest": "sha256:51e745661f415279b36bf9428e8b838f94edc783ab6bbce94f24e46eb8f3a43f",
+      "created_at": "2026-10-09T08:09:40Z",
+      "updated_at": "2026-10-09T08:09:40Z",
+      "expires_at": "2027-01-07T07:56:34Z",
+      "workflow_run": {
+        "id": 37901930897,
+        "repository_id": 1249213794,
+        "head_repository_id": 1249213794,
+        "head_branch": "task/p8-combined-engineering-bfcc-20261009",
+        "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39"
+      }
+    },
+    "remaining_artifact_review": [
+      "Original plan/raw/parity/statistics/build-seal/runtime-seal bytes and complete inventories have only printed identities and original validator success here; independent ZIP byte replay remains unperformed.",
+      "No claim that actual concurrency reached16: configured16, observed maximum12; read/build overlaptrue.",
+      "No full C1/4/8 matrix, hour soak, backfill, lifecycle, platform, task/release completion or C8 complete-source approval follows from this one mixed16 observation."
+    ]
+  },
+  "log_checks": [
+    "source_count_manifest",
+    "official_C8_HEAD_tree",
+    "observer_manifest",
+    "observer_C8",
+    "actual_runtime_build_observer",
+    "compiler_copy_codecortex",
+    "compiler_copy_p8-oracle",
+    "compiler_copy_p8-runtime-statistics",
+    "summary_binary_alignment",
+    "reported_success_retained_bounds",
+    "cleanup",
+    "original_verifier_exit_report"
+  ],
+  "transport_boundary": "Two direct /actions/jobs/{id} metadata requests were unsupported by connector and returned400. Original logs used the dedicated job-log tool; completed build identity/steps came from retained full run/jobs snapshot, mixed identity/steps from supported full run/jobs collection. No auth workaround or runtime retry.",
+  "identity_separation": "All results belong exclusively to C8/run37902429727 or37901930897. PR180G e6ab28bc5956e225e2015a57f601bc4d867d3732 is a different source; these are not its results. Original other versions/failures/unknowns remain untouched.",
+  "task_accounting": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "newly_done": 0
+  }
+}

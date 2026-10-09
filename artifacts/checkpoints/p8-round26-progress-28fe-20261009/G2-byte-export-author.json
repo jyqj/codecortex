@@ -1,0 +1,138 @@
+{
+  "schema": "p8_fixed_g2_failed_artifact_byte_export_candidate_v2",
+  "status": "prepared_for_independent_static_review_not_executed",
+  "workflow": {
+    "path": ".github/workflows/p8-g2-failure-bytes-28fe.yml",
+    "git_blob": "c7d4ef706d2c766711ffed82333bc159e0afbb83",
+    "bytes": 19216,
+    "sha256": "42b1fdcb28bbf4ea8ed293f1e78fef2adf62620eeeb337c881c06ac0a8791202",
+    "official_git_readback_exact": true
+  },
+  "identity": {
+    "repository": "jyqj/codecortex",
+    "source": "0272a1fb152fd76a7cfb22386a580629d4038a64",
+    "run_id": 37877604259,
+    "job_id": 113654983347,
+    "run_attempt": 1,
+    "run_status": "completed",
+    "run_conclusion": "failure",
+    "job_required_status": "completed",
+    "job_required_conclusion": "failure",
+    "artifact_id": 11604421042,
+    "name": "p8-snapshot-leaf-shard-100000-0-37877604259",
+    "zip_bytes": 5206420,
+    "zip_sha256": "fe9bb645c4d7036c542beaa708572793105825ae1ec11244d9293701e3da58af",
+    "expected_zip_member_count": 12
+  },
+  "source_evidence": {
+    "run_api_raw_sha256": "3f0f3d1c4a3fa285104641bc74c47cba820133c3317190c6b5ca858d299da9f9",
+    "artifact_collection_raw_sha256": "60d8ab61bead749ea63d7f2d2b03425b34dcbd6d942191c3092a84d6abe6d6e4",
+    "read_only_original_log_byte_template": "a082b8d76c3b4e1afd14c287ceed476b574e2b0f",
+    "read_only_transport_reference": "38c8f7857ac00c8c14fcf246a8718d83f7755354"
+  },
+  "execution": {
+    "performed": false,
+    "workflow_created": false,
+    "ref_created": false,
+    "compile": false,
+    "native": false,
+    "measurement": false,
+    "artifact_zip_downloaded_by_this_author": false,
+    "static_code_only": true
+  },
+  "contract": {
+    "permissions": {
+      "contents": "read",
+      "actions": "read"
+    },
+    "only_http_method": "GET",
+    "fixed_unique_branch": "audit/p8-g2-failure-bytes-28fe-20261009",
+    "event": "push",
+    "attempt_guard": 1,
+    "checkout": false,
+    "subprocess": false,
+    "load_artifact_code": false,
+    "extraction": false,
+    "elf": false,
+    "validator": false,
+    "source_changes": false,
+    "measurement_budget_changes": false,
+    "token_only_constructed_api_github_com": true,
+    "storage_redirects_no_auth": true,
+    "signed_url_logging": false,
+    "zip_preserved_unchanged": true,
+    "all_directory_entries_emitted": true,
+    "text_suffixes": [
+      ".txt",
+      ".log",
+      ".json",
+      ".jsonl",
+      ".csv",
+      ".stdout",
+      ".stderr",
+      "stdout",
+      "stderr"
+    ],
+    "utf8_required_but_bytes_not_reencoded": true,
+    "per_member_max_original_bytes": 262144,
+    "total_max_exported_original_bytes": 2097152,
+    "frame_original_bytes": 16384,
+    "raw_payload_budget_not_base64_log_size": true,
+    "base64_expansion": "approximately 4/3 plus fixed identity and per-frame metadata; this is a readback limit, not native budget",
+    "selected_stream_check": "stored size or bounded raw DEFLATE with true EOF/no tail; exact declared size/CRC; directories verified identically and required empty",
+    "member_identity_frame_fields": [
+      "artifact_id",
+      "zip_sha256",
+      "member_index",
+      "member",
+      "bytes",
+      "sha256",
+      "frame_count",
+      "frame_index",
+      "offset",
+      "frame_bytes",
+      "frame_sha256",
+      "base64"
+    ],
+    "empty_member": "zero frames with explicit begin/end and empty SHA",
+    "any_unexported_regular_member": "incomplete and exit2; all exclusions explicit; does not mean native failure was reclassified",
+    "failure": "failed or incomplete receipt and always artifact upload; original partial download retained",
+    "output": "RUNNER_TEMP/p8-g2-failure-bytes-<controller_run>-attempt<controller_attempt>",
+    "original_result": "failure unchanged",
+    "task_remaining": 29
+  },
+  "limits": {
+    "observed_zip_bytes": 5206420,
+    "metadata_each_max_bytes": 2097152,
+    "download_seconds": 240,
+    "socket_timeout_seconds": 30,
+    "job_minutes": 10
+  },
+  "review_boundaries": [
+    "This author has prepared and statically inspected the workflow only; Python/YAML/runtime/network execution has not occurred.",
+    "Official source run and artifact metadata have been read; the target ZIP member names and raw content have not yet been read.",
+    "No coverage, native failure cause, TODO completion or exact directory contents are asserted before this export executes.",
+    "This is a byte transport candidate, not a new business acceptance validator. Full original ZIP is retained even if a large raw JSONL is deliberately excluded by the bounded export."
+  ],
+  "previous_candidate": {
+    "workflow_blob": "529df65fae095c436921ab9f3d2c177db6768dbc",
+    "receipt_blob": "4da96cd137d8399e73699b04e08ad54e48aa103f",
+    "retained": true,
+    "eligible_for_publication": false
+  },
+  "review_corrections": [
+    {
+      "reason": "Directory payload must also be checked before any complete claim",
+      "change": "read_small each directory, require empty bytes and real EOF/CRC/size, mark verified; errors retained and cause incomplete."
+    },
+    {
+      "reason": "An external ValueError may echo URL/credential material",
+      "change": "Only own ExportError reasons can be output. All external exceptions incl urlsplit/port ValueError use class name and fixed redacted reason. All own reasons are fixed literals or numeric HTTP status; original token/URL never included."
+    }
+  ],
+  "delta": {
+    "versus_v1_bytes": 614,
+    "scope": "only directory CRC/empty-data handling and fixed-message exception ownership; no identity/budget/output changes",
+    "dynamic_execution": false
+  }
+}

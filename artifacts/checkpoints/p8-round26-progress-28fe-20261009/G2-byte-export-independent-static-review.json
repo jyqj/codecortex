@@ -1,0 +1,157 @@
+{
+  "schema": "p8-fixed-G2-failed-artifact-byte-export-static-review-v1",
+  "reviewer": "acceptance_review",
+  "repository": "jyqj/codecortex",
+  "verdict": "accepted_scoped_static_for_one_normal_Actions_data_readback",
+  "scope": "Only fixed official artifact identity, transport, archive byte boundaries, framed text export, failure retention and one registered push branch. No artifact/native/test/helper execution or business acceptance.",
+  "candidate": {
+    "path": ".github/workflows/p8-g2-failure-bytes-28fe.yml",
+    "git_blob": "c7d4ef706d2c766711ffed82333bc159e0afbb83",
+    "bytes": 19216,
+    "sha256": "42b1fdcb28bbf4ea8ed293f1e78fef2adf62620eeeb337c881c06ac0a8791202",
+    "official_blob_readback_equal": true
+  },
+  "superseded": {
+    "git_blob": "529df65fae095c436921ab9f3d2c177db6768dbc",
+    "bytes": 18602,
+    "sha256": "17d3e317d934284302dd151fac63aeedafe2bb312b68d0b4ab61ec936461a28a",
+    "verdict": "two_specific_static_issues_reported_not_executed",
+    "retained": true
+  },
+  "independent_official_identity": {
+    "method": "Two read-only official API GETs; no ZIP download by reviewer",
+    "run_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37877604259",
+    "run_body_sha256": "3f0f3d1c4a3fa285104641bc74c47cba820133c3317190c6b5ca858d299da9f9",
+    "artifact_collection_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37877604259/artifacts?per_page=100&page=1",
+    "artifact_collection_body_sha256": "60d8ab61bead749ea63d7f2d2b03425b34dcbd6d942191c3092a84d6abe6d6e4",
+    "collection_count": 8,
+    "repo": "jyqj/codecortex",
+    "repo_id": 1249213794,
+    "run": {
+      "id": 37877604259,
+      "path": ".github/workflows/p8-snapshot-leaf-engineering.yml",
+      "event": "push",
+      "head_sha": "0272a1fb152fd76a7cfb22386a580629d4038a64",
+      "head_branch": "task/p8-snapshot-leaf-engineering-fix-20261009",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "failure"
+    },
+    "artifact": {
+      "id": 11604421042,
+      "node_id": "MDg6QXJ0aWZhY3QxMTYwNDQyMTA0Mg==",
+      "name": "p8-snapshot-leaf-shard-100000-0-37877604259",
+      "size_in_bytes": 5206420,
+      "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11604421042",
+      "archive_download_url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11604421042/zip",
+      "expired": false,
+      "digest": "sha256:fe9bb645c4d7036c542beaa708572793105825ae1ec11244d9293701e3da58af",
+      "created_at": "2026-10-09T08:30:09Z",
+      "updated_at": "2026-10-09T08:30:09Z",
+      "expires_at": "2027-01-07T03:04:50Z",
+      "workflow_run": {
+        "id": 37877604259,
+        "repository_id": 1249213794,
+        "head_repository_id": 1249213794,
+        "head_branch": "task/p8-snapshot-leaf-engineering-fix-20261009",
+        "head_sha": "0272a1fb152fd76a7cfb22386a580629d4038a64"
+      }
+    },
+    "job": "Exact job113654983347 is required by the prepared workflow; reviewer did not separately re-fetch its endpoint in this review."
+  },
+  "fixed_issues": [
+    {
+      "id": "directory_stream_crc",
+      "before": "Directory branches skipped stream/empty/CRC checking and could coexist with a complete regular-file export.",
+      "after": "Each directory uses the same bounded actual read_small stream/size/CRC validator and must have empty actual payload; failure enters errors and prevents complete.",
+      "verification": "Independent full v1/v2 byte diff and static branch review; no dynamic control claimed."
+    },
+    {
+      "id": "url_parser_exception_disclosure",
+      "before": "Foreign ValueError from URL parsing could be printed verbatim before fixed-point credential checks.",
+      "after": "Only the new custom ExportError is printed as a reason. Its only constructors use fixed non-sensitive reason strings. Other exceptions expose type and fixed redaction text, including port/URL parsing ValueError.",
+      "verification": "All constructors, need call sites and exception/output sites read; no network fault injection."
+    }
+  ],
+  "checked": {
+    "trigger": {
+      "event": "push",
+      "exact_branch": "audit/p8-g2-failure-bytes-28fe-20261009",
+      "workflow_dispatch": false,
+      "pull_request": false,
+      "attempt_guard": "GITHUB_RUN_ATTEMPT==1 before API calls",
+      "repository_guard": "GITHUB_REPOSITORY==jyqj/codecortex",
+      "concurrency_cancel_in_progress": false
+    },
+    "job": {
+      "count": 1,
+      "os": "ubuntu-24.04",
+      "timeout_minutes": 10,
+      "permissions": {
+        "contents": "read",
+        "actions": "read"
+      },
+      "checkout": false,
+      "compiler": false,
+      "provider": false,
+      "subprocess": false,
+      "artifact_code_import_or_exec": false,
+      "extraction": false
+    },
+    "authentication": [
+      "Bearer token exists only in this step environment, is popped from os.environ and cleared after download/finally.",
+      "Authenticated request requires fixed API prefix plus exact api.github.com hostname; all actual authenticated suffixes are constants or fixed numeric IDs.",
+      "HTTPRedirectHandler disables automatic forwarding. Each approved HTTPS storage locator is fetched with authenticated=False and fresh headers lacking Authorization.",
+      "Storage host/443/userinfo/fragment constraints and bounded repeated-percent-decoding token rejection remain. Signed locator is never written to request receipt or emitted.",
+      "Metadata bodies containing the current credential are rejected before saving. External URL/network/parse exception strings are not printed.",
+      "Redirects <=5; per-request timeout30s and download loop240s; job timeout10min. No automatic retries or run mutation."
+    ],
+    "transport": [
+      "Official run ID/head/attempt/terminal failure and repository are required; exact job ID/run/head/attempt/failure required; exact artifact ID/name/size/digest/expiry and run/source/repository IDs required.",
+      "Archive streamed to exclusive .partial; exact5206420bytes and SHA256 fe9bb645c4d7036c542beaa708572793105825ae1ec11244d9293701e3da58af checked before rename/read. Partial original remains on failure.",
+      "Original official metadata, successful original ZIP or partial, and receipt retained under a unique RUNNER_TEMP directory; always upload uses this directory only."
+    ],
+    "archive": [
+      "Exactly12 directory entries required; noncanonical/absolute/traversal/backslash/NUL/duplicate/file-directory-collision names rejected.",
+      "Encrypted/special/symlink kinds rejected; no filesystem extraction ever uses entry paths.",
+      "Local/central header names/flags/method/sizes where present and payload/central bounds checked; member header+payload overlap rejected.",
+      "Selected STORED/DEFLATE members decoded directly from fixed ZIP payload boundaries. Actual DEFLATE EOF required, no unconsumed/unused data, output<=256KiB, actual size and CRC match.",
+      "Directories also consume and verify their stream/CRC and must have zero actual payload.",
+      "Large/nontext/unselected regular members are not decompressed or independently CRC-certified. Their exact compressed bytes remain protected by the whole fixed ZIP SHA and retained ZIP; their omission is explicit and prevents complete."
+    ],
+    "byte_export": [
+      "Selected UTF-8 text must decode strictly, but exported payload is the original unchanged bytes encoded in base64, not JSON reserialization.",
+      "Per-member maximum256KiB; total exported ORIGINAL bytes2MiB; frame payload16KiB. This is not a2MiB cap on encoded logs, which include about4/3 base64 expansion and framing.",
+      "Begin/end records carry artifact/ZIP/member identity, original size/SHA and frame count; each frame has sequence/offset/size/SHA/base64. Emptyfiles have explicit zero-frame begin/end and empty-byte digest.",
+      "All regular members must actually export and errors must be empty for complete/exit0. Oversized, invalid, unselected or over-total members retain excluded_reason and force incomplete/exit2.",
+      "No output status claims native success, root cause or TODO acceptance."
+    ],
+    "failure_preservation": [
+      "Initial running receipt exists before API processing; request metadata and member progress are saved incrementally.",
+      "Any root error stays failed/exit2; individual directory/member errors survive to incomplete/exit2 while remaining eligible exports continue.",
+      "Always upload retains original ZIP/partial/metadata/receipt even on failure; if-no-files-found:error does not silently succeed.",
+      "The preexisting G2 nativefailure remains unchanged even if byte transport later completes."
+    ]
+  },
+  "remaining_execution_limits": {
+    "python_or_YAML_parse_run_by_reviewer": false,
+    "workflow_run_started_by_reviewer": false,
+    "candidate_commit_tree_ref_not_yet_reviewed": true,
+    "original_ZIP_decoded_by_reviewer": false,
+    "dynamic_success_not_claimed": true,
+    "next": "Root may prepare and verify the exact candidate workflow object and one normal push under the approved scope. Read the first actual receipt and reconstruct frames by their hashes; preserve any real transport/incomplete failure. No additional native run or task gate is authorized by this static report."
+  },
+  "task_state": {
+    "done": 163,
+    "remaining": 29,
+    "newly_completed": 0
+  },
+  "changes_by_reviewer": {
+    "source": false,
+    "workflow": false,
+    "refs": false,
+    "runs": false,
+    "tasks": false,
+    "review_blob_only": true
+  }
+}

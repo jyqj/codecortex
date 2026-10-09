@@ -1,0 +1,227 @@
+{
+  "schema": "p8-main-integrated-actual-p-r-g-bridge-v1",
+  "status": "accepted_scoped_for_actual_object_identity_bridge",
+  "reviewer": "/root/pr_audit",
+  "reviewed_at_utc": "2026-10-09 02:26:48 UTC",
+  "objects": {
+    "P": {
+      "sha": "6cc0f5d56e4ffa37f7b0a19a14e4fb7a4b5695f1",
+      "tree": "69f97fa0ceeacdc16f89341eab4b2ffb13d12525",
+      "parent": "4775bf44dc09c11cea88211e06ccec97c4de44aa"
+    },
+    "R": {
+      "sha": "e2cb7b3633c94d5564a5c6d94225573217e0fded",
+      "tree": "d807382f9419f00363fd37fdc131639921c8da29",
+      "parent": "6cc0f5d56e4ffa37f7b0a19a14e4fb7a4b5695f1"
+    },
+    "G": {
+      "sha": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+      "tree": "afbe52cce1019c36f2a80dc1c44769fca95ae959",
+      "parent": "e2cb7b3633c94d5564a5c6d94225573217e0fded"
+    }
+  },
+  "source_semantic_approval": {
+    "reviewer": "/root/acceptance_audit",
+    "verdict": "accepted_scoped",
+    "canonical_review_blob": "abd8bc21d3459ef60bf3cfb07fe9c9c6c4d56057",
+    "author_boundary": "This bridge reviewer authored the native/Python integrations and Python50 controller and does not approve their semantics here. The independent canonical review covers those authored scopes and explicitly inherits non-author cache reviews."
+  },
+  "exact_leaf_differences": {
+    "P_to_R": [
+      {
+        "path": "artifacts/checkpoints/p8-completion-20261009/independent-source-review.json",
+        "status": "modified",
+        "blob": "abd8bc21d3459ef60bf3cfb07fe9c9c6c4d56057"
+      }
+    ],
+    "R_to_G": [
+      {
+        "path": "scripts/reviewed-source-registry-v15.json",
+        "mode": "100644",
+        "before": "653c40ca3e7454541008082ad13ad6fe592e6894",
+        "after": "d9b09c0894bb6df7ed62613a362f3436dfe36daf"
+      },
+      {
+        "path": "scripts/verify_reviewed_source_v15.py",
+        "mode": "100644",
+        "before": "257d27ff19399d9e97bdf2dd70ca3ce2ff4ae7c1",
+        "after": "3ea80c8605a32d8689f12c3ee11be6ac3acf4b01"
+      }
+    ],
+    "compare_commit_count_each": 1,
+    "script_tree_complete_entries_before": 126,
+    "script_tree_complete_entries_after": 126,
+    "script_leaf_count_each": 116,
+    "script_tree_truncated": false
+  },
+  "raw_bytes_independently_hashed": [
+    {
+      "name": "review",
+      "bytes": 286246,
+      "sha256": "42c45e8fd008554701197acb0dde27c708fa390d22215be9ddbf63019635402a",
+      "git_blob": "abd8bc21d3459ef60bf3cfb07fe9c9c6c4d56057"
+    },
+    {
+      "name": "registry",
+      "bytes": 171731,
+      "sha256": "c07732b4a87df281d5e74579b8ca6418d3fde6481e71db6eaeaa1ed29294046b",
+      "git_blob": "d9b09c0894bb6df7ed62613a362f3436dfe36daf"
+    },
+    {
+      "name": "guard",
+      "bytes": 11076,
+      "sha256": "2f73685ca43790061f81a66ef5b7811aacd2f1ff421dc775d82277d3854e83ca",
+      "git_blob": "3ea80c8605a32d8689f12c3ee11be6ac3acf4b01"
+    }
+  ],
+  "guard": {
+    "BASE": "7354db236c9d9850a75f31672697ae9eab44565e",
+    "PRODUCT": "6cc0f5d56e4ffa37f7b0a19a14e4fb7a4b5695f1",
+    "REVIEW": "e2cb7b3633c94d5564a5c6d94225573217e0fded",
+    "REGISTRY_SHA256": "c07732b4a87df281d5e74579b8ca6418d3fde6481e71db6eaeaa1ed29294046b",
+    "exactly_three_assignment_lines_changed": true,
+    "all_other_bytes_equal_actual_P": true
+  },
+  "registry": {
+    "source_version": "p8-completion-source-20261009-v15",
+    "previous_source_version": "p8-oracle-compat-source-20261008-v14",
+    "changed_top_level_keys": [
+      "complete_inputs",
+      "delta",
+      "product_source",
+      "review_sha256",
+      "review_source",
+      "validation_inputs"
+    ],
+    "all_other_metadata_equal_original_main": true,
+    "complete_inputs_count": 1089,
+    "delta_count": 41,
+    "validation_inputs_count": 140,
+    "complete_inputs_equal_R": true,
+    "delta_equal_R": true,
+    "validation_inputs_equal_R": true,
+    "source_manifest_sha256": "d006974afc0fa4752f3ebcc5ac441c651bf18870ca6af8ae1217e135bed2730d",
+    "review_sha256": "42c45e8fd008554701197acb0dde27c708fa390d22215be9ddbf63019635402a",
+    "runtime_and_quality_claims": "require_separate_execution_evidence",
+    "approval_files_excluded_from_measured_input_maps": true
+  },
+  "exact_source_validation_preservation": {
+    "P_through_R_and_G": true,
+    "source_basis": "Cargo.lock/Cargo.toml and entire crates subtree identical; no source input changed after P.",
+    "validation_basis": "Complete scripts trees differ only at the two approval files, neither is among the140 validation inputs; all other root entries except the single canonical-review artifact remain identical.",
+    "unchanged_root_entries": [
+      {
+        "path": ".github",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "a3412bd2bffa8e2e055283cb0f6494c1f7c73ede"
+      },
+      {
+        "path": ".gitignore",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c045b34b396009a2a6a1273d305f289f3a5552ca"
+      },
+      {
+        "path": "CONTRIBUTING.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "3fa01470513c15935a32488ca83bbddcc48f32d3"
+      },
+      {
+        "path": "Cargo.lock",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c83b9a3dae16231117e3c3c12dc56479988e1b24"
+      },
+      {
+        "path": "Cargo.toml",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c376fdc70465a237022de8a05b7b27cc28f72cc8"
+      },
+      {
+        "path": "DESIGN.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "2fd4f9a7c8b4cd787b622e1c457c9e07984f8733"
+      },
+      {
+        "path": "HANDOVER-20261003.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "38531b85f2d458d049ca7379eb65188132388ed4"
+      },
+      {
+        "path": "README.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "779cd73fc7086faea661b8b588ca2b66c6453a6c"
+      },
+      {
+        "path": "crates",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "62370c5cdfc6eb4a0db326b8a5afe288c5aab3b5"
+      },
+      {
+        "path": "docs",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "5ffbdc17be480f1dd63adc1ba2354be4ad906c1d"
+      },
+      {
+        "path": "tests",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "b3e8744962f9e4b25ff9104001a3e57d3168735d"
+      }
+    ],
+    "CI_original_blob": "8c7325eb88b791f909e72c4b6c79b417185e4386",
+    "six_v14_frozen_paths": [
+      "scripts/verify_reviewed_source_v14.py",
+      "scripts/reviewed-source-registry-v14.json",
+      "tests/source_integrity/test_reviewed_source_v14.py",
+      "scripts/v14_historical_context.py",
+      "tests/source_integrity/v14_historical_test_adapter.py",
+      "tests/source_integrity/test_v14_historical_context.py"
+    ],
+    "old_tests_tree": "b3e8744962f9e4b25ff9104001a3e57d3168735d",
+    "task_and_docs_tree": "5ffbdc17be480f1dd63adc1ba2354be4ad906c1d",
+    "historical_chain_scope": "No frozen v14, historical helper/test/artifact is altered by R/G. Updating the single active canonical review artifact retains earlier immutable Git commits and their historical contents."
+  },
+  "prior_main_move": {
+    "from": "55902428d49b09bb4a90cee6ccccf985680618bb",
+    "to": "4775bf44dc09c11cea88211e06ccec97c4de44aa",
+    "PR": 166,
+    "all188_added_under_declared_artifact_prefix": true,
+    "other12_root_entries_exact": true,
+    "new_parent_retains_merged_archive": true
+  },
+  "evidence_methods": [
+    "GitHub actual commit parent/tree metadata",
+    "exact one-commit compare lists: one modified canonical review leaf, then two modified approval leaves",
+    "complete untruncated126-entry scripts trees and all13 root entries",
+    "full raw review/registry/guard streamed in memory through Python hashlib, no local files",
+    "exact guard restoration after three pins",
+    "registry complete/delta/validation maps compared to canonical independent review",
+    "scope/author-independence/TODO and execution limitation checks"
+  ],
+  "local_files_created": false,
+  "Cargo_executed": false,
+  "product_or_test_execution": false,
+  "ref_or_PR_written": false,
+  "source_integrity_suite_execution_claimed": false,
+  "primary_study_started": false,
+  "task_closure_claimed": false,
+  "TODO_closed": 0,
+  "TODO_remaining": 29,
+  "limitations": [
+    "This approves object linkage and preserved inputs only; it is not semantic self-approval by an implementation author.",
+    "Actual new Python50/Rust53 and all original CI/source-integrity/historical controls remain to execute on the published combination.",
+    "Old47 tests passed but its archive omitted630 sealed fixture Git files; that original incomplete archive remains unaccepted and unmodified.",
+    "No previous primary scale samples or runtime measurements are relabeled to P/R/G.",
+    "The auxiliary branch and ordinary Draft PR may be created only with the exact reviewed G object; no scale label or new primary study is authorized by this report.",
+    "Configured GitHub branch-required check rules were unavailable via the integration API; no assertion of all-green merge eligibility is made."
+  ]
+}

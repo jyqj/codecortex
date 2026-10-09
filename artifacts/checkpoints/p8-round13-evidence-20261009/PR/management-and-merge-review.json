@@ -1,0 +1,1338 @@
+{
+  "schema": "p8-round13-actual-merge-and-pr-management-v1",
+  "status": "accepted_scoped_identity_and_read_only_management_observation",
+  "reviewer": "/root/pr_audit",
+  "prepared_at_utc": "2026-10-09 02:32:38 UTC",
+  "observation_start_utc": "2026-10-09 02:29:13 UTC",
+  "repository": "jyqj/codecortex",
+  "main": {
+    "sha": "4775bf44dc09c11cea88211e06ccec97c4de44aa",
+    "tree": "76604ef43da4ae0427006c7c3a5a3b46c5c16b55"
+  },
+  "actual_PR168_merge": {
+    "sha": "4b79e13c94c564a9a3b1b46c96216c5e68177c2c",
+    "tree": "afbe52cce1019c36f2a80dc1c44769fca95ae959",
+    "parents": [
+      "4775bf44dc09c11cea88211e06ccec97c4de44aa",
+      "f3c71a6bbafbc639413c4737c469c3b873a8888f"
+    ],
+    "head": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+    "exact_whole_tree_equal_head": true,
+    "source_inputs": 1089,
+    "delta": 41,
+    "validation_inputs": 140,
+    "production_manifest_sha256": "d006974afc0fa4752f3ebcc5ac441c651bf18870ca6af8ae1217e135bed2730d",
+    "basis": "Actual GitHub Git commit object names the same complete Git tree as reviewed G; equality covers all paths/modes/blob IDs, not only product subsets.",
+    "previous_actual_P_R_G_bridge": {
+      "blob": "0cabb1b98fcbe65deedd01f3261e8e2d7cd7c751",
+      "bytes": 9037,
+      "sha256": "bacb48c8c8ad6ec5b91151fee608c87990f95a0ff2396eb7c890c34964857468"
+    },
+    "execution_identity": "Merge commit identity is distinct from head G even though their trees are identical; retain each job's actual checkout identity."
+  },
+  "original_CI_checkout": {
+    "run": 37874688782,
+    "workflow_blob": "8c7325eb88b791f909e72c4b6c79b417185e4386",
+    "workflow_plain_checkout_steps": 3,
+    "explicit_checkout_ref": false,
+    "expected_checkout_merge": "4b79e13c94c564a9a3b1b46c96216c5e68177c2c",
+    "actual_checkout_observed": false,
+    "jobs": [
+      {
+        "id": 113640456453,
+        "name": "security",
+        "status": "queued",
+        "conclusion": null
+      },
+      {
+        "id": 113640456594,
+        "name": "msrv",
+        "status": "queued",
+        "conclusion": null
+      },
+      {
+        "id": 113640456619,
+        "name": "check",
+        "status": "queued",
+        "conclusion": null
+      }
+    ],
+    "limitation": "All original CI jobs were queued at this observation. Default pull_request checkout is expected to use the merge commit, but only the future original job log/receipt can establish the actual execution. Other P8 workflows can use explicit head refs; do not project CI's default onto every workflow."
+  },
+  "PRs": [
+    {
+      "number": 160,
+      "url": "https://github.com/jyqj/codecortex/pull/160",
+      "state": "open",
+      "draft": true,
+      "head": "260f596582f2d82b8d7c707b61a6b8b6a43b069f",
+      "base_api_snapshot": "7354db236c9d9850a75f31672697ae9eab44565e",
+      "merged": false,
+      "merged_at": null,
+      "merged_by": null,
+      "merge_commit_sha": null,
+      "mergeable": false,
+      "mergeable_state": "dirty",
+      "labels": [
+        "p8-scale-run",
+        "needs-review",
+        "needs-ci-fix",
+        "needs-rebase"
+      ],
+      "title": "P8: implement reviewed acceptance workflows for ten original TODOs",
+      "changed_files": 133,
+      "updated_at": "2026-10-09T02:10:20Z"
+    },
+    {
+      "number": 161,
+      "url": "https://github.com/jyqj/codecortex/pull/161",
+      "state": "open",
+      "draft": true,
+      "head": "e95fd750d2f5052d0308c970cd5032c48b765cde",
+      "base_api_snapshot": "55902428d49b09bb4a90cee6ccccf985680618bb",
+      "merged": false,
+      "merged_at": null,
+      "merged_by": null,
+      "merge_commit_sha": "0daff9182e92a03ee42451216dfb943c7b6f70f7",
+      "mergeable": true,
+      "mergeable_state": "unstable",
+      "labels": [
+        "needs-review"
+      ],
+      "title": "fix(p8): 修复运行收尾、缓存观测与封存失败终态",
+      "changed_files": 327,
+      "updated_at": "2026-10-09T01:53:11Z"
+    },
+    {
+      "number": 166,
+      "url": "https://github.com/jyqj/codecortex/pull/166",
+      "state": "closed",
+      "draft": false,
+      "head": "2f8ea98dfbe2900d2222140dbcba7903eb1749a9",
+      "base_api_snapshot": "55902428d49b09bb4a90cee6ccccf985680618bb",
+      "merged": true,
+      "merged_at": "2026-10-09T02:01:28Z",
+      "merged_by": "jyqj",
+      "merge_commit_sha": "4775bf44dc09c11cea88211e06ccec97c4de44aa",
+      "mergeable": null,
+      "mergeable_state": "unknown",
+      "labels": [],
+      "title": "归档已独审的 M5/M6/F5 原始运行证据并保留验收缺口",
+      "changed_files": 188,
+      "updated_at": "2026-10-09T02:01:29Z"
+    },
+    {
+      "number": 167,
+      "url": "https://github.com/jyqj/codecortex/pull/167",
+      "state": "open",
+      "draft": true,
+      "head": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "base_api_snapshot": "55902428d49b09bb4a90cee6ccccf985680618bb",
+      "merged": false,
+      "merged_at": null,
+      "merged_by": null,
+      "merge_commit_sha": "75649f8cb08dcd5427e7e58b1ca2b8fa67c9d037",
+      "mergeable": true,
+      "mergeable_state": "unstable",
+      "labels": [
+        "p8-scale-run"
+      ],
+      "title": "perf(p8): combine scale SQL reuse and real soak cache validation",
+      "changed_files": 31,
+      "updated_at": "2026-10-09T02:21:30Z"
+    },
+    {
+      "number": 168,
+      "url": "https://github.com/jyqj/codecortex/pull/168",
+      "state": "open",
+      "draft": true,
+      "head": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+      "base_api_snapshot": "4775bf44dc09c11cea88211e06ccec97c4de44aa",
+      "merged": false,
+      "merged_at": null,
+      "merged_by": null,
+      "merge_commit_sha": "4b79e13c94c564a9a3b1b46c96216c5e68177c2c",
+      "mergeable": true,
+      "mergeable_state": "unstable",
+      "labels": [],
+      "title": "perf(p8): 整合有界快照批量写入与运行证据控制",
+      "changed_files": 44,
+      "updated_at": "2026-10-09T02:27:47Z"
+    }
+  ],
+  "PR166_preservation": {
+    "main": "4775bf44dc09c11cea88211e06ccec97c4de44aa",
+    "previous": "55902428d49b09bb4a90cee6ccccf985680618bb",
+    "root_entries": 13,
+    "changed_root_paths": [
+      "artifacts"
+    ],
+    "added_files": 188,
+    "all_added_in_exact_prefix": true,
+    "PR_two_pages_equal_actual_main_compare": true,
+    "paths": [
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round10-M5-original-runtime/M5-four-mixed-originals.tar.xz",
+        "sha": "6a503ea19945d5e81622952b9c22d2f9b6a65473",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round10-M5-original-runtime/M5-interrupted-soak-and-backfill-originals.tar.xz",
+        "sha": "c1ad114c6dadf47caa937b9c3a29fb5049f6e4c0",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round10-M5-original-runtime/README.md",
+        "sha": "82f1d227d71d001afea7423ebf18eca69f6021e4",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round10-M5-original-runtime/archive-source-index.json",
+        "sha": "fd9a07cbe50d0e8f7e75a49171eb71ea55866c85",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round10-M5-original-runtime/archive-verification-receipt.json",
+        "sha": "6e37f77716b5dce1fd569e6d25b98e0868262af5",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round10-M5-original-runtime/copied-originals-index.json",
+        "sha": "0f6cce965307995b85fdf00cad81da3116b9be83",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round10-M5-original-runtime/interruption-observation.json",
+        "sha": "709c2cf0539d8c7ef646831f1922fc66228cee0f",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round10-M5-original-runtime/mixed-final-independent-handoff.json",
+        "sha": "c2cf26e4d4fe4dfbc58f9549d95b764b4acdd431",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round10-M5-original-runtime/mixed-independent-report.json",
+        "sha": "d89d1fcc814b5f17aaeff28bc0db2fef36fe9579",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round10-M5-original-runtime/mixed-original-evidence-manifest.json",
+        "sha": "5195a5427066d3b356e65619f947557e029c49e9",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round10-M5-original-runtime/mixed-original-measurement-recipe.py",
+        "sha": "00bc33c211f83261c4753e31189e61d8597c5bb1",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round10-M5-original-runtime/mixed-original-size-plan.json",
+        "sha": "0d6fdd00808ca4d1286a9426775df9b4bfa0749b",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round10-M5-original-runtime/package-index.json",
+        "sha": "0f9a5045f7c1a9794e727cf7cfea58880039e22c",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round10-M5-original-runtime/partial-original-collector.py",
+        "sha": "cd56b9715877e7063cc5618688f1b6d6cf1761e8",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round10-M5-original-runtime/partial-original-handoff.json",
+        "sha": "6d6ef7836bd31bc3ab9a6d80ab376ee4023890ff",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round10-M5-original-runtime/partial-preservation-manifest.json",
+        "sha": "b3111c9192e11af077016ea255da468555890acc",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round10-M5-original-runtime/partial-preservation-receipt.json",
+        "sha": "39b0db5c96af103f69c21b5397e31bf1129185b0",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round10-M5-original-runtime/prepare_archive.py",
+        "sha": "2875eac2829c26dce7442d448d86abdd6619999f",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round10-M6-source-proof/00.log",
+        "sha": "7b4c1d73b5388fc60db8abad53ae79b9d4414abd",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round10-M6-source-proof/01.log",
+        "sha": "5d2cd9140ca151042d2c7544475c01e36e4bc496",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round10-M6-source-proof/02.log",
+        "sha": "0a349781ad8c8c87e4da140d426025d959d4969f",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round10-M6-source-proof/03.log",
+        "sha": "bae35166764ba0b5f1a0f3942965418e2d720322",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round10-M6-source-proof/04.log",
+        "sha": "c17c18d05ddf694e7d3647dab17f9df7f8c926f7",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round10-M6-source-proof/05.log",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round10-M6-source-proof/README.md",
+        "sha": "9995bc940c80e2c5c333eb8abae5e41f713bc29c",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round10-M6-source-proof/file-index.json",
+        "sha": "17ccc4e5ccd68dc206c48766175f1a1b505fbbee",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round10-M6-source-proof/receipt.json",
+        "sha": "70674f1546f7df9497355556b744824de9db9ace",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round10-M6-source-proof/round10-pins6-final-proof-independent-review.json",
+        "sha": "080fd4feca00f422a661db0058d08e16d323c84d",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round10-M6-source-proof/run_round9_fixed_proof.py",
+        "sha": "1c27a7f30ba408ec3503ef8bf4a7bb0221bdba9c",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/README.md",
+        "sha": "4dc8c5007deef852ef087749af55bcbb2f4167b9",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/archive-parts/F5-original-zip/part-000.bin",
+        "sha": "2fc18de69ae1b0c98788ed4057563f966bfe6319",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/archive-parts/F5-original-zip/part-001.bin",
+        "sha": "b149b2f6da94b7296fab14ad7733798de81ac813",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/archive-parts/F5-original-zip/part-002.bin",
+        "sha": "3d26654b1d8e01a50b3877c428a836fea8675076",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/archive-parts/F5-original-zip/part-003.bin",
+        "sha": "01e0dc624c958472e26bfac2c55739de12645a84",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/archive-parts/F5-original-zip/part-004.bin",
+        "sha": "0a7bd84c7797d058120f215fa97db1afa3e04678",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/archive-parts/F5-original-zip/part-005.bin",
+        "sha": "5cdec6a79b2cc2a80d66d432873f27771cb4a1b4",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/archive-parts/F5-original-zip/part-006.bin",
+        "sha": "ae5dffd2c1e5678a7309b4951ab002d65fe14cae",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/archive-parts/M6-completed-original-tar-xz/part-000.bin",
+        "sha": "c2044658486b366ff5351da5a50c57a8b47357b8",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/archive-parts/M6-completed-original-tar-xz/part-001.bin",
+        "sha": "dd0ff845c0ed73c250742de5a2803931966817a0",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/archive-parts/M6-completed-original-tar-xz/part-002.bin",
+        "sha": "d89afb0ba39a1061c9ee3e84599d41b8aadabecd",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/archive-parts/M6-completed-original-tar-xz/part-003.bin",
+        "sha": "5c198d34ec09dad460b5d6c7ca81dd94cb4614f9",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/later-reproducible-runtime-cache-cleanup.json",
+        "sha": "874c36e3d79d3ce2dedb9aefc3cef2ea979b8db9",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/logical-package-manifest.json",
+        "sha": "ea4f2195727d352ad39ac153f3ea2efb4a991435",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/logical-v1-delivery-receipt.json",
+        "sha": "05440ba637427e87159898a0072564e4e3346811",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/logical-v1-independent-review.json",
+        "sha": "bfa20dfdb4907312bd2adff387a5b72ce5f4c824",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/package-index.json",
+        "sha": "c4695d9425e802273f662606aabd12f6ce2de382",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/D0-wave001-publication/independent-review/INDEPENDENT-REVIEW.md",
+        "sha": "1965d650ef811b1ad23c4b75b2577fed09caaee3",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/D0-wave001-publication/independent-review/author-controls-replayed.log",
+        "sha": "585fed6968b98126a2f5cdc910118c777b410405",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/D0-wave001-publication/independent-review/expected-tree-independent.json",
+        "sha": "7be6d63985af9cf77c3001bf27a4349c761f3e9d",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/D0-wave001-publication/independent-review/merge-multiple-false-alarm-correction.json",
+        "sha": "cd416a5fcfb245a10569945508642149b782975c",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/D0-wave001-publication/independent-review/probes-final.json",
+        "sha": "dfe53237b5bef774482f0de5e95a607ae07b34b2",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/D0-wave001-publication/independent-review/review-receipt.json",
+        "sha": "f49f72c072d82f7d4f62f5046d0925d81ba6f795",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/D0-wave001-publication/root-readbacks/actual-commit-file-readback.json",
+        "sha": "92b6c5af8dc7c89440c3fcf56e9ecfb7f8e0370a",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/D0-wave001-publication/root-readbacks/prepublication-official-observations.json",
+        "sha": "71d9b38babcb02a94078ed0263d0bc8797de7020",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/D0-wave001-publication/root-readbacks/published-branch-and-run.json",
+        "sha": "79cdd910b8de0fd77833f829dc69a0fb3db5599c",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-hour/audit.stderr",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-hour/audit.stdout",
+        "sha": "c60eb79ee715427a0b5c13c4c1043090b16701b6",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-hour/audit_F5_hour.py",
+        "sha": "b7fa4d7d795b6502b959f18cbc047ab26bfb783b",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-hour/concurrent-study-snapshot.json",
+        "sha": "c1f455b3ded34913f62c8c318ba78c1573c2dd1d",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-hour/download-receipt.json",
+        "sha": "04da2956a51423e0e0a0af695cf6cb90c987e846",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-hour/evidence-manifest.json",
+        "sha": "d462141942848556715552693dc3b89e304fde81",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-hour/final-originals-custody-and-bridge.json",
+        "sha": "48bf9d947e3153f54573c2f67b6bdfc54c0d235c",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-hour/finalize.stderr",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-hour/finalize.stdout",
+        "sha": "ff216d04105dddbbf01b228ab3f162f1d19c3a80",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-hour/finalize_bindings.py",
+        "sha": "44f6de3c4bbab0b955683f188b0e3ddc6581904e",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-hour/independent-cache-observations.json",
+        "sha": "58f6b2b007ac3c7bfcbc14ab7ac11fbb535153b6",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-hour/independent-originals-report.json",
+        "sha": "27b93cc9ecb46a6392df8fb17be58b9ee2fa7931",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-hour/official-api/byte-lengths.json",
+        "sha": "a2dbc87eb0c78a319b7884c72267e320d2198faf",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-hour/official-api/d0artifacts.json",
+        "sha": "1517856e99bfbeb7f49e20ec2a9c15049f3f2178",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-hour/official-api/d0jobs1.json",
+        "sha": "4b098d55e27ce1889c949e3b58d5b07a5ccedcec",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-hour/official-api/d0jobs2.json",
+        "sha": "cdac8acafa46390f050030937562ffdc8467a60e",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-hour/official-api/d0run.json",
+        "sha": "5517d9ea3374de649abed87e0bc230b3e9e5e33d",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-hour/official-api/f5artifacts.json",
+        "sha": "f0f1ada1fb9414e7463fd703bf503c1c38921693",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-hour/official-api/f5jobs.json",
+        "sha": "99598a6177376597b6765606e399979bb6f6205e",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-hour/official-api/s599jobs.json",
+        "sha": "c3376b878e8488f0907739f4a3610c230122c0ff",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-hour/official-soak-job.log",
+        "sha": "34b8aacf1de1e86a7d568f9cc78469c85b540635",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-hour/review-helper-derivation.json",
+        "sha": "47890a5c28ada93b588dbae7d6407c6f4ceb335d",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-hour/review_soak_logic.py",
+        "sha": "5c4e0bac46973f8bdd892e0e68a76d6bf0495923",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-hour/reviewer-execution-receipt.json",
+        "sha": "62242ff61b79286441c31e2e6c951e63424e9215",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-hour/small-originals/p8-build/build-receipt.json",
+        "sha": "b8ec16a226c9bd8f707fa346ce62de72d8bb226f",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-hour/small-originals/p8-build/seal.json",
+        "sha": "baa71ca0efa7f8a16c3fedc7bac65eb180bb8aa7",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-hour/small-originals/p8-runtime/full-product/process.json",
+        "sha": "5e01bd4d5bbb5a58c8dbd4181966e212740436ce",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-hour/small-originals/p8-runtime/parity.json",
+        "sha": "a78e0d2ba9897768c4f134bff5b1dc56ad6197e4",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-hour/small-originals/p8-runtime/plan.json",
+        "sha": "9342a0af5854ec13106d9090d8bccee5dccca8e3",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-hour/small-originals/p8-runtime/product/process.json",
+        "sha": "592de4b31a8195cb11f600316ac95895e369b029",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-hour/small-originals/p8-runtime/report.json",
+        "sha": "8f2750c0fd862f15833d49d3a5b42388e6d40a77",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-hour/small-originals/p8-runtime/seal.json",
+        "sha": "c66e0a4fd3067b82904616e034a7eee943bd1f04",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-hour/small-originals/p8-runtime/statistics-execution.json",
+        "sha": "4882d71adb635a920caac1f988a5dad6f0756f31",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-hour/small-originals/p8-runtime/statistics-replay.json",
+        "sha": "d273fc4756b050f00cfd26b014b5fc4a5e7b10d4",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-hour/small-originals/p8-runtime/statistics.json",
+        "sha": "d273fc4756b050f00cfd26b014b5fc4a5e7b10d4",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-to-M6-bridge/F5-p8_runtime.py",
+        "sha": "db1f7195274fa1bcb90c57563cd9f03a55a6c891",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-to-M6-bridge/M6-p8_runtime.py",
+        "sha": "3fe09616768cf35ecc3b76f348ef9eca88d98cd8",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-to-M6-bridge/api-byte-lengths.json",
+        "sha": "cbf030deba05da0de4e28034b01c1bdafbaf7f85",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-to-M6-bridge/attempt1-parser-note.json",
+        "sha": "233c710e653adb0f57e2684443ea624595c3ead7",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-to-M6-bridge/audit_static_bridge.py",
+        "sha": "e38a62de0b4a4d5a4d3b60daa297760d110fb4d6",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-to-M6-bridge/code-scope-diff.json",
+        "sha": "f61798b170726bfd7f700c9c10edcaad38167d2a",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-to-M6-bridge/conditional-success-bridge-review.json",
+        "sha": "c83bdce97faf591b2b30e0afb5fd0e0faa10b6ff",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-to-M6-bridge/definition-comparison.json",
+        "sha": "dc7f1f7d1a94e06789588841b63e2ccc1e8a2051",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-to-M6-bridge/evidence-manifest.json",
+        "sha": "9b958781e686687aade942680dcbbc69c71b4705",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-to-M6-bridge/existing-control-readback.json",
+        "sha": "dd17771152177372a0c77e307e64e4d2b369ee7d",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-to-M6-bridge/identical-native-1087-manifest.json",
+        "sha": "d0d6b5c69618b8b0697dd4594ad89ea17bc0527f",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-to-M6-bridge/jobs-api.json",
+        "sha": "b74c1b1c0c6dd5b44747ede1fc4c51c6cbf07f9d",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-to-M6-bridge/original-p8-runtime.yml",
+        "sha": "ad73ee803df6936c2750b3e1045bc397e5d154f3",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-to-M6-bridge/run-api.json",
+        "sha": "c7d3d312449b68aa7ef2488ad3689d968118ff74",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-to-M6-bridge/runtime-exact.diff",
+        "sha": "80f842b31b73c790bea51f9d1f12b0bf5c34b495",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/F5-to-M6-bridge/runtime-observer-comparison.json",
+        "sha": "ccd931d0717fd08064351cd82d3380b6a0ec42e2",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/M6-local/archive-review/audit.stderr",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/M6-local/archive-review/audit.stdout",
+        "sha": "b9bb9aa5ff323972eb3a321c218530c53d084654",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/M6-local/archive-review/audit_archives.py",
+        "sha": "cfb62e5c16598cc9455483c4d46ea9b4384b3d08",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/M6-local/archive-review/evidence-manifest.json",
+        "sha": "9bda281c4b64df2a554adae9379e377ca844a602",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/M6-local/archive-review/execution-receipt.json",
+        "sha": "f5c6250068983bb8da9e5e77d4fdf9481cbd1353",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/M6-local/archive-review/independent-archive-review.json",
+        "sha": "4da3d772196c093c9167ef56f057ba4ecd5e5eb2",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/M6-local/archives/archive-index.json",
+        "sha": "16ac462a5c8ce278a0161b35ad0e2b6c2b0ec174",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/M6-local/archives/m6-completed-and-initial-failures.json",
+        "sha": "9a4ef7dca12ad9951c0c9c2ebe88af6bb52d1822",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/M6-local/archives/m6-unresolved-hour-observation.json",
+        "sha": "7955d1c3b7781ccdcc408e44d820724a47d56d10",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/M6-local/archives/m6-unresolved-hour-observation.tar.xz",
+        "sha": "c0cbaf0d8d34641383197ad398d7d0779160f2ee",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/M6-local/prepare_original_archive.py",
+        "sha": "c7015aaf0611b1a3c08f2cc1cecc16dfc97b48fb",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/M6-local/reproducible-cache-cleanup.json",
+        "sha": "b9eaa9201698e19be79840269d2f702fc09c2669",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/M6-local/reviews/backfill.json",
+        "sha": "b08fe20285d71d7b4664da5d4cbaff57c51db474",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/M6-local/reviews/build.json",
+        "sha": "8eb91b9d48444d2d6557c06d1319f03ad665b283",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/M6-local/reviews/four-mixed.json",
+        "sha": "5bb7c9d53aeccaf1622b7163d54a2dd20e3e6d4b",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/M6-local/reviews/observed-hour-resource-gaps.json",
+        "sha": "734c60af48534bcbba4557022da499781983eeb0",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/M6-local/unresolved-hour-observation/capture_observation.py",
+        "sha": "2679e0eb7b9d4a6b5de7d1047d89c8124ea891e0",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/M6-local/unresolved-hour-observation/interruption-observation.json",
+        "sha": "d73072f9e6f20cbf61e40570e0780835aaa8faf6",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/M6-local/unresolved-hour-observation/original-text/runtime-parent-recovery/original-execution-observation.json",
+        "sha": "7387b21ab70a445dea17f937cf4da7e02d260efc",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/M6-local/unresolved-hour-observation/original-text/runtime-parent-recovery/receipt.json",
+        "sha": "d53c39a8b2c55dace040d3b0ad8add4ef35f4a02",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/M6-local/unresolved-hour-observation/original-text/runtime-parent-recovery/soak-run.log",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/M6-local/unresolved-hour-observation/original-text/soak/runtime/plan.json",
+        "sha": "043ee9ea3497fa46cfa3bef2a984e4bc9dffe4d0",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/M6-local/unresolved-hour-observation/raw-observed-prefix.jsonl.gz",
+        "sha": "0c17dfaabaaa521d11b1705534df7801f512c5a1",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/M6-local/wrappers/run_after_parent_preparation.py",
+        "sha": "5177f19d6395a92b6ac391d50045cdd31b1c90c4",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/M6-local/wrappers/run_exact_runtime.py",
+        "sha": "d358b1702a8224477af70d383058f645429fea05",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/README.md",
+        "sha": "2649456a820894a75b15a9f34d1db6e2440dc128",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/copied-originals-index.json",
+        "sha": "c6f95083129549d00afa5f7d94a4fc9e97ff9a77",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/payload/package-index.json",
+        "sha": "31ac8628ad3e28305cdd879b3b3d2cf7ef02a0d7",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round12-M6-and-F5-originals/restore_originals.py",
+        "sha": "cf658261e10f064530ded6c9bb4e1a08561709d1",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/README.md",
+        "sha": "f3d16df8063e8d2f226f8e870795f0e06cf85f2f",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/attempt1-audit.stderr",
+        "sha": "e56f23d6c6d8c9f176590ec648f220943e10e934",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/attempt1-note.json",
+        "sha": "beb214d94f73f45bff8f21d0b7be2f85cb136cab",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/audit.stderr",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/audit.stdout",
+        "sha": "341c0c6ac65c32eb1338aabb701bda483b4378f9",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/audit_transport.py",
+        "sha": "42792fd0c13c554a6271e8451afb6bc843103b39",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/corrupt_payload.original-restore-receipt.json",
+        "sha": "bdf0e88717d6528f8063fb5662bb36526bcd320e",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/corrupt_payload.stderr",
+        "sha": "050a5c7198a6861b142e38dff398df99cb607705",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/corrupt_payload.stdout",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/corrupt_segment.original-restore-receipt.json",
+        "sha": "d7f90b2ae91ffe2b7181e8835fd9b725b89f5922",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/corrupt_segment.stderr",
+        "sha": "8dddd113edf42533d70fcbe56a8eaf838cc5b2c1",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/corrupt_segment.stdout",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/duplicate_logical_path.stderr",
+        "sha": "5c1614c5117a2d20b362c588a93b35446ef59ccb",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/duplicate_logical_path.stdout",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/evidence-manifest.json",
+        "sha": "00efe9086a0311a6aa0ebd1125a69c377f78aaa3",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/execution-receipt.json",
+        "sha": "ff2b52a6c2b607648da72d28ae2a78d0da3eaa93",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/executions-in-progress.json",
+        "sha": "a354388b14d006dd6a57fa59c1851cb38616f18d",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/existing_output_symlink.stderr",
+        "sha": "7968782e453b7d746929744105e86f9a68863514",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/existing_output_symlink.stdout",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/existing_positive_output.original-restore-receipt.json",
+        "sha": "3f92f9f0e175525c13da70f8777512e064e7b450",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/existing_positive_output.stderr",
+        "sha": "b3bba2cd2f960da001b891d0220321c6683663f3",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/existing_positive_output.stdout",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/existing_receipt.original-restore-receipt.json",
+        "sha": "268fcebc5c72a7551dcb983797554dab6a486766",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/existing_receipt.stderr",
+        "sha": "49b0116b5fdb6fcc79f2e4037873df150461f540",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/existing_receipt.stdout",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/independent-restored90-identities.json",
+        "sha": "70826a95f29b3f22a64c67c9a8c5befbf836531e",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/independent-v2-transport-review.json",
+        "sha": "49c4e24a7d99250ff247e613f1cdd1c687343cbc",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/missing_output_parent.stderr",
+        "sha": "61a1cd0ade31c0b7250c229ffcd3b77b92910ed9",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/missing_output_parent.stdout",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/missing_segment.stderr",
+        "sha": "5b24d9f72f7f953b9a871b05893f1fb6364bb8e2",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/missing_segment.stdout",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/positive.original-restore-receipt.json",
+        "sha": "3f92f9f0e175525c13da70f8777512e064e7b450",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/positive.stderr",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/positive.stdout",
+        "sha": "93fefd679633bf038d36b7866050c770ef854732",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/reordered_bytes_with_valid_part_hashes.original-restore-receipt.json",
+        "sha": "4b0f37605bb5902523d474e99328d72c71080c5f",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/reordered_bytes_with_valid_part_hashes.stderr",
+        "sha": "4e2b9917eb6780c3bbbdb2cc295e978cd8923b3d",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/reordered_bytes_with_valid_part_hashes.stdout",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/segment_ordinal_gap.stderr",
+        "sha": "7c1b04517799f27bfe07f9882f3a8db59921a2aa",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/segment_ordinal_gap.stdout",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/symlink_segment.stderr",
+        "sha": "7e8219c3de2d600a0a24560b51f82e2b547b02fd",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/symlink_segment.stdout",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/traversal_logical_path.stderr",
+        "sha": "bb4ce2ed90c399d6ac132cc001d3962ed2277a62",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/traversal_logical_path.stdout",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/truncated_segment.original-restore-receipt.json",
+        "sha": "dbce5a1647f76b904cfabdbf8ebea95b9c405f51",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/truncated_segment.stderr",
+        "sha": "06d9f826bf1f418cc1d493c1da49ce187ba830a8",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/independent/truncated_segment.stdout",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/preparation/prepare_round13_segmented_runtime_delivery.py",
+        "sha": "4b72b1150d3958614239832b86687b2e651af102",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/preparation/restore_round13_runtime_originals.py",
+        "sha": "cf658261e10f064530ded6c9bb4e1a08561709d1",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/root/delivery-receipt.json",
+        "sha": "7efa81583ef3257d75c57e7dd276f1d5ff86b378",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/root/restore.stderr",
+        "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/root/restore.stdout",
+        "sha": "689125f14deab15e9ed4b29f1299c7f177830f3f",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/root/root-restore-execution.json",
+        "sha": "64f59158acdd2d563d9602924b45968099814d7a",
+        "status": "added"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-independent-acceptance-20261009-28fe/round13-runtime-transport-review/root/root-restored-positive.restore-receipt.json",
+        "sha": "ef08aee523d052ea50720b6ec201700701a0ee5d",
+        "status": "added"
+      }
+    ],
+    "merged_by": "jyqj",
+    "merged_at": "2026-10-09T02:01:28Z",
+    "actual_main_parent_retained_by_P": true,
+    "scope": "Complete two-page188-path/blob metadata was matched to actual559-to477 compare and all13 root entries; only artifacts changed. Full archive payload rehydration was not performed in this audit.",
+    "author_claims_not_reclassified": "Merged archive explicitly preserves failed/incomplete M5/M6/F5 observations and0 new closures/29 remaining; its merge is not approval of those measurements."
+  },
+  "observed_runs": [
+    {
+      "id": 37874688782,
+      "name": "CI",
+      "path": ".github/workflows/ci.yml",
+      "event": "pull_request",
+      "head_sha": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+      "attempt": 1,
+      "status": "queued",
+      "conclusion": null,
+      "created_at": "2026-10-09T02:27:50Z",
+      "updated_at": "2026-10-09T02:27:50Z"
+    },
+    {
+      "id": 37874688838,
+      "name": "P7 engineering regressions",
+      "path": ".github/workflows/p7-engineering.yml",
+      "event": "pull_request",
+      "head_sha": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+      "attempt": 1,
+      "status": "queued",
+      "conclusion": null,
+      "created_at": "2026-10-09T02:27:50Z",
+      "updated_at": "2026-10-09T02:27:50Z"
+    },
+    {
+      "id": 37874688943,
+      "name": "P7 closeout evidence",
+      "path": ".github/workflows/p7-closeout.yml",
+      "event": "pull_request",
+      "head_sha": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+      "attempt": 1,
+      "status": "queued",
+      "conclusion": null,
+      "created_at": "2026-10-09T02:27:50Z",
+      "updated_at": "2026-10-09T02:27:50Z"
+    },
+    {
+      "id": 37874688788,
+      "name": "P8 original failure gates",
+      "path": ".github/workflows/p8-gates.yml",
+      "event": "pull_request",
+      "head_sha": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+      "attempt": 1,
+      "status": "queued",
+      "conclusion": null,
+      "created_at": "2026-10-09T02:27:50Z",
+      "updated_at": "2026-10-09T02:27:50Z"
+    },
+    {
+      "id": 37874688824,
+      "name": "P8 lifecycle and resource observations",
+      "path": ".github/workflows/p8-lifecycle.yml",
+      "event": "pull_request",
+      "head_sha": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+      "attempt": 1,
+      "status": "in_progress",
+      "conclusion": null,
+      "created_at": "2026-10-09T02:27:50Z",
+      "updated_at": "2026-10-09T02:29:26Z"
+    },
+    {
+      "id": 37874688862,
+      "name": "P8 runtime observations",
+      "path": ".github/workflows/p8-runtime.yml",
+      "event": "pull_request",
+      "head_sha": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+      "attempt": 1,
+      "status": "queued",
+      "conclusion": null,
+      "created_at": "2026-10-09T02:27:50Z",
+      "updated_at": "2026-10-09T02:27:50Z"
+    },
+    {
+      "id": 37874688920,
+      "name": "P8 platform cold builds",
+      "path": ".github/workflows/p8-platform.yml",
+      "event": "pull_request",
+      "head_sha": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+      "attempt": 1,
+      "status": "queued",
+      "conclusion": null,
+      "created_at": "2026-10-09T02:27:50Z",
+      "updated_at": "2026-10-09T02:27:50Z"
+    },
+    {
+      "id": 37874665224,
+      "name": "P8 integrated runtime Python controls",
+      "path": ".github/workflows/p8-integrated-runtime-controls.yml",
+      "event": "push",
+      "head_sha": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+      "attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-09T02:27:31Z",
+      "updated_at": "2026-10-09T02:28:08Z"
+    },
+    {
+      "id": 37874665202,
+      "name": "P8 snapshot leaf batch engineering",
+      "path": ".github/workflows/p8-snapshot-leaf-engineering.yml",
+      "event": "push",
+      "head_sha": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+      "attempt": 1,
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2026-10-09T02:27:31Z",
+      "updated_at": "2026-10-09T02:29:24Z"
+    }
+  ],
+  "Rust_engineering_failure": {
+    "run": 37874665202,
+    "attempt": 1,
+    "job": 113640379348,
+    "source": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+    "actual_checkout_log_observed": true,
+    "checkout_log_lines": [
+      "2026-10-09T02:28:33.3637932Z HEAD is now at f3c71a6 build(p8): pin the independently reviewed integrated source",
+      "2026-10-09T02:28:33.3804306Z [command]/usr/bin/git log -1 --format=%H",
+      "2026-10-09T02:28:33.3828218Z f3c71a6bbafbc639413c4737c469c3b873a8888f"
+    ],
+    "terminal_log_lines": [
+      "2026-10-09T02:29:20.3282035Z {\"status\": \"command_or_population_failed\", \"exit_code\": 1, \"attempted_commands\": 2}",
+      "2026-10-09T02:29:20.3358279Z ##[error]Process completed with exit code 1.",
+      "2026-10-09T02:29:21.0782060Z SHA256 digest of uploaded artifact zip is 2aba459165f49a6825447cdd476b8d4c579c8685711f2e32fd165c848ecf2c54",
+      "2026-10-09T02:29:21.3159545Z Artifact p8-snapshot-leaf-controls-37874665202 has been successfully uploaded! Final size is 112812 bytes. Artifact ID is 11591493572",
+      "2026-10-09T02:29:21.4351202Z ##[error]No files were found with the provided path: /home/runner/work/_temp/snapshot-leaf-scale-build. No artifacts will be uploaded."
+    ],
+    "status": "command_or_population_failed",
+    "exit_code": 1,
+    "attempted_commands": 2,
+    "controls_artifact": {
+      "id": 11591493572,
+      "bytes": 112812,
+      "sha256": "2aba459165f49a6825447cdd476b8d4c579c8685711f2e32fd165c848ecf2c54",
+      "reported_uploaded_files": 11
+    },
+    "release_build_step": "skipped",
+    "release_artifact_upload": "failed because skipped build output did not exist",
+    "diagnostic_jobs": [
+      {
+        "id": 113640839330,
+        "name": "engineering scale 100000 repetition 0 only",
+        "status": "completed",
+        "conclusion": "skipped"
+      },
+      {
+        "id": 113640839402,
+        "name": "engineering scale ${{ matrix.scale }} repetition 0 only",
+        "status": "completed",
+        "conclusion": "skipped"
+      }
+    ],
+    "boundary": "The original job log proves two commands were attempted and controls failed, not53 tests passed. The underlying command stderr is in the retained controls ZIP; root/scale separately receive it. This report does not infer native diagnostic results."
+  },
+  "required_checks": {
+    "configured_repository_rules": "unavailable",
+    "reason": "Branch-protection request403 and branch-rules endpoint unavailable via connector.",
+    "workflow_defined_original_jobs": [
+      "check",
+      "msrv",
+      "security"
+    ],
+    "scope": "Workflow definitions are not proof of GitHub required-check configuration. No all-green or merge-readiness claim."
+  },
+  "peer_clippy_correction": {
+    "PR161_head": "e95fd750d2f5052d0308c970cd5032c48b765cde",
+    "observed_job": 113592421891,
+    "actual_stable_clippy_step": "success",
+    "observed_other_steps": "format/compile/default/source-TODO scope succeeded; job was still running at earlier02:12 observation",
+    "historical_msrv_note": "Rust1.95 previously rejected the unchanged !is_some_and spelling, but this historical risk does not overturn the observed PR161 stable Clippy success."
+  },
+  "recommended_minimal_actions": [
+    {
+      "PR": 166,
+      "action": "Preserve merged archive and explicit failures; no further merge or closure action."
+    },
+    {
+      "PR": 160,
+      "action": "Keep fixed historical head/raw; dirty against current main. Do not overwrite or relabel measurement evidence."
+    },
+    {
+      "PR": 161,
+      "action": "Keep Draft pending its own actual checks/scope review; acknowledge observed stable Clippy success."
+    },
+    {
+      "PR": 167,
+      "action": "Keep Draft and retain its separately labeled scale study/source; do not inherit our future test/study results."
+    },
+    {
+      "PR": 168,
+      "action": "Keep Draft; retain failed Rust run and passing Python run separately. Fix concrete compile/control failure as new source, not rerun/mutation of old result."
+    }
+  ],
+  "mutations": {
+    "refs": false,
+    "PRs": false,
+    "comments": false,
+    "merge": false,
+    "cancel": false,
+    "rerun": false,
+    "local_files": false,
+    "unreferenced_report_blob_only": true
+  },
+  "task_ledger": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "newly_closed": 0
+  },
+  "limitations": [
+    "No product, Cargo or test execution was performed locally.",
+    "Passing workflow metadata for Python50 is not yet this reviewer's complete-artifact acceptance; acceptance_audit receives the actual artifact.",
+    "No old scale/runtime sample is relabeled to new source, and no primary study is launched by this audit.",
+    "This reviewer authored native/Python integration and controller; semantic approval is separately retained independent canonical review.",
+    "PR API base snapshots may lag actual main; actual merge parents and direct main ref control identity conclusion."
+  ]
+}

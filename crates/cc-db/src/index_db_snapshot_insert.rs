@@ -1,7 +1,8 @@
 //! Full-snapshot leaf inserts bounded within one file and one original table loop.
 //!
-//! No row survives into another file/table. Parent inserts, FTS mirrors, document
+//! No leaf row survives into another file/table. Parent inserts, document
 //! validation and identity survivor checks remain in their original positions.
+//! The snapshot-only FTS helper below mirrors bounded file windows by rowid.
 //! Existing incremental binders execute each bounded window using their unchanged
 //! 64/8/1 tiers, conflict clauses and parameter order.
 use crate::index_db::IndexDb;
@@ -14,6 +15,136 @@ use rusqlite::{
 
 const MAX_ROWS: usize = 64;
 const MAX_BOUND_BYTES: usize = 64 * 1024;
+
+type SchemaDefinition = (String, String, String, Option<String>);
+
+fn non_index_schema(conn: &Connection) -> CcResult<Vec<SchemaDefinition>> {
+    let mut statement = conn
+        .prepare("SELECT type,name,tbl_name,sql FROM main.sqlite_schema WHERE type <> 'index' ORDER BY type,name,tbl_name,sql")
+        .map_err(db_err)?;
+    let rows = statement
+        .query_map([], |row| {
+            Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?))
+        })
+        .map_err(db_err)?;
+    rows.collect::<rusqlite::Result<Vec<_>>>().map_err(db_err)
+}
+
+/// Compare the actual connection against a fresh canonical schema made by the
+/// same SQLite library. Ignore only indexes (staging deliberately drops them).
+/// Unexpected tables, views, triggers, FK definitions or TEMP objects retain
+/// the old per-row path; a name-only trigger check would not be sufficient.
+pub(crate) fn can_defer_snapshot_fts(conn: &Connection) -> CcResult<bool> {
+    if conn.is_autocommit() {
+        return Ok(false);
+    }
+    let temporary_objects: i64 = conn
+        .query_row("SELECT count(*) FROM sqlite_temp_schema", [], |row| {
+            row.get(0)
+        })
+        .map_err(db_err)?;
+    if temporary_objects != 0 {
+        return Ok(false);
+    }
+    static CANONICAL: std::sync::OnceLock<Result<Vec<SchemaDefinition>, String>> =
+        std::sync::OnceLock::new();
+    let expected = CANONICAL.get_or_init(|| {
+        let reference = Connection::open_in_memory().map_err(|error| error.to_string())?;
+        reference
+            .execute_batch(crate::index_migrate::FULL_SCHEMA_SQL)
+            .map_err(|error| error.to_string())?;
+        non_index_schema(&reference).map_err(|error| error.to_string())
+    });
+    let expected = expected
+        .as_ref()
+        .map_err(|error| CcError::Database(format!("snapshot schema reference: {error}")))?;
+    Ok(non_index_schema(conn)? == *expected)
+}
+
+/// One bounded snapshot window. The canonical index schema never deletes or
+/// replaces files/literal_index during per-file insertion; both use implicit
+/// rowids. Keep this private to that write path, not incremental replacements.
+pub(crate) struct SnapshotFtsWindow {
+    files_before: i64,
+    literals_before: i64,
+}
+
+fn has_rowid_capacity(before: i64, candidates: usize) -> bool {
+    i64::try_from(candidates)
+        .ok()
+        .and_then(|count| before.checked_add(count))
+        .is_some_and(|after| after < i64::MAX)
+}
+
+impl SnapshotFtsWindow {
+    pub(crate) fn begin(
+        conn: &Connection,
+        files: &[crate::index_db::FileWriteUnit],
+    ) -> CcResult<Option<Self>> {
+        // The public seam can also wrap an autocommit connection. Preserve its
+        // original per-file visibility and failure behavior in that case.
+        if conn.is_autocommit() || files.is_empty() {
+            return Ok(None);
+        }
+        let Some(literal_candidates) = files.iter().try_fold(0usize, |count, file| {
+            count.checked_add(file.outcome.literal_index.len())
+        }) else {
+            return Ok(None);
+        };
+        let files_before = conn
+            .query_row("SELECT coalesce(max(rowid),0) FROM files", [], |row| {
+                row.get(0)
+            })
+            .map_err(db_err)?;
+        let literals_before = conn
+            .query_row(
+                "SELECT coalesce(max(rowid),0) FROM literal_index",
+                [],
+                |row| row.get(0),
+            )
+            .map_err(db_err)?;
+        // Count every attempted literal, including potential OR IGNORE
+        // conflicts. Never reach SQLite's random-rowid fallback at i64::MAX.
+        if !has_rowid_capacity(files_before, files.len())
+            || !has_rowid_capacity(literals_before, literal_candidates)
+        {
+            return Ok(None);
+        }
+        Ok(Some(Self {
+            files_before,
+            literals_before,
+        }))
+    }
+
+    pub(crate) fn flush(self, conn: &Connection) -> CcResult<()> {
+        let files_after: i64 = conn
+            .query_row("SELECT coalesce(max(rowid),0) FROM files", [], |row| {
+                row.get(0)
+            })
+            .map_err(db_err)?;
+        let literals_after: i64 = conn
+            .query_row(
+                "SELECT coalesce(max(rowid),0) FROM literal_index",
+                [],
+                |row| row.get(0),
+            )
+            .map_err(db_err)?;
+        // The rowid B-tree survives staging's secondary-index removal.
+        // Selecting actual new rows preserves OR IGNORE winners even when a
+        // literal belongs to a file inserted in a previous window.
+        IndexDb::execute_cached(
+            conn,
+            "INSERT INTO files_fts(rowid,file_path,summary,content_excerpt) SELECT rowid,file_path,summary,content_excerpt FROM files WHERE rowid > ?1 AND rowid <= ?2 ORDER BY rowid",
+            rusqlite::params![self.files_before, files_after],
+        )?;
+        IndexDb::execute_cached(
+            conn,
+            "INSERT INTO literal_fts(rowid,literal_id,file_path,literal,literal_kind) SELECT rowid,literal_id,file_path,literal,literal_kind FROM literal_index WHERE rowid > ?1 AND rowid <= ?2 ORDER BY rowid",
+            rusqlite::params![self.literals_before, literals_after],
+        )?;
+        Ok(())
+    }
+}
 
 fn value_bytes(value: ValueRef<'_>) -> usize {
     match value {
@@ -288,6 +419,10 @@ pub(crate) fn dispatch_sites(
         |batch| IndexDb::insert_dispatch_sites_multi(conn, batch),
     )
 }
+
+#[cfg(test)]
+#[path = "snapshot_fts_tests.rs"]
+mod snapshot_fts_tests;
 
 #[cfg(test)]
 mod tests {

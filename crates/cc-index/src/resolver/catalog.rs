@@ -464,22 +464,21 @@ impl SymbolCatalog {
                     .push(idx);
             }
 
-            // by_export: export_name, name, and "default" for default exports
-            let mut export_names: HashSet<String> = HashSet::new();
-            export_names.insert(name_lower);
-            if let Some(ref en) = sym.export_name {
-                export_names.insert(en.to_lowercase());
+            // At most three export keys can be contributed by one symbol.
+            // Deduplicate them without a temporary HashSet, and probe the
+            // file bucket once. Each key retains the original symbol order.
+            let export_name = sym.export_name.as_ref().map(|en| en.to_lowercase());
+            let add_default = sym.is_default_export
+                && name_lower != "default"
+                && export_name.as_deref() != Some("default");
+            let export_name = export_name.filter(|en| en != &name_lower);
+            let exports = self.by_export.entry(sym.file_path.clone()).or_default();
+            exports.entry(name_lower).or_default().push(idx);
+            if let Some(en) = export_name {
+                exports.entry(en).or_default().push(idx);
             }
-            if sym.is_default_export {
-                export_names.insert("default".to_string());
-            }
-            for en in export_names {
-                self.by_export
-                    .entry(sym.file_path.clone())
-                    .or_default()
-                    .entry(en)
-                    .or_default()
-                    .push(idx);
+            if add_default {
+                exports.entry("default".to_string()).or_default().push(idx);
             }
         }
     }
@@ -787,6 +786,108 @@ mod catalog_build_bench {
                 }
             })
             .collect()
+    }
+
+    // Original export registration, retained as an independent oracle for
+    // the bounded-key implementation. Indices include tombstoned slots.
+    fn legacy_exports<'a>(
+        symbols: impl IntoIterator<Item = (usize, &'a SymbolRecord)>,
+    ) -> HashMap<String, HashMap<String, Vec<usize>>> {
+        let mut expected: HashMap<String, HashMap<String, Vec<usize>>> = HashMap::new();
+        for (idx, sym) in symbols {
+            let mut names = HashSet::new();
+            names.insert(sym.name.to_lowercase());
+            if let Some(name) = &sym.export_name {
+                names.insert(name.to_lowercase());
+            }
+            if sym.is_default_export {
+                names.insert("default".to_string());
+            }
+            for name in names {
+                expected
+                    .entry(sym.file_path.clone())
+                    .or_default()
+                    .entry(name)
+                    .or_default()
+                    .push(idx);
+            }
+        }
+        expected
+    }
+
+    fn export_variants() -> Vec<SymbolRecord> {
+        let names = ["value", "VALUE", "default", "Default", "İ", "i\u{307}", ""];
+        let aliases = [
+            None,
+            Some("value"),
+            Some("VALUE"),
+            Some("default"),
+            Some("DEFAULT"),
+            Some("İ"),
+            Some("i\u{307}"),
+            Some(""),
+        ];
+        let mut symbols = gen_symbols(names.len() * aliases.len() * 2, 7);
+        let mut index = 0;
+        for name in names {
+            for alias in aliases {
+                for is_default in [false, true] {
+                    let sym = &mut symbols[index];
+                    sym.name = name.to_string();
+                    sym.export_name = alias.map(str::to_string);
+                    sym.is_default_export = is_default;
+                    index += 1;
+                }
+            }
+        }
+        symbols
+    }
+
+    #[test]
+    fn export_registration_matches_legacy_for_alias_collisions() {
+        let symbols = export_variants();
+        let expected = legacy_exports(symbols.iter().enumerate());
+        let mut catalog = SymbolCatalog::new();
+        // Multiple calls retain the original index and append order.
+        for batch in symbols.chunks(9) {
+            catalog.add_symbols(batch);
+        }
+        assert_eq!(catalog.by_export, expected);
+        for (file, names) in &expected {
+            for (name, indices) in names {
+                assert_eq!(catalog.direct_exports(file, name), Some(indices.as_slice()));
+            }
+        }
+    }
+
+    #[test]
+    fn export_registration_matches_legacy_after_remove_and_readd() {
+        let symbols = export_variants();
+        let removed = HashSet::from([symbols[0].file_path.clone(), symbols[17].file_path.clone()]);
+        let mut catalog = SymbolCatalog::new();
+        catalog.add_symbols(&symbols);
+        catalog.remove_files(&removed);
+        let live = symbols
+            .iter()
+            .enumerate()
+            .filter(|(_, sym)| !removed.contains(&sym.file_path));
+        assert_eq!(catalog.by_export, legacy_exports(live.clone()));
+
+        let added: Vec<_> = symbols
+            .iter()
+            .filter(|sym| removed.contains(&sym.file_path))
+            .cloned()
+            .collect();
+        catalog.add_symbols(&added);
+        let expected = legacy_exports(
+            live.chain(
+                added
+                    .iter()
+                    .enumerate()
+                    .map(|(i, sym)| (symbols.len() + i, sym)),
+            ),
+        );
+        assert_eq!(catalog.by_export, expected);
     }
 
     #[test]

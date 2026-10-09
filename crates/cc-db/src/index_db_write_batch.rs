@@ -810,6 +810,16 @@ impl IndexDb {
         Self::insert_file_data_impl(conn, file, chunk_blobs, false, true)
     }
 
+    /// Snapshot leaf batching with only files/literal FTS deferred. Pair with
+    /// a checked SnapshotFtsWindow in the same transaction.
+    pub(crate) fn insert_snapshot_file_data_deferred_fts(
+        conn: &Connection,
+        file: &FileWriteUnit,
+        chunk_blobs: Option<&[Option<Vec<u8>>]>,
+    ) -> CcResult<()> {
+        Self::insert_file_data_impl(conn, file, chunk_blobs, true, true)
+    }
+
     fn insert_file_data_impl(
         conn: &Connection,
         file: &FileWriteUnit,

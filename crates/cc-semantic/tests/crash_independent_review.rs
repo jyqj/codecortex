@@ -96,10 +96,10 @@ fn durable(path: &Path, bytes: &[u8]) {
     f.sync_all().unwrap();
 }
 fn signal_and_wait(root: &Path) -> ! {
-    durable(
-        &root.join("ready"),
-        std::process::id().to_string().as_bytes(),
-    );
+    // Publish the complete PID only after writing and syncing in this fresh directory.
+    let pending = root.join("ready.pending");
+    durable(&pending, std::process::id().to_string().as_bytes());
+    std::fs::rename(pending, root.join("ready")).unwrap();
     loop {
         std::thread::park_timeout(Duration::from_secs(1));
     }

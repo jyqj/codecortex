@@ -678,7 +678,8 @@
     "crates/cc-index/src/dirty_reload_policy.rs": "08e4045d3bcb8406832fa7553de73c3b49f3bb30d2ae36976fda394323a1f2ca",
     "crates/cc-index/src/dispatch_synthesis/event_emitter.rs": "07849000e45811b875a4678e5b4a4bcf724faa4609555f7075fcd45ae379c851",
     "crates/cc-index/src/dispatch_synthesis/field_observer.rs": "0af46e9cb7680cd6407fc74fdc163929fb1407d559aa9968e0120563e74618ae",
-    "crates/cc-index/src/dispatch_synthesis/interface_dispatch.rs": "6ffc3db9b08993cf4a82923da5488360b8a8ad78a35591d4849fe287226667ec",
+    "crates/cc-index/src/dispatch_synthesis/interface_dispatch.rs": "d2fa652cff62511546ad36d67bb402fa9a307ef060223fb12610ef31da69084a",
+    "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs": "1647126f382e4fed5e47b42780e08348d8239432eefc7c2012efa628df3c7c41",
     "crates/cc-index/src/dispatch_synthesis/jsx.rs": "f40187c1c41fd5e1bcfe10e9e0e389bd3d2d90d0efb1f646ac68b7369f576d07",
     "crates/cc-index/src/dispatch_synthesis/mod.rs": "6c3dc3e98e5d366ceeb370f3346006647ff57b99c35feba7358022452536c91b",
     "crates/cc-index/src/dispatch_synthesis/rerender.rs": "d4ee0bcaa67f2a9e13333056fc70df6496a2faa9d2661b8043ffe9314e9312ae",
@@ -726,7 +727,7 @@
     "crates/cc-index/src/indexer_phases/postprocess.rs": "f634dad99a1330276e4096867b5101c725e79f45e6471896d8c6c8deac5fb097",
     "crates/cc-index/src/indexer_phases/reconcile.rs": "5064888999f8bb58a0b6e77deaf69168d57523ecd83dd0e6d0387c0da0d01f88",
     "crates/cc-index/src/indexer_phases/resolve.rs": "862c042a7e1066bff4ccf9ae3766b2dca7109690eaa0ef67dc71bd200acd98dd",
-    "crates/cc-index/src/indexer_phases/snapshot.rs": "bca23a73b0a2de0ca38f9593fbb526b69a7acc138b9ec8a680001fb79e666e9e",
+    "crates/cc-index/src/indexer_phases/snapshot.rs": "82074da7c0fadaf17d4b02b879132c4ef06ce5f20319b344c3f709c5d7e41d8b",
     "crates/cc-index/src/indexer_phases/write.rs": "caa2ba07dd907158299a0cbf00f3264dd370f23c9900fb57750bfd5de42a685b",
     "crates/cc-index/src/infra_docker.rs": "fd1959e68ac71c87eb4359f80e573453a9078f53d29a56b60e75b2c47251d374",
     "crates/cc-index/src/infra_k8s.rs": "ffa65b589df021521c7b5cb9c3be6a45415912c4cb487c45bdba5801733b6a8f",
@@ -777,6 +778,7 @@
     "crates/cc-index/src/synthesis_symbol_resolver.rs": "4df709e972070ee466431216b561dbc3f698bc5047d9545f7238ad8f8672e8e9",
     "crates/cc-index/src/type_catalog.rs": "45f3f84b1f9f1b67b29aeed4439b07b7431042e0fc6725aab3357e45233959a8",
     "crates/cc-index/tests/explicit_text_admission.rs": "80ca251309311736c7f1a58de9a6b51ee715c943bc17680fedf5dd29f28d46ce",
+    "crates/cc-index/tests/full_snapshot_empty_config.rs": "fc5e8b7f4e8f8b8e3c1245ffcf724e79905413c203ccb298374cb8297a32b4ed",
     "crates/cc-index/tests/independent_qname_parser_public.rs": "fd0132f644bc4709dafc39a3c09d992fdbae78ecea317a4dd93aa0e9d68d753b",
     "crates/cc-index/tests/independent_qname_repair_guard.rs": "4ce0a5e8b559e427a7dfce42a15b87eae918345dd0d7d2671c138f5b51b2ce39",
     "crates/cc-index/tests/p3a_project_model.rs": "420a9f42f80365db07f2a6f273b9e1fadf8df2abc304f9544e91fd47bbe74eef",
@@ -1221,6 +1223,14 @@
       "before_sha256": "8912d922270f71f36bee8b0fbe9a89a292803a5cc2ad37d20ad88aa2d2b72d92",
       "sha256": "fdfa0ea0404ebefe8d8d45c4e52d684c1b87d9e7125f4702c7578d2d16bb469c"
     },
+    "crates/cc-index/src/dispatch_synthesis/interface_dispatch.rs": {
+      "before_sha256": "6ffc3db9b08993cf4a82923da5488360b8a8ad78a35591d4849fe287226667ec",
+      "sha256": "d2fa652cff62511546ad36d67bb402fa9a307ef060223fb12610ef31da69084a"
+    },
+    "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs": {
+      "before_sha256": null,
+      "sha256": "1647126f382e4fed5e47b42780e08348d8239432eefc7c2012efa628df3c7c41"
+    },
     "crates/cc-index/src/indexer.rs": {
       "before_sha256": "ab087982b8add0b9dba69be0660904318d5e7e0731ccac14a388f28f84e14b57",
       "sha256": "dace7ecc9a63c4b2c69b90182e140c9227455569df9546bde5e2d2bfdee8d093"
@@ -1239,7 +1249,7 @@
     },
     "crates/cc-index/src/indexer_phases/snapshot.rs": {
       "before_sha256": "d52e1fd86dfcb3234944fc9ed1bc72b6d2b39da3255805db945fc7ef1af0a847",
-      "sha256": "bca23a73b0a2de0ca38f9593fbb526b69a7acc138b9ec8a680001fb79e666e9e"
+      "sha256": "82074da7c0fadaf17d4b02b879132c4ef06ce5f20319b344c3f709c5d7e41d8b"
     },
     "crates/cc-index/src/lib.rs": {
       "before_sha256": "9b55efd92672581ec0d7bf24bd2eca83d86d4da4d6b7e5ba526dd9949a39f731",
@@ -1264,6 +1274,10 @@
     "crates/cc-index/src/resource_accounting.rs": {
       "before_sha256": null,
       "sha256": "c4189f5a72f8fdd150492a3d24351fe59aa2a921adda9c865eade27eeb46ed33"
+    },
+    "crates/cc-index/tests/full_snapshot_empty_config.rs": {
+      "before_sha256": null,
+      "sha256": "fc5e8b7f4e8f8b8e3c1245ffcf724e79905413c203ccb298374cb8297a32b4ed"
     },
     "crates/cc-index/tests/qname_identity_transaction.rs": {
       "before_sha256": "19107a29c077324fb478cc650263bf65b78a12b7571135945c89d3b18e16c630",
@@ -1291,9 +1305,9 @@
     }
   },
   "previous_source_version": "p8-oracle-compat-source-20261008-v14",
-  "product_source": "86a6e8eb88ddc97ee50a534452839bea25d92d16",
-  "review_sha256": "919a2a92cf3163dc4d8658470c4df7c512f5c24358bdf122b4fa7c836abb9011",
-  "review_source": "cc73a151f7c1a47a3b05c3e49140d2e90771df46",
+  "product_source": "b13ba8c1b738bc9c24b81cad1e88711fc9734283",
+  "review_sha256": "7e78a64eff0d5dc7a9d773fce30d0c108d44406efe7d9fa07671039f6ca9af58",
+  "review_source": "2ccf89dd6c6f558bdfa5d8ddfa7ddf8958c7aa89",
   "runtime_and_quality_claims": "require_separate_execution_evidence",
   "schema_version": 10,
   "scope": "independently_reviewed_source_and_validation_inputs",
@@ -1305,7 +1319,7 @@
     ".github/workflows/p8-lifecycle.yml": "1c29a376003afd380c09f75e3ab17569449aa3b83cb45a637866e14aebb083ec",
     ".github/workflows/p8-platform.yml": "9f1bc4bd1cf715836987332906d4c72f85bd835652bfe196de56a9f1945a0ff4",
     ".github/workflows/p8-runtime.yml": "82e39dadd5557d800450ead6cf1d861e382283447af2fd35eb4c952d7897c09f",
-    ".github/workflows/p8-scale.yml": "4c5e7a9b59a39edfb5628dc1ef60fde4345a3a658d424087925f0b331de98378",
+    ".github/workflows/p8-scale.yml": "4258476dd37d8af223aaa7ad45d7c97d7298be1ba4ec5ffd9af9949785ed8f3d",
     ".github/workflows/p8-surface-window-controls.yml": "f27250c1c66238aa2b60b7ff53c013611198e8653227851c76311f2efa56ed0a",
     "scripts/check_module_architecture.py": "7b2811d06f13eff54e6efadf85585d214f6896870b8773efeec94c817484b80b",
     "scripts/check_source_architecture.py": "c49ec29a0a107e240b424e92492267828fce84eccb90cc20a5db52f588489d0e",

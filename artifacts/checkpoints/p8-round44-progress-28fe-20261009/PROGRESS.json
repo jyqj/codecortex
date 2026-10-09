@@ -1,0 +1,43 @@
+{
+  "schema": "codecortex-p8-round44-progress-v1",
+  "evidence_parent": "48bc4a3efb46f1a17f6d03483e5c3b3b89ab992e",
+  "root_decision_commit": "b19f183274f654d4501c6331ba8a27205fd1fc3a",
+  "authority": {
+    "main": "379099a4a7b09ebe9928c190017bae53d8d1edf6",
+    "tasks_blob": "adb44ee70a4c129bfb443d4ecf678fb934c8ea6b"
+  },
+  "original_ledger": {
+    "total": 192,
+    "done": 164,
+    "in_progress": 15,
+    "todo": 12,
+    "blocked": 1,
+    "remaining": 28
+  },
+  "round": {
+    "newly_completed_original_todos": [
+      "P8-005"
+    ],
+    "new_count": 1,
+    "cumulative_since_163": 1,
+    "target": 10
+  },
+  "dependencies": {
+    "P8-006": "in_progress; original dirty200 run failed at 100k preflight and aggregate; measure skipped",
+    "P8-007": "in_progress; hard dependency P8-006 open",
+    "P8-008": "in_progress; hard dependency P8-007 open",
+    "P8-009": "in_progress; hard dependency P8-008 open; whole-tree peak belongs here",
+    "P8-010": "in_progress; hard dependency P8-009 open",
+    "P8-011": "in_progress; P8-007 and P8-010 open",
+    "P8-012": "in_progress; P8-011 open",
+    "P8-013": "in_progress; P8-012 open",
+    "P8-016": "in_progress; P8-012 and P8-013 open"
+  },
+  "next_actions": [
+    "Preserve the failed original dirty200 100k/aggregate/measure state without rerun or relabel.",
+    "Receive the existing dirty4096 research only under its own profile; never pool it with original dirty200.",
+    "Keep PR195 draft until current main is integrated and binding/necessary CI runs against the fresh baseline.",
+    "Do not award P8-006 or downstream completion until their original gates and hard dependencies close."
+  ],
+  "automation": "continue; cumulative target is 1/10"
+}

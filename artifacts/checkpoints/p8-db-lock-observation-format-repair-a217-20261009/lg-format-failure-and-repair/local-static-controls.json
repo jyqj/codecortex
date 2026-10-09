@@ -1,0 +1,48 @@
+{
+  "scope": "structural YAML and exact formatter-only bytes; not GitHub execution or Rust compilation",
+  "status": "passed_local_static_controls",
+  "source_whitespace_only": true,
+  "workflow_structural_equal_except_push_and_job_if": true,
+  "all_existing_commands_permissions_budgets_matrix_uploads_equal": true,
+  "exact_push_paths": [
+    ".github/workflows/p8-db-lock-observation.yml",
+    "crates/cc-db/Cargo.toml",
+    "crates/cc-db/src/index_db.rs",
+    "crates/cc-db/src/lib.rs",
+    "crates/cc-db/src/lock_observation.rs",
+    "crates/cc-eval/Cargo.toml",
+    "crates/cc-server/Cargo.toml",
+    "crates/cc-server/src/handlers/facade.rs",
+    "crates/cc-server/src/tools.rs",
+    "crates/cc-server/tests/p8_db_lock_observation.rs",
+    "docs/P8_DB_LOCK_OBSERVATION.md",
+    "scripts/p8_runtime.py",
+    "scripts/p8_runtime_build.py",
+    "scripts/p8_runtime_lock_observation.py",
+    "scripts/reviewed-source-registry-v15.json",
+    "scripts/tests/test_p8_runtime_lock_observation.py",
+    "scripts/verify_reviewed_source_v15.py"
+  ],
+  "exact_path_count": 17,
+  "excluded_only_examples": [
+    {
+      "path": "artifacts/checkpoints/anything.json",
+      "matched": false
+    },
+    {
+      "path": "artifacts/benchmarks/anything.json",
+      "matched": false
+    },
+    {
+      "path": "README.md",
+      "matched": false
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/tasks.json",
+      "matched": false
+    }
+  ],
+  "event_boundary": "new push branch exact; original create and manual dispatch predicates preserved",
+  "rust_tests": "not_run",
+  "remote_actions": 0
+}

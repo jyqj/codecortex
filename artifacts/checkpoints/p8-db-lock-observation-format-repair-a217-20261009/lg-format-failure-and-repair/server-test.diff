@@ -1,0 +1,14 @@
+--- crates/cc-server/tests/p8_db_lock_observation.rs@LG
++++ crates/cc-server/tests/p8_db_lock_observation.rs@repair-v1
+@@ -11,7 +11,10 @@
+     };
+     assert!(params.sanitize().is_err());
+     let index = CodeIndex::new(None).unwrap();
+-    assert!(index.diagnostics_info().get("db_lock_observation").is_none());
++    assert!(index
++        .diagnostics_info()
++        .get("db_lock_observation")
++        .is_none());
+ }
+ 
+ #[cfg(feature = "p8-db-lock-observation")]

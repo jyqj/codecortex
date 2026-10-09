@@ -1,0 +1,110 @@
+{
+  "schema": "codecortex-r43-scale-acceptance-v1",
+  "observed_utc": "2026-10-09T21:38:00Z",
+  "repository": "jyqj/codecortex",
+  "original_acceptance": {
+    "run_id": 37962416564,
+    "source_commit": "4fe927488d5cb7f26bd27c7624745fb1b6ca202b",
+    "population": {
+      "profile": "scale_capacity_v1",
+      "dirty_budget": 200,
+      "resume_limit": 1024,
+      "seed": 12648430,
+      "required_shards": 150,
+      "required_composite_samples": 1500
+    },
+    "jobs": {
+      "build": "success",
+      "preflight_1000_0": "success",
+      "preflight_5000_0": "success",
+      "preflight_10000_0": "success",
+      "preflight_50000_0": "success",
+      "preflight_100000_0": "in_progress_step_7"
+    },
+    "accepted": {
+      "shards": 4,
+      "composite_observations": 41,
+      "new_this_round": {
+        "shards": 0,
+        "composite_observations": 0
+      }
+    },
+    "missing": [
+      "100k preflight terminal outcome and shard artifact",
+      "145 subsequent measurement shards",
+      "150-shard/1500-composite aggregate",
+      "strict paired causal performance",
+      "whole-tree memory peak acceptance"
+    ],
+    "original_todo_closable_ids": []
+  },
+  "wide_dirty_independent": {
+    "run_id": 37982220020,
+    "source_commit": "008f1ec0ae16b9b6aff9f20d033b17b2219168f8",
+    "population": {
+      "profile": "scale_wide_dirty_v1",
+      "dirty_budget": 4096,
+      "resume_limit": 1024,
+      "seed": 12648430
+    },
+    "jobs": {
+      "build": "success",
+      "preflight_1000_0": "success",
+      "preflight_5000_0": "success",
+      "preflight_10000_0": "success",
+      "preflight_50000_0": "success",
+      "preflight_100000_0": "in_progress_step_7"
+    },
+    "new_artifact": {
+      "id": 11644497845,
+      "name": "p8-scale-wide-dirty-shard-50000-0-37982220020",
+      "declared_sha256": "1c1b1ea09fb0905aae814515b3819766cf063c125e29ca9079299e5f42b4f804",
+      "downloaded_sha256": "1c1b1ea09fb0905aae814515b3819766cf063c125e29ca9079299e5f42b4f804",
+      "zip_crc": "pass",
+      "members": 13,
+      "uncompressed_bytes": 10873962,
+      "sealed_file_hashes": "13/13 match",
+      "plan_bytes_equal": true,
+      "source_before_after_equal": true,
+      "worker_exit_code": 0,
+      "stderr_complete": true,
+      "worker_binary_unchanged": true,
+      "raw_records": 101,
+      "event_counts": {
+        "run_started": 1,
+        "input": 1,
+        "build_started": 41,
+        "build_finished": 41,
+        "cold_parity": 1,
+        "mutation": 8,
+        "stage_finished": 8
+      },
+      "sample_count": 9,
+      "parity_events": 9,
+      "table_checks_equal": "135/135",
+      "max_scratch_peak_bytes": 3002945536,
+      "wall_ms": 2904042,
+      "release_certification": "not_run",
+      "stable_tail_latency": "not_established"
+    },
+    "isolation": "Different dirty-budget population. Must not be pooled with, relabeled as, substitute for, or repair the original dirty200 acceptance population.",
+    "original_todo_credit": 0
+  },
+  "decision": {
+    "original_todo_newly_closable_ids": [],
+    "newly_closable_count": 0,
+    "ledger_assumed_fresh_parent_check": {
+      "done": 163,
+      "in_progress": 16,
+      "todo": 12,
+      "blocked": 1,
+      "remaining": 29
+    },
+    "explanation": "P8-005 remains open; P8-006 and downstream priority chain remain dependency-blocked. The independently validated dirty4096 50k shard is valid only for the separate wide-dirty study."
+  },
+  "mutations": {
+    "workflow_dispatch": false,
+    "retry": false,
+    "cancel": false
+  }
+}

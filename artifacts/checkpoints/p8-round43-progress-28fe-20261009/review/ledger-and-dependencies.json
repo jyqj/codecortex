@@ -1,0 +1,317 @@
+{
+  "schema_version": 1,
+  "review": "round43-main-ledger-and-original-acceptance-independent-read",
+  "generated_at": "2026-10-09T21:38:53.309Z",
+  "repository": "jyqj/codecortex",
+  "readonly": true,
+  "authorities": {
+    "main_commit": "51138c236cf2ed47858e2306f9c7bfd3600aaef9",
+    "main_commit_url": "https://github.com/jyqj/codecortex/commit/51138c236cf2ed47858e2306f9c7bfd3600aaef9",
+    "tasks_path": "docs/roadmap/code-index-v2/tasks.json",
+    "tasks_blob": "959a25ba851ff88f286bab0fa14167878129b1dd",
+    "tasks_url": "https://github.com/jyqj/codecortex/blob/51138c236cf2ed47858e2306f9c7bfd3600aaef9/docs/roadmap/code-index-v2/tasks.json",
+    "issue_158_latest_comment": {
+      "url": "https://github.com/jyqj/codecortex/issues/158#issuecomment-6089593525",
+      "id": 6089593525,
+      "body_sha_identity_note": "latest connector page item; body records PR196 merge and scale acceptance still under final review"
+    }
+  },
+  "ledger": {
+    "declared_task_count": 192,
+    "parsed_task_count": 192,
+    "counts": {
+      "done": 163,
+      "blocked": 1,
+      "in_progress": 16,
+      "todo": 12
+    },
+    "remaining": 29,
+    "current_phase": "P8",
+    "next_task": "P8-005",
+    "status_consistent": true
+  },
+  "priority_chain": [
+    {
+      "id": "P8-005",
+      "title": "完整规模1k到100k",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-004"
+      ],
+      "acceptance": [
+        "不存在只报文件数或把不同工作量直接算倍数",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V20"
+      ],
+      "acceptance_subgates": {
+        "fixed_protocol_100k_candidate_once": "closed_declared_local_scope",
+        "fixed_protocol_100k_baseline_once": "closed_declared_local_scope",
+        "counts_fk_queries_c4_normal_eof_reopen": "closed_declared_local_scope",
+        "full_1k_5k_10k_50k_100k_scale_acceptance": "open",
+        "strict_paired_causal_performance": "not_established",
+        "whole_tree_memory_peak": "unknown"
+      }
+    },
+    {
+      "id": "P8-006",
+      "title": "增量规模与fanout曲线",
+      "status": "in_progress",
+      "depends_on": [
+        "P7-020",
+        "P8-001",
+        "P8-005"
+      ],
+      "acceptance": [
+        "时间可归因且闭包完成后full parity，未完成有显式status",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V07",
+        "V20"
+      ],
+      "acceptance_subgates": null
+    },
+    {
+      "id": "P8-007",
+      "title": "多并发与混合负载",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-006"
+      ],
+      "acceptance": [
+        "无死锁饥饿，吞吐不能隐藏timeout与尾部",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V11",
+        "V20"
+      ],
+      "acceptance_subgates": null
+    },
+    {
+      "id": "P8-008",
+      "title": "冷建/重开/热查分层",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-007"
+      ],
+      "acceptance": [
+        "无best-of，sample N/分布/CI齐全",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V20"
+      ],
+      "acceptance_subgates": null
+    },
+    {
+      "id": "P8-009",
+      "title": "内存/磁盘/费用总账",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-008"
+      ],
+      "acceptance": [
+        "单位和归属正确，不把unavailable填0或把runner当server",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V20"
+      ],
+      "acceptance_subgates": null
+    },
+    {
+      "id": "P8-010",
+      "title": "长时soak与连续修改",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-009"
+      ],
+      "acceptance": [
+        "内存/队列不无界增长，长期索引和全量一致",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V07",
+        "V17",
+        "V20"
+      ],
+      "acceptance_subgates": null
+    },
+    {
+      "id": "P8-011",
+      "title": "端到端故障与恢复认证",
+      "status": "in_progress",
+      "depends_on": [
+        "P7-020",
+        "P8-007",
+        "P8-010"
+      ],
+      "acceptance": [
+        "没有假ready或删除复活，恢复与费用影响清楚",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V14",
+        "V17",
+        "V18"
+      ],
+      "acceptance_subgates": null
+    },
+    {
+      "id": "P8-012",
+      "title": "MSRV与平台冷构建矩阵",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-011"
+      ],
+      "acceptance": [
+        "SDK blocker解决或发布平台范围明确，缓存测试不替冷构建",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V01",
+        "V21"
+      ],
+      "acceptance_subgates": null
+    },
+    {
+      "id": "P8-013",
+      "title": "指标/门槛与失败退出最终认证",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-012"
+      ],
+      "acceptance": [
+        "红线失败必非零，inconclusive不被自动passed",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V03",
+        "V04",
+        "V20"
+      ],
+      "acceptance_subgates": null
+    },
+    {
+      "id": "P8-016",
+      "title": "数据库/配置/包回滚演练",
+      "status": "in_progress",
+      "depends_on": [
+        "P7-020",
+        "P8-012",
+        "P8-013"
+      ],
+      "acceptance": [
+        "回滚不误读新向量/丢用户源码，恢复步骤实测",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V13",
+        "V17",
+        "V21"
+      ],
+      "acceptance_subgates": null
+    }
+  ],
+  "fresh_prs": {
+    "pr195": {
+      "url": "https://github.com/jyqj/codecortex/pull/195",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "head": "b8ab8ecdc5b32993fc02ce43877b7e172b8a4b3f",
+      "base": "23eab8a7ea1fdfd6333c2e5a001cfb41e2a10d69",
+      "mergeable": true,
+      "ledger_effect": "zero: engineering/source-binding/CI is not original task completion",
+      "acceptance_note": "Current body says prior oracle compatibility blockers are repaired and all PR196 product paths integrated, but it explicitly remains Draft pending actual current-head CI. It also does not itself provide or accept the fixed original 150-shard scale population. Therefore it closes no original task at this snapshot."
+    },
+    "pr196": {
+      "url": "https://github.com/jyqj/codecortex/pull/196",
+      "state": "closed",
+      "draft": false,
+      "merged": true,
+      "head": "065f5ab5da1bc5de74cbd3e4c360b51e09200687",
+      "base": "23eab8a7ea1fdfd6333c2e5a001cfb41e2a10d69",
+      "merge_commit": "51138c236cf2ed47858e2306f9c7bfd3600aaef9",
+      "changed_files": [
+        "artifacts/checkpoints/p8-code-review-2b5e-20261010/independent-source-review.json",
+        "crates/cc-index/src/build_plan.rs",
+        "crates/cc-index/src/indexer.rs",
+        "crates/cc-index/src/indexer_phases/dirty.rs",
+        "crates/cc-index/src/indexer_phases/reconcile.rs",
+        "crates/cc-index/src/sparse_actions_tests.rs",
+        "crates/cc-server/src/installer/helpers.rs",
+        "crates/cc-server/src/installer/targets/claude_code.rs",
+        "crates/cc-server/tests/installer_cli.rs",
+        "scripts/p8_release_evidence.py",
+        "scripts/reviewed-source-registry-v15.json",
+        "scripts/tests/test_p8_release_evidence.py",
+        "scripts/verify_reviewed_source_v15.py"
+      ],
+      "ledger_effect": "zero: merged scoped fixes do not satisfy an original task's full acceptance and hard dependencies"
+    }
+  },
+  "pr196_exact_contribution": {
+    "P8_017": {
+      "contribution": "Sparse unchanged scan actions remove per-unchanged-file owned action entries while retaining scanned-path membership and dirty-closure behavior; this is a scoped duplicate/materialization cleanup.",
+      "still_missing": [
+        "hard dependency P8-016 remains in_progress",
+        "full V18/V21 task-wide proof that all temporary compatibility/duplicate algorithm owners are removed",
+        "all four prepared mechanism variants remain outside this PR and the ledger's previous record says compiled=false"
+      ],
+      "closable": false
+    },
+    "P8_018": {
+      "contribution": "Exact Claude hook ownership/event-shape matching plus generic JSON validation and byte-preserving no-op uninstall materially harden the installation contract.",
+      "still_missing": [
+        "hard dependency P8-017 remains in_progress",
+        "PR196 changes no original documentation files and does not complete schema/capabilities-derived fact synchronization",
+        "no task-wide proof that documented table/schema/tool counts cannot drift or that design-vs-implemented labels are complete"
+      ],
+      "closable": false
+    },
+    "P8_019": {
+      "contribution": "Create-if-absent first publication of the archive latest pointer closes a scoped first-publisher overwrite race and strengthens immutable-history behavior.",
+      "still_missing": [
+        "hard dependency P8-018 remains in_progress",
+        "no complete accepted release archive binding exact binary/checksum/manifest/raw/gates for a finished original candidate",
+        "no task-wide recomputation proof and final latest-to-run promotion under the original acceptance"
+      ],
+      "closable": false
+    }
+  },
+  "original_todo_closure_decision": {
+    "newly_closable_now": [],
+    "count": 0,
+    "rationale": [
+      "Main tasks.json remains the authoritative 192-item ledger at 163 done; no status or acceptance subgate changed in the merged tree.",
+      "P8-005 still records full_1k_5k_10k_50k_100k_scale_acceptance=open, strict_paired_causal_performance=not_established, and whole_tree_memory_peak=unknown.",
+      "The latest issue coordination states that all 150 measurements and aggregate are claimed successful, but final aggregate-field/custody and integration review remains in progress. A coordination claim is not yet the accepted, source-bound original evidence required to mutate the ledger.",
+      "P8-006 has its own 1500-stage obligation and hard dependency on P8-005; all P8-007..013 and P8-016 remain downstream hard-dependent. Component evidence already present for those tasks cannot bypass the chain.",
+      "Merging PR196, terminal CI, test counts, and its four scoped fixes are explicitly zero original-task credit."
+    ],
+    "first_conditional_candidate": {
+      "id": "P8-005",
+      "may_close_only_if": [
+        "independent reception verifies one fixed eligible source/population contains all 5 capacities x 30 repetitions (150 measurement shards) with the original seed, 15-table predicates, budgets and identities",
+        "aggregate/raw custody, counts, checksums, source/binary bindings, failure/unfinished denominators and exact workload counters are accepted",
+        "the acceptance reviewer resolves the ledger's still-open subgates without silently weakening or deleting them, and actual plan/fact/history gates pass"
+      ],
+      "downstream_note": "Even after P8-005 closes, P8-006 must independently satisfy its 1500 composite incremental/fanout obligation before the P8-007..013/P8-016 chain can close."
+    }
+  },
+  "final_counts": {
+    "total": 192,
+    "done": 163,
+    "in_progress": 16,
+    "todo": 12,
+    "blocked": 1,
+    "remaining": 29,
+    "new_original_todos_this_review": 0,
+    "cumulative_after_163_baseline": 0,
+    "target": 10
+  }
+}

@@ -1,0 +1,117 @@
+{
+  "schema": "codecortex-r43-cold-only-independent-read-v1",
+  "captured_at_utc": "2026-10-09T21:42:08Z",
+  "repository": "jyqj/codecortex",
+  "read_only": true,
+  "ledger_mutated": false,
+  "workflow_mutated": false,
+  "run": {
+    "id": 37954851017,
+    "attempt": 1,
+    "name": "P8 independent cold-only measurements",
+    "source_commit": "044c008c9459cfa61e7701db2eb868342c508a39",
+    "workflow_path": ".github/workflows/p8-cold.yml",
+    "status": "completed",
+    "conclusion": "success",
+    "run_updated_at": "2026-10-09T21:09:39Z",
+    "official_jobs_pagination": {
+      "total_count": 152,
+      "page1_count": 100,
+      "page2_count": 52,
+      "build_success": 1,
+      "preflight_success": 5,
+      "measure_success": 145,
+      "aggregate_success": 1,
+      "measurement_population_total": 150,
+      "all_jobs_terminal_success": true
+    }
+  },
+  "aggregate_artifact": {
+    "id": 11644384839,
+    "name": "p8-cold-matrix-37954851017-1",
+    "official_size_in_bytes": 158524,
+    "official_digest": "sha256:1f08fd935bfc29d26727f7da9daf4ed47ee73ca6150ebcd452419c9df90485f2",
+    "downloaded_zip_sha256": "1f08fd935bfc29d26727f7da9daf4ed47ee73ca6150ebcd452419c9df90485f2",
+    "zip_digest_matches_official": true,
+    "zip_crc": "PASS",
+    "members": [
+      {
+        "name": "cold-matrix.json",
+        "uncompressed_bytes": 1959102,
+        "sha256": "d608a541af36e0ac5fbe3e9534bd1649e01727c5408f025f6da0250725926bae"
+      }
+    ],
+    "job_log_result": {
+      "status": "complete_cold_measurement_coverage",
+      "error": null,
+      "sample_count": 150
+    },
+    "independent_field_validation": {
+      "schema": "p8-cold-only-study-v1",
+      "passed": true,
+      "status": "complete_cold_measurement_coverage",
+      "sample_count": 150,
+      "scales": [
+        1000,
+        5000,
+        10000,
+        50000,
+        100000
+      ],
+      "registered_repetitions": 30,
+      "groups_all_n30": true,
+      "sample_ids_150_unique": true,
+      "all_samples_have_engine_and_full_control_timing": true,
+      "all_samples_have_files_symbols_chunks_edges_and_vector_state": true,
+      "evidence_receipts_150_unique": true,
+      "environments": 150,
+      "source_run_attempt_match": true,
+      "paired_statistics_present": false,
+      "causal_gate_present": false,
+      "resources_scope": "original worker snapshots retained; not peaks or process-tree proof",
+      "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+      "release_certification": "not_run",
+      "task_statuses_changed": false
+    }
+  },
+  "issue_158": {
+    "latest_relevant_comment_id": 6089593525,
+    "url": "https://github.com/jyqj/codecortex/issues/158#issuecomment-6089593525",
+    "claim": "150 measurements and aggregate successful",
+    "explicit_remaining_review": "final aggregate-field/custody and integration review still in progress, including remaining 53 slots and six zero-credit custody recoveries",
+    "ledger_claim": "163 done / 29 remaining / 0 newly completed"
+  },
+  "custody": {
+    "aggregate_zip_independently_received": true,
+    "all_150_raw_shard_and_capacity_zips_independently_received_in_this_review": false,
+    "remaining_claimed_nonzero_slots_pending_independent_original_intake": 53,
+    "accepted_owner_slots_pending_zero_credit_custody_recovery": 6,
+    "aggregate_receipt_hashes_do_not_substitute_for_original_zip_crc_sha_and_validator_custody": true
+  },
+  "p8_005_gate_decision": {
+    "full_1k_5k_10k_50k_100k_scale_acceptance": {
+      "evidence_state": "SATISFIED_BY_AGGREGATE_FIELDS",
+      "rationale": "five exact scales, N=30 each, 150 unique samples, aggregate passed; chunk/edge/vector state retained"
+    },
+    "strict_paired_causal_performance": {
+      "evidence_state": "NOT_ESTABLISHED",
+      "rationale": "all samples retain paired engine/full-control timings, but aggregate contains no paired-effect statistics or causal gate and reports heterogeneous coverage without pooled stable tails"
+    },
+    "whole_tree_memory_peak": {
+      "evidence_state": "NOT_ESTABLISHED",
+      "rationale": "aggregate expressly retains PID-only snapshots, not peaks and not process-tree proof"
+    },
+    "custody_and_independent_raw_validation": {
+      "evidence_state": "IN_PROGRESS",
+      "rationale": "issue coordination still reports 53 original slots and six zero-credit custody recoveries pending; this review intentionally did not redownload 300 artifacts"
+    },
+    "task_closable_now": false,
+    "original_todo_ids_closable_now": [],
+    "newly_completed_original_todo_count": 0
+  },
+  "separation": {
+    "dirty200_original_run_37962416564": "not pooled",
+    "dirty4096_wide_run_37982220020": "not pooled",
+    "cold_only_source_044c008c": "retained as its own source/run/attempt"
+  }
+}

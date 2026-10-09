@@ -1,6 +1,6 @@
 # 05｜逐项重构 TODO（由 tasks.json 派生）
 
-> 任务总数：192；源文件 SHA-256：`03c0382a6a9e4b445c80457a5f5ff35945326c02368ecb379e9e04a4a661dd13`。
+> 任务总数：192；源文件 SHA-256：`e75c68981943d85e31f8830331670f27401d3ab5ca13ae339d2134a693f23063`。
 > 状态只改 tasks.json；使用 scripts/code_index_plan.py --write 生成本页。
 
 ## 总览
@@ -2523,9 +2523,11 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 验收：运行路径只有一个事实与算法所有者，删除有回归证据；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V18；V21
 回滚：不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。
-证据：[{"target_sha": "78ae91eeae6edae6bea29c27f24b251773341c00", "artifact_paths": ["artifacts/checkpoints/p8-next-ten-20261008/cleanup/"], "scope": "preparatory engineering only; exact executed script and product identities are recorded in the linked original receipts; no full task or G8 acceptance", "review": "independent subagent review and main-agent integration; original acceptance/dependencies preserved", "rollback_status": "revert this task tooling; preserve original raw evidence and candidate source", "summary": "benchmark::statistics 的 distribution/quantile_interval 共用 nearest-rank；12项测量回归与独立范围审查完成。其他百分位实现、临时branch/schema与完整验收仍开放"}]
+证据：[{"target_sha": "78ae91eeae6edae6bea29c27f24b251773341c00", "artifact_paths": ["artifacts/checkpoints/p8-next-ten-20261008/cleanup/"], "scope": "preparatory engineering only; exact executed script and product identities are recorded in the linked original receipts; no full task or G8 acceptance", "review": "independent subagent review and main-agent integration; original acceptance/dependencies preserved", "rollback_status": "revert this task tooling; preserve original raw evidence and candidate source", "summary": "benchmark::statistics 的 distribution/quantile_interval 共用 nearest-rank；12项测量回归与独立范围审查完成。其他百分位实现、临时branch/schema与完整验收仍开放"}, {"date": "2026-10-09", "round": 3, "target_sha": "b069c73a0d76736e1dfb3eb64e79cad6980b773f", "review_sha": "733b70584fd9cf5581096fb2edfc7006f9a7dd80", "status": "scoped_engineering_accepted_full_task_open", "artifact_paths": ["artifacts/checkpoints/p8-install-compat-36fea-20261009/SUMMARY.md", "artifacts/checkpoints/p8-install-compat-36fea-20261009/independent-source-review.json", "artifacts/checkpoints/p8-install-compat-36fea-20261009/validation/bounded-gates/", "artifacts/checkpoints/p8-install-compat-36fea-20261009/validation/python-discovery/"], "scope": "Named implementation and actual local regression scopes; original dependency and full acceptance remain unchanged.", "review": "Independent subagent source and behavior reviews; original failure identities retained.", "rollback_status": "Revert the scoped product change if required; preserve original evidence and user configuration diagnostics.", "summary": "18 duplicate engine tests removed; merged Rust statistics ownership and resolver changes retained; remaining default-lane catalogue ownership identified."}]
 实施备注：
 2026-10-08 第三轮：benchmark::statistics 的 distribution/quantile_interval 共用 nearest-rank；12项测量回归与独立范围审查完成。其他百分位实现、临时branch/schema与完整验收仍开放。只计原始TODO推进，完整前置/验收仍开放。
+
+2026-10-09 本线程三轮推进，产品 b069c73a0d76736e1dfb3eb64e79cad6980b773f：删除 engine.rs 中 18 个重复测试和重复 helper，净减 870 行，生产代码段、17 个其余测试及公开 API 保留；独立字节审查通过。基于已合 #175/#179 的整合源码，cc-index --lib 实跑 427 passed/1 原 ignored，cc-search --lib 301 passed。#175 已将 legacy runtime 纳秒统计交由 Rust 统一计算；#179 的 resolver 行为保持并有原控制与本轮回归。原硬依赖 P8-016 及完整 V18/V21 验收仍开放；当前 query policy 与 default_lanes 仍各维护一份内容相同的默认 lane 目录，后续需共同来源收口。证据见 artifacts/checkpoints/p8-install-compat-36fea-20261009/SUMMARY.md。原状态保持 in_progress，本轮不增加原 TODO done 数。
 
 ### [ ] P8-018｜文档事实与安装契约同步
 
@@ -2537,9 +2539,11 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 验收：文档表数/schema/工具数不再漂移，设计与已实现标识分开；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V18；V21
 回滚：不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。
-证据：[{"status": "local_engineering_advanced_not_full_acceptance", "round": 3, "source": "ed2fa642091434346be2b4eda9367106d7d48533", "artifacts": ["artifacts/benchmarks/p8-facts-review-20261007", "docs/roadmap/code-index-v2/P8-FACTS.md", "artifacts/checkpoints/p8-local-waves-20261007/round3"], "limitations": "原硬依赖与完整验收保留；本地短时smoke/声明式事实检查不认证长时资源、backfill、真实provider、跨平台安装或发布。"}]
+证据：[{"status": "local_engineering_advanced_not_full_acceptance", "round": 3, "source": "ed2fa642091434346be2b4eda9367106d7d48533", "artifacts": ["artifacts/benchmarks/p8-facts-review-20261007", "docs/roadmap/code-index-v2/P8-FACTS.md", "artifacts/checkpoints/p8-local-waves-20261007/round3"], "limitations": "原硬依赖与完整验收保留；本地短时smoke/声明式事实检查不认证长时资源、backfill、真实provider、跨平台安装或发布。"}, {"date": "2026-10-09", "round": 3, "target_sha": "b069c73a0d76736e1dfb3eb64e79cad6980b773f", "review_sha": "733b70584fd9cf5581096fb2edfc7006f9a7dd80", "status": "scoped_engineering_accepted_full_task_open", "artifact_paths": ["artifacts/checkpoints/p8-install-compat-36fea-20261009/SUMMARY.md", "artifacts/checkpoints/p8-install-compat-36fea-20261009/independent-source-review.json", "artifacts/checkpoints/p8-install-compat-36fea-20261009/validation/bounded-gates/", "artifacts/checkpoints/p8-install-compat-36fea-20261009/validation/python-discovery/"], "scope": "Named implementation and actual local regression scopes; original dependency and full acceptance remain unchanged.", "review": "Independent subagent source and behavior reviews; original failure identities retained.", "rollback_status": "Revert the scoped product change if required; preserve original evidence and user configuration diagnostics.", "summary": "Structured Codex TOML lifecycle and CLI failure exit fixed; installer49/CLI2 passed; documentation facts clarified without inventing a whole-workspace total."}]
 实施备注：
 2026-10-07 P8本地推进第三轮：新增stdlib事实生成/漂移检查，直接解析Cargo/schema/capabilities/tool/config源；同步当前8crate、schema25、30基础表+5FTS、14工具和semantic默认关闭/实际默认值。13个CLI正负例和实际SQLite DDL核对通过，CI新增事实检查；跨平台安装/真实运行认证未完成。
+
+2026-10-09 本线程三轮推进，产品 b069c73a0d76736e1dfb3eb64e79cad6980b773f：Codex 安装/卸载改为结构化 TOML 编辑，精确服务键、路径转义、用户选项及注释保留均有回归；配置错误或 URL transport 冲突在写前报错，CLI 任一目标失败返回非零。原实现新增回归先失败，修复后 installer 49 单测和 2 真实 CLI 集成通过，独审注释反例修复后四次重装复核通过。README/TROUBLESHOOTING 同步安装契约与七项排障事实，TEST_PLAN 标明旧总数为历史基线。原全仓尝试 ENOSPC 未取得完整成功结果，后续规定语料与受影响模块分别通过；plan/facts 检查通过。原硬依赖 P8-017 与完整 V18/V21 验收仍开放，详情及原记录见 artifacts/checkpoints/p8-install-compat-36fea-20261009/SUMMARY.md。
 
 ### [ ] P8-019｜发布工件与完整报告归档
 

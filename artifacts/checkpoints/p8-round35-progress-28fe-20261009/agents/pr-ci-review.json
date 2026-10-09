@@ -1,0 +1,291 @@
+{
+  "schema_version": 1,
+  "kind": "round35_pr_heads_ci_independent_review",
+  "repository": "jyqj/codecortex",
+  "scope": "Read-only GitHub connector audit; no PR/ref/workflow mutation. Review blob is intentionally unattached.",
+  "freshness": {
+    "main_read": "d22d36dddf8b38f1a864c933deefe0b6d3b5baf3",
+    "pr180_read_after_candidate_commit_created_at": "2026-10-09T14:52:52Z",
+    "workflow_log_latest_observed_at": "2026-10-09T14:50:09Z",
+    "issue_158_latest_comment_id": 6082140717,
+    "issue_158_latest_comment_url": "https://github.com/jyqj/codecortex/issues/158#issuecomment-6082140717",
+    "note": "Issue #158 had no post-round34 comment at this snapshot; newer owner coordination was present on PR #180 comment 6083160751."
+  },
+  "pull_requests": {
+    "178": {
+      "state": "closed",
+      "merged": false,
+      "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "management_decision": "Keep closed as predecessor with source branch and failed study custody retained; no merge/TODO credit."
+    },
+    "180": {
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "mergeable": true,
+      "base_sha": "d22d36dddf8b38f1a864c933deefe0b6d3b5baf3",
+      "head_sha": "b2a17adc188338c48b95d01761836916e5d0fcdb",
+      "head_unchanged_from_handoff": true,
+      "main_relation": {
+        "status": "ahead",
+        "ahead_by": 64,
+        "behind_by": 0,
+        "merge_base": "d22d36dddf8b38f1a864c933deefe0b6d3b5baf3"
+      },
+      "ancestry": {
+        "c92_public_snapshot_fix": {
+          "base": "c92eb5ac7ece70d1f62271d7e2dacac513c285b5",
+          "status": "ahead",
+          "ahead_by": 71,
+          "behind_by": 0
+        },
+        "observer_guard": {
+          "base": "4d18dcdb34b5d7a277566b57801cc882d8b1eb61",
+          "status": "ahead",
+          "ahead_by": 90,
+          "behind_by": 0
+        },
+        "pr184_final_head": {
+          "base": "883230f2b44ebcf09495870db8c0e31d61270331",
+          "status": "ahead",
+          "ahead_by": 52,
+          "behind_by": 0
+        }
+      },
+      "exact_blob_review": {
+        "c92_three_product_paths": {
+          "equal": 3,
+          "total": 3,
+          "blobs": [
+            [
+              "crates/cc-db/src/index_db_write_batch.rs",
+              "34c1e5e5188910482fcf80863008620d30fa73b1"
+            ],
+            [
+              "crates/cc-db/src/snapshot_write_txn.rs",
+              "159bec62dc5f8c5548aaf3fcffb608dcc8682c40"
+            ],
+            [
+              "crates/cc-db/tests/p2b_resolution_store.rs",
+              "f009b732320705dbb221aa22a4f32d1aa9e2cfea"
+            ]
+          ]
+        },
+        "pr184_product_paths": {
+          "equal": 7,
+          "total": 7,
+          "blobs": [
+            [
+              "crates/cc-db/src/direct_writer.rs",
+              "603e8060ad36c0a46242184e74d4e56805e1d8d9"
+            ],
+            [
+              "crates/cc-db/src/index_migrate.rs",
+              "55ce1194ab0e890ad43793077cf1238ab150da5d"
+            ],
+            [
+              "crates/cc-db/tests/ci_schema_guard_contract.rs",
+              "f581c77eb8f6d414712c584fbf66ae24fc50a049"
+            ],
+            [
+              "crates/cc-eval/tests/benchmark_adapters.rs",
+              "9feb4fe9659c3cd84bc86684d3f73412f9caec17"
+            ],
+            [
+              "crates/cc-eval/tests/p8_scale.rs",
+              "02dc35a91dca2be2c8c7d63ff6072c8585c1bef9"
+            ],
+            [
+              "crates/cc-index/src/project_model/python_inventory.rs",
+              "e8f3ccd2d5d24ac222186f6954d983d859b4ee18"
+            ],
+            [
+              "crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs",
+              "4d3b82904f0b9415f1f901a4192f66525492cd02"
+            ]
+          ]
+        },
+        "observer_selected_paths": {
+          "exact_equal": 14,
+          "total_checked": 15,
+          "differing_path": "crates/cc-server/Cargo.toml",
+          "source_blob": "b9d61547fa3be800f8f9cfa56280a553cfe360dd",
+          "integrated_blob": "9380ca451c1bf518bec036fa6caa3cc5daad1d5a",
+          "preservation_check": "The integrated file still contains exactly `p8-db-lock-observation = [\"cc-db/p8-db-lock-observation\"]` and the cc-db dependency. The whole file differs because later integration adds unrelated dependency/comment material; this is not an observer loss.",
+          "exact_paths": [
+            ".github/workflows/p8-db-lock-observation.yml",
+            "crates/cc-db/Cargo.toml",
+            "crates/cc-db/src/index_db.rs",
+            "crates/cc-db/src/index_db_multi_insert.rs",
+            "crates/cc-db/src/index_db_snapshot_insert.rs",
+            "crates/cc-db/src/lib.rs",
+            "crates/cc-db/src/lock_observation.rs",
+            "crates/cc-eval/Cargo.toml",
+            "crates/cc-server/src/tools.rs",
+            "crates/cc-server/tests/p8_db_lock_observation.rs",
+            "scripts/p8_runtime.py",
+            "scripts/p8_runtime_build.py",
+            "scripts/p8_runtime_lock_observation.py",
+            "scripts/tests/test_p8_runtime_lock_observation.py"
+          ]
+        }
+      },
+      "workflow_runs": [
+        {
+          "id": 37942313064,
+          "name": "P8 platform cold builds",
+          "top_status": "queued"
+        },
+        {
+          "id": 37942313367,
+          "name": "P8 runtime observations",
+          "top_status": "queued"
+        },
+        {
+          "id": 37942313114,
+          "name": "P7 closeout evidence",
+          "top_status": "completed",
+          "conclusion": "failure"
+        },
+        {
+          "id": 37942313184,
+          "name": "P7 engineering regressions",
+          "top_status": "queued"
+        },
+        {
+          "id": 37942313096,
+          "name": "P8 original failure gates",
+          "top_status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 37942313294,
+          "name": "P8 lifecycle and resource observations",
+          "top_status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 37942313068,
+          "name": "CI",
+          "top_status": "completed",
+          "conclusion": "failure"
+        }
+      ],
+      "checks_snapshot": {
+        "total": 25,
+        "success": 7,
+        "failure": 2,
+        "in_progress": 3,
+        "queued": 13,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "concrete_failures": [
+        {
+          "run_id": 37942313068,
+          "job_id": 113859546484,
+          "job": "check",
+          "failed_step": "Format check",
+          "exit_code": 1,
+          "exact_scope": "crates/cc-search/src/preselect.rs:1474",
+          "observed_diff": "One single-line if expression requires rustfmt's five-line expansion; all subsequent check steps skipped.",
+          "url": "https://github.com/jyqj/codecortex/actions/runs/37942313068/job/113859546484"
+        },
+        {
+          "run_id": 37942313114,
+          "job_id": 113859546794,
+          "job": "closeout",
+          "failed_step": "Actual cache races, process faults and WAL recovery",
+          "exit_code": 101,
+          "exact_scope": "cc-semantic/tests/p7_crash_preparation.rs::isolated_sigkill_reopen_replay_preparation",
+          "observed_error": "line 218 parsed an empty ready PID: ParseIntError { kind: Empty }",
+          "later_scope": "The later lifecycle/retry/worker-contention steps in the same job passed; artifact 11623452978 uploaded, 20,408,457 bytes, ZIP SHA256 7ea08ad5283ecef16d5593db8fdc72a2c12457b024956e1af186e399ad19f9fc.",
+          "url": "https://github.com/jyqj/codecortex/actions/runs/37942313114/job/113859546794"
+        }
+      ],
+      "candidate_review": {
+        "chain": [
+          {
+            "sha": "3ebf3f6163e37e7e23c441e23d706abd54c3dd82",
+            "purpose": "exact rustfmt output"
+          },
+          {
+            "sha": "c04033a02a7ed27f35a77247c0e5d45d0bb000a7",
+            "purpose": "atomically publish crash-test ready PID"
+          }
+        ],
+        "comparison_to_b2a": {
+          "status": "ahead",
+          "ahead_by": 2,
+          "behind_by": 0,
+          "files": 2
+        },
+        "files": [
+          {
+            "path": "crates/cc-search/src/preselect.rs",
+            "changes": 6,
+            "additions": 5,
+            "deletions": 1,
+            "assessment": "Pure rustfmt line expansion; condition and values unchanged."
+          },
+          {
+            "path": "crates/cc-semantic/tests/p7_crash_preparation.rs",
+            "changes": 9,
+            "additions": 5,
+            "deletions": 4,
+            "assessment": "Test-only: writes PID through the existing durable helper to same-directory ready.<pid>.tmp, returns (therefore closes the file), then renames to ready before parking. This removes the exists-before-bytes race while preserving PID equality, 15-second parent deadline, SIGKILL, crash points, recovery assertions and production code."
+          }
+        ],
+        "static_decision": "No source-level blocker found in the two-file candidate. The atomic rename is scoped to a fresh per-case directory, so stale-target replacement semantics do not broaden the test. Candidate is not a pass and must receive fresh exact-source review/binding and execution before PR head movement."
+      },
+      "management_decision": "KEEP DRAFT/OPEN. Do not merge b2a. It has two concrete exact-head failures and 16 nonterminal checks. Do not rerun old b2a; publish only a separately reviewed/bound descendant with the minimal two-file fixes and let new exact-head CI establish results."
+    },
+    "181": {
+      "state": "closed",
+      "merged": true,
+      "head_sha": "d7426175ae21a9619cbcb393e41ec535695972d1",
+      "merge_commit_sha": "b9412406e11422d7cf914458a8bfbbd58cf94eaa",
+      "management_decision": "Remain merged/closed; no repeat action."
+    },
+    "184": {
+      "state": "closed",
+      "merged": false,
+      "draft": false,
+      "head_sha": "883230f2b44ebcf09495870db8c0e31d61270331",
+      "closed_at": "2026-10-09T14:40:40Z",
+      "closure_basis": "Superseded by PR #180 after exact 7-product/7-evidence absorption review; branch and commits retained. Comment 6083149088.",
+      "remote_checks_snapshot": {
+        "total": 25,
+        "success": 16,
+        "failure": 0,
+        "in_progress": 3,
+        "queued": 6,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "guard_identity": {
+        "product_p4": "cfc77b68828228cea1466e0161f9dc745fe5aef3",
+        "review_r": "d7512ed031f4027437dc756012cb7f21582b50f7",
+        "guard_g": "883230f2b44ebcf09495870db8c0e31d61270331",
+        "guard_commit_scope": "Only scripts/reviewed-source-registry-v15.json and scripts/verify_reviewed_source_v15.py changed in G.",
+        "native_final_g_status": "No actual terminal result for the advertised final-G native guard job was received; prior P4 native execution remains P4 evidence and is not relabeled.",
+        "remote_ci_boundary": "Remote head CI is separate: CI/check+msrv+security succeeded, but the entire 25-check collection was not terminal when the PR was closed."
+      },
+      "management_decision": "CLOSED/UNMERGED superseded disposition is supported by exact absorption into b2a; do not reopen merely because its still-running workflows later finish. Never count closure as an original TODO completion."
+    }
+  },
+  "coordination": {
+    "latest_issue_158_comment": "Round34 handoff 6082140717; stale for the newly closed #178/#184 and b2a failures.",
+    "latest_pr180_comment": {
+      "id": 6083160751,
+      "url": "https://github.com/jyqj/codecortex/pull/180#issuecomment-6083160751",
+      "summary": "Owner records successful four-C observer completion, exact artifact custody, #184 closure, and b2a as current integration."
+    },
+    "recommended_next_public_update": "After candidate review/binding is complete, record the two b2a failures and successor identity on PR #180 and issue #158. Do not describe c040 as tested or change TODO counts."
+  },
+  "original_todo_effect": {
+    "newly_completed_ids": [],
+    "newly_completed_count": 0,
+    "reason": "PR status changes, static candidate review, and partial/current CI do not satisfy original hard dependencies or acceptance."
+  }
+}

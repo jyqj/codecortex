@@ -1,0 +1,159 @@
+{
+  "schema": "codecortex.p8.round35.root-decision.v1",
+  "recorded_at_utc": "2026-10-09T14:54:00Z",
+  "repository": "jyqj/codecortex",
+  "main": {
+    "sha": "d22d36dddf8b38f1a864c933deefe0b6d3b5baf3",
+    "tree": "90831f54c588363d0359429d69cae762b138f74e",
+    "tasks_blob": "959a25ba851ff88f286bab0fa14167878129b1dd",
+    "ledger": {
+      "total": 192,
+      "done": 163,
+      "in_progress": 16,
+      "todo": 12,
+      "blocked": 1,
+      "remaining": 29
+    }
+  },
+  "observer": {
+    "run_id": 37930392164,
+    "source": "4d18dcdb34b5d7a277566b57801cc882d8b1eb61",
+    "jobs": "5/5 success",
+    "artifacts": "5/5 downloaded via official API; API SHA matched; CRC passed",
+    "independent_review_blob": "bfd939e24fc66848549ffa97b1a8b3fb44dffa20",
+    "per_profile": {
+      "C1": {
+        "configured": 1,
+        "actual_peak": 1,
+        "operations": 900,
+        "failed": 0,
+        "unfinished": 0
+      },
+      "C4": {
+        "configured": 4,
+        "actual_peak": 4,
+        "operations": 900,
+        "failed": 0,
+        "unfinished": 0
+      },
+      "C8": {
+        "configured": 8,
+        "actual_peak": 7,
+        "operations": 900,
+        "failed": 0,
+        "unfinished": 0
+      },
+      "C16": {
+        "configured": 16,
+        "actual_peak": 12,
+        "operations": 900,
+        "failed": 0,
+        "unfinished": 0
+      }
+    },
+    "common": "writer/read-pool/checkout attempts all positive; failed/poisoned/would_block=0; boundary in_flight [0,0]; archive verifier exit0 and 2112 sealed files per profile",
+    "acceptance": "P8-007 narrow acquisition-observation subgate satisfied; whole P8-007 remains in_progress because hard dependency P8-006 is open"
+  },
+  "scale": {
+    "review_blob": "f9fc327ddd400cbee657b1448a2fa4ffe4dd794c",
+    "G3": {
+      "run": 37910924354,
+      "source": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "state": "in_progress",
+      "success_shards": 4,
+      "required_shards": 150,
+      "missing_shards": 146,
+      "job_100k": "in_progress",
+      "measure_aggregate": "not materialized"
+    },
+    "C8": {
+      "run": 37902429727,
+      "state": "completed/failure",
+      "role": "historical negative evidence only"
+    },
+    "old275e": {
+      "run": 37896198208,
+      "state": "completed/failure",
+      "role": "historical negative evidence only"
+    },
+    "decision": "P8-005 and P8-006 remain in_progress; no dispatch/retry/cancel/budget change/source pooling"
+  },
+  "pr_management": {
+    "review_blob": "b8f64bac53bc57c2d80ac5c25b75823c05e85d6d",
+    "pr180": {
+      "state": "open/draft",
+      "head": "b2a17adc188338c48b95d01761836916e5d0fcdb",
+      "relative_to_main": "ahead64/behind0",
+      "ancestry": {
+        "c92": "ahead71/behind0",
+        "observer": "ahead90/behind0",
+        "pr184": "ahead52/behind0"
+      },
+      "checks": {
+        "success": 7,
+        "failure": 2,
+        "in_progress": 3,
+        "queued": 13
+      },
+      "decision": "keep Draft/Open; do not merge or rerun failing b2a"
+    },
+    "failures": [
+      {
+        "run": 37942313068,
+        "job": 113859546484,
+        "scope": "CI check",
+        "failure": "cargo fmt --check at crates/cc-search/src/preselect.rs:1474",
+        "exit": 1
+      },
+      {
+        "run": 37942313114,
+        "job": 113859546794,
+        "scope": "P7 closeout",
+        "failure": "p7_crash_preparation ready path visible before PID bytes; ParseIntError Empty",
+        "exit": 101,
+        "artifact": {
+          "id": 11623452978,
+          "bytes": 20408457,
+          "sha256": "7ea08ad5283ecef16d5593db8fdc72a2c12457b024956e1af186e399ad19f9fc"
+        }
+      }
+    ],
+    "isolated_candidate": {
+      "branch": "candidate/pr180-rustfmt-28fe-20261009",
+      "P1": "3ebf3f6163e37e7e23c441e23d706abd54c3dd82",
+      "P2": "c04033a02a7ed27f35a77247c0e5d45d0bb000a7",
+      "R": "3f9dcce4d072b04f21fcfcf1712bacb6171274c4",
+      "diff": "two test files only: exact rustfmt expansion; ready.<pid>.tmp durable write then same-directory rename",
+      "review": "no static blocker; preserves production code, PID equality, 15s timeout, SIGKILL, crash points, recovery assertions and budgets",
+      "state": "reviewed candidate only; no G/source-binding or fresh exact-source execution; PR180 ref not moved"
+    },
+    "pr178": {
+      "state": "closed/unmerged",
+      "reason": "superseded by PR180; C8 branch and custody preserved",
+      "todo_effect": 0
+    },
+    "pr184": {
+      "state": "closed/unmerged",
+      "head": "883230f2b44ebcf09495870db8c0e31d61270331",
+      "reason": "superseded by PR180 after exact 7 product + 7 evidence blob/mode absorption review",
+      "todo_effect": 0
+    },
+    "pr181": {
+      "state": "closed/merged",
+      "action": "none"
+    }
+  },
+  "original_todos": {
+    "newly_done_ids": [],
+    "newly_done_count": 0,
+    "cumulative_since_163_baseline": 0,
+    "target": 10,
+    "remaining": 29,
+    "priority_status": "P8-005..P8-013 and P8-016 all in_progress"
+  },
+  "next": [
+    "Owner may integrate reviewed R35 repair candidate or equivalent into the fresh PR180 head; then create fresh binding G and run exact-source CI without relabeling old results.",
+    "Continue the existing G3 study untouched; only complete source-bound 150-shard evidence can close P8-005.",
+    "Once P8-005 and P8-006 are genuinely complete, use the independently accepted observer subgate with the existing task evidence to evaluate P8-007 and downstream tasks in dependency order."
+  ]
+}

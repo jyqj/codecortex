@@ -1,0 +1,513 @@
+{
+  "schema_version": 1,
+  "review_kind": "independent_observer_artifact_reception",
+  "reviewed_at": "2026-10-09T14:53:44.141Z",
+  "repository": "jyqj/codecortex",
+  "run": {
+    "id": 37930392164,
+    "attempt": 1,
+    "status": "completed",
+    "conclusion": "success",
+    "head_sha": "4d18dcdb34b5d7a277566b57801cc882d8b1eb61",
+    "head_tree": "383716945d2d5f2404578d726afb317e4490c181",
+    "jobs": [
+      {
+        "id": 113819400505,
+        "name": "admission_and_controls",
+        "conclusion": "success"
+      },
+      {
+        "id": 113835779540,
+        "name": "mixed (1)",
+        "conclusion": "success"
+      },
+      {
+        "id": 113835779486,
+        "name": "mixed (4)",
+        "conclusion": "success"
+      },
+      {
+        "id": 113835779454,
+        "name": "mixed (8)",
+        "conclusion": "success"
+      },
+      {
+        "id": 113835779541,
+        "name": "mixed (16)",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "controls": {
+    "artifact": {
+      "id": 11617781499,
+      "size_bytes": 7220,
+      "sha256": "576426d079c75ea82d4790e8f56e8bc6876fd0ab7fceb2ff167653c0acb2f82b",
+      "downloaded_sha256_matches_api_digest": true,
+      "zip_crc_test": "passed",
+      "files": [
+        "acquisition-controls.log",
+        "default-status.log",
+        "feature-status.log",
+        "python-controls.log",
+        "rustfmt.log",
+        "source-admission.log"
+      ]
+    },
+    "source_admission": {
+      "status": "passed",
+      "source_version": "p8-completion-source-20261009-v15",
+      "complete_inputs": 1094,
+      "product_source": "b79f7749eb8f0a6c728493adfb073ca7db5563be",
+      "review_source": "87c697343f9d5a465cac7527f2e16933410ccd26"
+    },
+    "rustfmt_exit": 0,
+    "default_off": {
+      "passed": 1,
+      "failed": 0
+    },
+    "feature_acquisition_controls": {
+      "passed": 8,
+      "failed": 0
+    },
+    "feature_status_contract": {
+      "passed": 1,
+      "failed": 0
+    },
+    "python_runtime_controls": {
+      "passed": 77,
+      "failed": 0
+    }
+  },
+  "common_measurement_identity": {
+    "profile": "mixed",
+    "configured_concurrency_values": [
+      1,
+      4,
+      8,
+      16
+    ],
+    "operations_each": 900,
+    "files_each": 1000,
+    "offer_interval_ms": 500,
+    "diagnostic_profile": "mixed_db_lock_observation_v1",
+    "feature": "p8-db-lock-observation",
+    "paid_provider_requests": 0,
+    "source_commit": "4d18dcdb34b5d7a277566b57801cc882d8b1eb61",
+    "source_tree": "383716945d2d5f2404578d726afb317e4490c181",
+    "source_input_count": 1094,
+    "source_manifest_sha256": "32368b4a21bd1fec7a63a23b431f6295363e8163ac50e04d06fcc8a16df8445d",
+    "source_before_after_identical": true,
+    "observer_source_before_after_identical": true,
+    "product_binary_sha256": "5f42c2aceaf74d6abd6c96dd176f93f82f5bdcb898b80f9b2740cabe61745f7a",
+    "oracle_binary_sha256": "a48ab71e4342fa30b2e987b32cc172f0686c41d27e03cb2becf07c570873383a",
+    "statistics_binary_sha256": "c0b169f50d0530e64e9fb461504274d8ade82d4efe1d0ede632c14daa684027b",
+    "release_build": true,
+    "locked_offline_build": true,
+    "build_target_initially_absent": true,
+    "build_exit_code": 0,
+    "compiler": "rustc 1.95.0 (59807616e 2026-04-14), x86_64-unknown-linux-gnu",
+    "cargo": "cargo 1.95.0 (f2d3ce0bd 2026-03-21)",
+    "acquisition_boundaries": "after initial cold build, before offered work; after work and sampler drain, before endpoint comparison",
+    "timing_scope": {
+      "writer_and_pool": "actual lock acquisition call elapsed, including uncontended call overhead; not pure blocked scheduler time",
+      "checkout": "read connection checkout wall time; may include validation or construction; not pure lock or SQLite busy wait",
+      "interval_maximum_observed": false,
+      "sqlite_busy_wait_observed": false
+    },
+    "performance_scope": "instrumented feature build only; not merged into default-build latency distributions"
+  },
+  "measurements": {
+    "C1": {
+      "job_id": 113835779540,
+      "artifact_id": 11623110311,
+      "artifact_size_bytes": 16608748,
+      "zip_sha256": "6fa82bbe05ee1a35212cae00e0e861ad97d74f026dfd21a895b93020cbb895ac",
+      "zip_crc_test": "passed",
+      "artifact_expired": false,
+      "configured_concurrency": 1,
+      "actual_maximum_concurrency": 1,
+      "actual_read_build_overlap": false,
+      "pid": 7037,
+      "offered": 900,
+      "success": 900,
+      "failed_operations": 0,
+      "unfinished_work": 0,
+      "report_status": "passed_observation",
+      "report_exit_code": 0,
+      "boundaries": {
+        "before": {
+          "started_ns": 770931915,
+          "finished_ns": 771500751
+        },
+        "operations": {
+          "min_offered_ns": 771903084,
+          "max_finished_ns": 450274921693
+        },
+        "after": {
+          "started_ns": 450276619592,
+          "finished_ns": 450277181854
+        }
+      },
+      "counters": {
+        "writer_mutex_acquire": {
+          "attempts": 3550,
+          "acquired": 3550,
+          "failed": 0,
+          "poisoned": 0,
+          "would_block": 0,
+          "in_flight_at_boundaries": [
+            0,
+            0
+          ],
+          "elapsed_ns_total": 177158,
+          "process_lifetime_max_ns_at_end": 27832
+        },
+        "read_pool_lock_acquire": {
+          "attempts": 16850,
+          "acquired": 16850,
+          "failed": 0,
+          "poisoned": 0,
+          "would_block": 0,
+          "in_flight_at_boundaries": [
+            0,
+            0
+          ],
+          "elapsed_ns_total": 997977,
+          "process_lifetime_max_ns_at_end": 23404
+        },
+        "read_connection_checkout": {
+          "attempts": 16850,
+          "acquired": 16850,
+          "failed": 0,
+          "poisoned": 0,
+          "would_block": 0,
+          "in_flight_at_boundaries": [
+            0,
+            0
+          ],
+          "elapsed_ns_total": 86362596,
+          "process_lifetime_max_ns_at_end": 105718
+        }
+      },
+      "raw": {
+        "line_count": 1356,
+        "operation_rows": 900,
+        "observation_rows": 2,
+        "nonzero_operation_exit_count": 0,
+        "sha256": "c9ce4618d692a07cb28090edfa0109a4de9c03d28613982ad840e17c857b0408"
+      },
+      "seal": {
+        "status": "sealed",
+        "inventory_files": 2112,
+        "inventory_bytes": 39886012
+      },
+      "original_validator": {
+        "exit_code": 0,
+        "status": "sealed_artifacts_verified",
+        "files": 2112,
+        "observation_status": "passed_observation"
+      }
+    },
+    "C4": {
+      "job_id": 113835779486,
+      "artifact_id": 11620977433,
+      "artifact_size_bytes": 16993296,
+      "zip_sha256": "67eba33ee740e923a303b6ec8c19018d6d40fd5b25f8ab7514ef56f1490e9cfc",
+      "zip_crc_test": "passed",
+      "artifact_expired": false,
+      "configured_concurrency": 4,
+      "actual_maximum_concurrency": 4,
+      "actual_read_build_overlap": true,
+      "pid": 6886,
+      "offered": 900,
+      "success": 900,
+      "failed_operations": 0,
+      "unfinished_work": 0,
+      "report_status": "passed_observation",
+      "report_exit_code": 0,
+      "boundaries": {
+        "before": {
+          "started_ns": 1218784415,
+          "finished_ns": 1219257798
+        },
+        "operations": {
+          "min_offered_ns": 1219560778,
+          "max_finished_ns": 449231797370
+        },
+        "after": {
+          "started_ns": 449233507068,
+          "finished_ns": 449234086077
+        }
+      },
+      "counters": {
+        "writer_mutex_acquire": {
+          "attempts": 3550,
+          "acquired": 3550,
+          "failed": 0,
+          "poisoned": 0,
+          "would_block": 0,
+          "in_flight_at_boundaries": [
+            0,
+            0
+          ],
+          "elapsed_ns_total": 117172,
+          "process_lifetime_max_ns_at_end": 250
+        },
+        "read_pool_lock_acquire": {
+          "attempts": 16848,
+          "acquired": 16848,
+          "failed": 0,
+          "poisoned": 0,
+          "would_block": 0,
+          "in_flight_at_boundaries": [
+            0,
+            0
+          ],
+          "elapsed_ns_total": 901594,
+          "process_lifetime_max_ns_at_end": 2254
+        },
+        "read_connection_checkout": {
+          "attempts": 16848,
+          "acquired": 16848,
+          "failed": 0,
+          "poisoned": 0,
+          "would_block": 0,
+          "in_flight_at_boundaries": [
+            0,
+            0
+          ],
+          "elapsed_ns_total": 68937811,
+          "process_lifetime_max_ns_at_end": 362008
+        }
+      },
+      "raw": {
+        "line_count": 1355,
+        "operation_rows": 900,
+        "observation_rows": 2,
+        "nonzero_operation_exit_count": 0,
+        "sha256": "191ef1a6bbf44c5b63e2d577901e76346856cd93d29fb26c078105a73882636d"
+      },
+      "seal": {
+        "status": "sealed",
+        "inventory_files": 2112,
+        "inventory_bytes": 39863204
+      },
+      "original_validator": {
+        "exit_code": 0,
+        "status": "sealed_artifacts_verified",
+        "files": 2112,
+        "observation_status": "passed_observation"
+      }
+    },
+    "C8": {
+      "job_id": 113835779454,
+      "artifact_id": 11621010611,
+      "artifact_size_bytes": 16642248,
+      "zip_sha256": "d12b7f72eee15a47691f3168342671f4d7426b76200e9ca3288fd844f33f0236",
+      "zip_crc_test": "passed",
+      "artifact_expired": false,
+      "configured_concurrency": 8,
+      "actual_maximum_concurrency": 7,
+      "actual_read_build_overlap": true,
+      "pid": 6925,
+      "offered": 900,
+      "success": 900,
+      "failed_operations": 0,
+      "unfinished_work": 0,
+      "report_status": "passed_observation",
+      "report_exit_code": 0,
+      "boundaries": {
+        "before": {
+          "started_ns": 1313797948,
+          "finished_ns": 1314325809
+        },
+        "operations": {
+          "min_offered_ns": 1314699161,
+          "max_finished_ns": 449326924119
+        },
+        "after": {
+          "started_ns": 449328993290,
+          "finished_ns": 449329749278
+        }
+      },
+      "counters": {
+        "writer_mutex_acquire": {
+          "attempts": 3550,
+          "acquired": 3550,
+          "failed": 0,
+          "poisoned": 0,
+          "would_block": 0,
+          "in_flight_at_boundaries": [
+            0,
+            0
+          ],
+          "elapsed_ns_total": 130941,
+          "process_lifetime_max_ns_at_end": 320
+        },
+        "read_pool_lock_acquire": {
+          "attempts": 16846,
+          "acquired": 16846,
+          "failed": 0,
+          "poisoned": 0,
+          "would_block": 0,
+          "in_flight_at_boundaries": [
+            0,
+            0
+          ],
+          "elapsed_ns_total": 1015497,
+          "process_lifetime_max_ns_at_end": 35452
+        },
+        "read_connection_checkout": {
+          "attempts": 16846,
+          "acquired": 16846,
+          "failed": 0,
+          "poisoned": 0,
+          "would_block": 0,
+          "in_flight_at_boundaries": [
+            0,
+            0
+          ],
+          "elapsed_ns_total": 73025045,
+          "process_lifetime_max_ns_at_end": 279844
+        }
+      },
+      "raw": {
+        "line_count": 1354,
+        "operation_rows": 900,
+        "observation_rows": 2,
+        "nonzero_operation_exit_count": 0,
+        "sha256": "0be112292791124b3f5eb8a86991f35f22380cf512e01813b8aebe407c1d5103"
+      },
+      "seal": {
+        "status": "sealed",
+        "inventory_files": 2112,
+        "inventory_bytes": 39841513
+      },
+      "original_validator": {
+        "exit_code": 0,
+        "status": "sealed_artifacts_verified",
+        "files": 2112,
+        "observation_status": "passed_observation"
+      }
+    },
+    "C16": {
+      "job_id": 113835779541,
+      "artifact_id": 11623006495,
+      "artifact_size_bytes": 16407395,
+      "zip_sha256": "3486cb9bfff9787be59db59ae7612d8b20b56846cb9858caf4709de5ade2586e",
+      "zip_crc_test": "passed",
+      "artifact_expired": false,
+      "configured_concurrency": 16,
+      "actual_maximum_concurrency": 12,
+      "actual_read_build_overlap": true,
+      "pid": 7147,
+      "offered": 900,
+      "success": 900,
+      "failed_operations": 0,
+      "unfinished_work": 0,
+      "report_status": "passed_observation",
+      "report_exit_code": 0,
+      "boundaries": {
+        "before": {
+          "started_ns": 746276327,
+          "finished_ns": 746856314
+        },
+        "operations": {
+          "min_offered_ns": 747208825,
+          "max_finished_ns": 448760306634
+        },
+        "after": {
+          "started_ns": 448762732201,
+          "finished_ns": 448763783424
+        }
+      },
+      "counters": {
+        "writer_mutex_acquire": {
+          "attempts": 3550,
+          "acquired": 3550,
+          "failed": 0,
+          "poisoned": 0,
+          "would_block": 0,
+          "in_flight_at_boundaries": [
+            0,
+            0
+          ],
+          "elapsed_ns_total": 147338,
+          "process_lifetime_max_ns_at_end": 161
+        },
+        "read_pool_lock_acquire": {
+          "attempts": 16848,
+          "acquired": 16848,
+          "failed": 0,
+          "poisoned": 0,
+          "would_block": 0,
+          "in_flight_at_boundaries": [
+            0,
+            0
+          ],
+          "elapsed_ns_total": 1040384,
+          "process_lifetime_max_ns_at_end": 29546
+        },
+        "read_connection_checkout": {
+          "attempts": 16848,
+          "acquired": 16848,
+          "failed": 0,
+          "poisoned": 0,
+          "would_block": 0,
+          "in_flight_at_boundaries": [
+            0,
+            0
+          ],
+          "elapsed_ns_total": 78694013,
+          "process_lifetime_max_ns_at_end": 489805
+        }
+      },
+      "raw": {
+        "line_count": 1355,
+        "operation_rows": 900,
+        "observation_rows": 2,
+        "nonzero_operation_exit_count": 0,
+        "sha256": "0ad5e377ecec57699a56d1c36f6d13c37e289f6a810ad2029fb8dbdc72a9de05"
+      },
+      "seal": {
+        "status": "sealed",
+        "inventory_files": 2112,
+        "inventory_bytes": 39877295
+      },
+      "original_validator": {
+        "exit_code": 0,
+        "status": "sealed_artifacts_verified",
+        "files": 2112,
+        "observation_status": "passed_observation"
+      }
+    }
+  },
+  "independent_checks": {
+    "all_five_api_artifact_digests_matched_downloaded_bytes": true,
+    "all_five_zip_crc_tests_passed": true,
+    "all_four_original_retained_verifier_invocations_exited_zero": true,
+    "all_four_archives_have_900_original_operation_rows": true,
+    "all_four_have_exactly_two_ordered_counter_boundaries": true,
+    "all_counter_boundaries_enclose_all_offered_operations": true,
+    "all_counter_process_ids_equal_owned_product_pid": true,
+    "all_workload_acquisition_seams_have_positive_attempt_denominators": true,
+    "all_terminal_denominators_balance": true,
+    "all_failed_poisoned_would_block_and_boundary_in_flight_values_are_zero": true,
+    "all_owned_cleanup_unfinished_work_values_are_zero": true,
+    "all_reports_and_seals_are_successful": true,
+    "all_builds_are_source_and_feature_bound": true
+  },
+  "acceptance_decision": {
+    "original_requirement": "09-BENCHMARK.md section 9: configured C=1/4/8/16 mixed read/build must collect DB lock wait alongside transparent denominators",
+    "narrow_p8_007_observation_subgate": "satisfied",
+    "rationale": "All four configured concurrency profiles ran 900 original mixed operations and retained actual writer mutex, read-pool lock and read-connection checkout acquisition elapsed counters from the owned product process. Each archive preserves its source, feature, toolchain, binary, PID, ordered run window, denominators, failure/in-flight values, raw rows, replay parity and sealed inventory; the original retained verifier independently replayed each archive with exit 0.",
+    "saturation_boundary": "C8 observed actual maximum concurrency 7 and C16 observed 12; these are preserved and no claim of full saturation is made. Section 9 requires the configured C profiles and does not separately require observed peak exactly equal to the configured cap.",
+    "performance_boundary": "These are opt-in diagnostic-feature measurements. They do not replace or alter existing default-build latency distributions, do not observe pure SQLite busy wait or interval maxima, and do not authorize release.",
+    "p8_007_task_status": "must_remain_in_progress",
+    "hard_dependency": "P8-006",
+    "hard_dependency_satisfied": false,
+    "task_can_close_now": false,
+    "original_todo_completed_by_this_review": false
+  }
+}

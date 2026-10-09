@@ -1,0 +1,165 @@
+{
+  "schema": "p8-a23-scale-failure-reexecution-policy-review-v1",
+  "reviewer": "acceptance_review",
+  "scope": "read-only policy/source inspection; no execution, retries, threshold or task changes",
+  "inputs": [
+    {
+      "path": "docs/roadmap/code-index-v2/P8-SCALE.md",
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "git_blob": "d23c80666c8885ee7274cdffc3c023e6a0ef9e08",
+      "bytes": 26078,
+      "sha256": "7093bcdb74a7bcd6ff32e05f5cd2c7a7bd6576c90fff42b36251884cfbfe1442"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "git_blob": "5ced0c455e7e774a9d95da23187c64dcefc37314",
+      "bytes": 20488,
+      "sha256": "0c8bcbed17ea4e83b1dc55e9828f93a27e2a334a0d0eaa056302944260d0a731"
+    },
+    {
+      "path": ".github/workflows/p8-scale.yml",
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "git_blob": "74f1b64ed447ef24da584f1c1f8d090d2fa1e03e",
+      "bytes": 8621,
+      "sha256": "4258476dd37d8af223aaa7ad45d7c97d7298be1ba4ec5ffd9af9949785ed8f3d"
+    },
+    {
+      "path": "scripts/p8_scale_matrix.py",
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "git_blob": "b4ba4b57f8d23a16128ef82927e78799ae70f886",
+      "bytes": 65092,
+      "sha256": "f169b0f26cf2a87d3e2548d734431c530cbf63d353ac054045ec8be80889f957"
+    },
+    {
+      "path": "scripts/p8_runner_capacity.py",
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "git_blob": "16d150d837e98c900b49de2059aa4ca74fe2f02f",
+      "bytes": 11164,
+      "sha256": "2e37954df30b153ad82b49a5841a977451288c1730d03bfd2d0d7a2ace412939"
+    }
+  ],
+  "observed_failure_context": {
+    "basis": "root's 2026-10-09 06:12 UTC official API readback, not independently fetched by this report",
+    "run_id": 37872522779,
+    "job_id": 113638100879,
+    "job_status": "completed",
+    "job_conclusion": "failure",
+    "completed_at": "2026-10-09T06:12:02Z",
+    "remaining_145": "skipped",
+    "aggregate": "queued_at_observation",
+    "job_log": "HTTP 404 BlobNotFound reported",
+    "inconsistent_step_state": "measurement step still in_progress and always-upload pending in reported snapshot",
+    "cause": "unknown",
+    "native_outcome": "unknown",
+    "hundred_k_shard": "not observed in reported artifact snapshot"
+  },
+  "conclusion": {
+    "existing_automatic_failed_cell_continuation": false,
+    "existing_generic_bounded_attempt_ledger": false,
+    "original_project_prohibits_all_prospective_recovery": false,
+    "old_D0_no_replace_policy_applies_automatically_to_A23": false,
+    "current_run_complete_or_accepted": false,
+    "approval_to_rerun_or_start_new_run": false,
+    "remaining_original_tasks": 29,
+    "task_statuses_changed": false
+  },
+  "rules": [
+    {
+      "file": "docs/roadmap/code-index-v2/P8-SCALE.md",
+      "lines": [
+        67
+      ],
+      "rule": "Each output is create-new; original run and failures are never overwritten."
+    },
+    {
+      "file": "docs/roadmap/code-index-v2/P8-SCALE.md",
+      "lines": [
+        261,
+        276
+      ],
+      "rule": "Five rep-0 originals precede remaining145; all five must pass. Failure skips145 while aggregation still checks150 and every group N30. This ordering is explicitly not automatic failed-sample rerunning."
+    },
+    {
+      "file": "docs/roadmap/code-index-v2/P8-SCALE.md",
+      "lines": [
+        278,
+        281
+      ],
+      "rule": "Every complete execution fixes one full Git SHA for build/preflight/remaining/aggregate. A later source/docs/workflow commit must build its own receipt and cannot relabel the old commit; old failure/partial/source records retained."
+    },
+    {
+      "file": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "lines": [
+        130,
+        136,
+        173,
+        183,
+        191
+      ],
+      "rule": "Input/environment locks, invalid/infrastructure versus gate versus partial termination distinction, retained censored timeout failures, no best-of, report failures and preserve immutable original run."
+    },
+    {
+      "file": ".github/workflows/p8-scale.yml",
+      "lines": [
+        19,
+        42,
+        86,
+        104,
+        146,
+        164,
+        187,
+        210
+      ],
+      "rule": "Dispatch or p8-scale-run label starts workflow; artifacts use run_id with no run_attempt component. No explicit attempt1 guard or generic retry ledger in this workflow."
+    },
+    {
+      "file": "scripts/p8_scale_matrix.py",
+      "lines": [
+        337,
+        354,
+        395,
+        431,
+        754,
+        819,
+        861,
+        942,
+        952,
+        966
+      ],
+      "rule": "Original registered plan/budgets and source/build/native hashes are enforced; nonzero native cannot pass. Each coordinate and global group/sample identity occurs exactly once; all150 required. The aggregator validates received shard validity, not cross-attempt provenance/selection."
+    },
+    {
+      "file": "docs/roadmap/code-index-v2/P8-SCALE.md",
+      "lines": [
+        222,
+        235
+      ],
+      "rule": "Native deadline18,000,000ms/512MiB and all parity budgets unchanged. Disk preflight estimate not proof of peak sufficiency; insufficient space is not_run/nonzero without native measurement."
+    },
+    {
+      "file": "scripts/p8_runner_capacity.py",
+      "lines": [
+        49,
+        81,
+        130,
+        181
+      ],
+      "rule": "Existing pre-native capacity preparation is restricted to this repository's fresh hosted Ubuntu24 VM and two fixed unused SDK paths, with source identity and explicit opt-in. It is not authorization for arbitrary host cleanup or capacity budget relaxation."
+    }
+  ],
+  "minimum_next_steps": [
+    "Retain and obtain coherent terminal job/step API, available log/annotations, original capacity/shard/aggregate artifacts before classifying the100k failure. A404 or premature elapsed time does not prove infrastructure-only failure.",
+    "If raw proves a capacity/environment preparation failure, diagnose within the existing guarded helper/environment setup; preserve original failure and all budgets. A new bounded execution may be proposed only with exact source/build and immutable attempt identity.",
+    "To reuse the original four successful cells in a continuation, explicitly register the finite attempt lineage, eligible observed failure categories, sample selection and late-evidence rules before supplemental execution, retaining every original failure/unknown and every attempt. This is additional reviewed continuation machinery, not an existing behavior of aggregate.",
+    "Known native correctness, parity, source/evidence integrity or exhausted registered budgets must remain failures; a product repair requires new fixed source/build and old A23 artifacts cannot be relabeled.",
+    "An ordinary new complete workflow execution on a fixed source is a documented available path, but the original text does not establish that all150 must always be rerun after every infrastructure interruption. Any alternative still needs complete150/1500, N30 group coverage and unchanged host strata/failure accounting."
+  ],
+  "limits": [
+    "No actual failure cause determined.",
+    "No artifact overwrite/delete requested.",
+    "No new study/continuation/rerun executed or authorized here.",
+    "A23 original coverage is distinct from current main G2 and prior D0 study.",
+    "This review alone closes no TODO or release gate."
+  ]
+}

@@ -1,0 +1,993 @@
+{
+  "schema": "p8-a23-declared-observed-platform-scope-v1",
+  "status": "prepared_for_independent_review_and_root_scope_confirmation",
+  "author": "acceptance_review",
+  "fixed_source": {
+    "commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+    "tree": "58147c952505c44da1f41eb4b9c31643f2303b96",
+    "native_input_count": 1087,
+    "native_manifest_sha256": "4e0aa6bbfd4d5bea00416bca2cd99318d865ffc526fdcb45897c4d300de3ac00"
+  },
+  "scope_kind": "Observed build/smoke configurations and one recorded original supervisor test; not a general compatibility guarantee or a release approval.",
+  "original_authority": {
+    "tasks": {
+      "git_blob": "f400eb2b5a3f8c524978bee1dfa87f98efe4bce8",
+      "sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207",
+      "path": "docs/roadmap/code-index-v2/tasks.json",
+      "common_condition": "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。",
+      "P8_012": {
+        "steps": [
+          "Linux/macOS、当前声明MSRV与stable、默认/semantic features",
+          "全新target"
+        ],
+        "acceptance": "SDK blocker解决或发布平台范围明确，缓存测试不替冷构建",
+        "validations": [
+          "V01",
+          "V21"
+        ],
+        "depends_on": [
+          "P8-011"
+        ]
+      }
+    },
+    "validation": {
+      "path": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+      "git_blob": "fcbcf9e9280d41a4e8e138543d2bd217137a2c5e",
+      "relevant_lines": [
+        23,
+        43,
+        58,
+        65
+      ],
+      "meaning": "V01/V21 require exact source/toolchain/SDK/old tests; failures within the selected scope remain blockers."
+    },
+    "phase_policy": {
+      "path": "docs/roadmap/code-index-v2/04-PHASES.md",
+      "git_blob": "2a8245f07bdaea69372e4fc7289eae15650e62e6",
+      "line": 145,
+      "text": "退出：选择发布的profile blocker=0"
+    },
+    "original_acceptance_or_test_limits_changed": false
+  },
+  "evidence": {
+    "platform_a2_review": {
+      "git_blob": "784238713bb0fb24c778017925ebd22ffe6fec10",
+      "bytes": 55381,
+      "sha256": "1f928b2886dc916ec9cdcdced4f9482e99727b35e8a3a2c3dc86afac3752e60e"
+    },
+    "platform_a2_full_log": {
+      "git_blob": "37ca19ba347a5cdd16bf72e391ee05be35547154",
+      "bytes": 76453,
+      "sha256": "d9c46b5625a36fd3080bd3826e7b92d949422db5b51e858bf67787d2bef0427c"
+    },
+    "platform_original_artifact_index": {
+      "git_blob": "27a3ad2b8de2e637f2b5648837a2ef56fbcc714f",
+      "bytes": 4046,
+      "sha256": "3a28874607f5992ec88a0dd95ce61b42365cfe990486f5a7003ee0f219eaaf64"
+    },
+    "original_mac_test_review": {
+      "git_blob": "4b2fe67b3cc26ba05070af5b640573bd05f84823",
+      "bytes": 25634,
+      "sha256": "f39a5458405234e9ab17018653212a3482644c4d82476f5bb0b891608657a99f"
+    },
+    "prior_user_mac_failure_review": {
+      "git_blob": "62d2d1960ab0f15432ba869225951988a80ed843",
+      "bytes": 27973,
+      "sha256": "558383ab41aedec7cdbe91b19f1a4bec0efe72bc4f5b8391ec1a8d4efd419af0"
+    }
+  },
+  "eight_original_cold_build_cells": {
+    "original_run": 37871838952,
+    "original_source": "a23bb72d3c954f385b99fe81ce9189885c208557",
+    "count": 8,
+    "counts": {
+      "failed": 0,
+      "not_run": 0,
+      "passed": 8
+    },
+    "scope": "eight actual fresh-target builds and stdio smoke; source-byte and binary binding; task dependencies and release certification remain separate",
+    "actual_data_readback": {
+      "run": 37885688054,
+      "job": 113675067448,
+      "head": "5019b3d68043bb3c5a714222caab5fe6b24c11b8",
+      "status": "success",
+      "new_native_builds_or_smoke": 0
+    },
+    "cells": [
+      {
+        "cell": {
+          "package": "default",
+          "platform": "linux",
+          "toolchain": "1.95"
+        },
+        "status": "passed",
+        "observed_rustc_release": "1.95.0",
+        "original_binary_sha256": "9824f9ec22637c327ff86c1c18bd84f3a47a3485b85236e9508a724edb35663a",
+        "original_bundle_sha256": "bb19c93b31ec354c22325d6ac526d019c55f891d4e9175675b202059808b5ae4",
+        "original_wall_seconds": 181.76679331900002,
+        "original_artifact": {
+          "id": 11591733636,
+          "name": "p8-platform-cell-linux-1.95-default-a23bb72d3c954f385b99fe81ce9189885c208557",
+          "run_id": 37871838952,
+          "run_attempt": 1,
+          "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+          "bytes": 8768177,
+          "sha256": "a828b75ac08249d4cd888d8a14185684b7902842a4afad859a7cee57d507f23b"
+        },
+        "observed_environment": {
+          "platform_family": "linux",
+          "os_version": null,
+          "architecture": null,
+          "target_triple": null,
+          "cargo_version": null,
+          "xcode_version": null,
+          "xcode_selection": null,
+          "sdk_version": null,
+          "sdk_path": null,
+          "extra_fields_status": "unknown_from_available_review_projection",
+          "basis": "A2 platform.cells; the original per-cell archive/bundle is bound, but its environment details are not copied into this published review projection."
+        }
+      },
+      {
+        "cell": {
+          "package": "semantic",
+          "platform": "linux",
+          "toolchain": "1.95"
+        },
+        "status": "passed",
+        "observed_rustc_release": "1.95.0",
+        "original_binary_sha256": "1fbdb4ef141259e62202e0335f4f57094122805eb0e9dbe073d9d5a36021992c",
+        "original_bundle_sha256": "3f885378f4a3b7bbe10e212d05fc2e83d3c3e6dc5e0692305192bf7a513880da",
+        "original_wall_seconds": 237.44014904699998,
+        "original_artifact": {
+          "id": 11592442010,
+          "name": "p8-platform-cell-linux-1.95-semantic-a23bb72d3c954f385b99fe81ce9189885c208557",
+          "run_id": 37871838952,
+          "run_attempt": 1,
+          "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+          "bytes": 9022522,
+          "sha256": "36fd353584c30d67c3da8b42ed16fdc8709b952a62acf63b562e17e1bbac3edd"
+        },
+        "observed_environment": {
+          "platform_family": "linux",
+          "os_version": null,
+          "architecture": null,
+          "target_triple": null,
+          "cargo_version": null,
+          "xcode_version": null,
+          "xcode_selection": null,
+          "sdk_version": null,
+          "sdk_path": null,
+          "extra_fields_status": "unknown_from_available_review_projection",
+          "basis": "A2 platform.cells; the original per-cell archive/bundle is bound, but its environment details are not copied into this published review projection."
+        }
+      },
+      {
+        "cell": {
+          "package": "default",
+          "platform": "linux",
+          "toolchain": "stable"
+        },
+        "status": "passed",
+        "observed_rustc_release": "1.99.0",
+        "original_binary_sha256": "84fc298da7e4118efa541cd20143500490eab0cfaeeab4ee0a0ba09135229404",
+        "original_bundle_sha256": "55119f1838b28e2997029aed215e7b404d19e8afa7aa072eb34cbf95eb3510ab",
+        "original_wall_seconds": 224.653002578,
+        "original_artifact": {
+          "id": 11592750594,
+          "name": "p8-platform-cell-linux-stable-default-a23bb72d3c954f385b99fe81ce9189885c208557",
+          "run_id": 37871838952,
+          "run_attempt": 1,
+          "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+          "bytes": 8719713,
+          "sha256": "e2d1aa0f541f9cb01899db37339381ae65e9b32df4f7fe094489fc3973790f73"
+        },
+        "observed_environment": {
+          "platform_family": "linux",
+          "os_version": null,
+          "architecture": null,
+          "target_triple": null,
+          "cargo_version": null,
+          "xcode_version": null,
+          "xcode_selection": null,
+          "sdk_version": null,
+          "sdk_path": null,
+          "extra_fields_status": "unknown_from_available_review_projection",
+          "basis": "A2 platform.cells; the original per-cell archive/bundle is bound, but its environment details are not copied into this published review projection."
+        }
+      },
+      {
+        "cell": {
+          "package": "semantic",
+          "platform": "linux",
+          "toolchain": "stable"
+        },
+        "status": "passed",
+        "observed_rustc_release": "1.99.0",
+        "original_binary_sha256": "0f71bcda874e7fadfa20abe73700df5aecbc40633ef6b8b23719daa744377e66",
+        "original_bundle_sha256": "1dba3314ded854913dec5c09719e2b545d84f15c30ce85a09b70d68ad6c4ab24",
+        "original_wall_seconds": 161.096919436,
+        "original_artifact": {
+          "id": 11592990763,
+          "name": "p8-platform-cell-linux-stable-semantic-a23bb72d3c954f385b99fe81ce9189885c208557",
+          "run_id": 37871838952,
+          "run_attempt": 1,
+          "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+          "bytes": 8968832,
+          "sha256": "cb2505655a8b3c72bd8caade9b291f05839819fc6b19f0232c36c08854ad8214"
+        },
+        "observed_environment": {
+          "platform_family": "linux",
+          "os_version": null,
+          "architecture": null,
+          "target_triple": null,
+          "cargo_version": null,
+          "xcode_version": null,
+          "xcode_selection": null,
+          "sdk_version": null,
+          "sdk_path": null,
+          "extra_fields_status": "unknown_from_available_review_projection",
+          "basis": "A2 platform.cells; the original per-cell archive/bundle is bound, but its environment details are not copied into this published review projection."
+        }
+      },
+      {
+        "cell": {
+          "package": "default",
+          "platform": "macos",
+          "toolchain": "1.95"
+        },
+        "status": "passed",
+        "observed_rustc_release": "1.95.0",
+        "original_binary_sha256": "232f5e9d621f19436adc66b51b39c0326c4d4da95809f24a47653b94b0604c4f",
+        "original_bundle_sha256": "1e6ef1ede5e1755b973f6078f477fc3aeea76cf76d35ec7816975d0bf4544a82",
+        "original_wall_seconds": 305.727865542,
+        "original_artifact": {
+          "id": 11591229630,
+          "name": "p8-platform-cell-macos-1.95-default-a23bb72d3c954f385b99fe81ce9189885c208557",
+          "run_id": 37871838952,
+          "run_attempt": 1,
+          "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+          "bytes": 8031708,
+          "sha256": "47953cf9b9a630f4b3b2e82dbae632f19c978403198aebb7595489573af37d9e"
+        },
+        "observed_environment": {
+          "platform_family": "macos",
+          "os_version": null,
+          "architecture": null,
+          "target_triple": null,
+          "cargo_version": null,
+          "xcode_version": null,
+          "xcode_selection": null,
+          "sdk_version": null,
+          "sdk_path": null,
+          "extra_fields_status": "unknown_from_available_review_projection",
+          "basis": "A2 platform.cells; the original per-cell archive/bundle is bound, but its environment details are not copied into this published review projection."
+        }
+      },
+      {
+        "cell": {
+          "package": "semantic",
+          "platform": "macos",
+          "toolchain": "1.95"
+        },
+        "status": "passed",
+        "observed_rustc_release": "1.95.0",
+        "original_binary_sha256": "4232d1d459dabbdebd1cd13b30e22a4e340f630980090d7192c1e1957b0ecf68",
+        "original_bundle_sha256": "59a2a9698d718f670b4e7a9efb81c7cefb14dd3a1c45c1fd2b338780eef6cf59",
+        "original_wall_seconds": 207.90119804199992,
+        "original_artifact": {
+          "id": 11591108235,
+          "name": "p8-platform-cell-macos-1.95-semantic-a23bb72d3c954f385b99fe81ce9189885c208557",
+          "run_id": 37871838952,
+          "run_attempt": 1,
+          "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+          "bytes": 8270537,
+          "sha256": "f9709600c728281e9b1f81d0f50c0c6b2e844a497603a449a697d90f759bf6e9"
+        },
+        "observed_environment": {
+          "platform_family": "macos",
+          "os_version": null,
+          "architecture": null,
+          "target_triple": null,
+          "cargo_version": null,
+          "xcode_version": null,
+          "xcode_selection": null,
+          "sdk_version": null,
+          "sdk_path": null,
+          "extra_fields_status": "unknown_from_available_review_projection",
+          "basis": "A2 platform.cells; the original per-cell archive/bundle is bound, but its environment details are not copied into this published review projection."
+        }
+      },
+      {
+        "cell": {
+          "package": "default",
+          "platform": "macos",
+          "toolchain": "stable"
+        },
+        "status": "passed",
+        "observed_rustc_release": "1.99.0",
+        "original_binary_sha256": "dfd79d3b80804f7b8fadbd6ac2dd29789d47d2054a3f3b348925c067a0c10150",
+        "original_bundle_sha256": "63292f4a865b6384553dfd471cc02525f1da6aa590d8e3ee21f51efea492c7f6",
+        "original_wall_seconds": 307.48002308400004,
+        "original_artifact": {
+          "id": 11591159319,
+          "name": "p8-platform-cell-macos-stable-default-a23bb72d3c954f385b99fe81ce9189885c208557",
+          "run_id": 37871838952,
+          "run_attempt": 1,
+          "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+          "bytes": 8351887,
+          "sha256": "b3ea19fa9254adaa4128616eaad557b3e55a36de3ab1563216e96ebd63623d44"
+        },
+        "observed_environment": {
+          "platform_family": "macos",
+          "os_version": null,
+          "architecture": null,
+          "target_triple": null,
+          "cargo_version": null,
+          "xcode_version": null,
+          "xcode_selection": null,
+          "sdk_version": null,
+          "sdk_path": null,
+          "extra_fields_status": "unknown_from_available_review_projection",
+          "basis": "A2 platform.cells; the original per-cell archive/bundle is bound, but its environment details are not copied into this published review projection."
+        }
+      },
+      {
+        "cell": {
+          "package": "semantic",
+          "platform": "macos",
+          "toolchain": "stable"
+        },
+        "status": "passed",
+        "observed_rustc_release": "1.99.0",
+        "original_binary_sha256": "ff0106609adf5d0bddb93908ec7a6d07142c90e5a995e36364c91cc026076a9f",
+        "original_bundle_sha256": "f6bc36deb8878236766ddfdd73509a37bdd83214d715150488ab34c70cc4b84f",
+        "original_wall_seconds": 262.38607125000004,
+        "original_artifact": {
+          "id": 11592465349,
+          "name": "p8-platform-cell-macos-stable-semantic-a23bb72d3c954f385b99fe81ce9189885c208557",
+          "run_id": 37871838952,
+          "run_attempt": 1,
+          "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+          "bytes": 8605542,
+          "sha256": "83ffc0a9fbb2c8d4acac780ee427022e5999f2bf89734b539342e03ba602e174"
+        },
+        "observed_environment": {
+          "platform_family": "macos",
+          "os_version": null,
+          "architecture": null,
+          "target_triple": null,
+          "cargo_version": null,
+          "xcode_version": null,
+          "xcode_selection": null,
+          "sdk_version": null,
+          "sdk_path": null,
+          "extra_fields_status": "unknown_from_available_review_projection",
+          "basis": "A2 platform.cells; the original per-cell archive/bundle is bound, but its environment details are not copied into this published review projection."
+        }
+      }
+    ],
+    "original_matrix": {
+      "artifact": {
+        "id": 11592498371,
+        "name": "p8-platform-complete-a23bb72d3c954f385b99fe81ce9189885c208557",
+        "run_id": 37871838952,
+        "run_attempt": 1,
+        "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+        "bytes": 1504,
+        "sha256": "28a2590190645f2e923926097092d6008e3a8c7014dc78b3b832fb6608712700"
+      },
+      "sha256": "d37eb7bef5005a686ca549d3e2dd4f2c033260f9cba212eaff738e85dab68941"
+    },
+    "unknown_policy": "null with extra_fields_status=unknown_from_available_review_projection is not zero, not observed absence, and not a claim that the original archived receipt omitted the field. The later exact-test SDK26.5/host must not be backfilled into these earlier eight cells.",
+    "first_data_reader_failure_preserved": {
+      "run_id": 37883820893,
+      "attempt": 1,
+      "job_id": 113669245095,
+      "head": "7494b6e439b11a60d0277c24d2b3fdd9d985e3d4",
+      "status": "failure",
+      "failed_group": "failure_gates",
+      "error": "retained CLI Cargo provenance differs",
+      "original_job_log_blob": "8c9477d3933b2da41f2a458a526ed4ec7aa66ea6",
+      "extracted_receipt_plus_lf_blob": "5b60d4963795f7842a815dde67cfb1009c4b2637",
+      "artifact_id": 11595850188,
+      "artifact_bytes": 513394037,
+      "artifact_sha256": "a629b9043439150047e8bb994c05664d79a77c2e2a251d9548804ad4c1731bfc",
+      "not_reclassified_as_success": true
+    },
+    "build_profile": "release",
+    "fresh_target": true,
+    "product_stdio_smoke": true,
+    "not_full_workspace_test_matrix": true
+  },
+  "original_supervisor_regression": {
+    "status": "passed_once_on_this_recorded_host",
+    "actual_run": {
+      "id": 37891034688,
+      "job_id": 113691785319,
+      "head": "af6c29f107d9426d104f34e7d83e070e0e383e5a",
+      "branch": "test/p8-mac-original-supervisor-28fe-20261009",
+      "event": "push",
+      "attempt": 1,
+      "branch_head_readback_exact": true,
+      "branch_run_count": 1,
+      "conclusion": "success",
+      "workflow_path": ".github/workflows/p8-mac-original-supervisor-28fe.yml",
+      "reviewed_workflow_blob": "b41c31d202910ff0d4148adad53e64c0274e99d5",
+      "workflow_sha256": "90ab1465534f14c9919d34faecfaa4211df30ab0f49b085fbb45de494ee53291"
+    },
+    "exact_function": "subprocess_descendant_cannot_hold_stderr_past_worker_deadline",
+    "actual_argv": [
+      "cargo",
+      "+1.95.0",
+      "test",
+      "--locked",
+      "-p",
+      "cc-eval",
+      "--test",
+      "p8_scale",
+      "subprocess_descendant_cannot_hold_stderr_past_worker_deadline",
+      "--",
+      "--exact",
+      "--nocapture"
+    ],
+    "profile": "test [unoptimized + debuginfo]",
+    "actual_results": {
+      "cargo_exit_code": 0,
+      "tests": 1,
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 11,
+      "harness_reported_seconds": 0.12,
+      "harness_time_scope": "Rounded harness duration; not a measurement of exact internal worker wall_ns",
+      "cargo_wall_seconds_including_compile": 98.53030683299994
+    },
+    "actual_environment": {
+      "os": "macOS",
+      "os_version": "26.6.2",
+      "os_build": "25G83",
+      "architecture": "ARM64",
+      "compiler_host": "aarch64-apple-darwin",
+      "rustc": "1.95.0 (59807616e 2026-04-14)",
+      "rustc_commit": "59807616e1fa2540724bfbac14d7976d7e4a3860",
+      "cargo": "1.95.0 (f2d3ce0bd 2026-03-21)",
+      "runner_environment": "github-hosted",
+      "image_os": "macos26",
+      "image_version": "20260907.0351.1",
+      "xcode_application_selected": "Xcode_26.6.app",
+      "xcode_version_query": null,
+      "xcode_version_query_status": "not_run; application selection path is recorded, not an xcodebuild -version measurement",
+      "xcode_selection": "/Applications/Xcode_26.6.app/Contents/Developer",
+      "sdk_version": "26.5",
+      "sdk_path": "/Applications/Xcode_26.6.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk",
+      "SDKROOT": null,
+      "SDKROOT_status": "explicitly observed unset at workflow start; effective SDK separately queried by xcrun",
+      "selected_effective_flags": {
+        "CARGO_INCREMENTAL": {
+          "value": "0",
+          "evidence": "toolchain action writes GITHUB_ENV; actual test-step env full log line744"
+        },
+        "CARGO_TERM_COLOR": {
+          "value": "never",
+          "evidence": "workflow and actual test-step env"
+        },
+        "RUSTFLAGS": {
+          "value": null,
+          "state": "not independently captured in new effective env; workflow sets no override; do not interpretnull as observedunset"
+        },
+        "CARGO_ENCODED_RUSTFLAGS": {
+          "value": null,
+          "state": "not independently captured"
+        },
+        "compile_target": "aarch64-apple-darwin from actual rustc -Vv",
+        "compile_profile": "unoptimized + debuginfo from complete Cargo stderr",
+        "SDKROOT": null,
+        "SDKROOT_evidence": "actual workflow-start selected environment explicitlynull",
+        "SDK_version": "26.5",
+        "SDK_path": "/Applications/Xcode_26.6.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk",
+        "Xcode_selection": "/Applications/Xcode_26.6.app/Contents/Developer"
+      }
+    },
+    "source_before_after": {
+      "head": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "tree": "58147c952505c44da1f41eb4b9c31643f2303b96",
+      "clean_before": true,
+      "clean_after": true,
+      "two_file_maps": {
+        "crates/cc-eval/src/benchmark/p8_scale.rs": {
+          "actual": {
+            "bytes": 46139,
+            "git_blob": "3f217d116e5fab8a1035cb643f0d74ea3c122568",
+            "sha256": "fede948c535ca8b91a6b30d3752cd28204abc310423debfd169ff53541f3afbc"
+          },
+          "expected": {
+            "bytes": 46139,
+            "git_blob": "3f217d116e5fab8a1035cb643f0d74ea3c122568",
+            "sha256": "fede948c535ca8b91a6b30d3752cd28204abc310423debfd169ff53541f3afbc"
+          },
+          "git_bytes_equal": true
+        },
+        "crates/cc-eval/tests/p8_scale.rs": {
+          "actual": {
+            "bytes": 19815,
+            "git_blob": "e4369e275bee0ddbc1cbea91e61bcc5735483e4e",
+            "sha256": "e178777707b978b04918b8de38ce1beaca76f2bf0fb342928fca0f97657e0c6d"
+          },
+          "expected": {
+            "bytes": 19815,
+            "git_blob": "e4369e275bee0ddbc1cbea91e61bcc5735483e4e",
+            "sha256": "e178777707b978b04918b8de38ce1beaca76f2bf0fb342928fca0f97657e0c6d"
+          },
+          "git_bytes_equal": true
+        }
+      },
+      "before_after_equal": true,
+      "scope": "Actual HEAD/tree and clean Git state plus independent equality of two full source-file SHA256/Gitblob/size maps before and after. No assertion that this run separately rehashed all1087 source files."
+    },
+    "original_limits": {
+      "worker_deadline_ms": 250,
+      "total_elapsed_seconds_lt": 2,
+      "expected_exit_code": 0,
+      "expected_stderr_complete": true,
+      "release_certification": "not_run"
+    },
+    "actual_test_binary": {
+      "actual_path": "/Users/runner/work/_temp/p8-mac-original-supervisor-37891034688-attempt1-target/debug/deps/p8_scale-2e1d6a779b7501c7",
+      "bytes": 48248408,
+      "git_blob": "be896846ac70b3491aede38eb170d449a201e65c",
+      "mode": 493,
+      "sha256": "f4be9957278dacac55da1cb616a8e4ef947a8cffb77c33ecc9bb2e1e15cf3d95",
+      "source": "unique actual Cargo Running line"
+    },
+    "binary_identity_scope": "Hash and size were computed by the reviewed workflow from the unique actual Cargo Running-path executable; path independently rechecked against full stderr and owned target. This reviewer did not download/re-hash binary bytes; binary itself is not copied into the small evidence artifact.",
+    "original_streams": [
+      {
+        "label": "full_log",
+        "git_blob": "b6c08302b659792cd8916f728f8a0633f9782e1c",
+        "bytes": 103165,
+        "sha256": "05339562e1415e0fea36e720c5a57e776dcef9041dbce03cc19196a32a80059c",
+        "exact": true
+      },
+      {
+        "label": "cargo_stdout",
+        "git_blob": "010139a34419db29e6778bb6b1ff22f3904fabef",
+        "bytes": 187,
+        "sha256": "4e2ebed011ef1be3a52e7785f178c3a95ebdbf4327a6a301d340d5452174b2c6",
+        "exact": true
+      },
+      {
+        "label": "cargo_stderr",
+        "git_blob": "875cbbc7c590262bb82c7ba55701365a9e507654",
+        "bytes": 13137,
+        "sha256": "02d5a6b8e2bac51a9c5194d9ac7e25856f4d067dfe4bfbb2c42fbaaec36fad3d",
+        "exact": true
+      }
+    ],
+    "official_artifact": {
+      "id": 11598438382,
+      "node_id": "MDg6QXJ0aWZhY3QxMTU5ODQzODM4Mg==",
+      "name": "p8-mac-original-supervisor-37891034688-attempt1",
+      "size_in_bytes": 51076,
+      "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11598438382",
+      "archive_download_url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11598438382/zip",
+      "expired": false,
+      "digest": "sha256:fc3e8920a166e289349b5d784311bb3fbb9f23c0f029d602158051e954f3451c",
+      "created_at": "2026-10-09T06:02:04Z",
+      "updated_at": "2026-10-09T06:02:04Z",
+      "expires_at": "2027-01-07T05:57:11Z",
+      "workflow_run": {
+        "id": 37891034688,
+        "repository_id": 1249213794,
+        "head_repository_id": 1249213794,
+        "head_branch": "test/p8-mac-original-supervisor-28fe-20261009",
+        "head_sha": "af6c29f107d9426d104f34e7d83e070e0e383e5a"
+      }
+    },
+    "whole_mac_workspace_pass": false,
+    "all_sdk_or_host_combinations_pass": false,
+    "old_failure_repaired": false
+  },
+  "retained_known_failure": {
+    "id": "A23-userMac-sdk154-original-supervisor-deadline",
+    "status": "failed",
+    "root_cause": "unknown",
+    "this_specific_configuration_certified_by_this_scope": false,
+    "source": "a23bb72d3c954f385b99fe81ce9189885c208557",
+    "tree": "58147c952505c44da1f41eb4b9c31643f2303b96",
+    "archive_head": "255e3b27b8fa1d82d5ebfb95b946cec8ee97528f",
+    "archive_pr": 171,
+    "environment": {
+      "os": "macOS",
+      "os_version": "26.6.2",
+      "architecture": "arm64",
+      "compiler_host": "aarch64-apple-darwin",
+      "rustc_release": "1.95.0",
+      "rustc_commit": "59807616e",
+      "sdkroot": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+      "sdk_version_label": "15.4",
+      "sdk_version_label_basis": "Explicit original SDKROOT path and selected original toolchain receipt; do not infer a new xcrun measurement",
+      "xcode_version": null,
+      "xcode_version_status": "unknown_from_retained_review_projection",
+      "host": "Original user Mac; distinct from the later hosted runner",
+      "selected_isolated_environment": {
+        "CARGO_BUILD_JOBS": "4",
+        "CARGO_BUILD_TARGET": null,
+        "CARGO_ENCODED_RUSTFLAGS": null,
+        "CARGO_NET_OFFLINE": null,
+        "CARGO_TARGET_DIR": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/premerge-workspace-a23-rust195-sdk154-round5",
+        "CODECORTEX_BENCH_BINARY": null,
+        "CODECORTEX_BENCH_OBSERVATIONS": null,
+        "CODECORTEX_WRITE_BENCHMARK": null,
+        "CODECORTEX_WRITE_REAL_BENCHMARK": null,
+        "PATH": "/Users/jin/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin:/Users/jin/.cargo/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin:/usr/local/bin:/Users/jin/.local/bin",
+        "RUSTC": "/Users/jin/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/rustc",
+        "RUSTC_WORKSPACE_WRAPPER": null,
+        "RUSTC_WRAPPER": null,
+        "RUSTDOC": "/Users/jin/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/rustdoc",
+        "RUSTFLAGS": null,
+        "RUSTUP_TOOLCHAIN": "1.95.0",
+        "RUST_TEST_THREADS": null,
+        "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk"
+      }
+    },
+    "workspace": {
+      "argv": [
+        "/Users/jin/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/cargo",
+        "test",
+        "--workspace"
+      ],
+      "exit_code": 101,
+      "test_target_result": "11 passed;1 failed;0 ignored",
+      "doctests": "not_reached",
+      "started_at": "2026-10-09T04:16:10.731471+00:00",
+      "finished_at": "2026-10-09T04:21:41.418963+00:00",
+      "raw_stdout": {
+        "bytes": 73576,
+        "path": "stdout.log",
+        "sha256": "881cf256e47358a47f86d3241b7f58ae682ddd219c79454d02ff1b8c9bf802d8"
+      },
+      "raw_stderr": {
+        "bytes": 30625,
+        "path": "stderr.log",
+        "sha256": "bf490234cb5a6e8c9fa3cabb34203960421510302e8760f9d2e60886131e5f78"
+      }
+    },
+    "exact_isolated": {
+      "argv": [
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/premerge-workspace-a23-rust195-sdk154-round5/debug/deps/p8_scale-a2f51b686c6f3d87",
+        "subprocess_descendant_cannot_hold_stderr_past_worker_deadline",
+        "--exact",
+        "--nocapture"
+      ],
+      "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/source/crates/cc-eval",
+      "compile_performed": false,
+      "exit_code": 101,
+      "result": "0 passed;1 failed;11 filtered"
+    },
+    "binary": {
+      "bytes": 48774744,
+      "sha256": "d6cc286b3d031bd796b41a29c82669b51fa0011e1ce8f4d9fe86943859196ad7",
+      "original_output": "11 passed;1 failed;0 ignored",
+      "isolated_output": "0 passed;1 failed;11 filtered",
+      "isolated_exit": 101
+    },
+    "original_supervisor_reports": [
+      {
+        "line": 1289,
+        "log": {
+          "bytes": 73576,
+          "path": "review-ci/premerge-workspace/attempt02-sdk154/stdout.log",
+          "sha256": "881cf256e47358a47f86d3241b7f58ae682ddd219c79454d02ff1b8c9bf802d8"
+        },
+        "name": "full_workspace",
+        "native_test_exit_code": 101,
+        "report": {
+          "deadline_scope": "entire child lifetime and stderr drain, including generation, indexing, parity and evidence; parent polling interval 10ms",
+          "executed_repetition_range": {
+            "end": 1,
+            "start": 0
+          },
+          "exit_code": 3,
+          "fixture_cleanup": {
+            "elapsed_ms": 12,
+            "error": null
+          },
+          "full_100k_certification": "not_run",
+          "max_output_bytes": 16777216,
+          "plan_digest": "f3363438084a61244b8d645115c71cf6856638b0a160259031c1e4980cae28ea",
+          "profile": "smoke",
+          "raw_digest": null,
+          "registered_repetitions": 1,
+          "release_certification": "not_run",
+          "release_prerequisites": "P7-020/P8-001/P8-004 and source/binary release lock are separate gates",
+          "schema_version": 1,
+          "shard_only": false,
+          "status": "deadline_exceeded",
+          "stderr_complete": true,
+          "summary": null,
+          "wall_ms": 272,
+          "worker_binary_digest_after": "761e41051f9971ccb419dfae7f9ac9cd6124198c7268c4229a3bf9fec3b0f59b",
+          "worker_binary_digest_before": "761e41051f9971ccb419dfae7f9ac9cd6124198c7268c4229a3bf9fec3b0f59b",
+          "worker_binary_unchanged": true,
+          "worker_exit_code": null,
+          "worker_pid": 26131
+        }
+      },
+      {
+        "line": 3,
+        "log": {
+          "bytes": 1253,
+          "path": "review-ci/premerge-workspace/isolated-negative-once/stderr.log",
+          "sha256": "9c7df1d18ad55d93c52880ae6d2fedb54d0ff01fe2a1a36b37329b92d102920b"
+        },
+        "name": "exact_isolated",
+        "native_test_exit_code": 101,
+        "report": {
+          "deadline_scope": "entire child lifetime and stderr drain, including generation, indexing, parity and evidence; parent polling interval 10ms",
+          "executed_repetition_range": {
+            "end": 1,
+            "start": 0
+          },
+          "exit_code": 3,
+          "fixture_cleanup": {
+            "elapsed_ms": 0,
+            "error": null
+          },
+          "full_100k_certification": "not_run",
+          "max_output_bytes": 16777216,
+          "plan_digest": "f3363438084a61244b8d645115c71cf6856638b0a160259031c1e4980cae28ea",
+          "profile": "smoke",
+          "raw_digest": null,
+          "registered_repetitions": 1,
+          "release_certification": "not_run",
+          "release_prerequisites": "P7-020/P8-001/P8-004 and source/binary release lock are separate gates",
+          "schema_version": 1,
+          "shard_only": false,
+          "status": "deadline_exceeded",
+          "stderr_complete": true,
+          "summary": null,
+          "wall_ms": 261,
+          "worker_binary_digest_after": "761e41051f9971ccb419dfae7f9ac9cd6124198c7268c4229a3bf9fec3b0f59b",
+          "worker_binary_digest_before": "761e41051f9971ccb419dfae7f9ac9cd6124198c7268c4229a3bf9fec3b0f59b",
+          "worker_binary_unchanged": true,
+          "worker_exit_code": null,
+          "worker_pid": 51832
+        }
+      }
+    ],
+    "persistent_diagnostic_report": {
+      "deadline_scope": "entire child lifetime and stderr drain, including generation, indexing, parity and evidence; parent polling interval 10ms",
+      "executed_repetition_range": {
+        "end": 1,
+        "start": 0
+      },
+      "exit_code": 3,
+      "fixture_cleanup": {
+        "elapsed_ms": 0,
+        "error": null
+      },
+      "full_100k_certification": "not_run",
+      "max_output_bytes": 16777216,
+      "plan_digest": "f3363438084a61244b8d645115c71cf6856638b0a160259031c1e4980cae28ea",
+      "profile": "smoke",
+      "raw_digest": null,
+      "registered_repetitions": 1,
+      "release_certification": "not_run",
+      "release_prerequisites": "P7-020/P8-001/P8-004 and source/binary release lock are separate gates",
+      "schema_version": 1,
+      "shard_only": false,
+      "status": "deadline_exceeded",
+      "stderr_complete": true,
+      "summary": null,
+      "wall_ms": 263,
+      "worker_binary_digest_after": "761e41051f9971ccb419dfae7f9ac9cd6124198c7268c4229a3bf9fec3b0f59b",
+      "worker_binary_digest_before": "761e41051f9971ccb419dfae7f9ac9cd6124198c7268c4229a3bf9fec3b0f59b",
+      "worker_binary_unchanged": true,
+      "worker_exit_code": null,
+      "worker_pid": 83129
+    },
+    "original_raw_locations": [
+      {
+        "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/attempt02-sdk154/execution-receipt.json",
+        "git_blob": "0a98ec07b281e336bdd01457e661fe16a118b806",
+        "bytes": 1715,
+        "sha256": "572dc73ddb6c6a9e878190f958d7d222e0c77786c895dd5b84c3e1c9b658a3fc",
+        "bytes_read": true
+      },
+      {
+        "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/attempt02-sdk154/command.json",
+        "git_blob": "da53138a0b2d1c15b4ddf14b273a6e592b4df562",
+        "bytes": 1243,
+        "sha256": "d1453b31e083dcb8787a366e72ea0aaaa2fe6eff9705d476735254b03baf3488",
+        "bytes_read": true
+      },
+      {
+        "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/attempt02-sdk154/toolchain.json",
+        "git_blob": "af5b2daf7e5e5b2b2e16b56d6f85a51fada354d3",
+        "bytes": 3916,
+        "sha256": "dbf96d009bf7e3763c6dfb4b7072a381e142ed1a2db55adbbe51344f1877dfbe",
+        "bytes_read": true
+      },
+      {
+        "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/attempt02-sdk154/environment-adjustment.json",
+        "git_blob": "22468ef9552da89416b7d19dba297454acd174cd",
+        "bytes": 2849,
+        "sha256": "0c1adcdd7fe9a1a32c42613ab87790ab0e92b43605691f5f68bcf66eca3bb64d",
+        "bytes_read": true
+      },
+      {
+        "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/attempt02-sdk154/source-before.json",
+        "git_blob": "b9b561951c82b1e3054b87acd137163580e0bf32",
+        "bytes": 167151,
+        "sha256": "63317208d562a04713daeb55611a00d3381963096d4981a98d91f45a23d968db",
+        "bytes_read": true
+      },
+      {
+        "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/attempt02-sdk154/source-after.json",
+        "git_blob": "bff405d75a7e9911b10a446e18cf3ce2680fa220",
+        "bytes": 167151,
+        "sha256": "88adb95cf28f28e39bb91bc8e17a55a9191202813a358770fd28b447a90eac98",
+        "bytes_read": true
+      },
+      {
+        "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/attempt02-sdk154/stdout.log",
+        "git_blob": "65033012d53ae454f4975319ee7477b7ec22f15c",
+        "bytes": 73576,
+        "sha256": "881cf256e47358a47f86d3241b7f58ae682ddd219c79454d02ff1b8c9bf802d8",
+        "bytes_read": true
+      },
+      {
+        "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/attempt02-sdk154/stderr.log",
+        "git_blob": "e694648d2be7c0f2cd597438dd02efda73c5dd16",
+        "bytes": 30625,
+        "sha256": "bf490234cb5a6e8c9fa3cabb34203960421510302e8760f9d2e60886131e5f78",
+        "bytes_read": true
+      },
+      {
+        "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/isolated-negative-once/command.json",
+        "git_blob": "0f1e1bc3f98822da43434b1ecb4d685a86168d72",
+        "bytes": 2652,
+        "sha256": "f562f38da661a7bff7e8c6cc6b2b89e9eb5a7783b3dc973d8ac9bd82e57a15d5",
+        "bytes_read": true
+      },
+      {
+        "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/isolated-negative-once/execution-receipt.json",
+        "git_blob": "de67c26083a4d86c26268f2257538a31b0db8f61",
+        "bytes": 1273,
+        "sha256": "86aea9a64753f4f179800a8f09d0ae0a4dac68dc7395d7041449b51c214f4d16",
+        "bytes_read": true
+      },
+      {
+        "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/isolated-negative-once/stdout.log",
+        "git_blob": "7867fc3890c971784dc3642a9a5f40f273d549fc",
+        "bytes": 283,
+        "sha256": "57ef4cdb5cd08a05ff985def9038f97ef0607e3dc4e657a555361f2a23b5a675",
+        "bytes_read": true
+      },
+      {
+        "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/isolated-negative-once/stderr.log",
+        "git_blob": "2acbce4b608e251192bbc24bebf8f79ee82917ee",
+        "bytes": 1253,
+        "sha256": "9c7df1d18ad55d93c52880ae6d2fedb54d0ff01fe2a1a36b37329b92d102920b",
+        "bytes_read": true
+      },
+      {
+        "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/persistent-supervisor-observer/binding.json",
+        "git_blob": "fd1dcc25c881bc3cf5d49190f207212f6afb74ed",
+        "bytes": 2829,
+        "sha256": "d4049264159b8a4e3280b6e31bf9870a3347f64d5c70abd2c1c57222780bfd11",
+        "bytes_read": true
+      },
+      {
+        "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/persistent-supervisor-observer/execution-receipt.json",
+        "git_blob": "c20f049184b7101c28e4737856190e459465b105",
+        "bytes": 6000,
+        "sha256": "8fc2c130e9f121839c7d090492b47bb39c7cbc393629ecfe8336ecf52bed75cf",
+        "bytes_read": true
+      },
+      {
+        "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/persistent-supervisor-observer/observer.rs",
+        "git_blob": "eb9d0b339e54122b8f092f8d56d763265612ffd6",
+        "bytes": 897,
+        "sha256": "534e995fde992824ceacab3a250e99080d2a0c70659ad1ef6370ed374121a9b8",
+        "bytes_read": true
+      },
+      {
+        "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/persistent-supervisor-observer/stderr-holder.sh",
+        "git_blob": "52fef9e31920263bbfb40fd6de58ccc76d3caad0",
+        "bytes": 159,
+        "sha256": "0e366f70d7deb927f196f6a0aeaedf6eda8665ff0a141df03148fab81fba31ae",
+        "bytes_read": true
+      },
+      {
+        "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/persistent-supervisor-observer/toolchain.json",
+        "git_blob": "1a9ef2672347a8371b1ec7c2b4326140a0bfbc82",
+        "bytes": 2166,
+        "sha256": "365c56bce3ffce97d41d8371da35bf46370471c2badbc75103633292df56ebfd",
+        "bytes_read": true
+      },
+      {
+        "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/failure-assessment.json",
+        "git_blob": "345eb55b3dc503c901b963ea5f37ce93a244dea5",
+        "bytes": 9792,
+        "sha256": "c85e9fd8ead80d0fea4446f1955806e93e7aed710d79fccf8d95e011167b7bf0",
+        "bytes_read": true
+      },
+      {
+        "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/linux-negative-test-comparison.json",
+        "git_blob": "8f3628cb069d5c46029a7b968b0b6e806ad295e5",
+        "bytes": 1768,
+        "sha256": "4b3317f52386244c154905758ac2e082d0695f42f79b83def12c6cc2a2390b28",
+        "bytes_read": true
+      },
+      {
+        "path": "artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/preflight.json",
+        "git_blob": "84912a3c9effd41dcf41b8943666fc7f7c27a157",
+        "bytes": 9899,
+        "sha256": "eee995b35b35eef402529fd38eae2b0c815532837f19f4f498641a03e1eb8c09",
+        "bytes_read": true
+      }
+    ],
+    "initial_sdk27_link_failure": "Retained separately; a pre-test linker failure is not the later SDK15.4 regression failure.",
+    "disposition": "Preserve failed outcomes and open root cause. This exact failing host/build configuration is outside the positively verified observations in this scope; it is not silently converted to not_run or passed.",
+    "prohibitions": [
+      "Do not exclude all SDK15.4 installations from support based on this single configuration.",
+      "Do not claim SDK version caused the failure.",
+      "Do not call the later hosted pass a repair or a same-environment retest.",
+      "Do not erase failures or change 250ms/<2s assertions.",
+      "Do not count this scope declaration as a completed original TODO."
+    ]
+  },
+  "applicability_decision": {
+    "positive_scope": "Exactly the eight source-bound cold-build/smoke observations plus the separately recorded single original Mac test observation. Both Linux and macOS families remain in the original platform matrix.",
+    "pending_confirmation": "Non-author review and root confirmation are required before using this statement in a final acceptance ledger; no external publication decision is made by this file.",
+    "if_old_configuration_is_claimed_supported": "Its retained test failure remains a blocker for that claim until actually resolved with original evidence in that configuration.",
+    "no_automatic_waiver": true,
+    "no_blanket_mac_workspace_gate_added": true,
+    "no_blanket_sdk_class_exclusion": true,
+    "relevance": {
+      "P8-005/P8-006": "Scale supervisor regression is relevant; original Linux evidence is not relabeled. Complete original scale and all dependencies remain required.",
+      "P8-007/P8-008/P8-009/P8-010/P8-011": "Their recorded own-scope observations remain unchanged; original related-regression applicability and hard dependencies still apply.",
+      "P8-012": "Use only the existing original explicit-platform-scope alternative; retain eight actual fresh-target builds, old failure, unknown fields and V01/V21 boundaries.",
+      "P8-013": "No nonzero/deadline result is upgraded; original gate observations and P8-012 dependency remain.",
+      "P8-016": "Existing bounded rollback evidence keeps its identity and scope; P8-012/P8-013 dependencies remain."
+    }
+  },
+  "closure_and_release": {
+    "original_eight_cold_build_cells_required": 8,
+    "cache_test_does_not_replace_cold_build": true,
+    "original_scale": {
+      "required_scales": [
+        1000,
+        5000,
+        10000,
+        50000,
+        100000
+      ],
+      "repetitions_per_scale": 30,
+      "required_shards": 150,
+      "required_unique_measurements": 1500,
+      "full_aggregate_required": true,
+      "complete_acceptance_not_established": true,
+      "latest_live_count_not_refreshed_by_this_scope": true
+    },
+    "hard_dependencies_unchanged": true,
+    "task_definitions_and_status_unchanged": true,
+    "G8": "not_certified",
+    "release": "not_release",
+    "tasks": {
+      "total": 192,
+      "done": 163,
+      "remaining": 29,
+      "newly_completed": 0
+    }
+  },
+  "author_actions": {
+    "read_fixed_Git_reports_and_existing_original_text": true,
+    "new_ZIP_download": false,
+    "new_native_or_test_run": false,
+    "source_or_task_or_gate_modified": false,
+    "only_unreferenced_blobs_prepared": true
+  }
+}

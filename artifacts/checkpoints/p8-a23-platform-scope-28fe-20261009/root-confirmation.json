@@ -1,0 +1,55 @@
+{
+  "schema": "p8-a23-platform-scope-root-decision-v1",
+  "observed_at_utc": "2026-10-09 06:19:11 UTC",
+  "decision": "adopted_as_bounded_platform_scope_statement_for_fixed_A23",
+  "root": "/root",
+  "author_blob": "9e979aedd67bd992c13a6737601cbb7f54293964",
+  "readme_blob": "0040a5e48734a9183c8d983f4316aaa242c71df4",
+  "independent_review_blob": "f4e48f7e46e8ef29bfe76cbf03be43a406551d92",
+  "fixed_source": "a23bb72d3c954f385b99fe81ce9189885c208557",
+  "rationale": [
+    "P8-012 originally permits resolving an SDK blocker or explicitly stating the release platform scope. The phase rule requires zero blockers for the selected release profile.",
+    "The exact eight original fresh-target release builds and stdio smoke observations remain required and source/binary/artifact-bound. Unknown environment fields are explicitly unknown, without borrowing the later test host.",
+    "The new original Mac regression is one actual unchanged exact test on the separately recorded hosted macOS26.6.2/ARM64/Rust1.95/SDK26.5 configuration.",
+    "The original user-Mac SDK15.4 configuration remains a visible failed configuration with unknown root cause, outside this declaration's positively verified observations. No entire SDK class is excluded and no repair is claimed."
+  ],
+  "boundaries": {
+    "all_original_tasks_dependencies_and_regressions_remain": true,
+    "failure_in_a_claimed_supported_configuration_remains_blocking": true,
+    "no_whole_workspace_or_general_sdk_compatibility_claim": true,
+    "no_new_universal_platform_gate": true,
+    "no_task_status_or_source_or_workflow_change": true,
+    "G8": "not_certified",
+    "release": "not_release",
+    "applicability_to_current_G2_main": "not_granted"
+  },
+  "current_separate_scale_observation": {
+    "original_run_id": 37872522779,
+    "source": "a23bb72d3c954f385b99fe81ce9189885c208557",
+    "preflight_100k": {
+      "job": 113638100879,
+      "conclusion": "failure",
+      "completed_at": "2026-10-09T06:12:02Z",
+      "cause": "not_yet_established; original log fetch returned BlobNotFound"
+    },
+    "measure": "skipped",
+    "original_aggregate": {
+      "job": 113695707497,
+      "conclusion": "failure",
+      "completed_at": "2026-10-09T06:14:24Z",
+      "observed_error": "missing matrix shards",
+      "missing_shards": 146,
+      "sample_count": null
+    },
+    "required_shards": 150,
+    "required_unique_measurements": 1500,
+    "repetitions_per_scale": 30,
+    "complete_acceptance": false
+  },
+  "tasks": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "newly_completed": 0
+  }
+}

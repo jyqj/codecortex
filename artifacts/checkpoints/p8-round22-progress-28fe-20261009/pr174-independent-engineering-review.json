@@ -1,0 +1,377 @@
+{
+  "schema": "p8-pr174-mac-readiness-independent-review-v1",
+  "observed_at": "2026-10-09T06:21:01Z",
+  "reviewer": "/root/runtime_review",
+  "verdict": "accepted_scoped_fixture_semantics_and_archived_execution_own_CI_pending",
+  "source_review_scope": "Narrow independent review of four Mac source changes, exact original test semantics, archived execution and identity bridge; not a fresh full1089 native-source review, not merge approval, not old A23 cold-start-failure repair.",
+  "PR": {
+    "number": 174,
+    "state": "open",
+    "draft": true,
+    "title": "fix: stabilize macOS engineering checks and bind reviewed source",
+    "head": "ae77486dab0141173fcb2c4c99dd85d34e888157",
+    "base": "60e5ce3ccc86f5cccb40f6f9c32bbc7b77bf1e9d",
+    "tree": "86233d9f79c6be50145922d1b05d5739d88acc4e",
+    "product": "b413f7882d8bf65f93a6ff3d07e0c17706d95d69",
+    "review": "dd1d00a3bf18d9025fc48222ffe0d21896c26da5",
+    "changed_paths": 63,
+    "nonartifact_paths": [
+      {
+        "path": "crates/cc-eval/tests/benchmark_adapters.rs",
+        "git_blob": "9feb4fe9659c3cd84bc86684d3f73412f9caec17",
+        "status": "modified"
+      },
+      {
+        "path": "crates/cc-eval/tests/p8_scale.rs",
+        "git_blob": "31b34057ff76e0b07e9242ef179951577ed22187",
+        "status": "modified"
+      },
+      {
+        "path": "crates/cc-index/src/project_model/python_inventory.rs",
+        "git_blob": "e8f3ccd2d5d24ac222186f6954d983d859b4ee18",
+        "status": "modified"
+      },
+      {
+        "path": "crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs",
+        "git_blob": "4d3b82904f0b9415f1f901a4192f66525492cd02",
+        "status": "modified"
+      },
+      {
+        "path": "scripts/reviewed-source-registry-v15.json",
+        "git_blob": "5a0da34c4fc6f297d10a224d0f833f9ec8c99406",
+        "status": "modified"
+      },
+      {
+        "path": "scripts/verify_reviewed_source_v15.py",
+        "git_blob": "058266858c2640e82aa8651c7272d8b6054fc184",
+        "status": "modified"
+      }
+    ],
+    "artifact_paths": 57,
+    "all_artifacts_new": true,
+    "page2_empty": true
+  },
+  "semantic_findings": [
+    {
+      "path": "crates/cc-eval/tests/p8_scale.rs",
+      "lines": [
+        484,
+        518
+      ],
+      "finding": "The original comment explicitly describes a normally exiting worker with a descendant retaining stderr. The new27-line block prepares this exited-leader fixture once, using the exact original159B helper and existing supervisor in its own readiness output/fresh group. No retry loop, ignored result or best-of selection exists."
+    },
+    {
+      "path": "crates/cc-eval/tests/p8_scale.rs",
+      "lines": [
+        497,
+        517
+      ],
+      "finding": "Setup has a separate2000ms bound; success requires supervisor exit0, workerexit0, summary.passed, complete stderr, no fixture_cleanup error and not_run release state. Failure retains the temporary evidence and panics; a failed setup cannot become a passing measured case."
+    },
+    {
+      "path": "crates/cc-eval/tests/p8_scale.rs",
+      "lines": [
+        519,
+        531
+      ],
+      "finding": "The second call retains the original250ms plan and less-than2s assertion, original exit0/stderr_complete/not_run assertions. Its timer starts after readiness. Therefore this is an explicit semantic change from a first-use helper to a prepared helper; the2s assertion covers the second call, not the added setup plus second call together."
+    },
+    {
+      "path": "crates/cc-eval/tests/p8_scale.rs",
+      "lines": [
+        462,
+        475
+      ],
+      "finding": "The separate actual-native1ms deadline_exceeded/report-preservation/output-reuse negative is byte-identical, has no readiness call, and actually passed in the archived new workspace run. It protects the whole-worker timeout behavior independently of the warmed fixture."
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+      "lines": [
+        270,
+        340
+      ],
+      "finding": "Production supervisor is exact preexisting G3/P/PR174 blob1281d5340096699663308c92ce27978ae96ac84e: clock before spawn, overflow then elapseddeadline then try_wait, same deadline bounds stderr drain. PR174 makes no production supervisor timing change. Relative to older A23 source, the preexisting G3 file differs only at line131 release-shard Option predicate, logically equivalent !is_some_and vs is_none_or, not within supervision."
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/P8-SCALE.md",
+      "lines": [
+        77,
+        97
+      ],
+      "finding": "Original contract still covers whole worker lifetime through stderr drain and a true post-exit stderr-holding descendant. It does not explicitly promise first-launch helper startup under250ms. Purpose-limited fixture preparation is compatible with that documented coverage; it does not diagnose or fix the prior cold-launch cause."
+    },
+    {
+      "path": "crates/cc-index/src/project_model/python_inventory.rs",
+      "lines": [
+        126,
+        140
+      ],
+      "finding": "SixLinux cfg attributes affect previously unused private helpers/imports on nonLinux only. Linux bodies remain unchanged; nonLinux authorization/owner checks and UnsupportedPlatform refusal remain."
+    },
+    {
+      "path": "crates/cc-eval/tests/benchmark_adapters.rs",
+      "lines": [
+        216,
+        346
+      ],
+      "finding": "SevenLinux cfg additions match the preexisting Linux seccomp policy. The nonLinux verified_network_guard still panics; this does not make restricted-network acceptance silently pass on Mac."
+    },
+    {
+      "path": "crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs",
+      "lines": [
+        7,
+        18
+      ],
+      "finding": "Path/Duration/Instant imports move underLinux cfg matching their Linux-only callers; no test body is removed or an ignored test newly introduced."
+    }
+  ],
+  "direct_checks": {
+    "added_block_lines": 27,
+    "stripping_added_block_exact_old_file": true,
+    "new_test_hash": "71831ab2b2ab0e7b34e9917f499bc33f7b66a74e0c156874b4154bb6b783d8dc",
+    "original_helper_literal_unchanged": true,
+    "entire_one_ms_test_unchanged": true,
+    "full_bridge_matches_source_review": {
+      "products": 1089,
+      "validation": 138,
+      "mismatches": []
+    },
+    "receipts": [
+      {
+        "name": "01-fmt",
+        "exit_code": 0,
+        "before_after_equal": true,
+        "source_unchanged": true,
+        "source_hashes_match_four_read_blobs": true
+      },
+      {
+        "name": "02-clippy",
+        "exit_code": 0,
+        "before_after_equal": true,
+        "source_unchanged": true,
+        "source_hashes_match_four_read_blobs": true
+      },
+      {
+        "name": "03-workspace-test",
+        "exit_code": 0,
+        "before_after_equal": true,
+        "source_unchanged": true,
+        "source_hashes_match_four_read_blobs": true
+      },
+      {
+        "name": "04-integration-fixtures",
+        "exit_code": 0,
+        "before_after_equal": true,
+        "source_unchanged": true,
+        "source_hashes_match_four_read_blobs": true
+      }
+    ]
+  },
+  "actual_execution": {
+    "identity": "Actual checkout26768b5 plus4 frozen uncommitted files; later committed asP. This is not execution on cleanP or cleanG, and not A23.",
+    "source_before_after": {
+      "head": "26768b5e38ed1784bf77a8c4fe57baf01a19c626",
+      "head_tree": "41138a7ac367aa6ca13cf516a811c46ab812de98",
+      "branch": "task/p8-macos-integration-bfcc-20261009",
+      "modified_paths": [
+        "crates/cc-eval/tests/benchmark_adapters.rs",
+        "crates/cc-eval/tests/p8_scale.rs",
+        "crates/cc-index/src/project_model/python_inventory.rs",
+        "crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs"
+      ],
+      "untracked_paths": [],
+      "status_porcelain": " M crates/cc-eval/tests/benchmark_adapters.rs\n M crates/cc-eval/tests/p8_scale.rs\n M crates/cc-index/src/project_model/python_inventory.rs\n M crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs\n",
+      "diff_sha256": "b45ead05f6ca2bf604e21d7951a0b9414ef02cfaac559d5460b93d091301e463",
+      "files": {
+        "crates/cc-eval/tests/p8_scale.rs": {
+          "bytes": 21068,
+          "sha256": "71831ab2b2ab0e7b34e9917f499bc33f7b66a74e0c156874b4154bb6b783d8dc"
+        },
+        "crates/cc-index/src/project_model/python_inventory.rs": {
+          "bytes": 13291,
+          "sha256": "e3fd1a31e0ed7cb9c8fa90a7025508a957f0bc8288f7850fff5e400094a5203e"
+        },
+        "crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs": {
+          "bytes": 15513,
+          "sha256": "5d9d105a151dff3b82bb27125e5e4d276966611de0ef74634cb3a4a67396f495"
+        },
+        "crates/cc-eval/tests/benchmark_adapters.rs": {
+          "bytes": 38925,
+          "sha256": "a5ef80d761a89c83d97998fe02e68a185d6c803ed0999723d9b24d90d1f1289c"
+        }
+      }
+    },
+    "all_four_child_exit0": true,
+    "raw_stdout": {
+      "git_blob": "e83e617042b941836583360d82523cc91c4da97d",
+      "bytes": 237923,
+      "sha256": "adbed4f790a00de6985eb22eaff4814756dd722af7e84e29701f697e8bfe249d"
+    },
+    "raw_stderr": {
+      "git_blob": "d7f625f1ca5a858437e57d506a619e9e6210da12",
+      "bytes": 141638,
+      "sha256": "51b7b6a89628b054869c5c05a1c79f332a409231b126a53ada9d7c185592cb87"
+    },
+    "raw_receipt": {
+      "git_blob": "e49cb359ca912321386a5d66c06ea7e98281541b",
+      "bytes": 4356,
+      "sha256": "b3afc954d44a7b9ea4fb5fcfb7ef16e5a83f1c071cf0b0a59699b989ff15f06b"
+    },
+    "independent_stdout_totals": {
+      "harnesses": 218,
+      "totals": {
+        "passed": 2712,
+        "failed": 0,
+        "ignored": 73,
+        "measured": 0,
+        "filtered": 0
+      },
+      "nonok": []
+    },
+    "p8_scale": {
+      "sequence": 102,
+      "target": {
+        "kind": "test_binary",
+        "cargo_target": "tests/p8_scale.rs",
+        "executable": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/macos-integration-1.95-sdk154-round8/debug/deps/p8_scale-a2f51b686c6f3d87",
+        "stderr_line": 258,
+        "binary_name": "p8_scale"
+      },
+      "running_count": 12,
+      "summary_stdout_line": 1287,
+      "counts": {
+        "passed": 12,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered_out": 0
+      },
+      "duration": "16.17s",
+      "actual_passed_test_names": [
+        "matrix_and_release_admission_are_explicit_and_bounded",
+        "shards_partition_registered_repetitions_without_lowering_release_admission",
+        "named_scale_capacity_is_explicit_and_cannot_relax_fanout_pressure",
+        "complete_stage_timing_accounts_for_real_split_handoffs_and_full_staging",
+        "failed_independent_fanout_truth_remains_a_failure",
+        "subprocess_descendant_cannot_hold_stderr_past_worker_deadline",
+        "bounded_python_forwarding_resume_keeps_all_targets_and_fifteen_table_parity",
+        "native_evidence_hash_uses_all_file_bytes_without_running_a_profile",
+        "subprocess_deadline_preserves_report_and_rejects_output_reuse",
+        "configured_evidence_budget_stops_without_overwriting_partial_raw",
+        "actual_shard_keeps_global_ids_and_changes_exact_batch_including_yaml_and_routes",
+        "real_scale_smoke_preserves_builds_counts_mutations_and_full_parity"
+      ]
+    },
+    "actual_binary": {
+      "cargo_target": "tests/p8_scale.rs",
+      "path": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/macos-integration-1.95-sdk154-round8/debug/deps/p8_scale-a2f51b686c6f3d87",
+      "bytes": 48822840,
+      "sha256": "e55bdad72b0b400759540ecc5878140a763112b9a0d4f2f33e5617bfd8ffa02b",
+      "archive_policy": "Keep native isolated target; do not copy executable into small Git archive."
+    },
+    "binary_scope": "Archive records hash of original binary; this reviewer matched its path to the actual Cargo Running line and did not download or rehash executable bytes.",
+    "compiler": "rustc1.95.0 59807616e1fa2540724bfbac14d7976d7e4a3860 aarch64-apple-darwin",
+    "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+    "build_jobs": 4,
+    "test_threads": "default",
+    "commands": [
+      {
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "started_at": "2026-10-09T05:31:48.393512+00:00",
+        "finished_at": "2026-10-09T05:31:50.293728+00:00"
+      },
+      {
+        "command": [
+          "cargo",
+          "clippy",
+          "--workspace",
+          "--all-targets",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "started_at": "2026-10-09T05:31:50.594424+00:00",
+        "finished_at": "2026-10-09T05:32:27.573623+00:00"
+      },
+      {
+        "command": [
+          "cargo",
+          "test",
+          "--workspace"
+        ],
+        "exit_code": 0,
+        "started_at": "2026-10-09T05:32:27.862916+00:00",
+        "finished_at": "2026-10-09T05:41:15.024755+00:00"
+      },
+      {
+        "command": [
+          "cargo",
+          "test",
+          "-p",
+          "cc-eval",
+          "--",
+          "integration_fixtures_and_corpus"
+        ],
+        "exit_code": 0,
+        "started_at": "2026-10-09T05:41:15.326117+00:00",
+        "finished_at": "2026-10-09T05:41:18.734715+00:00"
+      }
+    ],
+    "scope": "Actual new Mac SDK15.4/default-feature engineering pass with a changed fixture and cfg changes, not generalall-features/allplatform certification."
+  },
+  "identity_bridge": {
+    "source_review_blob": "c63b799179634f0cde1979fc6433fd9a2f78cf7e",
+    "source_review_sha256": "8946a45ad470563b6df8f96984c2d7f67b2e4f4a3afd11d073d33d9dc0151a24",
+    "full_bridge_blob": "53a803561e8bb7622e500d967fbd1e1fa627abe6",
+    "full_bridge_sha256": "babdff9b2d00965b4c5901d844e30f79e7d80aba2464c3d74c3f822e566512c4",
+    "product_inputs": 1089,
+    "validation_inputs": 138,
+    "bridge_map_equals_review": true,
+    "four_changed_file_bytes_independently_read_and_hashed": true,
+    "all_four_actual_command_receipts_before_after_identical": true,
+    "not_this_reviews_independent_rehash_of1089_sourcefiles": true
+  },
+  "own_CI_snapshot": {
+    "run": 37892120921,
+    "check_job": 113695153145,
+    "check_status": "in_progress",
+    "actual_setup_started_at": "2026-10-09T06:16:59Z",
+    "fmt": "success",
+    "clippy": "success",
+    "compile_default_targets": "in_progress",
+    "remaining_controls": "pending",
+    "msrv": "queued empty steps",
+    "security": "queued empty steps",
+    "actual_check_checkout_commit": "not independently available in this snapshot; no checkout claim from another job",
+    "no_parent_CI_inherited_as_pass": true
+  },
+  "retained_limits": [
+    "OldA23 SDK15.4 workspace101/exact101 and its20 original raw locators remain unchanged; PRdiff adds archive and changes source, it does not replace the old raw.",
+    "Do not call this proof that the old unchanged A23 helper passed on the same userhost, or that an OS/SDK race rootcause has been established. PRbody's race wording is stronger than this independent causal evidence.",
+    "Readiness is a documented fixture precondition, not a production deadline exemption. Actual performance budgets/N30/150scale/1500measurement requirements and original studies are unchanged.",
+    "Own cleanG181/v15 and ownCI completion were pending at read time. This narrow review does not grant merge or TODO closure.",
+    "A23 scope f4e48f7 review and A23 scale samples remain A23; neither is automatically G3/PR174 evidence."
+  ],
+  "actions": {
+    "native_tests_or_compile": 0,
+    "old_runs_retried": 0,
+    "branches_refs_PRs_modified": 0,
+    "artifact_code_executed": 0,
+    "GitHub_API_and_blob_read_only": true,
+    "created_only_unreferenced_review_blob": true
+  },
+  "todos": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "newly_completed": 0
+  }
+}

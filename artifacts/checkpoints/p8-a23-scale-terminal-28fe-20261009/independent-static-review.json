@@ -1,0 +1,40 @@
+{
+  "schema": "p8_round23_terminal_collector_v2_independent_static_review_v1",
+  "reviewer": "recovery_audit",
+  "date_utc": "2026-10-09",
+  "decision": "limited_static_approval",
+  "workflow": {
+    "git_blob": "a082b8d76c3b4e1afd14c287ceed476b574e2b0f",
+    "bytes": 11460,
+    "sha256": "939eb1db8e21a5012a694494e40575f22947831ac359d2f5a6ded1fc0f340e29"
+  },
+  "authorized_scope": "One push-triggered GET-only readback of original A23 run/job/check/annotations/artifact metadata and the fixed 580-byte failed aggregate ZIP; no measurement or original-study change.",
+  "identity": {
+    "original_run": 37872522779,
+    "original_job_and_check": 113638100879,
+    "original_head": "a23bb72d3c954f385b99fe81ce9189885c208557",
+    "original_attempt": 1,
+    "fixed_aggregate_artifact": 11599136237,
+    "zip_bytes": 580,
+    "zip_sha256": "6585b064492fba4b0f1cd8f10cfeb304ee63fa15851ede907c20a012780902e3"
+  },
+  "reviewed_controls": [
+    "Single fixed push branch audit/p8-scale-100k-terminal-28fe-20261009; run_attempt==1 required after first receipt.",
+    "One ubuntu-24.04 job with 5 minute limit and actions/checks/contents read permissions.",
+    "No checkout, subprocess, exec/eval, native artifact execution, measurement or retry.",
+    "Five fixed GitHub GET endpoints; 30 second request timeout, 16 MiB cap, strict UTF-8, raw bytes saved and printed before status interpretation.",
+    "Exact run/job/check source identity; complete annotations count and artifacts single-page count required, not silently truncated.",
+    "Bearer confined to fixed api.github.com requests; redirects disabled. Artifact API must return 302 to HTTPS *.blob.core.windows.net without username/password; fresh storage request has no Authorization and no redirect.",
+    "Exact official artifact ID, size and digest plus downloaded 580-byte SHA verified before ZIP parsing.",
+    "ZIP only read in memory, never extracted; exactly one non-directory JSON basename, bounded declared size and ZipFile CRC validation; original ZIP/base64 and JSON bytes retained.",
+    "Original aggregate status failed and passed=false expressly required. Readback passed=true never reclassifies original measurement success.",
+    "Exceptions record non-success; always upload preserves accumulated original responses and receipt. API transport/identity failures may stop subsequent reads and must remain visible."
+  ],
+  "boundary": [
+    "This is static review only. No local AST parse, syntax execution or workflow execution was performed because the local backend was unavailable.",
+    "The reader does not validate full scale samples or grant TODO closure.",
+    "No general adversarial archive acceptance is asserted; ZIP trust is constrained by exact known ID/size/SHA and data-only parsing.",
+    "Approval covers only the frozen V2 blob. V1 remains unreferenced historical preparation."
+  ],
+  "blocker_found": false
+}

@@ -1,0 +1,1207 @@
+{
+  "schema": "p8_round23_terminal_readback_independent_actual_review_v1",
+  "reviewer": "recovery_audit",
+  "date_utc": "2026-10-09",
+  "outcome": {
+    "readback_accepted": true,
+    "original_scale_study_accepted": false,
+    "original_100k_job_conclusion": "failure",
+    "official_failure_observation": "Hosted runner lost communication with the server.",
+    "root_cause": "unknown",
+    "native_terminal_outcome": null,
+    "native_wall_ms": null,
+    "native_sample_count": null,
+    "task_status_updates": 0
+  },
+  "scope": "Independent read of the original full collector job log and official run/jobs/artifact metadata; recomputed every printed original JSON hash and downloaded-ZIP base64 hash in pure JavaScript. No measurement/native/test rerun or local process execution.",
+  "collector": {
+    "run_id": 37893190079,
+    "job_id": 113698501180,
+    "head": "53fbfbdc86faacdcd241f0c619b5110e3aba259d",
+    "branch": "audit/p8-scale-100k-terminal-28fe-20261009",
+    "event": "push",
+    "attempt": 1,
+    "status": "completed",
+    "conclusion": "success",
+    "created_at": "2026-10-09T06:22:28Z",
+    "completed_at": "2026-10-09T06:23:21Z",
+    "workflow_blob": "a082b8d76c3b4e1afd14c287ceed476b574e2b0f",
+    "static_review_blob": "e0ac0fc302757434304d16ad6ca12d03162b29ca",
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1,
+        "started_at": "2026-10-09T06:23:16Z",
+        "completed_at": "2026-10-09T06:23:17Z"
+      },
+      {
+        "name": "Read the fixed original run and its existing error annotation",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2,
+        "started_at": "2026-10-09T06:23:17Z",
+        "completed_at": "2026-10-09T06:23:18Z"
+      },
+      {
+        "name": "Preserve existing original metadata and the readback receipt",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3,
+        "started_at": "2026-10-09T06:23:18Z",
+        "completed_at": "2026-10-09T06:23:19Z"
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 4,
+        "started_at": "2026-10-09T06:23:19Z",
+        "completed_at": "2026-10-09T06:23:19Z"
+      }
+    ]
+  },
+  "original": {
+    "run_id": 37872522779,
+    "head": "a23bb72d3c954f385b99fe81ce9189885c208557",
+    "branch": "task/p8-scale-cache-a217-20261009",
+    "event": "pull_request",
+    "run_attempt": 1,
+    "run_status": "completed",
+    "run_conclusion": "failure",
+    "job_id": 113638100879,
+    "job_name": "preflight (100000, 0)",
+    "job_status": "completed",
+    "job_conclusion": "failure",
+    "job_started_at": "2026-10-09T02:23:45Z",
+    "job_completed_at": "2026-10-09T06:12:02Z",
+    "original_steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1,
+        "started_at": "2026-10-09T02:23:46Z",
+        "completed_at": "2026-10-09T02:23:47Z"
+      },
+      {
+        "name": "Run actions/checkout@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2,
+        "started_at": "2026-10-09T02:23:47Z",
+        "completed_at": "2026-10-09T02:23:51Z"
+      },
+      {
+        "name": "Run dtolnay/rust-toolchain@stable",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3,
+        "started_at": "2026-10-09T02:23:51Z",
+        "completed_at": "2026-10-09T02:23:59Z"
+      },
+      {
+        "name": "Run actions/download-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 4,
+        "started_at": "2026-10-09T02:23:59Z",
+        "completed_at": "2026-10-09T02:24:00Z"
+      },
+      {
+        "name": "Observe and prepare the registered capacity on this disposable hosted VM",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 5,
+        "started_at": "2026-10-09T02:24:00Z",
+        "completed_at": "2026-10-09T02:24:00Z"
+      },
+      {
+        "name": "Preserve capacity observations and any unsuccessful preparation",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 6,
+        "started_at": "2026-10-09T02:24:00Z",
+        "completed_at": "2026-10-09T02:24:01Z"
+      },
+      {
+        "name": "Execute all phases for this registered single-repetition capacity slice",
+        "status": "in_progress",
+        "conclusion": null,
+        "number": 7,
+        "started_at": "2026-10-09T02:24:01Z",
+        "completed_at": null
+      },
+      {
+        "name": "Preserve original shard including unsuccessful measurements",
+        "status": "pending",
+        "conclusion": null,
+        "number": 8,
+        "started_at": null,
+        "completed_at": null
+      },
+      {
+        "name": "Post Run actions/checkout@v4",
+        "status": "pending",
+        "conclusion": null,
+        "number": 16,
+        "started_at": null,
+        "completed_at": null
+      }
+    ],
+    "check_id": 113638100879,
+    "check_status": "completed",
+    "check_conclusion": "failure",
+    "annotation_count": 1,
+    "annotations": [
+      {
+        "path": ".github",
+        "blob_href": "https://github.com/jyqj/codecortex/blob/a23bb72d3c954f385b99fe81ce9189885c208557/.github",
+        "start_line": 1,
+        "start_column": null,
+        "end_line": 1,
+        "end_column": null,
+        "annotation_level": "failure",
+        "title": "",
+        "message": "The hosted runner lost communication with the server. Anything in your workflow that terminates the runner process, starves it for CPU/Memory, or blocks its network access can cause this error.",
+        "raw_details": ""
+      }
+    ]
+  },
+  "original_matrix": {
+    "artifact_id": 11599136237,
+    "zip": {
+      "bytes": 580,
+      "sha256": "6585b064492fba4b0f1cd8f10cfeb304ee63fa15851ede907c20a012780902e3",
+      "git_blob": "7efb556464bd695dcdba7fe8f6fe1a17623a92ac",
+      "official_create_blob_sha_confirmed": true,
+      "binary_fetch_readback": "Not byte-decoded by connector: fetch_blob returned UnicodeDecodeError at byte10. Complete original base64 is independently hash-verified and preserved in the read-back-verified original job log.",
+      "central_directory": {
+        "members": 1,
+        "crc32": "bc8431ca",
+        "compressed_bytes": 444,
+        "uncompressed_bytes": 1978,
+        "method": 8,
+        "filename": "matrix.json"
+      },
+      "printed_member_crc32": "bc8431ca",
+      "independent_deflate_replay": false
+    },
+    "member": {
+      "name": "matrix.json",
+      "bytes": 1978,
+      "sha256": "c14cf58287f4cb49cd942e5b26150ab46156375a19157d17426eb8301d2ae6ea",
+      "git_blob": "826742d5fa994e91336414f21dd0b8fa974c591d"
+    },
+    "status": "failed",
+    "passed": false,
+    "release_certification": "not_run",
+    "sample_count_field_present": false,
+    "missing_count": 146,
+    "missing_by_size": {
+      "1000": 29,
+      "5000": 29,
+      "10000": 29,
+      "50000": 29,
+      "100000": 30
+    },
+    "missing_cells": [
+      [
+        1000,
+        1
+      ],
+      [
+        1000,
+        2
+      ],
+      [
+        1000,
+        3
+      ],
+      [
+        1000,
+        4
+      ],
+      [
+        1000,
+        5
+      ],
+      [
+        1000,
+        6
+      ],
+      [
+        1000,
+        7
+      ],
+      [
+        1000,
+        8
+      ],
+      [
+        1000,
+        9
+      ],
+      [
+        1000,
+        10
+      ],
+      [
+        1000,
+        11
+      ],
+      [
+        1000,
+        12
+      ],
+      [
+        1000,
+        13
+      ],
+      [
+        1000,
+        14
+      ],
+      [
+        1000,
+        15
+      ],
+      [
+        1000,
+        16
+      ],
+      [
+        1000,
+        17
+      ],
+      [
+        1000,
+        18
+      ],
+      [
+        1000,
+        19
+      ],
+      [
+        1000,
+        20
+      ],
+      [
+        1000,
+        21
+      ],
+      [
+        1000,
+        22
+      ],
+      [
+        1000,
+        23
+      ],
+      [
+        1000,
+        24
+      ],
+      [
+        1000,
+        25
+      ],
+      [
+        1000,
+        26
+      ],
+      [
+        1000,
+        27
+      ],
+      [
+        1000,
+        28
+      ],
+      [
+        1000,
+        29
+      ],
+      [
+        5000,
+        1
+      ],
+      [
+        5000,
+        2
+      ],
+      [
+        5000,
+        3
+      ],
+      [
+        5000,
+        4
+      ],
+      [
+        5000,
+        5
+      ],
+      [
+        5000,
+        6
+      ],
+      [
+        5000,
+        7
+      ],
+      [
+        5000,
+        8
+      ],
+      [
+        5000,
+        9
+      ],
+      [
+        5000,
+        10
+      ],
+      [
+        5000,
+        11
+      ],
+      [
+        5000,
+        12
+      ],
+      [
+        5000,
+        13
+      ],
+      [
+        5000,
+        14
+      ],
+      [
+        5000,
+        15
+      ],
+      [
+        5000,
+        16
+      ],
+      [
+        5000,
+        17
+      ],
+      [
+        5000,
+        18
+      ],
+      [
+        5000,
+        19
+      ],
+      [
+        5000,
+        20
+      ],
+      [
+        5000,
+        21
+      ],
+      [
+        5000,
+        22
+      ],
+      [
+        5000,
+        23
+      ],
+      [
+        5000,
+        24
+      ],
+      [
+        5000,
+        25
+      ],
+      [
+        5000,
+        26
+      ],
+      [
+        5000,
+        27
+      ],
+      [
+        5000,
+        28
+      ],
+      [
+        5000,
+        29
+      ],
+      [
+        10000,
+        1
+      ],
+      [
+        10000,
+        2
+      ],
+      [
+        10000,
+        3
+      ],
+      [
+        10000,
+        4
+      ],
+      [
+        10000,
+        5
+      ],
+      [
+        10000,
+        6
+      ],
+      [
+        10000,
+        7
+      ],
+      [
+        10000,
+        8
+      ],
+      [
+        10000,
+        9
+      ],
+      [
+        10000,
+        10
+      ],
+      [
+        10000,
+        11
+      ],
+      [
+        10000,
+        12
+      ],
+      [
+        10000,
+        13
+      ],
+      [
+        10000,
+        14
+      ],
+      [
+        10000,
+        15
+      ],
+      [
+        10000,
+        16
+      ],
+      [
+        10000,
+        17
+      ],
+      [
+        10000,
+        18
+      ],
+      [
+        10000,
+        19
+      ],
+      [
+        10000,
+        20
+      ],
+      [
+        10000,
+        21
+      ],
+      [
+        10000,
+        22
+      ],
+      [
+        10000,
+        23
+      ],
+      [
+        10000,
+        24
+      ],
+      [
+        10000,
+        25
+      ],
+      [
+        10000,
+        26
+      ],
+      [
+        10000,
+        27
+      ],
+      [
+        10000,
+        28
+      ],
+      [
+        10000,
+        29
+      ],
+      [
+        50000,
+        1
+      ],
+      [
+        50000,
+        2
+      ],
+      [
+        50000,
+        3
+      ],
+      [
+        50000,
+        4
+      ],
+      [
+        50000,
+        5
+      ],
+      [
+        50000,
+        6
+      ],
+      [
+        50000,
+        7
+      ],
+      [
+        50000,
+        8
+      ],
+      [
+        50000,
+        9
+      ],
+      [
+        50000,
+        10
+      ],
+      [
+        50000,
+        11
+      ],
+      [
+        50000,
+        12
+      ],
+      [
+        50000,
+        13
+      ],
+      [
+        50000,
+        14
+      ],
+      [
+        50000,
+        15
+      ],
+      [
+        50000,
+        16
+      ],
+      [
+        50000,
+        17
+      ],
+      [
+        50000,
+        18
+      ],
+      [
+        50000,
+        19
+      ],
+      [
+        50000,
+        20
+      ],
+      [
+        50000,
+        21
+      ],
+      [
+        50000,
+        22
+      ],
+      [
+        50000,
+        23
+      ],
+      [
+        50000,
+        24
+      ],
+      [
+        50000,
+        25
+      ],
+      [
+        50000,
+        26
+      ],
+      [
+        50000,
+        27
+      ],
+      [
+        50000,
+        28
+      ],
+      [
+        50000,
+        29
+      ],
+      [
+        100000,
+        0
+      ],
+      [
+        100000,
+        1
+      ],
+      [
+        100000,
+        2
+      ],
+      [
+        100000,
+        3
+      ],
+      [
+        100000,
+        4
+      ],
+      [
+        100000,
+        5
+      ],
+      [
+        100000,
+        6
+      ],
+      [
+        100000,
+        7
+      ],
+      [
+        100000,
+        8
+      ],
+      [
+        100000,
+        9
+      ],
+      [
+        100000,
+        10
+      ],
+      [
+        100000,
+        11
+      ],
+      [
+        100000,
+        12
+      ],
+      [
+        100000,
+        13
+      ],
+      [
+        100000,
+        14
+      ],
+      [
+        100000,
+        15
+      ],
+      [
+        100000,
+        16
+      ],
+      [
+        100000,
+        17
+      ],
+      [
+        100000,
+        18
+      ],
+      [
+        100000,
+        19
+      ],
+      [
+        100000,
+        20
+      ],
+      [
+        100000,
+        21
+      ],
+      [
+        100000,
+        22
+      ],
+      [
+        100000,
+        23
+      ],
+      [
+        100000,
+        24
+      ],
+      [
+        100000,
+        25
+      ],
+      [
+        100000,
+        26
+      ],
+      [
+        100000,
+        27
+      ],
+      [
+        100000,
+        28
+      ],
+      [
+        100000,
+        29
+      ]
+    ]
+  },
+  "interpretation": [
+    "The sole official annotation establishes runner/server communication loss. Its text lists possible workflow termination, CPU/memory starvation, or network blockage. It does not identify which cause occurred and does not establish pure platform exoneration.",
+    "The completed failure job retains step 7 in_progress and upload pending. Do not infer native exit code, completion, zero operations, elapsed native measurement time, deadline compliance, or result from those API step fields.",
+    "The complete artifact snapshot contains four smaller-scale repetition-0 shard names, five capacity archives, one build archive, and the failed matrix. No 100000 repetition-0 shard is present. The four shard payloads were not revalidated in this readback.",
+    "The original matrix is failed with 146 missing cells. Its sample_count field is absent, not an observed count of zero.",
+    "Collector success means original data were received and identity-checked; it never changes the original failure or supplies release certification.",
+    "A23 evidence remains source-bound to A23, independently of main60's later snapshot-batching integration."
+  ],
+  "evidence": {
+    "full_log": {
+      "git_blob": "50bc80da3ca8ed7873e4baded9cebb41bd3a08a1",
+      "bytes": 55915,
+      "sha256": "30d26ce703c47f83b97735f82c144eb6ff293121237bfc11df469d7c4ea19e13",
+      "official_byte_readback_equal": true
+    },
+    "api_snapshot": {
+      "bytes": 16281,
+      "sha256": "0150427b1587a8f720b86e59b7fde0e5906b37c44984e27f6bfbb24e59f895f2",
+      "git_blob": "8b220b7a8f6150919d0c2d91c73623e8970f4f32"
+    },
+    "originals": [
+      {
+        "name": "original-run",
+        "log_line": 201,
+        "bytes": 11863,
+        "sha256": "00b06a562e1a0a0611b940727bd10f51cb6c85d2d2df9e0efae082d32714cb4c",
+        "computed_git_blob": "75b00a9900ff35b5cfff89762f2139b297e2527b",
+        "standalone_git_blob_saved": true,
+        "standalone_save_provenance": "created by root; OID independently matches reviewer raw UTF-8 digest"
+      },
+      {
+        "name": "original-job",
+        "log_line": 202,
+        "bytes": 2482,
+        "sha256": "66cd42ba7db2be8284c6c223e936923aaee48eb0e898b39f7eea489d295fd2ac",
+        "computed_git_blob": "602d9e352d0d7b8c6a338ba6122a1fb0bb0463c1",
+        "standalone_git_blob_saved": true,
+        "standalone_save_provenance": "created by root; OID independently matches reviewer raw UTF-8 digest"
+      },
+      {
+        "name": "original-check",
+        "log_line": 203,
+        "bytes": 3051,
+        "sha256": "f18aac4ecc5b2f70e0458fc2d374e7bd07d1693937ae2d0a2b0549bd01585b8c",
+        "computed_git_blob": "b17a40a2b129121b3db6e3569db0730d67c45c43",
+        "standalone_git_blob_saved": true,
+        "standalone_save_provenance": "created by root; OID independently matches reviewer raw UTF-8 digest"
+      },
+      {
+        "name": "original-annotations",
+        "log_line": 204,
+        "bytes": 452,
+        "sha256": "bc1ad4395886b208c0d13e493a95e17c657285fdf659c4f8c26021e1add629bc",
+        "computed_git_blob": "af056bfc11d4c535a1369f63400882587136d7b8",
+        "standalone_git_blob_saved": true,
+        "standalone_save_provenance": "created by reviewer and root; same raw byte OID"
+      },
+      {
+        "name": "original-artifacts",
+        "log_line": 205,
+        "bytes": 7955,
+        "sha256": "8defbbe2ce5c1653102ed11d19ecc770023cd571ebe4bf5d39e5d9e9bc30288c",
+        "computed_git_blob": "c4df4dfc5accb826980db39552ca6f4ff95168ef",
+        "standalone_git_blob_saved": true,
+        "standalone_save_provenance": "created by root; OID independently matches reviewer raw UTF-8 digest"
+      },
+      {
+        "name": "original-failed-matrix-member",
+        "log_line": 207,
+        "bytes": 1978,
+        "sha256": "c14cf58287f4cb49cd942e5b26150ab46156375a19157d17426eb8301d2ae6ea",
+        "computed_git_blob": "826742d5fa994e91336414f21dd0b8fa974c591d",
+        "standalone_git_blob_saved": true,
+        "standalone_save_provenance": "created by reviewer and root; same raw byte OID"
+      }
+    ],
+    "preservation_artifact": {
+      "id": 11599407006,
+      "node_id": "MDg6QXJ0aWZhY3QxMTU5OTQwNzAwNg==",
+      "name": "p8-original-100k-terminal-37893190079-attempt1",
+      "size_in_bytes": 8500,
+      "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11599407006",
+      "archive_download_url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11599407006/zip",
+      "expired": false,
+      "digest": "sha256:e56e0b39244ec5440be427ed8252274ecd88c0c42b299b55828941d366534819",
+      "created_at": "2026-10-09T06:23:19Z",
+      "updated_at": "2026-10-09T06:23:19Z",
+      "expires_at": "2027-01-07T06:22:28Z",
+      "workflow_run": {
+        "id": 37893190079,
+        "repository_id": 1249213794,
+        "head_repository_id": 1249213794,
+        "head_branch": "audit/p8-scale-100k-terminal-28fe-20261009",
+        "head_sha": "53fbfbdc86faacdcd241f0c619b5110e3aba259d"
+      }
+    },
+    "original_artifact_inventory": [
+      {
+        "id": 11599136237,
+        "name": "p8-scale-matrix-37872522779",
+        "size_in_bytes": 580,
+        "digest": "sha256:6585b064492fba4b0f1cd8f10cfeb304ee63fa15851ede907c20a012780902e3",
+        "expired": false,
+        "workflow_run": {
+          "id": 37872522779,
+          "repository_id": 1249213794,
+          "head_repository_id": 1249213794,
+          "head_branch": "task/p8-scale-cache-a217-20261009",
+          "head_sha": "a23bb72d3c954f385b99fe81ce9189885c208557"
+        }
+      },
+      {
+        "id": 11593548201,
+        "name": "p8-scale-shard-50000-0-37872522779",
+        "size_in_bytes": 2964759,
+        "digest": "sha256:d0163f3421ea9abf3d544edad56a9386aec2db55fef0aa11155e30e10a27b06d",
+        "expired": false,
+        "workflow_run": {
+          "id": 37872522779,
+          "repository_id": 1249213794,
+          "head_repository_id": 1249213794,
+          "head_branch": "task/p8-scale-cache-a217-20261009",
+          "head_sha": "a23bb72d3c954f385b99fe81ce9189885c208557"
+        }
+      },
+      {
+        "id": 11592230167,
+        "name": "p8-scale-capacity-100000-0-37872522779",
+        "size_in_bytes": 786,
+        "digest": "sha256:91e99d0cc13917232dc9c722ee6f1828919da414ea6d7e5d39f0f610440c7266",
+        "expired": false,
+        "workflow_run": {
+          "id": 37872522779,
+          "repository_id": 1249213794,
+          "head_repository_id": 1249213794,
+          "head_branch": "task/p8-scale-cache-a217-20261009",
+          "head_sha": "a23bb72d3c954f385b99fe81ce9189885c208557"
+        }
+      },
+      {
+        "id": 11591807078,
+        "name": "p8-scale-capacity-1000-0-37872522779",
+        "size_in_bytes": 783,
+        "digest": "sha256:7fff46b5a357b34a81e9d386f1453a1343101eff0055f67457aa2664b273877b",
+        "expired": false,
+        "workflow_run": {
+          "id": 37872522779,
+          "repository_id": 1249213794,
+          "head_repository_id": 1249213794,
+          "head_branch": "task/p8-scale-cache-a217-20261009",
+          "head_sha": "a23bb72d3c954f385b99fe81ce9189885c208557"
+        }
+      },
+      {
+        "id": 11591693031,
+        "name": "p8-scale-shard-10000-0-37872522779",
+        "size_in_bytes": 853798,
+        "digest": "sha256:d5a73580784d5bb247adf0d0e6d189f45215600df62bc94e4ca88bdf0ab6a444",
+        "expired": false,
+        "workflow_run": {
+          "id": 37872522779,
+          "repository_id": 1249213794,
+          "head_repository_id": 1249213794,
+          "head_branch": "task/p8-scale-cache-a217-20261009",
+          "head_sha": "a23bb72d3c954f385b99fe81ce9189885c208557"
+        }
+      },
+      {
+        "id": 11591482043,
+        "name": "p8-scale-build-37872522779",
+        "size_in_bytes": 9214568,
+        "digest": "sha256:d84d66e9048aa2849d037af9df06fcc34423ca7a4e7937f3e79e4d77b441afed",
+        "expired": false,
+        "workflow_run": {
+          "id": 37872522779,
+          "repository_id": 1249213794,
+          "head_repository_id": 1249213794,
+          "head_branch": "task/p8-scale-cache-a217-20261009",
+          "head_sha": "a23bb72d3c954f385b99fe81ce9189885c208557"
+        }
+      },
+      {
+        "id": 11591464502,
+        "name": "p8-scale-shard-5000-0-37872522779",
+        "size_in_bytes": 583603,
+        "digest": "sha256:cfc34907c79a13ceede8ad7a892af2d0861ddd2b978ba36105ad26fba2da010f",
+        "expired": false,
+        "workflow_run": {
+          "id": 37872522779,
+          "repository_id": 1249213794,
+          "head_repository_id": 1249213794,
+          "head_branch": "task/p8-scale-cache-a217-20261009",
+          "head_sha": "a23bb72d3c954f385b99fe81ce9189885c208557"
+        }
+      },
+      {
+        "id": 11591367982,
+        "name": "p8-scale-shard-1000-0-37872522779",
+        "size_in_bytes": 952631,
+        "digest": "sha256:a5eeda7a03131fd0d5cebfd26bbcdfb0ff07db32f303593219665f0aa7d2b5b6",
+        "expired": false,
+        "workflow_run": {
+          "id": 37872522779,
+          "repository_id": 1249213794,
+          "head_repository_id": 1249213794,
+          "head_branch": "task/p8-scale-cache-a217-20261009",
+          "head_sha": "a23bb72d3c954f385b99fe81ce9189885c208557"
+        }
+      },
+      {
+        "id": 11591237661,
+        "name": "p8-scale-capacity-10000-0-37872522779",
+        "size_in_bytes": 783,
+        "digest": "sha256:86dcdfb7624c6da5a35609600b2653d71d1a51f9cb0c1596e0ab27c05aa60f2b",
+        "expired": false,
+        "workflow_run": {
+          "id": 37872522779,
+          "repository_id": 1249213794,
+          "head_repository_id": 1249213794,
+          "head_branch": "task/p8-scale-cache-a217-20261009",
+          "head_sha": "a23bb72d3c954f385b99fe81ce9189885c208557"
+        }
+      },
+      {
+        "id": 11591232618,
+        "name": "p8-scale-capacity-50000-0-37872522779",
+        "size_in_bytes": 784,
+        "digest": "sha256:58c71192c4fa0ae398f2b9cad462865da64f83ab435a67934c4a6bd33fb83a63",
+        "expired": false,
+        "workflow_run": {
+          "id": 37872522779,
+          "repository_id": 1249213794,
+          "head_repository_id": 1249213794,
+          "head_branch": "task/p8-scale-cache-a217-20261009",
+          "head_sha": "a23bb72d3c954f385b99fe81ce9189885c208557"
+        }
+      },
+      {
+        "id": 11591128037,
+        "name": "p8-scale-capacity-5000-0-37872522779",
+        "size_in_bytes": 785,
+        "digest": "sha256:04ffc744eb89e5ef14740947e1e6618e95b29909832677298eb1cf1eb444b392",
+        "expired": false,
+        "workflow_run": {
+          "id": 37872522779,
+          "repository_id": 1249213794,
+          "head_repository_id": 1249213794,
+          "head_branch": "task/p8-scale-cache-a217-20261009",
+          "head_sha": "a23bb72d3c954f385b99fe81ce9189885c208557"
+        }
+      }
+    ],
+    "collector_final_receipt": {
+      "schema": "p8_original_100k_terminal_readback_v1",
+      "started_at_utc": "2026-10-09T06:23:17.341721+00:00",
+      "controller_run_id": "37893190079",
+      "controller_head": "53fbfbdc86faacdcd241f0c619b5110e3aba259d",
+      "controller_run_attempt": "1",
+      "original_run_id": 37872522779,
+      "original_job_id": 113638100879,
+      "original_head": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "method": "GET only; no checkout, native command, measurement or retry",
+      "requests": [
+        {
+          "name": "original-run",
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37872522779",
+          "method": "GET",
+          "started_at_utc": "2026-10-09T06:23:17.360215+00:00",
+          "status": 200,
+          "bytes": 11863,
+          "sha256": "00b06a562e1a0a0611b940727bd10f51cb6c85d2d2df9e0efae082d32714cb4c",
+          "finished_at_utc": "2026-10-09T06:23:17.558105+00:00"
+        },
+        {
+          "name": "original-job",
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/jobs/113638100879",
+          "method": "GET",
+          "started_at_utc": "2026-10-09T06:23:17.558814+00:00",
+          "status": 200,
+          "bytes": 2482,
+          "sha256": "66cd42ba7db2be8284c6c223e936923aaee48eb0e898b39f7eea489d295fd2ac",
+          "finished_at_utc": "2026-10-09T06:23:17.786348+00:00"
+        },
+        {
+          "name": "original-check",
+          "url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113638100879",
+          "method": "GET",
+          "started_at_utc": "2026-10-09T06:23:17.786932+00:00",
+          "status": 200,
+          "bytes": 3051,
+          "sha256": "f18aac4ecc5b2f70e0458fc2d374e7bd07d1693937ae2d0a2b0549bd01585b8c",
+          "finished_at_utc": "2026-10-09T06:23:17.992044+00:00"
+        },
+        {
+          "name": "original-annotations",
+          "url": "https://api.github.com/repos/jyqj/codecortex/check-runs/113638100879/annotations?per_page=100",
+          "method": "GET",
+          "started_at_utc": "2026-10-09T06:23:17.992667+00:00",
+          "status": 200,
+          "bytes": 452,
+          "sha256": "bc1ad4395886b208c0d13e493a95e17c657285fdf659c4f8c26021e1add629bc",
+          "finished_at_utc": "2026-10-09T06:23:18.174091+00:00"
+        },
+        {
+          "name": "original-artifacts",
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37872522779/artifacts?per_page=100",
+          "method": "GET",
+          "started_at_utc": "2026-10-09T06:23:18.174753+00:00",
+          "status": 200,
+          "bytes": 7955,
+          "sha256": "8defbbe2ce5c1653102ed11d19ecc770023cd571ebe4bf5d39e5d9e9bc30288c",
+          "finished_at_utc": "2026-10-09T06:23:18.353606+00:00"
+        },
+        {
+          "name": "original-failed-matrix-zip",
+          "artifact_id": 11599136237,
+          "api_url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11599136237/zip",
+          "started_at_utc": "2026-10-09T06:23:18.354210+00:00",
+          "method": "GET",
+          "bytes": 580,
+          "sha256": "6585b064492fba4b0f1cd8f10cfeb304ee63fa15851ede907c20a012780902e3",
+          "finished_at_utc": "2026-10-09T06:23:18.672447+00:00",
+          "authorization_forwarded_to_storage": false
+        }
+      ],
+      "passed": true,
+      "original_failed_matrix": {
+        "member": "matrix.json",
+        "bytes": 1978,
+        "sha256": "c14cf58287f4cb49cd942e5b26150ab46156375a19157d17426eb8301d2ae6ea",
+        "status": "failed",
+        "passed": false
+      },
+      "interpretation": "complete existing metadata readback only; original job conclusion is preserved and no measurement completion is claimed",
+      "finished_at_utc": "2026-10-09T06:23:18.674096+00:00"
+    },
+    "additional_root_preservation": {
+      "controller_api_blob": "e0d896075a59f5afa5abf8061379d10a3075dd3f",
+      "prior_original_log_404_receipt_blob": "7d38bdd0b1c766203325cc701849c23fe622bd8b",
+      "provenance": "Root supplied these two additional preservation locators. Their bodies were not re-audited here; reviewer independently captured current controller APIs in its own API snapshot."
+    }
+  },
+  "independent_checks": [
+    {
+      "name": "collector_identity",
+      "passed": true
+    },
+    {
+      "name": "collector_unique_job_all_steps_success",
+      "passed": true
+    },
+    {
+      "name": "all_six_raw_json_wrapper_hashes",
+      "passed": true
+    },
+    {
+      "name": "original_run_job_check_source_attempt",
+      "passed": true
+    },
+    {
+      "name": "original_failures_retained",
+      "passed": true
+    },
+    {
+      "name": "full_annotation_single_entry",
+      "passed": true
+    },
+    {
+      "name": "complete_original_artifact_page_bound_to_source",
+      "passed": true
+    },
+    {
+      "name": "no_original_100k_shard_published_in_snapshot",
+      "passed": true
+    },
+    {
+      "name": "fixed_zip_digest_metadata_and_actual_base64",
+      "passed": true
+    },
+    {
+      "name": "single_matrix_member_size_crc_matches_printed_original",
+      "passed": true
+    },
+    {
+      "name": "failed_matrix_no_certification",
+      "passed": true
+    },
+    {
+      "name": "exact_146_missing_cell_set",
+      "passed": true
+    },
+    {
+      "name": "receipt_original_bytes_linkage",
+      "passed": true
+    },
+    {
+      "name": "new_preservation_artifact_identity",
+      "passed": true
+    }
+  ],
+  "limitations": [
+    "No independent DEFLATE decompression replay in this JavaScript review; runner ZipFile successfully consumed the exact hash-bound archive with CRC, and reviewer additionally matched central CRC/length to the printed original JSON.",
+    "No download or revalidation of the 8,500-byte new preservation archive; metadata and complete original full log are retained.",
+    "Native outcome remains unknown because original measurement artifacts/terminal report are absent."
+  ],
+  "new_actions": [
+    "GitHub read-only fetches",
+    "Create unreferenced immutable raw-data/report Git blobs"
+  ],
+  "original_study_modified": false,
+  "previous_pre_delivery_review_blob": "a785ab4b3ffc77e152ddc7733e4b273cd5ceb4cf"
+}

@@ -1,0 +1,957 @@
+{
+  "schema": "p8-a23-platform-scope-independent-review-v1",
+  "observed_at": "2026-10-09T06:17:48Z",
+  "reviewer": "/root/runtime_review",
+  "author": "/root/acceptance_review",
+  "verdict": "accepted_scoped_for_root_confirmation",
+  "blocking_findings": [],
+  "candidate": {
+    "scope": {
+      "git_blob": "9e979aedd67bd992c13a6737601cbb7f54293964",
+      "bytes": 44500,
+      "sha256": "5568c7ce6b989dc2308f1e46776f0a3ea00ff0573a9450deac795427e78aa89d"
+    },
+    "readme": {
+      "git_blob": "0040a5e48734a9183c8d983f4316aaa242c71df4",
+      "bytes": 4374,
+      "sha256": "fd461bf8713be2888e3cf242a9d7d53b2011cef7cf30bbed2bbdc5ef0d92f57a"
+    }
+  },
+  "source": {
+    "commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+    "tree": "58147c952505c44da1f41eb4b9c31643f2303b96",
+    "native_input_count": 1087,
+    "native_manifest_sha256": "4e0aa6bbfd4d5bea00416bca2cd99318d865ffc526fdcb45897c4d300de3ac00"
+  },
+  "authority": {
+    "tasks": {
+      "git_blob": "f400eb2b5a3f8c524978bee1dfa87f98efe4bce8",
+      "sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207",
+      "path": "docs/roadmap/code-index-v2/tasks.json",
+      "common_condition": "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。",
+      "P8_012": {
+        "steps": [
+          "Linux/macOS、当前声明MSRV与stable、默认/semantic features",
+          "全新target"
+        ],
+        "acceptance": "SDK blocker解决或发布平台范围明确，缓存测试不替冷构建",
+        "validations": [
+          "V01",
+          "V21"
+        ],
+        "depends_on": [
+          "P8-011"
+        ]
+      }
+    },
+    "validation": {
+      "path": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+      "git_blob": "fcbcf9e9280d41a4e8e138543d2bd217137a2c5e",
+      "relevant_lines": [
+        23,
+        43,
+        58,
+        65
+      ],
+      "meaning": "V01/V21 require exact source/toolchain/SDK/old tests; failures within the selected scope remain blockers."
+    },
+    "phase_policy": {
+      "path": "docs/roadmap/code-index-v2/04-PHASES.md",
+      "git_blob": "2a8245f07bdaea69372e4fc7289eae15650e62e6",
+      "line": 145,
+      "text": "退出：选择发布的profile blocker=0"
+    },
+    "original_acceptance_or_test_limits_changed": false
+  },
+  "evidence": {
+    "platform_a2_review": {
+      "git_blob": "784238713bb0fb24c778017925ebd22ffe6fec10",
+      "bytes": 55381,
+      "sha256": "1f928b2886dc916ec9cdcdced4f9482e99727b35e8a3a2c3dc86afac3752e60e"
+    },
+    "platform_a2_full_log": {
+      "git_blob": "37ca19ba347a5cdd16bf72e391ee05be35547154",
+      "bytes": 76453,
+      "sha256": "d9c46b5625a36fd3080bd3826e7b92d949422db5b51e858bf67787d2bef0427c"
+    },
+    "platform_original_artifact_index": {
+      "git_blob": "27a3ad2b8de2e637f2b5648837a2ef56fbcc714f",
+      "bytes": 4046,
+      "sha256": "3a28874607f5992ec88a0dd95ce61b42365cfe990486f5a7003ee0f219eaaf64"
+    },
+    "original_mac_test_review": {
+      "git_blob": "4b2fe67b3cc26ba05070af5b640573bd05f84823",
+      "bytes": 25634,
+      "sha256": "f39a5458405234e9ab17018653212a3482644c4d82476f5bb0b891608657a99f"
+    },
+    "prior_user_mac_failure_review": {
+      "git_blob": "62d2d1960ab0f15432ba869225951988a80ed843",
+      "bytes": 27973,
+      "sha256": "558383ab41aedec7cdbe91b19f1a4bec0efe72bc4f5b8391ec1a8d4efd419af0"
+    }
+  },
+  "checks": {
+    "count": 204,
+    "failed": 0,
+    "items": [
+      {
+        "name": "candidate_has_exactly_eight_unique_cells",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/default/status",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/default/observed_rustc_release",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/default/original_binary_sha256",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/default/original_bundle_sha256",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/default/original_wall_seconds",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/default/artifact/id",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/default/artifact/name",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/default/artifact/run_id",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/default/artifact/run_attempt",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/default/artifact/source_commit",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/default/artifact/bytes",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/default/artifact/sha256",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/default/transport",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/default/unknown/os_version",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/default/unknown/architecture",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/default/unknown/target_triple",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/default/unknown/cargo_version",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/default/unknown/xcode_version",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/default/unknown/xcode_selection",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/default/unknown/sdk_version",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/default/unknown/sdk_path",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/default/unknown_projection_marked",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/semantic/status",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/semantic/observed_rustc_release",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/semantic/original_binary_sha256",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/semantic/original_bundle_sha256",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/semantic/original_wall_seconds",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/semantic/artifact/id",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/semantic/artifact/name",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/semantic/artifact/run_id",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/semantic/artifact/run_attempt",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/semantic/artifact/source_commit",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/semantic/artifact/bytes",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/semantic/artifact/sha256",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/semantic/transport",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/semantic/unknown/os_version",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/semantic/unknown/architecture",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/semantic/unknown/target_triple",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/semantic/unknown/cargo_version",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/semantic/unknown/xcode_version",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/semantic/unknown/xcode_selection",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/semantic/unknown/sdk_version",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/semantic/unknown/sdk_path",
+        "passed": true
+      },
+      {
+        "name": "linux/1.95/semantic/unknown_projection_marked",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/default/status",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/default/observed_rustc_release",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/default/original_binary_sha256",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/default/original_bundle_sha256",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/default/original_wall_seconds",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/default/artifact/id",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/default/artifact/name",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/default/artifact/run_id",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/default/artifact/run_attempt",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/default/artifact/source_commit",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/default/artifact/bytes",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/default/artifact/sha256",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/default/transport",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/default/unknown/os_version",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/default/unknown/architecture",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/default/unknown/target_triple",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/default/unknown/cargo_version",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/default/unknown/xcode_version",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/default/unknown/xcode_selection",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/default/unknown/sdk_version",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/default/unknown/sdk_path",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/default/unknown_projection_marked",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/semantic/status",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/semantic/observed_rustc_release",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/semantic/original_binary_sha256",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/semantic/original_bundle_sha256",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/semantic/original_wall_seconds",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/semantic/artifact/id",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/semantic/artifact/name",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/semantic/artifact/run_id",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/semantic/artifact/run_attempt",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/semantic/artifact/source_commit",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/semantic/artifact/bytes",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/semantic/artifact/sha256",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/semantic/transport",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/semantic/unknown/os_version",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/semantic/unknown/architecture",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/semantic/unknown/target_triple",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/semantic/unknown/cargo_version",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/semantic/unknown/xcode_version",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/semantic/unknown/xcode_selection",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/semantic/unknown/sdk_version",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/semantic/unknown/sdk_path",
+        "passed": true
+      },
+      {
+        "name": "linux/stable/semantic/unknown_projection_marked",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/default/status",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/default/observed_rustc_release",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/default/original_binary_sha256",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/default/original_bundle_sha256",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/default/original_wall_seconds",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/default/artifact/id",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/default/artifact/name",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/default/artifact/run_id",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/default/artifact/run_attempt",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/default/artifact/source_commit",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/default/artifact/bytes",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/default/artifact/sha256",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/default/transport",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/default/unknown/os_version",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/default/unknown/architecture",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/default/unknown/target_triple",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/default/unknown/cargo_version",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/default/unknown/xcode_version",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/default/unknown/xcode_selection",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/default/unknown/sdk_version",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/default/unknown/sdk_path",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/default/unknown_projection_marked",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/semantic/status",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/semantic/observed_rustc_release",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/semantic/original_binary_sha256",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/semantic/original_bundle_sha256",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/semantic/original_wall_seconds",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/semantic/artifact/id",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/semantic/artifact/name",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/semantic/artifact/run_id",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/semantic/artifact/run_attempt",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/semantic/artifact/source_commit",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/semantic/artifact/bytes",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/semantic/artifact/sha256",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/semantic/transport",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/semantic/unknown/os_version",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/semantic/unknown/architecture",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/semantic/unknown/target_triple",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/semantic/unknown/cargo_version",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/semantic/unknown/xcode_version",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/semantic/unknown/xcode_selection",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/semantic/unknown/sdk_version",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/semantic/unknown/sdk_path",
+        "passed": true
+      },
+      {
+        "name": "macos/1.95/semantic/unknown_projection_marked",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/default/status",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/default/observed_rustc_release",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/default/original_binary_sha256",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/default/original_bundle_sha256",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/default/original_wall_seconds",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/default/artifact/id",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/default/artifact/name",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/default/artifact/run_id",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/default/artifact/run_attempt",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/default/artifact/source_commit",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/default/artifact/bytes",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/default/artifact/sha256",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/default/transport",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/default/unknown/os_version",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/default/unknown/architecture",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/default/unknown/target_triple",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/default/unknown/cargo_version",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/default/unknown/xcode_version",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/default/unknown/xcode_selection",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/default/unknown/sdk_version",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/default/unknown/sdk_path",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/default/unknown_projection_marked",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/semantic/status",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/semantic/observed_rustc_release",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/semantic/original_binary_sha256",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/semantic/original_bundle_sha256",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/semantic/original_wall_seconds",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/semantic/artifact/id",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/semantic/artifact/name",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/semantic/artifact/run_id",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/semantic/artifact/run_attempt",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/semantic/artifact/source_commit",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/semantic/artifact/bytes",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/semantic/artifact/sha256",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/semantic/transport",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/semantic/unknown/os_version",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/semantic/unknown/architecture",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/semantic/unknown/target_triple",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/semantic/unknown/cargo_version",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/semantic/unknown/xcode_version",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/semantic/unknown/xcode_selection",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/semantic/unknown/sdk_version",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/semantic/unknown/sdk_path",
+        "passed": true
+      },
+      {
+        "name": "macos/stable/semantic/unknown_projection_marked",
+        "passed": true
+      },
+      {
+        "name": "old20locators_retained",
+        "passed": true
+      },
+      {
+        "name": "old_binary_retained",
+        "passed": true
+      },
+      {
+        "name": "old_supervisor_reports_retained",
+        "passed": true
+      },
+      {
+        "name": "old_persistent_report_retained",
+        "passed": true
+      },
+      {
+        "name": "new_case_exact_argv",
+        "passed": true
+      },
+      {
+        "name": "new_case_function",
+        "passed": true
+      },
+      {
+        "name": "new_case_profile",
+        "passed": true
+      },
+      {
+        "name": "new_case/results/cargo_exit_code",
+        "passed": true
+      },
+      {
+        "name": "new_case/results/tests",
+        "passed": true
+      },
+      {
+        "name": "new_case/results/passed",
+        "passed": true
+      },
+      {
+        "name": "new_case/results/failed",
+        "passed": true
+      },
+      {
+        "name": "new_case/results/ignored",
+        "passed": true
+      },
+      {
+        "name": "new_case/results/filtered",
+        "passed": true
+      },
+      {
+        "name": "new_case/results/harness_reported_seconds",
+        "passed": true
+      },
+      {
+        "name": "new_case/results/cargo_wall_seconds_including_compile",
+        "passed": true
+      },
+      {
+        "name": "new_binary_exact",
+        "passed": true
+      },
+      {
+        "name": "new_before_after_maps",
+        "passed": true
+      },
+      {
+        "name": "new_source_identity",
+        "passed": true
+      },
+      {
+        "name": "new_flags_exact",
+        "passed": true
+      },
+      {
+        "name": "new_official_artifact_exact",
+        "passed": true
+      },
+      {
+        "name": "new_stdout_actual",
+        "passed": true
+      },
+      {
+        "name": "new_scope_not_workspace",
+        "passed": true
+      },
+      {
+        "name": "old_isolated/argv",
+        "passed": true
+      },
+      {
+        "name": "old_isolated/cwd",
+        "passed": true
+      },
+      {
+        "name": "old_isolated/compile_performed",
+        "passed": true
+      },
+      {
+        "name": "old_sdk_exact",
+        "passed": true
+      },
+      {
+        "name": "old_selected_isolated_environment_exact",
+        "passed": true
+      }
+    ]
+  },
+  "reviewer_probe_correction": {
+    "check": "old_sdk_exact",
+    "original_probe_access": "environment.SDKROOT",
+    "actual_schema": "environment.sdkroot",
+    "reason": "reviewer probe used wrong case-sensitive key; no candidate defect or candidate change"
+  },
+  "findings": [
+    "Eight unique Linux/macOS x 1.95/stable x default/semantic observations match A2 platform.cells exactly for compiler release, binary/bundle SHA, status and wall duration.",
+    "All eight original artifact IDs/names/run/attempt/source/size/SHA match the frozen original artifact index; the same IDs/size/SHA/run match the original A2 transport record with passed=true,input_unchanged=true.",
+    "OS/arch/target/Cargo/Xcode/SDK null fields explicitly describe absence from the available review projection. They do not imply missing original receipts or observed null environment. Later SDK26.5 is not backfilled.",
+    "New original regression is one unchanged exact case on actual macOS26.6.2 ARM64/Rust1.95/SDK26.5, with source HEAD/tree/clean and two full before/after file maps; it is not a full1087 rehash or a workspace pass. Actual stdout was independently fetched again and matches the original single-test result.",
+    "Prior user Mac SDK15.4 workspace101 and same-binary isolated101 remain failed/root cause unknown. All20 original locators, binary identity, two original supervisor reports and persistent diagnostic report remain exact. SDK15.4 selected environment independently matches original toolchain and isolated-command blobs.",
+    "Scope preserves original250ms/<2s assertions and all relevant-regression requirements. It neither attributes the root cause to SDK nor excludes every SDK15.4 configuration.",
+    "The README and JSON use the original P8-012 explicit-platform-scope alternative while retaining eight cold builds, V01/V21 and dependencies. No new universal Mac workspace gate is imposed.",
+    "Current scope is bound solely to A23. Parent reports current main60e5ce3 includes G2 product changes; no applicability to that main or any later product is granted."
+  ],
+  "permitted_use": "Root may adopt this exact declaration as an explicit record of the positively observed A23 build/smoke configurations and separately identified original single-test environment, while displaying the retained old failure. This is not source modification, release certification, automatic waiver or TODO closure.",
+  "retained_boundaries": {
+    "old_failed_configuration": "failed/root cause unknown; not certified by this positive scope; if claimed supported the original failure remains a blocker",
+    "eight_cells": "fresh release build + stdio smoke, not full workspace across all cells",
+    "new_mac_case": "one actual unchanged exact test on one observed host/environment only",
+    "scale": "complete150 shards/1500 unique measurements/N30/aggregate remain required; no complete scale acceptance claimed",
+    "latest_scale_status": "Parent reported A23 preflight100k job113638100879 failure with raw/log upload unresolved. Not independently refreshed in this scoped review and not used as positive scale evidence.",
+    "G8": "not_certified",
+    "release": "not_release",
+    "tasks": {
+      "total": 192,
+      "done": 163,
+      "remaining": 29,
+      "newly_completed": 0
+    }
+  },
+  "actions": {
+    "read_fixed_git_blobs": true,
+    "independent_json_field_checks": true,
+    "fetch_small_original_stdout_and_old_receipts": true,
+    "new_native_or_tests": false,
+    "download_or_execute_artifact_binaries": false,
+    "source_task_gate_changes": false,
+    "ref_PR_or_branch_changes": false,
+    "created_only_this_unreferenced_review_blob": true
+  }
+}

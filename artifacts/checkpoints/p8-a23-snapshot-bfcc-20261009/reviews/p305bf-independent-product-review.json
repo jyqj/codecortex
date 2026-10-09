@@ -1,0 +1,628 @@
+{
+  "base": "7354db236c9d9850a75f31672697ae9eab44565e",
+  "cloud_codex_task_created": false,
+  "complete_product_input_count": 1089,
+  "crates_tree": "c3ff36be7754af663fc575b71c283b9113e1607d",
+  "cross_cutting_semantics": {
+    "boundedness": "A retained batch has at most 64 rows and at most 65536 measured SQL-value payload bytes. A single oversized legal row is executed separately, and the original per-file outcome allocation remains outside this batching bound. No whole-process memory or stable-tail claim is inferred.",
+    "correctness_vs_performance": "The source exposes a plausible reduction of per-row SQL work and adds an actual SQLite StatementStatus::Run comparison. No speedup, latency distribution, stable tail, causal benefit, or resource bound is accepted without original execution evidence.",
+    "foreign_keys_and_order": "The reviewed schema's affected leaf FK edges point to file parents already written by the original file loop, and parent_symbol_id is not a new within-batch FK. Windows cannot admit a later file early. The new future-file FK case exercises the same early-failure boundary. No FK policy is installed by the new seam.",
+    "fts_and_identity": "The original schema keeps symbol_id primary-key and symbol_uid UNIQUE constraints and existing symbol FTS triggers. The new path reuses the same inserts and keeps identity validation after that file's symbols and before the next file. No pending rows cross that check. Conflict/rowid/MATCH test code addresses observable FTS effects instead of checking only a content-table count.",
+    "parameter_and_payload_identity": "All six new payload expression lists exactly match their unchanged existing bind_row lists. At the 64-row tier the column counts imply respectively 1600, 1152, 1920, 640, 704 and 1216 bound parameters; the existing tier/SQL generator remains unchanged.",
+    "transactions_and_failure": "The helper propagates ToSql/prepare/bind/execute errors through existing CcResult/? boundaries. Existing outer transactions, temp-database publication, cleanup and adapter PRAGMAs are untouched. WAL rollback and subsequent successful writes are represented in the new test code. This review does not assert stronger journal-OFF physical rollback guarantees.",
+    "validation_preservation": "All 138 listed validation inputs and the entire P-vs-a23 changed-path set were independently checked. No G2 workflow, 50-method checklist, guard relaxation, protocol budget relaxation, or task-status change is included in P."
+  },
+  "delta_counts": {
+    "all_BASE": 41,
+    "directly_reviewed": 7,
+    "retained_prior_reviewed": 34
+  },
+  "donor_content_reference_only": "0272a1fb152fd76a7cfb22386a580629d4038a64",
+  "execution_boundary": {
+    "a23_or_other_source_primary_samples_inherited_by_P": 0,
+    "added_gates": [],
+    "build_created_for_P_by_this_reviewer": false,
+    "full_ci_executed_by_this_reviewer": false,
+    "new_nine_rust_tests_executed_by_this_reviewer": false,
+    "original_150_shard_aggregate_for_P_executed_here": false,
+    "original_primary_samples_for_P_accepted_here": 0,
+    "original_todos_completed_by_this_review": 0,
+    "remaining_original_requirements": [
+      "Install and independently verify the normal R/G source-review and registry bindings for this exact product source; P currently intentionally retains the a23 validation bytes.",
+      "Observe the original complete CI and the nine ordinary Rust tests at the final registered source with their actual successful results.",
+      "Require the original registered execution workloads and source/binary/raw/aggregate gates for any later performance, acceptance, release or original-TODO claim. Preserve allowed unknown/not_established boundaries from the original protocol."
+    ],
+    "runtime_tests_executed_by_this_reviewer": false
+  },
+  "identity_report": {
+    "bytes": 47399,
+    "path": "review-next-candidate/execution-recon-p-source-identity.json",
+    "sha256": "83ecb3272beaa3b33951bc72184be1e7109c0aa219ffc5c36b0cc6e07f90cd30"
+  },
+  "new_test_count": 9,
+  "new_tests": [
+    {
+      "crate": "cc-db",
+      "executed_by_this_reviewer": false,
+      "name": "index_db_snapshot_insert::tests::bound_payload_measures_sql_values_and_keeps_large_rows_legal",
+      "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+      "target": "lib"
+    },
+    {
+      "crate": "cc-db",
+      "executed_by_this_reviewer": false,
+      "name": "index_db_snapshot_insert::tests::failed_window_stops_before_later_rows_or_tables",
+      "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+      "target": "lib"
+    },
+    {
+      "crate": "cc-db",
+      "executed_by_this_reviewer": false,
+      "name": "index_db_snapshot_insert::tests::semantic_leaf_batches_reduce_actual_sqlite_statement_runs",
+      "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+      "target": "lib"
+    },
+    {
+      "crate": "cc-index",
+      "executed_by_this_reviewer": false,
+      "name": "snapshot_leaf_tier_boundaries_preserve_all_fifteen_tables_and_fts",
+      "path": "crates/cc-index/tests/snapshot_leaf_batching.rs",
+      "target": "snapshot_leaf_batching"
+    },
+    {
+      "crate": "cc-index",
+      "executed_by_this_reviewer": false,
+      "name": "snapshot_leaf_symbol_id_and_uid_conflicts_keep_sql_survivors_and_fts",
+      "path": "crates/cc-index/tests/snapshot_leaf_batching.rs",
+      "target": "snapshot_leaf_batching"
+    },
+    {
+      "crate": "cc-index",
+      "executed_by_this_reviewer": false,
+      "name": "snapshot_leaf_never_delays_identity_checks_past_the_next_file",
+      "path": "crates/cc-index/tests/snapshot_leaf_batching.rs",
+      "target": "snapshot_leaf_batching"
+    },
+    {
+      "crate": "cc-index",
+      "executed_by_this_reviewer": false,
+      "name": "snapshot_leaf_byte_windows_and_oversize_single_rows_preserve_values",
+      "path": "crates/cc-index/tests/snapshot_leaf_batching.rs",
+      "target": "snapshot_leaf_batching"
+    },
+    {
+      "crate": "cc-index",
+      "executed_by_this_reviewer": false,
+      "name": "snapshot_leaf_duplicate_paths_future_fk_and_late_identity_error_roll_back_wal",
+      "path": "crates/cc-index/tests/snapshot_leaf_batching.rs",
+      "target": "snapshot_leaf_batching"
+    },
+    {
+      "crate": "cc-index",
+      "executed_by_this_reviewer": false,
+      "name": "snapshot_leaf_direct_writer_preserves_original_adapter_pragmas_and_bytes",
+      "path": "crates/cc-index/tests/snapshot_leaf_batching.rs",
+      "target": "snapshot_leaf_batching"
+    }
+  ],
+  "non_author_review": true,
+  "observed_utc": "2026-10-09T03:55:10.319805+00:00",
+  "parent": "a23bb72d3c954f385b99fe81ce9189885c208557",
+  "paths": {
+    "crates/cc-db/src/index_db_multi_insert.rs": {
+      "before_sha256": "9bcc38670163280c0b475474ac02d198b940ab2c621c29e9525e2968a12a3261",
+      "classification": "directly_reviewed_this_round",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "539b9d19f1034a8cfd918090b1b48dacc177494c",
+      "mode": "100644",
+      "semantic_review_basis": "direct seven-path source review",
+      "semantic_reviewer": "/root/execution_recon",
+      "sha256": "b621f633f231a98af42b6ead8c300956ad96ff1544bbbc392c3743b2e3038101"
+    },
+    "crates/cc-db/src/index_db_snapshot_insert.rs": {
+      "before_sha256": null,
+      "classification": "directly_reviewed_this_round",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "2188f67d83d44b49c3015598c7001d231fd22428",
+      "mode": "100644",
+      "semantic_review_basis": "direct seven-path source review",
+      "semantic_reviewer": "/root/execution_recon",
+      "sha256": "e159376159f0f6f250ba4a6d328bde503c4e272ccd11f75a326bb24f85a89a0f"
+    },
+    "crates/cc-db/src/index_db_write_batch.rs": {
+      "before_sha256": "05a9f58d6433eee1be35a66fd08d8f6ac8c3ba9bf434faf99cdee41000ecb617",
+      "classification": "directly_reviewed_this_round",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "2758481da50748be45f9c35a35832d2f2bc9b851",
+      "mode": "100644",
+      "semantic_review_basis": "direct seven-path source review",
+      "semantic_reviewer": "/root/execution_recon",
+      "sha256": "8968b406f5c8f513489ace72bfc0077233484db687c97a92dbc13704d2e6fb7a"
+    },
+    "crates/cc-db/src/index_migrate.rs": {
+      "before_sha256": "fcfa9073ffb82abb024380d5996836ff51b4ccc89caca4e99149de748c440b0d",
+      "classification": "retained_prior_independently_reviewed_delta",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "0de28f327cc989fafc112d6415491026de167bd1",
+      "mode": "100644",
+      "semantic_review_basis": "Exact BASE-before/A23-after/P-after identities match the preserved accepted prior review",
+      "semantic_reviewer": "/root/pr_audit (prior exact-byte review recorded by a23)",
+      "sha256": "db6c7377fa47f27c7c163a40bdf8d93ea4db90c72e5ea78e587186e5eb39dcd2"
+    },
+    "crates/cc-db/src/lib.rs": {
+      "before_sha256": "640dc126385015e2418f0776e0e68e882075d5548761cde7918bfc44e4df7d9f",
+      "classification": "directly_reviewed_this_round",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "f41c91b18b8b6120da4b2ab813a408bf37f16dbd",
+      "mode": "100644",
+      "semantic_review_basis": "direct seven-path source review",
+      "semantic_reviewer": "/root/execution_recon",
+      "sha256": "2ee1fd4600ce4625725c5c673b9ce96be5eab6d74ce7a8c407de4f92a3ee983f"
+    },
+    "crates/cc-db/src/resolution_dependency_store.rs": {
+      "before_sha256": "f5fad6998e4ac37fc0ec20026d270615b006d1e4ca286db5ebdc6b9553bb59d4",
+      "classification": "retained_prior_independently_reviewed_delta",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "6e90d4e85aae79d73d5d59b8defbd39d02c61097",
+      "mode": "100644",
+      "semantic_review_basis": "Exact BASE-before/A23-after/P-after identities match the preserved accepted prior review",
+      "semantic_reviewer": "/root/pr_audit (prior exact-byte review recorded by a23)",
+      "sha256": "7afc688e8b6314f2f5373db35b38deb84f23feec88bcfb11210041fa9cdd29e4"
+    },
+    "crates/cc-db/src/snapshot_write_txn.rs": {
+      "before_sha256": "dfa574afde308fb5c80b7af31d759e63bbc7376e6e5e01b05dd2657fc4e96856",
+      "classification": "directly_reviewed_this_round",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "20dc6ffc60d2a63320b56d1bd8e010e2937ffe26",
+      "mode": "100644",
+      "semantic_review_basis": "direct seven-path source review",
+      "semantic_reviewer": "/root/execution_recon",
+      "sha256": "408fdf68044a2e37d493df71aff7be6140464368fd86e980107f370573c004c7"
+    },
+    "crates/cc-db/src/sql/index_v1.sql": {
+      "before_sha256": "a609300b7ba56b8cc8739a1d12b5803c6b5cb57d4c3e7e1fd568679ba21be81f",
+      "classification": "retained_prior_independently_reviewed_delta",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "998608d9c6d07eb4afec0ce7e13c1f85bfc7a441",
+      "mode": "100644",
+      "semantic_review_basis": "Exact BASE-before/A23-after/P-after identities match the preserved accepted prior review",
+      "semantic_reviewer": "/root/pr_audit (prior exact-byte review recorded by a23)",
+      "sha256": "6d7ee2193f388281aeef3dc98b914f0fa6f9478dda90833bf41f6bc12350cd06"
+    },
+    "crates/cc-db/src/symbol_identity_store.rs": {
+      "before_sha256": "16274aaae066b6a5e87bcd6d24657a27de60c45c3ea50bd24cc6fceda9cc7d2b",
+      "classification": "retained_prior_independently_reviewed_delta",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "c9200289e1cf67bc4824b25a161907edfc526490",
+      "mode": "100644",
+      "semantic_review_basis": "Exact BASE-before/A23-after/P-after identities match the preserved accepted prior review",
+      "semantic_reviewer": "/root/pr_audit (prior exact-byte review recorded by a23)",
+      "sha256": "e4d9ae569cfe557c9b3ea11ba779be32b781d5383fd620072a069e7ce38ffb49"
+    },
+    "crates/cc-db/tests/ci_schema_guard_contract.rs": {
+      "before_sha256": "94ce67ed025afb484fb630411859697fa87e9dd91e3d118725a08c336d218694",
+      "classification": "retained_prior_independently_reviewed_delta",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "62b998e3c62d150f2d776a0073eb1d6ac8a8e627",
+      "mode": "100644",
+      "semantic_review_basis": "Exact BASE-before/A23-after/P-after identities match the preserved accepted prior review",
+      "semantic_reviewer": "/root/pr_audit (prior exact-byte review recorded by a23)",
+      "sha256": "24850989991ef584c559fd0a5b73382ba0434181c6abd69cba80ede6acbe7e42"
+    },
+    "crates/cc-db/tests/p2b_resolution_store.rs": {
+      "before_sha256": "bd5cf52dcdea030916142d4dcaaa058f2be8d6ef89ace9eb577792dc4c67674f",
+      "classification": "retained_prior_independently_reviewed_delta",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "babd9caa60308b9f9dda8d34770eb1fefd4d48d9",
+      "mode": "100644",
+      "semantic_review_basis": "Exact BASE-before/A23-after/P-after identities match the preserved accepted prior review",
+      "semantic_reviewer": "/root/pr_audit (prior exact-byte review recorded by a23)",
+      "sha256": "ac2f7d6ceed1130161d18ba22bb6c8ecf1d6982eb48a7ca15af5951721d80772"
+    },
+    "crates/cc-eval/src/bench.rs": {
+      "before_sha256": "7a34a5147723baa63243485221d045261925fa329f8f9fae689abdce1deaa60f",
+      "classification": "retained_prior_independently_reviewed_delta",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "67b5b31d925af18017864298acc30e924e368327",
+      "mode": "100644",
+      "semantic_review_basis": "Exact BASE-before/A23-after/P-after identities match the preserved accepted prior review",
+      "semantic_reviewer": "/root/pr_audit (prior exact-byte review recorded by a23)",
+      "sha256": "26b82c6a6a21934374e59c23fbfc3583b8e21db0373bd8d7a2905213eda24756"
+    },
+    "crates/cc-eval/src/benchmark/oracle.rs": {
+      "before_sha256": "4a0c1b61eaecae6091ef3ea889615e3bd418f54a6b813532c00107cdbde384a1",
+      "classification": "retained_prior_independently_reviewed_delta",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "d6324b3003b5a3c3e8a1680536260ea99a950152",
+      "mode": "100644",
+      "semantic_review_basis": "Exact BASE-before/A23-after/P-after identities match the preserved accepted prior review",
+      "semantic_reviewer": "/root/pr_audit (prior exact-byte review recorded by a23)",
+      "sha256": "adccf4f437e637aaee6bd368109d0b41af1855f3e50c84c48f7cc8b5cf3dc711"
+    },
+    "crates/cc-eval/src/benchmark/oracle/streaming.rs": {
+      "before_sha256": "dd8fd87c5518375536fea3003dc8ba45c199a595bb64ddbfbb7e74c116fe280c",
+      "classification": "retained_prior_independently_reviewed_delta",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "3c05342f976f534861347c098c3229ce988dfb61",
+      "mode": "100644",
+      "semantic_review_basis": "Exact BASE-before/A23-after/P-after identities match the preserved accepted prior review",
+      "semantic_reviewer": "/root/pr_audit (prior exact-byte review recorded by a23)",
+      "sha256": "5a51a72e8cb49c033754f860a3f5dc6366748ffe45a440da55cf7776cde7da0c"
+    },
+    "crates/cc-eval/src/benchmark/p8_scale.rs": {
+      "before_sha256": "f475d81683f7f253f855691ea8d5cbb5136428f0e43ec9e64fecebd892704336",
+      "classification": "directly_reviewed_this_round",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "1281d5340096699663308c92ce27978ae96ac84e",
+      "mode": "100644",
+      "semantic_review_basis": "direct seven-path source review",
+      "semantic_reviewer": "/root/execution_recon",
+      "sha256": "18e6fbe38bc0484ff32050c749186671a7e4c3b15c0894b5fb205c9948fb7530"
+    },
+    "crates/cc-eval/src/benchmark/sampler.rs": {
+      "before_sha256": "ba8e501949868fdb422ba389f9e15a9d1f833266c3e52788ba5fc33368ac9280",
+      "classification": "retained_prior_independently_reviewed_delta",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "3808397a29522a30846087999340ffeba51d911c",
+      "mode": "100644",
+      "semantic_review_basis": "Exact BASE-before/A23-after/P-after identities match the preserved accepted prior review",
+      "semantic_reviewer": "/root/pr_audit (prior exact-byte review recorded by a23)",
+      "sha256": "1460c2cc3e866ca951d4da2b84e9084f2e3b47dd4db61475413b36c8d9a67317"
+    },
+    "crates/cc-eval/src/benchmark/statistics.rs": {
+      "before_sha256": "e6691ff90ab844ec8384575cc10b33b672a8bca3abcdb21ce78b785e52358bf6",
+      "classification": "retained_prior_independently_reviewed_delta",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "869d8494d8b22fff029b5203a9ce73736e2ee368",
+      "mode": "100644",
+      "semantic_review_basis": "Exact BASE-before/A23-after/P-after identities match the preserved accepted prior review",
+      "semantic_reviewer": "/root/pr_audit (prior exact-byte review recorded by a23)",
+      "sha256": "3eb2da83662bab96dbb3625a0a6998a7586ce300df4766b4ab7f22409143d4e2"
+    },
+    "crates/cc-eval/src/bin/p8-measurements.rs": {
+      "before_sha256": null,
+      "classification": "retained_prior_independently_reviewed_delta",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "bcb794513cb7f30958ab648134d2de2276005bb5",
+      "mode": "100644",
+      "semantic_review_basis": "Exact BASE-before/A23-after/P-after identities match the preserved accepted prior review",
+      "semantic_reviewer": "/root/pr_audit (prior exact-byte review recorded by a23)",
+      "sha256": "b2d937ee0d3e88febe0c497422d073e3f9a42a9640faa31bed265d4ac5787882"
+    },
+    "crates/cc-eval/src/bin/p8-oracle.rs": {
+      "before_sha256": null,
+      "classification": "retained_prior_independently_reviewed_delta",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "269116e2247e88e2ca3590f95fc4a039532cfc0a",
+      "mode": "100644",
+      "semantic_review_basis": "Exact BASE-before/A23-after/P-after identities match the preserved accepted prior review",
+      "semantic_reviewer": "/root/pr_audit (prior exact-byte review recorded by a23)",
+      "sha256": "135962540116e01d47db3a34daa9bfebe2117d25773a888b6b36fde85dabdd8e"
+    },
+    "crates/cc-eval/src/bin/p8-runtime-statistics.rs": {
+      "before_sha256": null,
+      "classification": "retained_prior_independently_reviewed_delta",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "34f5cf8a67962edd94c277cf0e9dd299aa004235",
+      "mode": "100644",
+      "semantic_review_basis": "Exact BASE-before/A23-after/P-after identities match the preserved accepted prior review",
+      "semantic_reviewer": "/root/pr_audit (prior exact-byte review recorded by a23)",
+      "sha256": "c32527a5d64dd9580fa642ac546d3536202291c5900967b1876b7283c1d364f5"
+    },
+    "crates/cc-eval/src/bin/p8-scale.rs": {
+      "before_sha256": "56492a16a847bbd85f199df2352f05f0ba9b183855151b91ef7ca4ac8727dfe9",
+      "classification": "retained_prior_independently_reviewed_delta",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "50a49186d4d079d901b7531e009e9c5839a8e095",
+      "mode": "100644",
+      "semantic_review_basis": "Exact BASE-before/A23-after/P-after identities match the preserved accepted prior review",
+      "semantic_reviewer": "/root/pr_audit (prior exact-byte review recorded by a23)",
+      "sha256": "fa4773bd400d1c0fe143926264517b6bdd77a819bc456629fa7d873233cd7d90"
+    },
+    "crates/cc-eval/src/report.rs": {
+      "before_sha256": "b09049469974625bad2016c2eb54a0ade425b42e0256275283c17d5bf390e4a3",
+      "classification": "retained_prior_independently_reviewed_delta",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "efe65553afc0fb64a90eb24bf9188641fe210edb",
+      "mode": "100644",
+      "semantic_review_basis": "Exact BASE-before/A23-after/P-after identities match the preserved accepted prior review",
+      "semantic_reviewer": "/root/pr_audit (prior exact-byte review recorded by a23)",
+      "sha256": "dfa0351549941afe25c38f503e3d00e6cdf5945edb1341cbdbd3f89b62280aa0"
+    },
+    "crates/cc-eval/tests/benchmark_cli.rs": {
+      "before_sha256": "8a1f256e22369c67285119412c78342e5f4ef442ba32f9278eb2c6a72830a430",
+      "classification": "retained_prior_independently_reviewed_delta",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "0809edbe125ee70c82d108b4537ca39f90b4a227",
+      "mode": "100644",
+      "semantic_review_basis": "Exact BASE-before/A23-after/P-after identities match the preserved accepted prior review",
+      "semantic_reviewer": "/root/pr_audit (prior exact-byte review recorded by a23)",
+      "sha256": "ac7dcd8e7024735414779e76b2b15613ff885e4c99ddabb2e3846f7065e2f9be"
+    },
+    "crates/cc-eval/tests/benchmark_oracle_streaming.rs": {
+      "before_sha256": "f41e2520995583b7c748627a3c7233cdc4e1529c644f0c7fdb362a13471a5cff",
+      "classification": "retained_prior_independently_reviewed_delta",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "5218ff2957289b7b4eff542ecfddff65be5d056e",
+      "mode": "100644",
+      "semantic_review_basis": "Exact BASE-before/A23-after/P-after identities match the preserved accepted prior review",
+      "semantic_reviewer": "/root/pr_audit (prior exact-byte review recorded by a23)",
+      "sha256": "0102afe7ab68810531b3bff6df57484c5c69e8f680972f0cc23f263a2b00f8b6"
+    },
+    "crates/cc-eval/tests/p7_worker_contention.rs": {
+      "before_sha256": "784fc434202c2dffc496137597a2011ff544fc610866dccdba47852fee3ee228",
+      "classification": "retained_prior_independently_reviewed_delta",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "5920466ea32a5470532309a46c92d6638959d53c",
+      "mode": "100644",
+      "semantic_review_basis": "Exact BASE-before/A23-after/P-after identities match the preserved accepted prior review",
+      "semantic_reviewer": "/root/pr_audit (prior exact-byte review recorded by a23)",
+      "sha256": "e010748008b954fab03530f9907ba72be9ccbe74abfeb5a5ee6eace17e9be612"
+    },
+    "crates/cc-eval/tests/p8_lifecycle_replay.rs": {
+      "before_sha256": null,
+      "classification": "retained_prior_independently_reviewed_delta",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "cd3e16402dcd7649a31037c42dbe87147250f4f7",
+      "mode": "100644",
+      "semantic_review_basis": "Exact BASE-before/A23-after/P-after identities match the preserved accepted prior review",
+      "semantic_reviewer": "/root/pr_audit (prior exact-byte review recorded by a23)",
+      "sha256": "f191a19df4900650ed62f4f43ceab059ee18bb3ebc4e72b8857f992122f72fd8"
+    },
+    "crates/cc-eval/tests/p8_measurements.rs": {
+      "before_sha256": "eff243635af5948115d4aac70614703ddc826cd3fcba43bdb48edf261e4e8dc7",
+      "classification": "retained_prior_independently_reviewed_delta",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "5c3927b40cbc0d894be6d86895ec1ed8c14bbffb",
+      "mode": "100644",
+      "semantic_review_basis": "Exact BASE-before/A23-after/P-after identities match the preserved accepted prior review",
+      "semantic_reviewer": "/root/pr_audit (prior exact-byte review recorded by a23)",
+      "sha256": "5e3fe0b9f3dcd7fc94755ef7e4f8ec51d8af747a8d8a6797dbddd771ab5408e0"
+    },
+    "crates/cc-eval/tests/p8_scale.rs": {
+      "before_sha256": "c14830f8ea4c1d89773982b3689a0c0e953ce5698b6faa2ce412729eebdf9613",
+      "classification": "retained_prior_independently_reviewed_delta",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "e4369e275bee0ddbc1cbea91e61bcc5735483e4e",
+      "mode": "100644",
+      "semantic_review_basis": "Exact BASE-before/A23-after/P-after identities match the preserved accepted prior review",
+      "semantic_reviewer": "/root/pr_audit (prior exact-byte review recorded by a23)",
+      "sha256": "e178777707b978b04918b8de38ce1beaca76f2bf0fb342928fca0f97657e0c6d"
+    },
+    "crates/cc-index/src/build_plan.rs": {
+      "before_sha256": "8912d922270f71f36bee8b0fbe9a89a292803a5cc2ad37d20ad88aa2d2b72d92",
+      "classification": "retained_prior_independently_reviewed_delta",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "ffe62dd2827b37461c8db914e11b8279a03b8f15",
+      "mode": "100644",
+      "semantic_review_basis": "Exact BASE-before/A23-after/P-after identities match the preserved accepted prior review",
+      "semantic_reviewer": "/root/pr_audit (prior exact-byte review recorded by a23)",
+      "sha256": "fdfa0ea0404ebefe8d8d45c4e52d684c1b87d9e7125f4702c7578d2d16bb469c"
+    },
+    "crates/cc-index/src/indexer.rs": {
+      "before_sha256": "ab087982b8add0b9dba69be0660904318d5e7e0731ccac14a388f28f84e14b57",
+      "classification": "retained_prior_independently_reviewed_delta",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "e4dec2b00870c862e2fb4bf45a5515881257e536",
+      "mode": "100644",
+      "semantic_review_basis": "Exact BASE-before/A23-after/P-after identities match the preserved accepted prior review",
+      "semantic_reviewer": "/root/pr_audit (prior exact-byte review recorded by a23)",
+      "sha256": "dace7ecc9a63c4b2c69b90182e140c9227455569df9546bde5e2d2bfdee8d093"
+    },
+    "crates/cc-index/src/indexer_phases/forwarding_budget_tests.rs": {
+      "before_sha256": "9a6b4dbda93067c86ed11c630fa24ebb7cf720879cb9a42430596c6310f781db",
+      "classification": "retained_prior_independently_reviewed_delta",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "1df8b3ee1cb9746c8937d976bb7afe158770af17",
+      "mode": "100644",
+      "semantic_review_basis": "Exact BASE-before/A23-after/P-after identities match the preserved accepted prior review",
+      "semantic_reviewer": "/root/pr_audit (prior exact-byte review recorded by a23)",
+      "sha256": "7f1dc101374924f563f80a281b33c440927ea23ec1ab698acc373c4051b6616c"
+    },
+    "crates/cc-index/src/indexer_phases/reconcile.rs": {
+      "before_sha256": "8828e842a56691ed7fe4f2ae01cd116a0a0472a132cbb03559a58c9dac1103da",
+      "classification": "retained_prior_independently_reviewed_delta",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "9617e0f241c624ce35db3c6db8e5eba568fb7594",
+      "mode": "100644",
+      "semantic_review_basis": "Exact BASE-before/A23-after/P-after identities match the preserved accepted prior review",
+      "semantic_reviewer": "/root/pr_audit (prior exact-byte review recorded by a23)",
+      "sha256": "0027e96cc8bc1a782644f585a94891feb8f73198a537ed14089148d84d708818"
+    },
+    "crates/cc-index/src/indexer_phases/resolve.rs": {
+      "before_sha256": "e92f32066360764873c97ef0c40d764f43a06855a673986bb92c5c66282a21e7",
+      "classification": "retained_prior_independently_reviewed_delta",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "675be9852afd8e78144836758cd696780cbb8a3d",
+      "mode": "100644",
+      "semantic_review_basis": "Exact BASE-before/A23-after/P-after identities match the preserved accepted prior review",
+      "semantic_reviewer": "/root/pr_audit (prior exact-byte review recorded by a23)",
+      "sha256": "862c042a7e1066bff4ccf9ae3766b2dca7109690eaa0ef67dc71bd200acd98dd"
+    },
+    "crates/cc-index/src/lib.rs": {
+      "before_sha256": "9b55efd92672581ec0d7bf24bd2eca83d86d4da4d6b7e5ba526dd9949a39f731",
+      "classification": "retained_prior_independently_reviewed_delta",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "572705c5e08f35217b16457977ee88ba5dee3f76",
+      "mode": "100644",
+      "semantic_review_basis": "Exact BASE-before/A23-after/P-after identities match the preserved accepted prior review",
+      "semantic_reviewer": "/root/pr_audit (prior exact-byte review recorded by a23)",
+      "sha256": "1a6d8e4af4a745bf39dcc03b39c8aad805a620f6e70e96ef0a067354cc79035c"
+    },
+    "crates/cc-index/src/resolver/catalog.rs": {
+      "before_sha256": "2dfc5ff05c972b824c1f7a467f0db99a19e70f2d333d623a2c6090402405aaf5",
+      "classification": "retained_prior_independently_reviewed_delta",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "78d9b810708ec45bff6ae42f1bb440850908fa92",
+      "mode": "100644",
+      "semantic_review_basis": "Exact BASE-before/A23-after/P-after identities match the preserved accepted prior review",
+      "semantic_reviewer": "/root/pr_audit (prior exact-byte review recorded by a23)",
+      "sha256": "e377d824a40a648338477a16d47eaabebfc61a5d8c68d8c8ab86f5a5622854a1"
+    },
+    "crates/cc-index/src/resolver/catalog_cache.rs": {
+      "before_sha256": "e60fd1f61ca5176813c6e5ff8c18c15f7f99d9b8dc6237b661dc6ef9d3425fb6",
+      "classification": "retained_prior_independently_reviewed_delta",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "ce4f4691b38a71efb6003dea3d8574e5f123e7c9",
+      "mode": "100644",
+      "semantic_review_basis": "Exact BASE-before/A23-after/P-after identities match the preserved accepted prior review",
+      "semantic_reviewer": "/root/pr_audit (prior exact-byte review recorded by a23)",
+      "sha256": "7497a0f4233635a4813996930bcf15b1c2439a798a6607bba7b5d1ce9856734a"
+    },
+    "crates/cc-index/src/resource_accounting.rs": {
+      "before_sha256": null,
+      "classification": "retained_prior_independently_reviewed_delta",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "9a094071ad25cda5492bdf025ce92fd423b8d906",
+      "mode": "100644",
+      "semantic_review_basis": "Exact BASE-before/A23-after/P-after identities match the preserved accepted prior review",
+      "semantic_reviewer": "/root/pr_audit (prior exact-byte review recorded by a23)",
+      "sha256": "c4189f5a72f8fdd150492a3d24351fe59aa2a921adda9c865eade27eeb46ed33"
+    },
+    "crates/cc-index/tests/qname_identity_transaction.rs": {
+      "before_sha256": "19107a29c077324fb478cc650263bf65b78a12b7571135945c89d3b18e16c630",
+      "classification": "retained_prior_independently_reviewed_delta",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "258f2840f410faffe72ac981dfc70d6bb2e163ff",
+      "mode": "100644",
+      "semantic_review_basis": "Exact BASE-before/A23-after/P-after identities match the preserved accepted prior review",
+      "semantic_reviewer": "/root/pr_audit (prior exact-byte review recorded by a23)",
+      "sha256": "85a7f32cdeb44165f4056ecfa82bc7bc737d44ab15bff6f5604a6501953bc15b"
+    },
+    "crates/cc-index/tests/snapshot_leaf_batching.rs": {
+      "before_sha256": null,
+      "classification": "directly_reviewed_this_round",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "307e4636016bd55edb8560bb131d63e5cfcfb844",
+      "mode": "100644",
+      "semantic_review_basis": "direct seven-path source review",
+      "semantic_reviewer": "/root/execution_recon",
+      "sha256": "6b9081e76a71b5dc10f31bf22844b9e201b07e167a34e983759706a97e953b26"
+    },
+    "crates/cc-server/src/engine.rs": {
+      "before_sha256": "10a4fc22e7a3acec7f396f100cb0b20dbefd417bf2cbdb26597ee48dab64e557",
+      "classification": "retained_prior_independently_reviewed_delta",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "8c8bcf70a321875cd99252b50a9c2010bedaec19",
+      "mode": "100644",
+      "semantic_review_basis": "Exact BASE-before/A23-after/P-after identities match the preserved accepted prior review",
+      "semantic_reviewer": "/root/pr_audit (prior exact-byte review recorded by a23)",
+      "sha256": "b323ee1c6c469cb0f0abe42d6f23ff4a7045df124735af09dcafbc8f4e2ac8b1"
+    },
+    "crates/cc-server/src/project_session.rs": {
+      "before_sha256": "a6776bf1ad63990ad4049d045e5fe34e5ef6af3917e72b7670554cc56c1c24cc",
+      "classification": "retained_prior_independently_reviewed_delta",
+      "current_identity_reviewer": "/root/execution_recon",
+      "git_blob": "c10c9e4585a9e192b2af9ed99630096d8c861c18",
+      "mode": "100644",
+      "semantic_review_basis": "Exact BASE-before/A23-after/P-after identities match the preserved accepted prior review",
+      "semantic_reviewer": "/root/pr_audit (prior exact-byte review recorded by a23)",
+      "sha256": "9d185cddc82b5f16dc6f6e3d9c4b8aef7ed244d1868a3f096a8efc63682b1314"
+    }
+  },
+  "per_path": {
+    "crates/cc-db/src/index_db_multi_insert.rs": {
+      "actual_P_blob": "539b9d19f1034a8cfd918090b1b48dacc177494c",
+      "actual_P_sha256": "b621f633f231a98af42b6ead8c300956ad96ff1544bbbc392c3743b2e3038101",
+      "boundaries": [
+        "25 symbol columns",
+        "18 symbol_ref columns",
+        "30 call_edge columns",
+        "19 route columns",
+        "10 semantic_edge columns",
+        "11 dispatch_site columns"
+      ],
+      "change": "Six existing per-table multi-row insert methods become pub(crate) so the private snapshot module can call them.",
+      "review": "Removing only those six visibility additions reproduces the exact a23 file bytes. SQL text, conflict clauses, bind order, parameter conversion, fixed 64/8/1 tiers, error propagation, and statement-cache behavior are unchanged. The public API is not widened outside the crate.",
+      "reviewer": "/root/execution_recon"
+    },
+    "crates/cc-db/src/index_db_snapshot_insert.rs": {
+      "actual_P_blob": "2188f67d83d44b49c3015598c7001d231fd22428",
+      "actual_P_sha256": "e159376159f0f6f250ba4a6d328bde503c4e272ccd11f75a326bb24f85a89a0f",
+      "boundaries": [
+        "No batch survives a file or table boundary",
+        "The pending list holds at most 64 borrowed references",
+        "The 64 KiB value-payload bound is not a whole-row, SQLite-allocation, process-RSS, or overall fixture-memory promise",
+        "Single oversized rows retain original product acceptance instead of adding a row-size rejection"
+      ],
+      "change": "Add per-file, per-table bounded windows of borrowed leaf-row references and call the unchanged six binders.",
+      "review": "MAX_ROWS is 64 and MAX_BOUND_BYTES is 65536. The helper measures the same bound expressions used by each existing SQL binder, including enum strings, optional values, boolean/integer casts and UTF-8/blob byte lengths. Exact expression-by-expression equality is recorded in the identity report. It flushes before a row would exceed either limit; any one legal row larger than 64 KiB takes a one-row binder and remains legal. Empty inputs return without SQL. Each synchronous write error exits immediately and cannot flush a later window, file, or table.",
+      "reviewer": "/root/execution_recon",
+      "tests_added_here": 3
+    },
+    "crates/cc-db/src/index_db_write_batch.rs": {
+      "actual_P_blob": "2758481da50748be45f9c35a35832d2f2bc9b851",
+      "actual_P_sha256": "8968b406f5c8f513489ace72bfc0077233484db687c97a92dbc13704d2e6fb7a",
+      "boundaries": [
+        "Threshold is at least eight rows in that file/table",
+        "Symbol/ref/route shared helpers are called with original OR REPLACE selection",
+        "The other three reused binders already use the original OR REPLACE clause",
+        "No schema, PRAGMA, commit/publication, or cross-file scheduling change"
+      ],
+      "change": "Add a snapshot-only internal entry point and a boolean selecting batching for six leaf loops with at least eight rows.",
+      "review": "Existing public/precompressed and deferred-FTS paths pass snapshot_leaf_batches=false and retain the original scalar loops. The new internal snapshot entry passes defer_files_literal_fts=false and snapshot_leaf_batches=true. Only symbols, symbol_refs, call_edges, routes, semantic_edges and dispatch_sites gain the bounded branch. File parents, chunks, document validation, identity survivor checking, imports, test edges, HTTP/data-flow paths and the existing FTS sequencing remain in their original positions.",
+      "reviewer": "/root/execution_recon"
+    },
+    "crates/cc-db/src/lib.rs": {
+      "actual_P_blob": "f41c91b18b8b6120da4b2ab813a408bf37f16dbd",
+      "actual_P_sha256": "2ee1fd4600ce4625725c5c673b9ce96be5eab6d74ce7a8c407de4f92a3ee983f",
+      "change": "Register the private index_db_snapshot_insert module.",
+      "review": "The exact one-line module registration adds no public re-export and changes no other module or feature wiring.",
+      "reviewer": "/root/execution_recon"
+    },
+    "crates/cc-db/src/snapshot_write_txn.rs": {
+      "actual_P_blob": "20dc6ffc60d2a63320b56d1bd8e010e2937ffe26",
+      "actual_P_sha256": "408fdf68044a2e37d493df71aff7be6140464368fd86e980107f370573c004c7",
+      "change": "The existing per-file write loop calls the new snapshot-only internal entry point.",
+      "review": "The single changed callee stays inside the same ordered per-file loop and uses the same connection, write unit, precompressed chunk slice, and immediate ? error propagation. This seam does not start or commit a new transaction, change PRAGMAs, publish a new index, or buffer content across files. Original adapter transaction and epoch-isolation policies remain authoritative.",
+      "reviewer": "/root/execution_recon"
+    },
+    "crates/cc-eval/src/benchmark/p8_scale.rs": {
+      "actual_P_blob": "1281d5340096699663308c92ce27978ae96ac84e",
+      "actual_P_sha256": "18e6fbe38bc0484ff32050c749186671a7e4c3b15c0894b5fb205c9948fb7530",
+      "boundaries": [
+        "No seed, repetition count, deadline, scale set, mutation, parity population, dirty budget, resume budget, capacity profile, or primary-workload change"
+      ],
+      "change": "Express the missing/wrong shard-count rejection using is_none_or instead of negated is_some_and.",
+      "review": "The predicate remains true for None, true for a present nonmatching shard count, and false only for a matching present count. The rest of this file is byte-identical to a23. This is the sole overlap with the 35 previously reviewed BASE deltas; it is directly reviewed here instead of being claimed as unchanged.",
+      "reviewer": "/root/execution_recon"
+    },
+    "crates/cc-index/tests/snapshot_leaf_batching.rs": {
+      "actual_P_blob": "307e4636016bd55edb8560bb131d63e5cfcfb844",
+      "actual_P_sha256": "6b9081e76a71b5dc10f31bf22844b9e201b07e167a34e983759706a97e953b26",
+      "boundaries": [
+        "The baseline is the retained scalar branch, whose source equivalence to a23 was reviewed",
+        "The DirectWriter test explicitly does not claim physical rollback with journal_mode=OFF",
+        "Test source inspection is not evidence that the nine tests have run or passed"
+      ],
+      "change": "Add six integration tests comparing the preserved scalar entry point with the snapshot entry point.",
+      "review": "The fixture uses real Python parser/document/symbol-identity preparation and deliberately populated leaf tables. It compares the original 15 canonical tables plus seven identity/literal/FTS tables, includes explicit symbol/FTS rowids, and checks integrity and foreign keys. Boundary cases cover 0/1/7/8/9/63/64/65/73 rows, symbol-id and unique-UID replacement across tiers, actual trigram MATCH postings, cross-file identity timing, UTF-8 and oversized rows, duplicate paths, future-file FK failure, late identity failure, WAL rollback and subsequent cached-statement reuse. A separate DirectWriter success comparison preserves the existing adapter PRAGMAs.",
+      "reviewer": "/root/execution_recon",
+      "tests_added_here": 6
+    }
+  },
+  "prior_review": {
+    "at_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+    "git_blob": "b0c0238bddd74134201b7cadb7b08598365c1478",
+    "path": "artifacts/checkpoints/p8-scale-cache-20261009/independent-source-review.json",
+    "sha256": "23ddf9792e9467038ead236a3c0a046524221a5d1823aced74b574b1a856b3cb",
+    "source": "254009277688d64677361a0ca33e5dea73f295ef",
+    "verdict": "accepted_scoped"
+  },
+  "product_manifest_sha256": "691ae804ec606969e70180298407fcacc60b0408ea025eece02c7639b50b94ac",
+  "raw_or_validator_rewritten": false,
+  "repo_source_or_head_changed_by_reviewer": false,
+  "retained_validation_input_count": 138,
+  "reviewer": "/root/execution_recon",
+  "schema": "p8-snapshot-leaf-independent-product-review-v1",
+  "scope": "Independent non-author review of the exact P product source. This accepts only reviewed source semantics and preserved validation bytes; it is not a build, test, performance, complete-matrix, or task-completion result.",
+  "source": "305bf145e2474000d7c7d806507117d65a4863ad",
+  "source_snapshot": {
+    "bytes": 146411,
+    "path": "review-next-candidate/execution-recon-p-source-snapshot.json",
+    "sha256": "9e27b8f5806d293ed3bace96dabcdb9647f132cd6a76e68239a2981ea524767f"
+  },
+  "source_tree": "173eb784171c64505e7a4cc989679e87e327bdee",
+  "unresolved_product_source_blockers": [],
+  "verdict": "accepted_scoped"
+}

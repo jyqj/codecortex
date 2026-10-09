@@ -24,7 +24,7 @@
 
 ## 固定身份和验证
 
-产品 P：`b069c73a0d76736e1dfb3eb64e79cad6980b773f`。绑定提交 G：`2295e53c07117331faf4adbcfd967cfa8104401b`。独立审查提交 R：`733b70584fd9cf5581096fb2edfc7006f9a7dd80`，审查文件 SHA-256 为 `187d9b22ab7f09ed0bf52c25a16f514c1f3e93e13827e221c96d2dc3a7e571d5`。
+以下为实际 Rust 执行和首次来源校验所用的本地身份。产品 P：`b069c73a0d76736e1dfb3eb64e79cad6980b773f`。绑定提交 G：`2295e53c07117331faf4adbcfd967cfa8104401b`。独立审查提交 R：`733b70584fd9cf5581096fb2edfc7006f9a7dd80`，审查文件 SHA-256 为 `187d9b22ab7f09ed0bf52c25a16f514c1f3e93e13827e221c96d2dc3a7e571d5`。
 
 [完整独立审查](independent-source-review.json) 对 1,090 个产品输入、相对原 BASE 的 49 项差异和 139 个验证输入进行核对。当前源码守卫的算法、BASE、VERSION、验证域、排除项与 CI 保持原文，仅更新原有四个绑定常量及其 registry。
 
@@ -41,6 +41,22 @@
 | 原当前 v15 防篡改用例 | 7 passed，exit 0 | [收据](validation/guard/03-v15-tests-receipt.json)、[日志](validation/guard/03-v15-tests.log) |
 
 整合后 Rust 回归的 1,090 项产品输入 before / after 完全一致。索引模块的 ignored 是原有 benchmark，未计作性能测量。以上为默认本地构建的指定范围，未声称新的跨平台冷构建、live provider 或完整规模认证。
+
+## GitHub 发布身份与复核
+
+完整交付树通过 GitHub Git data API 发布：远端产品 P′ 为 `49a03e1f9fa33b7b85cbc9680b47f521afbd8abd`，独立审查 R′ 为 `bd9f7979ee76bf1ca3f0d8be284fd1a8f39fea22`，最终绑定 G′ 为 `dad1098d89ec7ab7771ec69e7cc61c50ab4a2c18`。P′ 的完整 tree 与本地交付 E `e172d24715fb33c0b59ce2fcff0dd1da57c98191` 相同；P′ 的 1,090 个产品输入和 139 个验证输入与原本地 P 相同。这两种相等关系没有混用。
+
+[新的独立来源审查](published-independent-source-review.json) 对实际远端对象确认上述关系；[绑定后的独立复核](validation/review/post-publication-guard-review.json) 确认 R′→G′ 仅修改原四个常量与对应 registry 身份。原审查文件和所有旧命令仍保留各自本地提交身份、时间、返回结果及失败边界。
+
+最终 G′ 下已重新实际执行原 v15 CLI（exit 0，包含原历史 proof）和当前 v15 的 7 项防篡改测试（7 passed，exit 0）。[执行身份与前后输入核对](validation/published-guard/identity.json)、[v15 收据](validation/published-guard/01-v15-receipt.json) 及 [7 项测试收据](validation/published-guard/02-current-v15-tests-receipt.json) 是这次新执行的记录；旧 Rust 测试没有被重标为新执行。原 1,090 / 139 项输入及 guard / registry 在执行前后保持相同。
+
+原本地 P/R/G/E 提交对象保存在 [Git bundle](local-validation-history.bundle)，[摘要与前置提交](local-validation-history.json) 记录其完整身份。已有仓库包含 main 历史时，可导入这些对象以复核旧执行来源：
+
+```sh
+git fetch artifacts/checkpoints/p8-install-compat-36fea-20261009/local-validation-history.bundle refs/heads/work/20261009-todo-rounds-36fea-local-evidence
+```
+
+[10:13 UTC 的规模状态复查](publication-scale-status.json) 仍显示原两条 study 只有 3 / 150 和 4 / 150 个已完成分片，没有新增完整规模认证或原 TODO 结项。
 
 ## 保留的失败与范围
 

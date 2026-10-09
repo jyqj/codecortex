@@ -863,8 +863,7 @@ mod catalog_build_bench {
     #[test]
     fn export_registration_matches_legacy_after_remove_and_readd() {
         let symbols = export_variants();
-        let removed =
-            HashSet::from([symbols[0].file_path.clone(), symbols[17].file_path.clone()]);
+        let removed = HashSet::from([symbols[0].file_path.clone(), symbols[17].file_path.clone()]);
         let mut catalog = SymbolCatalog::new();
         catalog.add_symbols(&symbols);
         catalog.remove_files(&removed);

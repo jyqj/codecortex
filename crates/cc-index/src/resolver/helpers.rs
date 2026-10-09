@@ -368,11 +368,7 @@ mod import_distance_regression_tests {
         a.iter().zip(b.iter()).take_while(|(x, y)| x == y).count()
     }
 
-    fn legacy_candidates(
-        entries: &[CatalogEntry],
-        candidates: &[usize],
-        file: &str,
-    ) -> Vec<usize> {
+    fn legacy_candidates(entries: &[CatalogEntry], candidates: &[usize], file: &str) -> Vec<usize> {
         let max = candidates
             .iter()
             .map(|&idx| legacy_prefix(&entries[idx].file_path, file))
@@ -444,7 +440,13 @@ mod import_distance_regression_tests {
             entry("src/pkg/a.py", "a", "A"),
             entry("src/pkg/a.py", "a", "OtherQName"),
         ];
-        for file in ["", "src/pkg/query.py", "src/pkg/a.ts", "elsewhere/x.py", "/"] {
+        for file in [
+            "",
+            "src/pkg/query.py",
+            "src/pkg/a.ts",
+            "elsewhere/x.py",
+            "/",
+        ] {
             // Exhaust all input sequences of length 0..=4, including repeated
             // indices, different identities, duplicate rows and tied distances.
             for len in 0..=4 {

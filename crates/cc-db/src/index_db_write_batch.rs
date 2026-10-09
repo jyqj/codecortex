@@ -741,7 +741,7 @@ impl IndexDb {
         file: &FileWriteUnit,
         chunk_blobs: Option<&[Option<Vec<u8>>]>,
     ) -> CcResult<()> {
-        Self::insert_file_data_impl(conn, file, chunk_blobs, false, false)
+        Self::insert_file_data_impl(conn, file, chunk_blobs, false, false, false)
     }
 
     /// [`Self::insert_file_data_precompressed`] minus the per-row `files_fts`
@@ -760,7 +760,7 @@ impl IndexDb {
         file: &FileWriteUnit,
         chunk_blobs: Option<&[Option<Vec<u8>>]>,
     ) -> CcResult<()> {
-        Self::insert_file_data_impl(conn, file, chunk_blobs, true, false)
+        Self::insert_file_data_impl(conn, file, chunk_blobs, true, false, false)
     }
 
     /// Mirror freshly inserted `files` / `literal_index` rows into their FTS
@@ -807,7 +807,18 @@ impl IndexDb {
         file: &FileWriteUnit,
         chunk_blobs: Option<&[Option<Vec<u8>>]>,
     ) -> CcResult<()> {
-        Self::insert_file_data_impl(conn, file, chunk_blobs, false, true)
+        Self::insert_file_data_impl(conn, file, chunk_blobs, false, true, false)
+    }
+
+    /// Rebuild-owner dependency batching without deferred FTS. The owner must
+    /// abandon staging on error, even when the FTS schema guard selects this
+    /// immediate-mirror fallback. The ordinary snapshot seam does not opt in.
+    pub(crate) fn insert_snapshot_file_data_for_rebuild(
+        conn: &Connection,
+        file: &FileWriteUnit,
+        chunk_blobs: Option<&[Option<Vec<u8>>]>,
+    ) -> CcResult<()> {
+        Self::insert_file_data_impl(conn, file, chunk_blobs, false, true, true)
     }
 
     /// Snapshot leaf batching with only files/literal FTS deferred. Pair with
@@ -817,7 +828,7 @@ impl IndexDb {
         file: &FileWriteUnit,
         chunk_blobs: Option<&[Option<Vec<u8>>]>,
     ) -> CcResult<()> {
-        Self::insert_file_data_impl(conn, file, chunk_blobs, true, true)
+        Self::insert_file_data_impl(conn, file, chunk_blobs, true, true, true)
     }
 
     fn insert_file_data_impl(
@@ -826,6 +837,7 @@ impl IndexDb {
         chunk_blobs: Option<&[Option<Vec<u8>>]>,
         defer_files_literal_fts: bool,
         snapshot_leaf_batches: bool,
+        rebuild_dependency_batches: bool,
     ) -> CcResult<()> {
         let outcome = &file.outcome;
         let now = chrono::Utc::now().to_rfc3339();
@@ -857,7 +869,7 @@ impl IndexDb {
             )?;
         }
 
-        if snapshot_leaf_batches {
+        if rebuild_dependency_batches {
             crate::public_surface_store::insert_snapshot_on(conn, file)?;
         } else {
             crate::public_surface_store::insert_on(conn, file)?;

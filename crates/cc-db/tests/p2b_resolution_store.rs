@@ -309,7 +309,8 @@ fn snapshot_dependency_manifest_and_rows_match_original_full_writer() {
         .unwrap();
     new.admin()
         .rebuild_with_temp_db(|conn| {
-            cc_db::SnapshotWriteTxn::new(conn).write_file_data(&files, &Default::default())
+            cc_db::SnapshotWriteTxn::new(conn)
+                .write_file_data_for_rebuild(&files, &Default::default())
         })
         .unwrap();
     assert_eq!(
@@ -381,7 +382,7 @@ fn snapshot_dependency_failure_keeps_live_rows_and_generation_like_original() {
                 let files = [good, failed, snapshot_dependency_unit("never.py", 8)];
                 if snapshot {
                     cc_db::SnapshotWriteTxn::new(conn)
-                        .write_file_data(&files, &Default::default())?;
+                        .write_file_data_for_rebuild(&files, &Default::default())?;
                 } else {
                     for file in &files {
                         IndexDb::insert_file_data(conn, file)?;
@@ -403,4 +404,88 @@ fn snapshot_dependency_failure_keeps_live_rows_and_generation_like_original() {
         errors.push(mode_errors);
     }
     assert_eq!(errors[0], errors[1]);
+}
+
+#[test]
+fn public_snapshot_dependency_failure_preserves_original_catch_and_commit_prefix() {
+    let directory = tempfile::tempdir().unwrap();
+    let mut observations = Vec::new();
+    for snapshot in [false, true] {
+        let path = directory
+            .path()
+            .join(format!("public-prefix-{snapshot}.db"));
+        let db = IndexDb::open_with_read_pool_size(&path, 1).unwrap().0;
+        let conn = rusqlite::Connection::open(&path).unwrap();
+        conn.execute_batch("PRAGMA foreign_keys=ON; BEGIN IMMEDIATE")
+            .unwrap();
+        conn.execute_batch(
+            "CREATE TRIGGER fail_dependency BEFORE INSERT ON resolution_dependencies
+             WHEN NEW.file_path='failed.py' AND NEW.key='key-00070'
+             BEGIN SELECT RAISE(ABORT,'injected dependency failure'); END;",
+        )
+        .unwrap();
+        let files = [
+            snapshot_dependency_unit("first.py", 73),
+            snapshot_dependency_unit("failed.py", 73),
+            snapshot_dependency_unit("never.py", 8),
+        ];
+        let result = if snapshot {
+            cc_db::SnapshotWriteTxn::new(&conn).write_file_data(&files, &Default::default())
+        } else {
+            files
+                .iter()
+                .try_for_each(|file| IndexDb::insert_file_data(&conn, file))
+        };
+        let error = result.unwrap_err().to_string();
+        assert!(error.contains("injected dependency failure"));
+        // This existing borrowed public seam leaves transaction ownership with
+        // its caller. Catching the error must preserve the original row prefix.
+        assert!(!conn.is_autocommit());
+        conn.execute_batch("COMMIT").unwrap();
+        assert!(conn.is_autocommit());
+        drop(conn);
+
+        // Read from a new connection, so these are committed rows rather than
+        // an observation of uncommitted state inside the failed writer.
+        let committed = rusqlite::Connection::open_with_flags(
+            &path,
+            rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY,
+        )
+        .unwrap();
+        let mut statement = committed
+            .prepare(
+                "SELECT key FROM resolution_dependencies \
+                 WHERE file_path='failed.py' ORDER BY key",
+            )
+            .unwrap();
+        let keys = statement
+            .query_map([], |row| row.get::<_, String>(0))
+            .unwrap()
+            .collect::<rusqlite::Result<Vec<_>>>()
+            .unwrap();
+        let expected: Vec<_> = (0..70).map(|n| format!("key-{n:05}")).collect();
+        assert_eq!(keys, expected);
+        assert_eq!(
+            committed
+                .query_row(
+                    "SELECT COUNT(*) FROM resolution_dependencies WHERE file_path='first.py'",
+                    [],
+                    |row| row.get::<_, i64>(0),
+                )
+                .unwrap(),
+            73
+        );
+        assert_eq!(
+            committed
+                .query_row(
+                    "SELECT COUNT(*) FROM files WHERE file_path='never.py'",
+                    [],
+                    |row| row.get::<_, i64>(0),
+                )
+                .unwrap(),
+            0
+        );
+        observations.push((error, snapshot_dependency_tables(&db)));
+    }
+    assert_eq!(observations[0], observations[1]);
 }

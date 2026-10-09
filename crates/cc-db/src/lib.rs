@@ -24,6 +24,7 @@ mod index_db_multi_insert;
 mod index_db_query;
 mod index_db_rebuild;
 mod index_db_retrieval;
+mod index_db_snapshot_insert;
 mod index_db_types;
 mod index_db_write_batch;
 mod statement_work;

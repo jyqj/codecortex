@@ -1,5 +1,18 @@
 {
-  "base_source": "7354db236c9d9850a75f31672697ae9eab44565e",
+  "schema": "p8-mainb21-leaf-product-and-validation-domains-draft-v1",
+  "status": "actual_product_commit_requires_independent_review_before_any_execution_ref",
+  "source": "90838d6c890b12f031fa0be9d1956cfbdef9e8d6",
+  "source_tree": "b07f2a168f75fc4e6d085a0281043feacbfc015e",
+  "source_parent": "b21cce4c8661589267ad5719f850accbec088d2f",
+  "source_parent_tree": "54b3227bb9f0b36b38083edee3c76817561bb44c",
+  "base": "7354db236c9d9850a75f31672697ae9eab44565e",
+  "product_reused_from": {
+    "source": "0272a1fb152fd76a7cfb22386a580629d4038a64",
+    "product": "29281cbca0004ae1228f2599ca8f4a704507f60d",
+    "review": "366f0e435ee880f79904de979dc4b2b307e7a456",
+    "review_blob": "ea7efe92d28734f76ce5d00d1824db01f186fba9",
+    "source_manifest_sha256": "691ae804ec606969e70180298407fcacc60b0408ea025eece02c7639b50b94ac"
+  },
   "complete_inputs": {
     "Cargo.lock": "ea6b177872de3749702e2cd967f4504efff5bcc67cd2a2459205d182243d1000",
     "Cargo.toml": "53fdb9015f1e3c2c043db4016ece8f81b5760f3a9c4eee0a9c9ada428327d6fa",
@@ -1257,14 +1270,13 @@
       "sha256": "9d185cddc82b5f16dc6f6e3d9c4b8aef7ed244d1868a3f096a8efc63682b1314"
     }
   },
-  "previous_source_version": "p8-oracle-compat-source-20261008-v14",
-  "product_source": "90838d6c890b12f031fa0be9d1956cfbdef9e8d6",
-  "review_sha256": "13dce67236833704f71efc1f849b9d76bebe42d8ea29ec748ef06dd242b888cb",
-  "review_source": "b0f0c0d00e38508e7e43b0e87d1215d7f6413969",
-  "runtime_and_quality_claims": "require_separate_execution_evidence",
-  "schema_version": 10,
-  "scope": "independently_reviewed_source_and_validation_inputs",
-  "source_version": "p8-completion-source-20261009-v15",
+  "validation_reused_from": {
+    "source": "a23bb72d3c954f385b99fe81ce9189885c208557",
+    "main": "b21cce4c8661589267ad5719f850accbec088d2f",
+    "product": "254009277688d64677361a0ca33e5dea73f295ef",
+    "review": "3a11f30f9f00a89fe3cd481b3b7609066728baad",
+    "registry_blob": "83b78abdac53b449564e3c4a78f9f9cb78f5c4fd"
+  },
   "validation_inputs": {
     ".github/workflows/p7-closeout.yml": "4b9c1056ac229627075e9187f8b823abde451c2ce6cd2ae68933ff73d55e5cc8",
     ".github/workflows/p7-engineering.yml": "4e71be09a1090bd3e74eae46b9b0c78bb88a0ed245e5db453e45293c2be345f3",
@@ -1404,5 +1416,454 @@
     "tests/source_integrity/v13_historical_ci_adapter.py": "564ab01186f9c521518df5f88040460812b2835960891fec11b1a91d6f45b34a",
     "tests/source_integrity/v14_historical_test_adapter.py": "52af9b6bdb58c77ce14a0a995d9cfb3c4e7653a1b125021af868942dc4d5f4e8",
     "tests/source_integrity/v15_historical_test_adapter.py": "c2478494a56f63b21f8e1af0c37027cf665b97e7e3fab4a781d86ed2066d7491"
-  }
+  },
+  "validation_preservation": "All main scripts, .github workflows and tests unchanged in actual P3. Old G2 auxiliary workflows and its differing10 script leaves are not overlaid on new main.",
+  "future_review_path": "artifacts/checkpoints/p8-mainb21-snapshot-leaf-integration-20261009/independent-source-review.json",
+  "future_guard_mutation_scope": "Only PRODUCT, REVIEW, REVIEW_PATH and REGISTRY_SHA256 constant values after independent R3 exists. Existing main generic v15 code and all functions, historical selectors, CI, frozen six v14 files and task definitions remain unchanged.",
+  "actual_tree_proof": {
+    "old_tree": "54b3227bb9f0b36b38083edee3c76817561bb44c",
+    "new_tree": "b07f2a168f75fc4e6d085a0281043feacbfc015e",
+    "exact_leaves": 7,
+    "all_other_entries_preserved": true,
+    "diffs": [
+      {
+        "path": "crates/cc-db/src/index_db_multi_insert.rs",
+        "before": {
+          "path": "index_db_multi_insert.rs",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "e04b8652f15fe6c09761c575646c9c3028f7fc05",
+          "size": 29344,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/e04b8652f15fe6c09761c575646c9c3028f7fc05"
+        },
+        "after": {
+          "path": "index_db_multi_insert.rs",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "539b9d19f1034a8cfd918090b1b48dacc177494c",
+          "size": 29410,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/539b9d19f1034a8cfd918090b1b48dacc177494c"
+        }
+      },
+      {
+        "path": "crates/cc-db/src/index_db_write_batch.rs",
+        "before": {
+          "path": "index_db_write_batch.rs",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "1595240371f2d8833a14a63e9db43c62f2e6be95",
+          "size": 54394,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/1595240371f2d8833a14a63e9db43c62f2e6be95"
+        },
+        "after": {
+          "path": "index_db_write_batch.rs",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "2758481da50748be45f9c35a35832d2f2bc9b851",
+          "size": 56106,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/2758481da50748be45f9c35a35832d2f2bc9b851"
+        }
+      },
+      {
+        "path": "crates/cc-db/src/lib.rs",
+        "before": {
+          "path": "lib.rs",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "0d166ab95cd6442c6f8bf38012804c769c2f1ab3",
+          "size": 1911,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/0d166ab95cd6442c6f8bf38012804c769c2f1ab3"
+        },
+        "after": {
+          "path": "lib.rs",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "f41c91b18b8b6120da4b2ab813a408bf37f16dbd",
+          "size": 1941,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/f41c91b18b8b6120da4b2ab813a408bf37f16dbd"
+        }
+      },
+      {
+        "path": "crates/cc-db/src/snapshot_write_txn.rs",
+        "before": {
+          "path": "snapshot_write_txn.rs",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "4406abf21a7cc044c2c11f0c18aacf42c92b614d",
+          "size": 7049,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/4406abf21a7cc044c2c11f0c18aacf42c92b614d"
+        },
+        "after": {
+          "path": "snapshot_write_txn.rs",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "20dc6ffc60d2a63320b56d1bd8e010e2937ffe26",
+          "size": 7058,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/20dc6ffc60d2a63320b56d1bd8e010e2937ffe26"
+        }
+      },
+      {
+        "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+        "before": null,
+        "after": {
+          "path": "index_db_snapshot_insert.rs",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "2188f67d83d44b49c3015598c7001d231fd22428",
+          "size": 13172,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/2188f67d83d44b49c3015598c7001d231fd22428"
+        }
+      },
+      {
+        "path": "crates/cc-index/tests/snapshot_leaf_batching.rs",
+        "before": null,
+        "after": {
+          "path": "snapshot_leaf_batching.rs",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "307e4636016bd55edb8560bb131d63e5cfcfb844",
+          "size": 13586,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/307e4636016bd55edb8560bb131d63e5cfcfb844"
+        }
+      },
+      {
+        "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+        "before": {
+          "path": "p8_scale.rs",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "3f217d116e5fab8a1035cb643f0d74ea3c122568",
+          "size": 46139,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/3f217d116e5fab8a1035cb643f0d74ea3c122568"
+        },
+        "after": {
+          "path": "p8_scale.rs",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "1281d5340096699663308c92ce27978ae96ac84e",
+          "size": 46137,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/1281d5340096699663308c92ce27978ae96ac84e"
+        }
+      }
+    ]
+  },
+  "actual_roots": {
+    "main": {
+      "sha": "54b3227bb9f0b36b38083edee3c76817561bb44c",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/54b3227bb9f0b36b38083edee3c76817561bb44c",
+      "tree": [
+        {
+          "path": ".github",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "51facfc382452eab53969020f8ca0beaadb65114",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/51facfc382452eab53969020f8ca0beaadb65114"
+        },
+        {
+          "path": ".gitignore",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "c045b34b396009a2a6a1273d305f289f3a5552ca",
+          "size": 636,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/c045b34b396009a2a6a1273d305f289f3a5552ca"
+        },
+        {
+          "path": "CONTRIBUTING.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "3fa01470513c15935a32488ca83bbddcc48f32d3",
+          "size": 3062,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/3fa01470513c15935a32488ca83bbddcc48f32d3"
+        },
+        {
+          "path": "Cargo.lock",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "c83b9a3dae16231117e3c3c12dc56479988e1b24",
+          "size": 82687,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/c83b9a3dae16231117e3c3c12dc56479988e1b24"
+        },
+        {
+          "path": "Cargo.toml",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "c376fdc70465a237022de8a05b7b27cc28f72cc8",
+          "size": 1594,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/c376fdc70465a237022de8a05b7b27cc28f72cc8"
+        },
+        {
+          "path": "DESIGN.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "2fd4f9a7c8b4cd787b622e1c457c9e07984f8733",
+          "size": 4283,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/2fd4f9a7c8b4cd787b622e1c457c9e07984f8733"
+        },
+        {
+          "path": "HANDOVER-20261003.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "38531b85f2d458d049ca7379eb65188132388ed4",
+          "size": 7961,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/38531b85f2d458d049ca7379eb65188132388ed4"
+        },
+        {
+          "path": "README.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "779cd73fc7086faea661b8b588ca2b66c6453a6c",
+          "size": 7151,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/779cd73fc7086faea661b8b588ca2b66c6453a6c"
+        },
+        {
+          "path": "artifacts",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "2b41cb5a6fc09724ee0ae281b767a36f375c4f1f",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/2b41cb5a6fc09724ee0ae281b767a36f375c4f1f"
+        },
+        {
+          "path": "crates",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "233c93b5f6cdb2c928f17c93cd41b4d0b6676094",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/233c93b5f6cdb2c928f17c93cd41b4d0b6676094"
+        },
+        {
+          "path": "docs",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "5ffbdc17be480f1dd63adc1ba2354be4ad906c1d",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/5ffbdc17be480f1dd63adc1ba2354be4ad906c1d"
+        },
+        {
+          "path": "scripts",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "e4232e5b46891e4293aa548d380a7755edcdfccd",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/e4232e5b46891e4293aa548d380a7755edcdfccd"
+        },
+        {
+          "path": "tests",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "b3e8744962f9e4b25ff9104001a3e57d3168735d",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/b3e8744962f9e4b25ff9104001a3e57d3168735d"
+        }
+      ],
+      "truncated": false
+    },
+    "product": {
+      "sha": "b07f2a168f75fc4e6d085a0281043feacbfc015e",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/b07f2a168f75fc4e6d085a0281043feacbfc015e",
+      "tree": [
+        {
+          "path": ".github",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "51facfc382452eab53969020f8ca0beaadb65114",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/51facfc382452eab53969020f8ca0beaadb65114"
+        },
+        {
+          "path": ".gitignore",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "c045b34b396009a2a6a1273d305f289f3a5552ca",
+          "size": 636,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/c045b34b396009a2a6a1273d305f289f3a5552ca"
+        },
+        {
+          "path": "CONTRIBUTING.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "3fa01470513c15935a32488ca83bbddcc48f32d3",
+          "size": 3062,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/3fa01470513c15935a32488ca83bbddcc48f32d3"
+        },
+        {
+          "path": "Cargo.lock",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "c83b9a3dae16231117e3c3c12dc56479988e1b24",
+          "size": 82687,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/c83b9a3dae16231117e3c3c12dc56479988e1b24"
+        },
+        {
+          "path": "Cargo.toml",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "c376fdc70465a237022de8a05b7b27cc28f72cc8",
+          "size": 1594,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/c376fdc70465a237022de8a05b7b27cc28f72cc8"
+        },
+        {
+          "path": "DESIGN.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "2fd4f9a7c8b4cd787b622e1c457c9e07984f8733",
+          "size": 4283,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/2fd4f9a7c8b4cd787b622e1c457c9e07984f8733"
+        },
+        {
+          "path": "HANDOVER-20261003.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "38531b85f2d458d049ca7379eb65188132388ed4",
+          "size": 7961,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/38531b85f2d458d049ca7379eb65188132388ed4"
+        },
+        {
+          "path": "README.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "779cd73fc7086faea661b8b588ca2b66c6453a6c",
+          "size": 7151,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/779cd73fc7086faea661b8b588ca2b66c6453a6c"
+        },
+        {
+          "path": "artifacts",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "2b41cb5a6fc09724ee0ae281b767a36f375c4f1f",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/2b41cb5a6fc09724ee0ae281b767a36f375c4f1f"
+        },
+        {
+          "path": "crates",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "c3ff36be7754af663fc575b71c283b9113e1607d",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/c3ff36be7754af663fc575b71c283b9113e1607d"
+        },
+        {
+          "path": "docs",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "5ffbdc17be480f1dd63adc1ba2354be4ad906c1d",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/5ffbdc17be480f1dd63adc1ba2354be4ad906c1d"
+        },
+        {
+          "path": "scripts",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "e4232e5b46891e4293aa548d380a7755edcdfccd",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/e4232e5b46891e4293aa548d380a7755edcdfccd"
+        },
+        {
+          "path": "tests",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "b3e8744962f9e4b25ff9104001a3e57d3168735d",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/b3e8744962f9e4b25ff9104001a3e57d3168735d"
+        }
+      ],
+      "truncated": false
+    },
+    "G2": {
+      "sha": "85e9f6fb68d7b4ef79e52e23f1ade2e70abca383",
+      "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/85e9f6fb68d7b4ef79e52e23f1ade2e70abca383",
+      "tree": [
+        {
+          "path": ".github",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "1a92a3e0252b6c74f1ba3d813e6addee7b430ac9",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/1a92a3e0252b6c74f1ba3d813e6addee7b430ac9"
+        },
+        {
+          "path": ".gitignore",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "c045b34b396009a2a6a1273d305f289f3a5552ca",
+          "size": 636,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/c045b34b396009a2a6a1273d305f289f3a5552ca"
+        },
+        {
+          "path": "CONTRIBUTING.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "3fa01470513c15935a32488ca83bbddcc48f32d3",
+          "size": 3062,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/3fa01470513c15935a32488ca83bbddcc48f32d3"
+        },
+        {
+          "path": "Cargo.lock",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "c83b9a3dae16231117e3c3c12dc56479988e1b24",
+          "size": 82687,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/c83b9a3dae16231117e3c3c12dc56479988e1b24"
+        },
+        {
+          "path": "Cargo.toml",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "c376fdc70465a237022de8a05b7b27cc28f72cc8",
+          "size": 1594,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/c376fdc70465a237022de8a05b7b27cc28f72cc8"
+        },
+        {
+          "path": "DESIGN.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "2fd4f9a7c8b4cd787b622e1c457c9e07984f8733",
+          "size": 4283,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/2fd4f9a7c8b4cd787b622e1c457c9e07984f8733"
+        },
+        {
+          "path": "HANDOVER-20261003.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "38531b85f2d458d049ca7379eb65188132388ed4",
+          "size": 7961,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/38531b85f2d458d049ca7379eb65188132388ed4"
+        },
+        {
+          "path": "README.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "779cd73fc7086faea661b8b588ca2b66c6453a6c",
+          "size": 7151,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/779cd73fc7086faea661b8b588ca2b66c6453a6c"
+        },
+        {
+          "path": "artifacts",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "6e52199a42375d3190caff61310fcac9625449e5",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/6e52199a42375d3190caff61310fcac9625449e5"
+        },
+        {
+          "path": "crates",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "c3ff36be7754af663fc575b71c283b9113e1607d",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/c3ff36be7754af663fc575b71c283b9113e1607d"
+        },
+        {
+          "path": "docs",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "5ffbdc17be480f1dd63adc1ba2354be4ad906c1d",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/5ffbdc17be480f1dd63adc1ba2354be4ad906c1d"
+        },
+        {
+          "path": "scripts",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "aad42dede53001d4b035fe7d572cbc119a7a52f7",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/aad42dede53001d4b035fe7d572cbc119a7a52f7"
+        },
+        {
+          "path": "tests",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "b3e8744962f9e4b25ff9104001a3e57d3168735d",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/b3e8744962f9e4b25ff9104001a3e57d3168735d"
+        }
+      ],
+      "truncated": false
+    }
+  },
+  "TODO_closed": 0,
+  "TODO_remaining": 29
 }

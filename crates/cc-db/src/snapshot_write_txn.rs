@@ -68,7 +68,7 @@ impl<'a> SnapshotWriteTxn<'a> {
         chunk_blobs: &PrecompressedChunks,
     ) -> CcResult<()> {
         for unit in write_units {
-            IndexDb::insert_file_data_precompressed(
+            IndexDb::insert_snapshot_file_data_precompressed(
                 self.conn,
                 unit,
                 chunk_blobs.get(&unit.rel_path).map(Vec::as_slice),

@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "reviewed_at_utc": "2026-10-09T02:19:30Z",
-  "source": "6cc0f5d56e4ffa37f7b0a19a14e4fb7a4b5695f1",
-  "source_tree": "69f97fa0ceeacdc16f89341eab4b2ffb13d12525",
-  "tree": "69f97fa0ceeacdc16f89341eab4b2ffb13d12525",
-  "source_parent": "4775bf44dc09c11cea88211e06ccec97c4de44aa",
+  "reviewed_at_utc": "2026-10-09T02:57:01Z",
+  "source": "29281cbca0004ae1228f2599ca8f4a704507f60d",
+  "source_tree": "43b4d9ef34a4dbfd741af29a8d636570d2847b75",
+  "tree": "43b4d9ef34a4dbfd741af29a8d636570d2847b75",
+  "source_parent": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
   "base": "7354db236c9d9850a75f31672697ae9eab44565e",
   "scope": "independently_reviewed_source_and_validation_inputs",
   "verdict": "accepted_scoped",
@@ -15,7 +15,7 @@
   "complete_input_count": 1089,
   "changed_source_input_count": 41,
   "validation_input_count": 140,
-  "source_manifest_sha256": "d006974afc0fa4752f3ebcc5ac441c651bf18870ca6af8ae1217e135bed2730d",
+  "source_manifest_sha256": "691ae804ec606969e70180298407fcacc60b0408ea025eece02c7639b50b94ac",
   "paths": {
     "crates/cc-db/src/index_db_multi_insert.rs": {
       "before_sha256": "9bcc38670163280c0b475474ac02d198b940ab2c621c29e9525e2968a12a3261",
@@ -171,7 +171,7 @@
     },
     "crates/cc-index/tests/snapshot_leaf_batching.rs": {
       "before_sha256": null,
-      "sha256": "be727577fe517b5234d766d44b55889485e9fc08785e76b77cb97d43f89cbf29"
+      "sha256": "6b9081e76a71b5dc10f31bf22844b9e201b07e167a34e983759706a97e953b26"
     },
     "crates/cc-server/src/engine.rs": {
       "before_sha256": "10a4fc22e7a3acec7f396f100cb0b20dbefd417bf2cbdb26597ee48dab64e557",
@@ -978,7 +978,7 @@
     "crates/cc-index/tests/qname_identity_proof.rs": "72aefadc7ebb5212591a5141089964b373244d2cb800addc8b1795211587af0e",
     "crates/cc-index/tests/qname_identity_transaction.rs": "85a7f32cdeb44165f4056ecfa82bc7bc737d44ab15bff6f5604a6501953bc15b",
     "crates/cc-index/tests/qname_owner_diagnostic.rs": "6a52d6b384de312e77614915b354c8179ebb4be3c8866671015bab9db3d26f34",
-    "crates/cc-index/tests/snapshot_leaf_batching.rs": "be727577fe517b5234d766d44b55889485e9fc08785e76b77cb97d43f89cbf29",
+    "crates/cc-index/tests/snapshot_leaf_batching.rs": "6b9081e76a71b5dc10f31bf22844b9e201b07e167a34e983759706a97e953b26",
     "crates/cc-index/tests/type_catalog_bench.rs": "0a2f67593006e339789b9d85bf609c35574edf32e145d28cc8cc88e188aabcfe",
     "crates/cc-model/Cargo.toml": "cb4038984b42ea564bef8789c1fca76520d89baac199479c9bd04ed2ce80099a",
     "crates/cc-model/src/architecture.rs": "703efa0e5e4c6d04c8cea6751ad9c3b18725d86d000d089304167484f134e7b2",
@@ -1412,8 +1412,8 @@
     "tests/source_integrity/v15_historical_test_adapter.py": "c2478494a56f63b21f8e1af0c37027cf665b97e7e3fab4a781d86ed2066d7491",
     "scripts/tests/test_p8_runtime_cache.py": "c43b0b74d2a7dc5afcc64c3956e08319bdceb9c9270ca2774b5565a0e79f3ad7",
     "scripts/tests/test_p8_runtime_finalization.py": "aeed33692d86551db32b010c39f14bebe51d899196c6018a488d9feef3c15145",
-    ".github/workflows/p8-snapshot-leaf-engineering.yml": "b11451b5a8045202862995374b895b6798b02bb0a44a2952ba8f2db7588628ad",
-    ".github/workflows/p8-integrated-runtime-controls.yml": "d706586edfd79713358b03a39a78ca1a0bc468bd3de9c3fd7470e22e45835991"
+    ".github/workflows/p8-snapshot-leaf-engineering.yml": "db9a4775d7ed519be78be4190486ff880efe7665ac7494039c4865678598f079",
+    ".github/workflows/p8-integrated-runtime-controls.yml": "eccc4505dc46afae67f1196fd676b8da63d8fa1f98f471f35b8312f937b69b94"
   },
   "source_modes": {
     "Cargo.lock": "100644",
@@ -2768,7 +2768,7 @@
       "/root/acceptance_audit (non-author fixed-body and integration review)"
     ],
     "crates/cc-index/tests/snapshot_leaf_batching.rs": [
-      "/root/acceptance_audit (non-author fixed-body and integration review)"
+      "/root/acceptance_audit (non-author one-line E0282 collection type fix; original six tests/assertions retained; original batch semantics inherited only at identical reviewed blobs)"
     ],
     "crates/cc-server/src/engine.rs": [
       "/root"
@@ -2796,130 +2796,152 @@
       "/root/acceptance_audit"
     ],
     ".github/workflows/p8-snapshot-leaf-engineering.yml": [
-      "/root/acceptance_audit"
+      "/root/acceptance_audit (non-author exact binding-only inverse comparison; original execution and failure thresholds retained)"
     ],
     ".github/workflows/p8-integrated-runtime-controls.yml": [
-      "/root/acceptance_audit"
+      "/root/acceptance_audit (non-author exact binding-only inverse comparison; original execution and failure thresholds retained)"
     ]
   },
   "author_independence": {
     "/root/acceptance_audit": "Non-author of all thirteen adopted native inputs, five-path integration, finalization helper/test, and both auxiliary controllers. Earlier resource/statistics/lifecycle and soak-cache authorship is explicitly not self-approved: unchanged native inputs inherit the exact main canonical non-author review; cache semantics and its test inherit /root/pr_audit's fixed v3 review and R4. This review freshly verifies the complete actual P mapping, integration, immutable bytes and those non-author delta reviews.",
     "/root/pr_audit": "Author of the five-path integration and finalization transplant/Python50 controller; those scopes are independently reviewed by acceptance_audit. Separately a non-author reviewer of original cache logic and snapshot leaf batching, as recorded in immutable scoped reports.",
     "/root/scale_engineering": "Author of snapshot leaf batching and Rust53 controller; their source and controller scopes are independently reviewed by acceptance_audit and prior batch semantic cross-review.",
-    "/root": "Publication/integration owner and author of the thirteenth equivalent lint proposal; those scopes are independently checked here. No root author self-approval is substituted for this complete input review."
+    "/root": "Publication/integration owner and author of the thirteenth equivalent lint proposal; those scopes are independently checked here. No root author self-approval is substituted for this complete input review.",
+    "current_incremental_review": "The reviewer did not author the scale agent's one-line Rust test fix or pr_audit's metadata rebinding. Existing authored components retain the previous independent-review author recusals; no self-approval was substituted."
   },
   "prior_accepted_review": {
-    "review_source": "f25d0b994edf9c08c5514864701e3b050b317c88",
-    "reviewed_source": "3e3981163efd8def60b89dde150d5bd9e09fccf8",
+    "review_source": "e2cb7b3633c94d5564a5c6d94225573217e0fded",
+    "reviewed_source": "6cc0f5d56e4ffa37f7b0a19a14e4fb7a4b5695f1",
     "review_path": "artifacts/checkpoints/p8-completion-20261009/independent-source-review.json",
-    "review_sha256": "f9cf9d9fbef599b9c59e83426656657a2180d968d6e289b6f9301c2d2d323d42",
-    "copied_at_actual_parent_477_byte_identical": true,
-    "inherited_source_delta_paths": 28,
-    "inherited_validation_inputs": 133,
-    "inheritance_rule": "Only exact SHA256 and Git mode/blob matches retain prior non-author source acceptance; prior executions retain their original source/observer identities.",
-    "source_reviewers": [
-      "/root",
-      "/root/scale_closeout",
-      "/root/runtime_closeout",
-      "/root/pr_audit"
-    ],
-    "inherited_review_records": {
-      "backfill-feature-independent-review.json": {
-        "bytes": 3316,
-        "sha256": "7c65a22bc0a6d3f39afa11600bf38c4fea1ef7d9f2aa183478af80026cd4546e"
-      },
-      "doc-key-index-independent-review.json": {
-        "bytes": 9275,
-        "sha256": "5057953796d978b3f423520a22565fba6e0ed5e72ce45f04f7e2452003d3cb35"
-      },
-      "doc-key-index-root-review.json": {
-        "bytes": 3288,
-        "sha256": "8ca70558ff4738c0dd66653d9284f6d675209db7f3f2ab3aa20992e0a2fe8251"
-      },
-      "doc-key-index-rust-validation.json": {
-        "bytes": 3728,
-        "sha256": "3a79c5c34aea59b02f11efcdb2dc2b64c99f1cd35c2f64f24183e071b8f302cb"
-      },
-      "lint-independent-review.json": {
-        "bytes": 3718,
-        "sha256": "0923f5f1f9334582a1060a68f5b04a2908a9f46d1752f71c3c7e4463e35407b5"
-      },
-      "platform-independent-review.json": {
-        "bytes": 8524,
-        "sha256": "a82ed10a0733c16d036a1ad03712b47e3f1016a9cf5be4b2e481bdc732070cb2"
-      },
-      "platform-port-independent-review.json": {
-        "bytes": 8379,
-        "sha256": "28c7a109ea80ea63b6209d16114f209517e81f6865a51862a354a43cec4eeda0"
-      },
-      "pr-audit-scoped-review.json": {
-        "bytes": 4770,
-        "sha256": "231601b3e99e454d16d4a22eeafaa949d417198f9e627206f08f1a53a3423bc2"
-      },
-      "root-independent-review.json": {
-        "bytes": 5342,
-        "sha256": "b07d2837b6390f69591af0956b42c188b8ec917ee3830d819da1a720bd6b8431"
-      },
-      "round5-integration-root-review.json": {
-        "bytes": 4789,
-        "sha256": "a2207e3924152953637c2dbbd4ba4128da78f9b8f79a57726467c986b5d2cb8f"
-      },
-      "round6-runtime-cleanup/independent-failure-path-review.json": {
-        "bytes": 17565,
-        "sha256": "87c847b90fc19845cfef228650047b58ba7713c2cfc5d5a0d37acc58ade4cd02"
-      },
-      "round6-runtime-cleanup/root-independent-review.json": {
-        "bytes": 5099,
-        "sha256": "ed994d5557caf2d2a2c88dff3ac276876520d4e51c154efae40ad08b0b7e459c"
-      },
-      "scale-independent-review-supplement.json": {
-        "bytes": 2062,
-        "sha256": "3287bd5ece3b9b0ac23c73f5af7d42fea8762e783189e76d659910ece5abd966"
-      },
-      "scale-independent-review.json": {
-        "bytes": 8967,
-        "sha256": "f22fcfa427dbd5df74d5f49b1d562d667bc63c45d816155886449f8759bc3af9"
-      },
-      "scale-origin-independent-review.json": {
-        "bytes": 3886,
-        "sha256": "dbd10c4ff27fad42be22efa0d447a7015d005dfbc8e89760030a63c5d2dba8e8"
-      },
-      "scale-sparse-independent-review.json": {
-        "bytes": 5674,
-        "sha256": "74e3d660f016e89c1efc19ba24d1f16e6079d6bd5fa3ddb617fbc923371aab21"
-      },
-      "source-guard-independent-review.json": {
-        "bytes": 6505,
-        "sha256": "0db92a1f0893858846cb01a63f5d601727d3afc9edc887661d6b2df66afc82a6"
+    "review_blob": "abd8bc21d3459ef60bf3cfb07fe9c9c6c4d56057",
+    "review_bytes": 286246,
+    "review_sha256": "42c45e8fd008554701197acb0dde27c708fa390d22215be9ddbf63019635402a",
+    "preceding_guard_commit": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+    "inherited_complete_product_inputs": 1088,
+    "inherited_validation_inputs": 138,
+    "inheritance_rule": "All 1229 actual required paths/modes/Git blob IDs were independently enumerated and checked. Only the 1226 unchanged product/validation blobs inherit prior full-byte SHA256 and non-author semantic review. The changed one product input and two validation inputs were fetched and rehashed again.",
+    "historical_review_chain_preserved": true,
+    "historical_BASE_and_main_bridge": {
+      "from": "55902428d49b09bb4a90cee6ccccf985680618bb",
+      "to": "4775bf44dc09c11cea88211e06ccec97c4de44aa",
+      "before_tree": "aa6977a0c4d609ac4409889446a28d0bbfa8c7bf",
+      "after_tree": "76604ef43da4ae0427006c7c3a5a3b46c5c16b55",
+      "unchanged_nonartifact_root_entries": 12,
+      "only_changed_root_entry": "artifacts"
+    },
+    "prior_inherited_source_review": {
+      "review_source": "f25d0b994edf9c08c5514864701e3b050b317c88",
+      "reviewed_source": "3e3981163efd8def60b89dde150d5bd9e09fccf8",
+      "review_path": "artifacts/checkpoints/p8-completion-20261009/independent-source-review.json",
+      "review_sha256": "f9cf9d9fbef599b9c59e83426656657a2180d968d6e289b6f9301c2d2d323d42",
+      "copied_at_actual_parent_477_byte_identical": true,
+      "inherited_source_delta_paths": 28,
+      "inherited_validation_inputs": 133,
+      "inheritance_rule": "Only exact SHA256 and Git mode/blob matches retain prior non-author source acceptance; prior executions retain their original source/observer identities.",
+      "source_reviewers": [
+        "/root",
+        "/root/scale_closeout",
+        "/root/runtime_closeout",
+        "/root/pr_audit"
+      ],
+      "inherited_review_records": {
+        "backfill-feature-independent-review.json": {
+          "bytes": 3316,
+          "sha256": "7c65a22bc0a6d3f39afa11600bf38c4fea1ef7d9f2aa183478af80026cd4546e"
+        },
+        "doc-key-index-independent-review.json": {
+          "bytes": 9275,
+          "sha256": "5057953796d978b3f423520a22565fba6e0ed5e72ce45f04f7e2452003d3cb35"
+        },
+        "doc-key-index-root-review.json": {
+          "bytes": 3288,
+          "sha256": "8ca70558ff4738c0dd66653d9284f6d675209db7f3f2ab3aa20992e0a2fe8251"
+        },
+        "doc-key-index-rust-validation.json": {
+          "bytes": 3728,
+          "sha256": "3a79c5c34aea59b02f11efcdb2dc2b64c99f1cd35c2f64f24183e071b8f302cb"
+        },
+        "lint-independent-review.json": {
+          "bytes": 3718,
+          "sha256": "0923f5f1f9334582a1060a68f5b04a2908a9f46d1752f71c3c7e4463e35407b5"
+        },
+        "platform-independent-review.json": {
+          "bytes": 8524,
+          "sha256": "a82ed10a0733c16d036a1ad03712b47e3f1016a9cf5be4b2e481bdc732070cb2"
+        },
+        "platform-port-independent-review.json": {
+          "bytes": 8379,
+          "sha256": "28c7a109ea80ea63b6209d16114f209517e81f6865a51862a354a43cec4eeda0"
+        },
+        "pr-audit-scoped-review.json": {
+          "bytes": 4770,
+          "sha256": "231601b3e99e454d16d4a22eeafaa949d417198f9e627206f08f1a53a3423bc2"
+        },
+        "root-independent-review.json": {
+          "bytes": 5342,
+          "sha256": "b07d2837b6390f69591af0956b42c188b8ec917ee3830d819da1a720bd6b8431"
+        },
+        "round5-integration-root-review.json": {
+          "bytes": 4789,
+          "sha256": "a2207e3924152953637c2dbbd4ba4128da78f9b8f79a57726467c986b5d2cb8f"
+        },
+        "round6-runtime-cleanup/independent-failure-path-review.json": {
+          "bytes": 17565,
+          "sha256": "87c847b90fc19845cfef228650047b58ba7713c2cfc5d5a0d37acc58ade4cd02"
+        },
+        "round6-runtime-cleanup/root-independent-review.json": {
+          "bytes": 5099,
+          "sha256": "ed994d5557caf2d2a2c88dff3ac276876520d4e51c154efae40ad08b0b7e459c"
+        },
+        "scale-independent-review-supplement.json": {
+          "bytes": 2062,
+          "sha256": "3287bd5ece3b9b0ac23c73f5af7d42fea8762e783189e76d659910ece5abd966"
+        },
+        "scale-independent-review.json": {
+          "bytes": 8967,
+          "sha256": "f22fcfa427dbd5df74d5f49b1d562d667bc63c45d816155886449f8759bc3af9"
+        },
+        "scale-origin-independent-review.json": {
+          "bytes": 3886,
+          "sha256": "dbd10c4ff27fad42be22efa0d447a7015d005dfbc8e89760030a63c5d2dba8e8"
+        },
+        "scale-sparse-independent-review.json": {
+          "bytes": 5674,
+          "sha256": "74e3d660f016e89c1efc19ba24d1f16e6079d6bd5fa3ddb617fbc923371aab21"
+        },
+        "source-guard-independent-review.json": {
+          "bytes": 6505,
+          "sha256": "0db92a1f0893858846cb01a63f5d601727d3afc9edc887661d6b2df66afc82a6"
+        }
       }
+    },
+    "supplemental_cache_review": {
+      "original_review_source": "9c24adfa6bb8b8114b4dec8c8a344072957956ce",
+      "original_product_source": "f5319d6a04f83aabe9dd635137382f4782d8d189",
+      "original_guard_source": "260f596582f2d82b8d7c707b61a6b8b6a43b069f",
+      "fixed_v3_review_sha256": "0614a66b096b4726a544a3fd3093cc196a8d5a799f13e5166f58bd0a3594b6f9",
+      "fixed_v3_reviewer": "/root/pr_audit",
+      "cache_test_sha256": "c43b0b74d2a7dc5afcc64c3956e08319bdceb9c9270ca2774b5565a0e79f3ad7",
+      "boundary": "Reuse exact reviewed cache code and test semantics; this does not upgrade old seven-observer execution receipts to the current nine-observer product or new source."
     }
   },
-  "supplemental_cache_review": {
-    "original_review_source": "9c24adfa6bb8b8114b4dec8c8a344072957956ce",
-    "original_product_source": "f5319d6a04f83aabe9dd635137382f4782d8d189",
-    "original_guard_source": "260f596582f2d82b8d7c707b61a6b8b6a43b069f",
-    "fixed_v3_review_sha256": "0614a66b096b4726a544a3fd3093cc196a8d5a799f13e5166f58bd0a3594b6f9",
-    "fixed_v3_reviewer": "/root/pr_audit",
-    "cache_test_sha256": "c43b0b74d2a7dc5afcc64c3956e08319bdceb9c9270ca2774b5565a0e79f3ad7",
-    "boundary": "Reuse exact reviewed cache code and test semantics; this does not upgrade old seven-observer execution receipts to the current nine-observer product or new source."
-  },
   "actual_commit_verification": {
-    "github_git_commit_endpoint": "https://api.github.com/repos/jyqj/codecortex/git/commits/6cc0f5d56e4ffa37f7b0a19a14e4fb7a4b5695f1",
+    "github_git_commit_endpoint": "https://api.github.com/repos/jyqj/codecortex/git/commits/29281cbca0004ae1228f2599ca8f4a704507f60d",
     "actual_sole_parent_verified": true,
     "actual_root_tree_verified": true,
     "remote_subtrees": {
       "crates": {
-        "sha": "62370c5cdfc6eb4a0db326b8a5afe288c5aab3b5",
+        "sha": "c3ff36be7754af663fc575b71c283b9113e1607d",
         "entries": 1296,
         "truncated": false
       },
       "scripts": {
-        "sha": "fe536b012d75232ffee54fa4c8eed6d328789a64",
+        "sha": "90a8ff8258187450cb444cd2c2c3609bb5792074",
         "entries": 126,
         "truncated": false
       },
       ".github": {
-        "sha": "a3412bd2bffa8e2e055283cb0f6494c1f7c73ede",
+        "sha": "1a92a3e0252b6c74f1ba3d813e6addee7b430ac9",
         "entries": 11,
         "truncated": false
       },
@@ -2930,30 +2952,133 @@
       }
     },
     "remote_parent_compare": {
-      "total_commits": 1,
-      "files": 41,
-      "additions": 27,
-      "modifications": 14,
-      "product_changes": 13,
-      "python_changes": 5,
-      "workflow_additions": 2,
-      "artifact_additions": 21
+      "passed": true,
+      "total": 19,
+      "modified": 3,
+      "added_artifacts": 16,
+      "files": [
+        {
+          "path": ".github/workflows/p8-integrated-runtime-controls.yml",
+          "blob": "9a9db59a2d387a5619d9ae68e7bcf52954d296e4",
+          "status": "modified"
+        },
+        {
+          "path": ".github/workflows/p8-snapshot-leaf-engineering.yml",
+          "blob": "1d396de9830f718c9dfb4d4baaa4043ca9ef02bb",
+          "status": "modified"
+        },
+        {
+          "path": "artifacts/checkpoints/p8-completion-20261009/snapshot-leaf-fix-20261009/README.md",
+          "blob": "311bd47f4d1ea03bc8399fb259d22e7521766e2e",
+          "status": "added"
+        },
+        {
+          "path": "artifacts/checkpoints/p8-completion-20261009/snapshot-leaf-fix-20261009/binding-diff.patch",
+          "blob": "f59c232256f511e053261fca568d24535c758f4a",
+          "status": "added"
+        },
+        {
+          "path": "artifacts/checkpoints/p8-completion-20261009/snapshot-leaf-fix-20261009/original-failure/01.stderr",
+          "blob": "896eba09276fff035ea383a6fe74795f0b0a2568",
+          "status": "added"
+        },
+        {
+          "path": "artifacts/checkpoints/p8-completion-20261009/snapshot-leaf-fix-20261009/original-failure/controls.zip",
+          "blob": "f581732f5884210863b06282f274cc382e553f59",
+          "status": "added"
+        },
+        {
+          "path": "artifacts/checkpoints/p8-completion-20261009/snapshot-leaf-fix-20261009/original-failure/reception-audit.json",
+          "blob": "927293993aebf47d88129c6c1363a2fdbfb79254",
+          "status": "added"
+        },
+        {
+          "path": "artifacts/checkpoints/p8-completion-20261009/snapshot-leaf-fix-20261009/publication-plan.json",
+          "blob": "9157a13813a475f298f447f9619ea887c4612ee2",
+          "status": "added"
+        },
+        {
+          "path": "artifacts/checkpoints/p8-completion-20261009/snapshot-leaf-fix-20261009/python-controls/controller.py",
+          "blob": "21d3acf4949a29fc7e52df4438dedc299a66477a",
+          "status": "added"
+        },
+        {
+          "path": "artifacts/checkpoints/p8-completion-20261009/snapshot-leaf-fix-20261009/python-controls/test-expectations.json",
+          "blob": "2561868a178ebf8006e52d08c5090a9427d3f747",
+          "status": "added"
+        },
+        {
+          "path": "artifacts/checkpoints/p8-completion-20261009/snapshot-leaf-fix-20261009/reviews/independent-bindings.json",
+          "blob": "9cc9d811a0223408d7ccc8fc9354db82d399c04f",
+          "status": "added"
+        },
+        {
+          "path": "artifacts/checkpoints/p8-completion-20261009/snapshot-leaf-fix-20261009/reviews/independent-test-fix.json",
+          "blob": "e462837d33bf7d9615b66dc7bdf1d637926fc9a4",
+          "status": "added"
+        },
+        {
+          "path": "artifacts/checkpoints/p8-completion-20261009/snapshot-leaf-fix-20261009/rust-controls/complete-source-binding-preparation.json",
+          "blob": "ad8f6046c3d7926e4c966988d3b31f2381c143c4",
+          "status": "added"
+        },
+        {
+          "path": "artifacts/checkpoints/p8-completion-20261009/snapshot-leaf-fix-20261009/rust-controls/engineering-plan.json",
+          "blob": "615fa9fe7f58b4ba0f4ebaf7c4092d1f5c9fd32f",
+          "status": "added"
+        },
+        {
+          "path": "artifacts/checkpoints/p8-completion-20261009/snapshot-leaf-fix-20261009/rust-controls/static-population-review.json",
+          "blob": "4306c1db376f5f8f4298b5c7d8f267e617498ee8",
+          "status": "added"
+        },
+        {
+          "path": "artifacts/checkpoints/p8-completion-20261009/snapshot-leaf-fix-20261009/rust-controls/test_population.py",
+          "blob": "2e1a50655e9893aa418d60bc71382bb3086fac53",
+          "status": "added"
+        },
+        {
+          "path": "artifacts/checkpoints/p8-completion-20261009/snapshot-leaf-fix-20261009/static-review.json",
+          "blob": "10bacbc9e030b87eefbaf56ff08f92a9c768b6a3",
+          "status": "added"
+        },
+        {
+          "path": "artifacts/checkpoints/p8-completion-20261009/snapshot-leaf-fix-20261009/verify-bindings-static.py",
+          "blob": "f0297178fd507dead1ae85e6cf338c5392ec9e87",
+          "status": "added"
+        },
+        {
+          "path": "crates/cc-index/tests/snapshot_leaf_batching.rs",
+          "blob": "307e4636016bd55edb8560bb131d63e5cfcfb844",
+          "status": "modified"
+        }
+      ]
     },
-    "full_source_and_validation_body_hashes_recomputed": 1229,
+    "complete_actual_mode_blob_matching_inputs": 1229,
+    "new_content_hashes_recomputed": {
+      "crates/cc-index/tests/snapshot_leaf_batching.rs": {
+        "bytes": 13586,
+        "sha256": "6b9081e76a71b5dc10f31bf22844b9e201b07e167a34e983759706a97e953b26",
+        "git_blob": "307e4636016bd55edb8560bb131d63e5cfcfb844"
+      },
+      ".github/workflows/p8-integrated-runtime-controls.yml": {
+        "bytes": 18228,
+        "sha256": "eccc4505dc46afae67f1196fd676b8da63d8fa1f98f471f35b8312f937b69b94",
+        "git_blob": "9a9db59a2d387a5619d9ae68e7bcf52954d296e4"
+      },
+      ".github/workflows/p8-snapshot-leaf-engineering.yml": {
+        "bytes": 21496,
+        "sha256": "db9a4775d7ed519be78be4190486ff880efe7665ac7494039c4865678598f079",
+        "git_blob": "1d396de9830f718c9dfb4d4baaa4043ca9ef02bb"
+      }
+    },
+    "inherited_exact_product_inputs": 1088,
+    "inherited_exact_validation_inputs": 138,
     "required_input_bodies_missing": [],
-    "exact_proposal_modes_and_git_blobs": true,
-    "original_BASE_product_bodies_recomputed": 1082,
-    "original_BASE_delta_recomputed": 41,
+    "original_BASE_delta_count": 41,
+    "original_BASE_delta_inheritance": "Previous complete review independently hashed all1082 BASE inputs and computed41 changed inputs. This actual P changes only the already-new snapshot_leaf_batching.rs entry, whose BASE before hash remains null; the other40 exact before/after pairs remain identical.",
     "all_existing_product_inputs_retained": true,
     "all_undeclared_nonartifact_inputs_unchanged": true,
-    "artifact_only_main_bridge": {
-      "from": "55902428d49b09bb4a90cee6ccccf985680618bb",
-      "to": "4775bf44dc09c11cea88211e06ccec97c4de44aa",
-      "before_tree": "aa6977a0c4d609ac4409889446a28d0bbfa8c7bf",
-      "after_tree": "76604ef43da4ae0427006c7c3a5a3b46c5c16b55",
-      "unchanged_nonartifact_root_entries": 12,
-      "only_changed_root_entry": "artifacts"
-    },
     "original_gate_blobs": {
       "scripts/verify_reviewed_source_v14.py": "5e5ef518787ec7445731eec75eface5e70cc834a",
       "scripts/reviewed-source-registry-v14.json": "361e7d75c99cc70cd09f818093fdfce9efbfaf27",
@@ -2962,10 +3087,15 @@
       "tests/source_integrity/v14_historical_test_adapter.py": "843f3b017aea054de68a6d9a0a97df9eb2df222b",
       "tests/source_integrity/test_v14_historical_context.py": "2ed28a33aeb1e8527813ddf7884b2b699f018db2",
       ".github/workflows/p7-engineering.yml": "f99933edf0bd03c0d9fa5ba520ed94dfbbd49e12",
-      "scripts/verify_reviewed_source_v15.py": "257d27ff19399d9e97bdf2dd70ca3ce2ff4ae7c1",
-      "scripts/reviewed-source-registry-v15.json": "653c40ca3e7454541008082ad13ad6fe592e6894",
+      "scripts/verify_reviewed_source_v15.py": "3ea80c8605a32d8689f12c3ee11be6ac3acf4b01",
+      "scripts/reviewed-source-registry-v15.json": "d9b09c0894bb6df7ed62613a362f3436dfe36daf",
       ".github/workflows/ci.yml": "8c7325eb88b791f909e72c4b6c79b417185e4386"
     },
+    "root_delta_from_actual_parent": [
+      ".github",
+      "artifacts",
+      "crates"
+    ],
     "TODO_ledger": {
       "total": 192,
       "done": 163,
@@ -2974,111 +3104,125 @@
       "unchanged_parent": true,
       "steps_acceptance_and_dependencies_unchanged": true
     },
-    "validation_enumeration": "Exact existing v15 validation_path predicate and three original roots; 140 inputs includes both new tests and both new workflows. No exclusion added.",
-    "current_P_pins_are_inherited": "This P is source only. Its original main v15 PRODUCT/REVIEW/registry pins remain unchanged; a subsequent exact trust-root installation and real source-integrity/CI execution are required."
+    "validation_enumeration": "The exact inherited v15 validation_path function and original roots/exclusions were extracted and executed in memory against the actual complete Git tree:140 inputs, no added exclusions.",
+    "current_P_pins_are_inherited": "P2 remains a source-only commit. Its v15 guard and registry are byte-identical to parent G1, still pinned to prior P1/R1. A subsequent independently checked registry/three-pin installation and actual source-integrity/CI execution are required."
   },
   "validation_delta": [
     {
-      "path": "scripts/p8_cold_build.py",
-      "before_sha256": "1da7189714959645f83762749d6bb6741e494e7a1ca4b9a2416d9d5366f315a3",
-      "sha256": "ee0bd478e0a151dba79c4588282ea4ea10dd2530769018d189cd6d1a0285d974"
-    },
-    {
-      "path": "scripts/p8_runtime.py",
-      "before_sha256": "1e458c6fd0bd15b2825651f5a40bd2b5889b7d64d16a0fe99d4c81d9c25026b4",
-      "sha256": "44e0a1166466e9e8ea870cccaa9faeea24d1ce8b9c56d70ec4eae040ccd094f3"
-    },
-    {
-      "path": "scripts/tests/test_p8_platform.py",
-      "before_sha256": "5224a63b68accdcc6de858f3110316cc0739dfedac99c47b09c2472aedf0c8d7",
-      "sha256": "543f604cb9cbcfe1600aa1a5711f27d3eb2ee3e64126d9c95c1ad5612418aae8"
-    },
-    {
-      "path": "scripts/tests/test_p8_runtime_cache.py",
-      "before_sha256": null,
-      "sha256": "c43b0b74d2a7dc5afcc64c3956e08319bdceb9c9270ca2774b5565a0e79f3ad7"
-    },
-    {
-      "path": "scripts/tests/test_p8_runtime_finalization.py",
-      "before_sha256": null,
-      "sha256": "aeed33692d86551db32b010c39f14bebe51d899196c6018a488d9feef3c15145"
+      "path": ".github/workflows/p8-integrated-runtime-controls.yml",
+      "before_sha256": "d706586edfd79713358b03a39a78ca1a0bc468bd3de9c3fd7470e22e45835991",
+      "sha256": "eccc4505dc46afae67f1196fd676b8da63d8fa1f98f471f35b8312f937b69b94",
+      "git_blob": "9a9db59a2d387a5619d9ae68e7bcf52954d296e4"
     },
     {
       "path": ".github/workflows/p8-snapshot-leaf-engineering.yml",
-      "before_sha256": null,
-      "sha256": "b11451b5a8045202862995374b895b6798b02bb0a44a2952ba8f2db7588628ad"
-    },
-    {
-      "path": ".github/workflows/p8-integrated-runtime-controls.yml",
-      "before_sha256": null,
-      "sha256": "d706586edfd79713358b03a39a78ca1a0bc468bd3de9c3fd7470e22e45835991"
+      "before_sha256": "b11451b5a8045202862995374b895b6798b02bb0a44a2952ba8f2db7588628ad",
+      "sha256": "db9a4775d7ed519be78be4190486ff880efe7665ac7494039c4865678598f079",
+      "git_blob": "1d396de9830f718c9dfb4d4baaa4043ca9ef02bb"
     }
   ],
   "review_evidence": {
-    "native12": {
-      "path": "artifacts/p8-main559-snapshot-leaf-engineering-20261009/reviews/native12-independent.json",
-      "git_blob": "3c07296605474109f7330d7cdba04ce2bc6bab39",
-      "status": "added",
-      "sha256": "1479a6fd84df97099ff5f5c815322f62db19439dedf71eb2354d90cf26616d1d"
+    "one_line_fix": {
+      "blob": "e462837d33bf7d9615b66dc7bdf1d637926fc9a4",
+      "bytes": 3682,
+      "sha256": "921b7d6666d1e2bcee96c20ba2558ab03a6ae901825e58a82562d6454a9023de"
     },
-    "predicate_and_manifest": {
-      "path": "artifacts/p8-main559-snapshot-leaf-engineering-20261009/reviews/predicate-and-manifest-independent.json",
-      "git_blob": "c8a4e5dad499eea5997d40806b3c2c0da18f515a",
-      "status": "added",
-      "sha256": "b6a95231b4f53d46de1ddc745aacb2ca11f61f8238799e2a8f40d37371db692a"
+    "bindings": {
+      "blob": "9cc9d811a0223408d7ccc8fc9354db82d399c04f",
+      "bytes": 6370,
+      "sha256": "cb33842749beff089fa5831866cb44e55ebad11762e4fe6be06bb3895fde238b",
+      "git_blob": "9cc9d811a0223408d7ccc8fc9354db82d399c04f"
     },
-    "python5": {
-      "path": "artifacts/p8-main559-snapshot-leaf-engineering-20261009/reviews/python5-independent.json",
-      "git_blob": "79edc0c14bb60c5c305670eff2d7975114cd9bd4",
-      "status": "added",
-      "sha256": "a0ebae65db8d34f59e5c3424f6405fb509f4eba602e5f7edc1de18279df4caa9"
+    "original_failure": {
+      "run": 37874665202,
+      "job": 113640379348,
+      "source": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+      "fmt_exit": 0,
+      "clippy_exit": 101,
+      "diagnostic": "E0282 at snapshot_leaf_batching.rs:149:10",
+      "remaining_Rust_commands_not_run": 16,
+      "zip_blob": "f581732f5884210863b06282f274cc382e553f59",
+      "stderr_blob": "896eba09276fff035ea383a6fe74795f0b0a2568",
+      "reception_audit_blob": "927293993aebf47d88129c6c1363a2fdbfb79254",
+      "preserved_in_actual_P2": true
     },
-    "python5_all_validation": {
-      "path": "artifacts/p8-main559-snapshot-leaf-engineering-20261009/reviews/python5-validation-independent.json",
-      "git_blob": "82fec2e172d83c158db5928a46a89e2065d4a469",
-      "status": "added",
-      "sha256": "f0479d780006b7f2411fdcc688b2f46a04d7acd4381d02977627232f0ca37e61"
+    "original_Python50": {
+      "run": 37874665224,
+      "job": 113640379294,
+      "source": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+      "artifact": 11591747962,
+      "zip_blob": "ac90cd20cb784d1faa94a732b0de77b1caea6b49",
+      "zip_sha256": "b9aebbb62ccd5b815876d12968fc9bb251235a185c777071edd8eca91398d05f",
+      "independent_review_blob": "b541df6e7fded446d0a61b20fa67500b8d930ccb",
+      "actual_methods": 50,
+      "actual_subtests": 24,
+      "sealed_files": 1657,
+      "missing_files": 0,
+      "relabelled_as_P2": false
     },
-    "rust53_structure": {
-      "path": "artifacts/p8-main559-snapshot-leaf-engineering-20261009/reviews/rust-workflow-structure-independent.json",
-      "git_blob": "862090be0d6d05aed62df7b5b9ae49682babfdbe",
-      "status": "added",
-      "sha256": "f2c7ff6432a1db4adf72ca5397933a57794cc747b4adffb4197d4a831c55c1ac"
-    },
-    "rust53_binding": {
-      "path": "artifacts/p8-main559-snapshot-leaf-engineering-20261009/reviews/rust-workflow-final-binding-independent.json",
-      "git_blob": "f3670bfabc86e7975ce2201794fb6b670fac4b09",
-      "status": "added",
-      "sha256": "276bd7e911bcbaba9f0b92bc877588e226db6aae5d1dc107ef50c37ac2387d61"
-    },
-    "python50_transport": {
-      "path": "artifacts/checkpoints/p8-completion-20261009/integrated-runtime-controls/independent-review.json",
-      "git_blob": "19d812c3d1fb90fc883ab09fe4753c2948a5e7be",
-      "status": "added",
-      "sha256": "01d479e6de12476849a4e5c9fb3ac954bee2623ba0be447fd515c2518c708baa"
-    },
-    "snapshot05e_non_author": {
-      "sha256": "2e2b9283a7ba35b7f6e8e66728e3709838fe73ec9358352deff364f07ccd03bb",
-      "source": "05e4ad5a04ad10db9cef6b6399c8c6bacddb8737"
-    },
-    "snapshot_ced_test_followup": {
-      "sha256": "268b117b41f0196f86e624a375cda18707011af9dc363c40e76d181187316b57",
-      "source": "cedfd4f8ca84b91033225b00944d9b6f1815dbde"
-    },
-    "finalization_helper_non_author": {
-      "sha256": "c428ce7683b39e5be5b6a5ab706584fdc72b0931b856fc328cdccda9023ae31a"
+    "prior_full_source_review_evidence": {
+      "native12": {
+        "path": "artifacts/p8-main559-snapshot-leaf-engineering-20261009/reviews/native12-independent.json",
+        "git_blob": "3c07296605474109f7330d7cdba04ce2bc6bab39",
+        "status": "added",
+        "sha256": "1479a6fd84df97099ff5f5c815322f62db19439dedf71eb2354d90cf26616d1d"
+      },
+      "predicate_and_manifest": {
+        "path": "artifacts/p8-main559-snapshot-leaf-engineering-20261009/reviews/predicate-and-manifest-independent.json",
+        "git_blob": "c8a4e5dad499eea5997d40806b3c2c0da18f515a",
+        "status": "added",
+        "sha256": "b6a95231b4f53d46de1ddc745aacb2ca11f61f8238799e2a8f40d37371db692a"
+      },
+      "python5": {
+        "path": "artifacts/p8-main559-snapshot-leaf-engineering-20261009/reviews/python5-independent.json",
+        "git_blob": "79edc0c14bb60c5c305670eff2d7975114cd9bd4",
+        "status": "added",
+        "sha256": "a0ebae65db8d34f59e5c3424f6405fb509f4eba602e5f7edc1de18279df4caa9"
+      },
+      "python5_all_validation": {
+        "path": "artifacts/p8-main559-snapshot-leaf-engineering-20261009/reviews/python5-validation-independent.json",
+        "git_blob": "82fec2e172d83c158db5928a46a89e2065d4a469",
+        "status": "added",
+        "sha256": "f0479d780006b7f2411fdcc688b2f46a04d7acd4381d02977627232f0ca37e61"
+      },
+      "rust53_structure": {
+        "path": "artifacts/p8-main559-snapshot-leaf-engineering-20261009/reviews/rust-workflow-structure-independent.json",
+        "git_blob": "862090be0d6d05aed62df7b5b9ae49682babfdbe",
+        "status": "added",
+        "sha256": "f2c7ff6432a1db4adf72ca5397933a57794cc747b4adffb4197d4a831c55c1ac"
+      },
+      "rust53_binding": {
+        "path": "artifacts/p8-main559-snapshot-leaf-engineering-20261009/reviews/rust-workflow-final-binding-independent.json",
+        "git_blob": "f3670bfabc86e7975ce2201794fb6b670fac4b09",
+        "status": "added",
+        "sha256": "276bd7e911bcbaba9f0b92bc877588e226db6aae5d1dc107ef50c37ac2387d61"
+      },
+      "python50_transport": {
+        "path": "artifacts/checkpoints/p8-completion-20261009/integrated-runtime-controls/independent-review.json",
+        "git_blob": "19d812c3d1fb90fc883ab09fe4753c2948a5e7be",
+        "status": "added",
+        "sha256": "01d479e6de12476849a4e5c9fb3ac954bee2623ba0be447fd515c2518c708baa"
+      },
+      "snapshot05e_non_author": {
+        "sha256": "2e2b9283a7ba35b7f6e8e66728e3709838fe73ec9358352deff364f07ccd03bb",
+        "source": "05e4ad5a04ad10db9cef6b6399c8c6bacddb8737"
+      },
+      "snapshot_ced_test_followup": {
+        "sha256": "268b117b41f0196f86e624a375cda18707011af9dc363c40e76d181187316b57",
+        "source": "cedfd4f8ca84b91033225b00944d9b6f1815dbde"
+      },
+      "finalization_helper_non_author": {
+        "sha256": "c428ce7683b39e5be5b6a5ab706584fdc72b0931b856fc328cdccda9023ae31a"
+      }
     }
   },
   "key_semantic_findings": [
-    "Snapshot-only leaf insertion is confined to the full SnapshotWriteTxn entry, with exact inverse preservation of shared false branches; existing other entry points, table order, FK/OR REPLACE order, survivor identity checks, chunks and FTS operations retain their original contracts.",
-    "Batches preserve source row order and exact typed bind values with at most 64 borrowed references and 64 KiB measured ToSql payload; tiers 64/8/1 and legal oversized single rows preserve existing budgets. Deferred SQLite execution is not represented as identical first-error precedence between competing independent failures.",
-    "Conflict tests include separate id and symbol_uid uniqueness, 7/8/63/64 boundaries, cross-file survivor identity, actual FTS MATCH posting queries and rowid relationships. These tests are statically admitted; new actual Rust execution is still required.",
-    "The thirteenth native expression is the exact previously reviewed is_none_or equivalent for None/equal/unequal cases, addressing an actually observed Rust1.95 Clippy failure without changing admission bounds.",
-    "Python integration preserves the main nine-observer build/source/provenance contract and exact original tests while adding the reviewed cache/finalization and cold collector failure-only receipt behavior.",
-    "Rust53 controller preserves original thirteen commands and forty-one actual method names, adds twelve statically enumerated methods in five commands, and rejects empty/ignored/wrong-name populations. All original scale seed, N30, shard, capacity, deadline, raw and oracle limits remain unchanged.",
-    "Python50 controller preserves all fourteen runtime, fifteen evidence, thirteen cache and eight finalization methods plus twenty-four exact subcases; it validates actual names/outcomes, source and nine observers before/after, raw inventory and cleanup. It has no Cargo or product workload.",
-    "Python50 hidden-file upload is limited to its two owned RUNNER_TEMP output paths. The fixture checkout is freshly initialized synthetic Git, not the actual authenticated checkout. Actual complete transport still requires receipt-to-ZIP validation.",
-    "Both auxiliary workflows use the fixed branch, actual github.sha, first-attempt guards and read-only repository permission. This source approval starts no new N150 primary study and grants no retry/substitution permission."
+    "Only the test helper's line149 collect result changes from rusqlite::Result<_> to rusqlite::Result<Vec<String>>. query_map already yields String; source-row order, error propagation, subsequent filtering, all six test methods and assertions are unchanged. No product implementation changes.",
+    "All1088 other product byte bodies and138 other validation byte bodies exactly match independently reviewed prior P1 input identities. This includes all original budget, ordering, typed equality, identity/readback, rollback, cache and finalization implementations.",
+    "Both auxiliary workflows retain their original logic. Metadata is rebound to the separate new branch and fixed691ae804 source manifest; the Python controller's manifest path/digest are changed consistently. Mechanical inverse transformations reproduce the exact previous bodies.",
+    "Rust18 command argv/53 expected methods and Python50 methods/24 exact subtest cases/9 observers remain unchanged. Attempt1-only execution, hidden fixture transport, capacity/deadlines, failure preservation, needs and all original scale protocol parameters remain unchanged.",
+    "Only16 artifact paths are added; all original failed-run artifacts, prior reviews, previous workflow/source identities and the original PR168 history remain unchanged.",
+    "Static admission permits running the corrected candidate through its actual original controls. It does not establish that the original E0282 or any later compiler/runtime issue has passed until the new execution completes."
   ],
   "prior_runtime47_observation": {
     "run": 37870351197,
@@ -3098,17 +3242,17 @@
     "original_identity_and_incomplete_archive_preserved": true
   },
   "acceptance_boundary": [
-    "This is a complete non-author source and validation-input approval for the exact P commit and tree above, plus explicit inheritance of only byte-identical previously independently reviewed inputs.",
-    "It does not certify a successful build, Rust53/Python50 execution, original CI, source-integrity proof execution after new pins, eight-platform matrix, runtime/soak/recovery, a complete N150 scale study, quality evaluation, release or any original TODO closure for P.",
-    "G, G4, D0, c8, 8e and other historical source/observer/compiler receipts retain their actual identities and limitations. They are neither rewritten nor promoted to this P.",
-    "The new source changes product bytes; prior runtime/benchmark measurements are not asserted to be source-equivalent or causal performance evidence for this combination.",
-    "No original acceptance threshold, N denominator, capacity budget, dependency, heldout separation, original source guard, CI assertion or workload plan was lowered.",
-    "No Cargo, product workload or tests were executed by this final reviewer; only read-only API/Git/source-byte, AST-derived prior evidence and in-memory content verification were used. No new local files were written.",
-    "No heldout benchmark corpus was semantically inspected or executed for this review. Required opaque complete-input byte hashing does not confer quality acceptance.",
-    "Actual subsequent source-integrity proof and required CI must pass for the final pinned G. No merge or release readiness is granted here."
+    "This is complete non-author source and validation-input approval for exact P2 and tree above, using explicit byte/mode/blob inheritance for unchanged inputs.",
+    "No successful new Rust53 compilation, Python50 execution, original CI, source-integrity proof after future pins, platform/runtime/soak/recovery, N150 scale study, quality evaluation, release or original TODO closure is certified by this review.",
+    "The actual G1 Rust Clippy failure and G1 Python50 success remain distinct source-bound observations. The future new branch is a fresh fixed-source validation attempt, not a rerun or replacement of the old failed primary sample.",
+    "All historical sources, workloads and evidence keep their original identity and limitations. Current G4 or D0 measurements are not relabelled as P2.",
+    "No original acceptance threshold, sample denominator, capacity budget, dependency, heldout boundary, frozen v14 proof, CI assertion or task definition was lowered.",
+    "No Cargo, product workload, repository tests or statistics binary was run locally for this review. Read-only GitHub API/blob access and pure-memory content/AST verification only; no local file writes.",
+    "No heldout corpus was semantically inspected or executed; unchanged opaque complete-input hashes were inherited only after exact actual Git identities matched.",
+    "Actual subsequent source-integrity proofs and required CI must pass for the final pinned G2. This review does not grant merge or release readiness."
   ],
   "assembly_notes": [
-    "An initial in-memory audit checker representation used JSON null directly in Python and failed before checks. It was corrected to json.loads, then the full 1229 body checks and independent BASE delta checks passed. This was audit tooling only; no repository or original evidence was changed."
+    "The actual full subtree maps were independently retrieved (none truncated). The three newly fetched bodies were hashed in memory; all remaining required paths/modes/Gitblob IDs matched the prior reviewed complete inventory. No new source-assembly correction or ignored mismatch occurred."
   ],
   "TODO_closed": 0,
   "TODO_remaining": 29

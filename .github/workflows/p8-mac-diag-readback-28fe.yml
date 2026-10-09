@@ -1,0 +1,362 @@
+name: Fixed Mac diagnostic artifact readback
+on:
+  push:
+    branches: [audit/p8-mac-diag-readback-28fe-20261009]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  readback:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Verify two fixed original ZIPs and print complete diagnostic JSON
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          python3 -B - <<'PY'
+          import datetime, hashlib, io, json, os, pathlib, platform, re, stat, struct, sys, urllib.error, urllib.parse, urllib.request, zipfile, zlib
+          ROOT = pathlib.Path(os.environ["RUNNER_TEMP"]) / ("p8-mac-diag-readback-" + os.environ["GITHUB_RUN_ID"] + "-attempt" + os.environ["GITHUB_RUN_ATTEMPT"])
+          REPO = "jyqj/codecortex"
+          API = "https://api.github.com/repos/" + REPO
+          ORIGINAL_RUN = 37889857154
+          ORIGINAL_HEAD = "57e478b9fb742d1e3bcb4501c7be299530c0521a"
+          ORIGINAL_BRANCH = "diagnose/p8-mac-supervisor-28fe-20261009"
+          SOURCE = "a23bb72d3c954f385b99fe81ce9189885c208557"
+          SOURCE_TREE = "58147c952505c44da1f41eb4b9c31643f2303b96"
+          SPECS = [
+              {"id": 11598235620, "name": "p8-mac-supervisor-diagnosis-ubuntu-latest-37889857154-attempt1", "bytes": 1338309, "sha256": "0771ee604dec006e800dd390c98fcacb3e7c8ff9d3b63402d921a7c974fde1db", "job": 113688091933},
+              {"id": 11598385875, "name": "p8-mac-supervisor-diagnosis-macos-26-37889857154-attempt1", "bytes": 368085, "sha256": "042724d54106f8750da1d8d45bace2bb7a8ed79284e56accc1c88ab7b681191e", "job": 113688092101},
+          ]
+          MAX_MEMBERS = 512
+          MAX_EXPANDED_BYTES = 64 * 1024 * 1024
+          def require(condition, message):
+              if not condition:
+                  raise ValueError(message)
+          def now():
+              return datetime.datetime.now(datetime.timezone.utc).isoformat()
+          def identity(raw):
+              return {"bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest(),
+                      "git_blob": hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()}
+          def write_bytes(path, raw):
+              with path.open("xb") as stream:
+                  stream.write(raw)
+          def write_json(path, value):
+              write_bytes(path, (json.dumps(value, indent=2, sort_keys=True, allow_nan=False) + "\n").encode())
+          def pairs(rows):
+              result = {}
+              for key, value in rows:
+                  require(key not in result, "duplicate JSON object key")
+                  result[key] = value
+              return result
+          def decode(raw):
+              value = json.loads(raw.decode("utf-8"), object_pairs_hook=pairs,
+                                 parse_constant=lambda value: (_ for _ in ()).throw(ValueError("nonfinite JSON")))
+              # json.dumps rejects float overflow as well as literal NaN/Infinity.
+              json.dumps(value, allow_nan=False)
+              return value
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self, request, fp, code, message, headers, newurl):
+                  return None
+          def api_open(path, token):
+              require(path.startswith("/") and "://" not in path and "\\" not in path, "invalid API path")
+              request = urllib.request.Request(API + path, headers={
+                  "Authorization": "Bearer " + token, "Accept": "application/vnd.github+json",
+                  "X-GitHub-Api-Version": "2022-11-28", "User-Agent": "codecortex-fixed-diagnostic-readback"})
+              return urllib.request.build_opener(NoRedirect()).open(request, timeout=60)
+          def get_json(path, destination, token):
+              try:
+                  with api_open(path, token) as response:
+                      raw = response.read(2 * 1024 * 1024 + 1)
+                  write_bytes(destination, raw)
+                  require(len(raw) <= 2 * 1024 * 1024, "metadata transport bound exceeded")
+                  return decode(raw)
+              except urllib.error.HTTPError as error:
+                  code = error.code
+                  error.close()
+                  raise RuntimeError("GitHub metadata HTTP " + str(code)) from None
+              except (urllib.error.URLError, TimeoutError, OSError):
+                  raise RuntimeError("GitHub metadata transport failed") from None
+          def locator(value, token):
+              require(isinstance(value, str) and value and not any(ord(c) <= 32 or ord(c) == 127 for c in value),
+                      "invalid locator characters")
+              p = urllib.parse.urlsplit(value)
+              require(p.scheme == "https" and p.hostname and not p.username and not p.password and not p.fragment,
+                      "locator must be credential-free HTTPS")
+              decoded = value
+              for _ in range(8):
+                  require(token not in decoded, "locator includes authentication credential")
+                  newer = urllib.parse.unquote(decoded)
+                  if newer == decoded:
+                      return value
+                  decoded = newer
+              raise ValueError("locator encoding bound exceeded")
+          def archive_response(artifact_id, token):
+              try:
+                  try:
+                      return api_open("/actions/artifacts/" + str(artifact_id) + "/zip", token)
+                  except urllib.error.HTTPError as error:
+                      if error.code not in (301, 302, 303, 307, 308):
+                          code = error.code
+                          error.close()
+                          raise RuntimeError("GitHub archive HTTP " + str(code))
+                      location = error.headers.get("Location", "")
+                      error.close()
+                  for _ in range(5):
+                      location = locator(location, token)
+                      request = urllib.request.Request(location, headers={"User-Agent": "codecortex-fixed-diagnostic-readback"})
+                      try:
+                          # Fresh request has no Authorization or Cookie; redirects are manual.
+                          return urllib.request.build_opener(NoRedirect()).open(request, timeout=60)
+                      except urllib.error.HTTPError as error:
+                          if error.code not in (301, 302, 303, 307, 308):
+                              error.close()
+                              raise RuntimeError("unauthenticated archive download rejected")
+                          location = urllib.parse.urljoin(location, error.headers.get("Location", ""))
+                          error.close()
+                  raise ValueError("archive redirect bound exceeded")
+              except Exception as error:
+                  raise RuntimeError("archive connection failed: " + type(error).__name__) from None
+          def member_payload(raw, item, output):
+              """Read the exact compressed member and require true EOF, size and CRC."""
+              raw.seek(item.header_offset)
+              header = raw.read(30)
+              require(len(header) == 30, "truncated ZIP local header")
+              signature, version, flags, method, mt, md, crc, csize, usize, nlen, elen = struct.unpack(
+                  "<4s5H3I2H", header)
+              require(signature == b"PK\x03\x04" and flags == item.flag_bits and
+                      method == item.compress_type, "ZIP local/central header mismatch")
+              name = raw.read(nlen)
+              extra = raw.read(elen)
+              require(len(name) == nlen and len(extra) == elen, "truncated ZIP local name/extra")
+              require(name.decode("utf-8" if flags & 0x800 else "cp437") == item.orig_filename,
+                      "ZIP local/central filename mismatch")
+              require(method in (zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED),
+                      "unsupported original ZIP compression method")
+              if not flags & 8:
+                  require(crc == item.CRC, "ZIP local/central CRC mismatch")
+              data_start = raw.tell()
+              require(data_start + item.compress_size <= os.fstat(raw.fileno()).st_size,
+                      "compressed ZIP member lies beyond original bytes")
+              decoder = zlib.decompressobj(-15) if method == zipfile.ZIP_DEFLATED else None
+              count = 0
+              actual_crc = 0
+              digest = hashlib.sha256()
+          
+              def consume(data):
+                  nonlocal count, actual_crc
+                  count += len(data)
+                  require(count <= item.file_size, "true ZIP expansion exceeds declared member size")
+                  require(not item.is_dir() or not data, "directory ZIP member contains payload")
+                  actual_crc = zlib.crc32(data, actual_crc)
+                  digest.update(data)
+                  if output is not None:
+                      output.write(data)
+          
+              remaining = item.compress_size
+              while remaining:
+                  block = raw.read(min(65536, remaining))
+                  require(bool(block), "truncated compressed ZIP member")
+                  remaining -= len(block)
+                  if decoder is None:
+                      consume(block)
+                      continue
+                  pending = block
+                  while pending:
+                      previous = len(pending)
+                      data = decoder.decompress(pending, min(1048576, item.file_size - count + 1))
+                      pending = decoder.unconsumed_tail
+                      consume(data)
+                      require(not decoder.unused_data, "bytes remain after the DEFLATE end marker")
+                      require(data or len(pending) < previous, "DEFLATE stream made no progress")
+              if decoder is not None:
+                  require(decoder.eof and not decoder.unused_data and not decoder.unconsumed_tail,
+                          "DEFLATE stream did not end exactly at the member boundary")
+              require(count == item.file_size and actual_crc & 0xFFFFFFFF == item.CRC,
+                      "actual complete ZIP member length/CRC mismatch")
+              return {"bytes": count, "sha256": digest.hexdigest(),
+                      "zip_crc32": f"{item.CRC:08x}",
+                      "original_zip_mode": item.external_attr >> 16,
+                      "actual_compressed_eof_verified": True,
+                      "local_header_offset": item.header_offset,
+                      "compressed_data_start": data_start,
+                      "compressed_data_end": data_start + item.compress_size}
+          
+          
+          def read_members(archive):
+              values, inventory, names, ranges = {}, {}, set(), []
+              with zipfile.ZipFile(archive) as zipped, archive.open("rb") as raw:
+                  members = zipped.infolist()
+                  require(0 < len(members) <= MAX_MEMBERS, "ZIP member count exceeds transport bound")
+                  require(sum(item.file_size for item in members) <= MAX_EXPANDED_BYTES, "ZIP expansion exceeds transport bound")
+                  for item in members:
+                      name = item.filename
+                      parts = name.rstrip("/").split("/")
+                      require(name and name == item.orig_filename and not name.startswith("/") and "\\" not in name and
+                              "\x00" not in name and all(p not in ("", ".", "..") for p in parts) and ":" not in parts[0],
+                              "unsafe ZIP member name")
+                      require(not any(ord(c) < 32 or ord(c) == 127 for c in name), "control character in ZIP name")
+                      canonical = "/".join(parts)
+                      require(canonical not in names, "duplicate ZIP member")
+                      names.add(canonical)
+                      kind = stat.S_IFMT(item.external_attr >> 16)
+                      require(kind in (0, stat.S_IFREG, stat.S_IFDIR) and not (item.flag_bits & 1), "nonregular or encrypted ZIP member")
+                      require((kind != stat.S_IFDIR or item.is_dir()) and (not item.is_dir() or item.file_size == 0),
+                              "ZIP directory mismatch")
+                  for item in members:
+                      output = io.BytesIO() if not item.is_dir() else None
+                      record = member_payload(raw, item, output)
+                      inventory[item.filename] = record
+                      ranges.append((record["local_header_offset"], record["compressed_data_end"]))
+                      if output is not None:
+                          values[item.filename] = output.getvalue()
+                  ranges.sort()
+                  require(all(a[1] <= b[0] for a, b in zip(ranges, ranges[1:])), "overlapping ZIP member ranges")
+              return values, inventory
+          def read_one(spec, metadata, directory, token):
+              directory.mkdir()
+              write_json(directory / "fixed-input.json", spec)
+              artifact = metadata
+              require(artifact["id"] == spec["id"] and artifact["name"] == spec["name"] and
+                      artifact["size_in_bytes"] == spec["bytes"] and artifact["digest"] == "sha256:" + spec["sha256"] and
+                      artifact["expired"] is False, "fixed artifact identity differs")
+              wr = artifact["workflow_run"]
+              require(wr["id"] == ORIGINAL_RUN and wr["repository_id"] == 1249213794 and
+                      wr["head_repository_id"] == 1249213794 and wr["head_sha"] == ORIGINAL_HEAD and
+                      wr["head_branch"] == ORIGINAL_BRANCH, "artifact run/source identity differs")
+              zip_path = directory / "original.zip"
+              with zip_path.open("xb") as output:
+                  with archive_response(spec["id"], token) as response:
+                      count = 0
+                      while True:
+                          block = response.read(min(65536, spec["bytes"] - count + 1))
+                          if not block:
+                              break
+                          output.write(block)
+                          count += len(block)
+                          require(count <= spec["bytes"], "archive exceeds registered bytes")
+              original = zip_path.read_bytes()
+              require(len(original) == spec["bytes"] and hashlib.sha256(original).hexdigest() == spec["sha256"],
+                      "archive fixed size/SHA mismatch")
+              values, inventory = read_members(zip_path)
+              write_json(directory / "member-inventory.json", inventory)
+              require("run/output-manifest.json" in values, "missing original output manifest")
+              manifest = decode(values["run/output-manifest.json"])
+              listed = {}
+              for row in manifest["files"]:
+                  name = row["path"]
+                  require(isinstance(name, str) and name and not name.startswith("/") and "\\" not in name and
+                          all(part not in ("", ".", "..") for part in name.split("/")) and "\x00" not in name,
+                          "unsafe original manifest path")
+                  require(name not in listed, "duplicate original manifest path")
+                  require(type(row["mode"]) is int and 0 <= row["mode"] <= 0o7777, "invalid recorded original mode")
+                  path = "run/" + name
+                  require(path in values, "manifest member missing")
+                  actual = identity(values[path])
+                  require(all(actual[key] == row[key] for key in ("bytes", "sha256", "git_blob")), "original manifest byte mismatch")
+                  listed[name] = actual
+              require({name for name in values if name.startswith("run/")} ==
+                      {"run/" + name for name in listed} | {"run/output-manifest.json"}, "unmanifested or missing original run member")
+              parent_files = {"workflow-start.json", "workflow-terminal.json", "driver.stdout", "driver.stderr", "driver-exit-code.txt"}
+              require(set(values) - {name for name in values if name.startswith("run/")} == parent_files,
+                      "unexpected original workflow file set")
+              require(values["driver-exit-code.txt"].strip() == b"0", "original driver exit is not success")
+              required = ["workflow-start.json", "workflow-terminal.json", "run/execution-receipt.json",
+                          "run/case01-original/run/report.json", "run/case02-instrumented/run/report.json"]
+              parsed = {name: decode(values[name]) for name in required}
+              start = parsed["workflow-start.json"]
+              require(start["controller_commit"] == ORIGINAL_HEAD and start["expected_source"] == SOURCE and
+                      start["metadata"]["GITHUB_REPOSITORY"] == REPO and
+                      start["metadata"]["GITHUB_RUN_ID"] == str(ORIGINAL_RUN) and
+                      start["metadata"]["GITHUB_RUN_ATTEMPT"] == "1", "original workflow-start identity differs")
+              terminal = parsed["workflow-terminal.json"]
+              require(terminal["controller_commit"] == ORIGINAL_HEAD and terminal["expected_source"] == SOURCE and
+                      terminal["tasks_changed"] is False, "original workflow-terminal identity differs")
+              execution = parsed["run/execution-receipt.json"]
+              require(execution["source_expected"]["head"] == SOURCE and execution["source_expected"]["tree"] == SOURCE_TREE and
+                      execution["diagnostic_only"] is True and execution["certification"] == "not_run" and
+                      execution["source_unchanged"] is True, "original execution scope/source differs")
+              require(execution["fixed_case_order"] == ["original", "instrumented"] and
+                      [row["case"] for row in execution["case_results"]] == ["original", "instrumented"],
+                      "original diagnostic case identity differs")
+              for case, name in zip(("original", "instrumented"), required[-2:]):
+                  require(parsed[name]["case"] == case and parsed[name]["diagnostic_only"] is True and
+                          parsed[name]["certification"] == "not_run", "original case report identity differs")
+                  matched = next(row for row in execution["case_results"] if row["case"] == case)
+                  require(matched["report_identity"] == identity(values[name]) and matched["report"] == parsed[name],
+                          "case report does not match original execution receipt")
+              for name in required:
+                  # JSON escaping keeps one record per line, preserving every phase and raw UTF-8 byte.
+                  require(len(values[name]) <= 2 * 1024 * 1024, "selected diagnostic JSON exceeds log transport bound")
+                  print(json.dumps({"kind": "complete_original_json", "artifact_id": spec["id"], "member": name,
+                                    **identity(values[name]), "raw_utf8": values[name].decode("utf-8")}, ensure_ascii=True, allow_nan=False), flush=True)
+              require(hashlib.sha256(zip_path.read_bytes()).hexdigest() == spec["sha256"], "original ZIP changed during readback")
+              return {"artifact_id": spec["id"], "passed": True, "transport_preserved": True,
+                      "archive": identity(original), "regular_members": len(values), "manifest_files": len(listed),
+                      "complete_json_printed": required, "original_diagnostic_status": execution["status"],
+                      "original_diagnostic_exit_code": execution["exit_code"],
+                      "scope": "Readback only; no original helper, ELF, performance sample or regression test executed",
+                      "task_acceptance": False}
+          ROOT.mkdir()
+          receipt = {"schema": "p8-fixed-mac-diagnostic-data-readback-v1", "started_at": now(),
+                     "controller_commit": os.environ["GITHUB_SHA"], "run_id": os.environ["GITHUB_RUN_ID"],
+                     "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"], "reader_platform": platform.platform(),
+                     "original_run": ORIGINAL_RUN, "original_head": ORIGINAL_HEAD, "fixed_artifacts": SPECS,
+                     "artifacts": [], "errors": [], "passed": False, "native_or_helper_executed": False,
+                     "original_todo_completed": 0, "original_todo_remaining": 29}
+          write_json(ROOT / "start.json", receipt)
+          token = os.environ.pop("GH_TOKEN")
+          try:
+              require(os.environ["GITHUB_RUN_ATTEMPT"] == "1", "registered readback admits only workflow attempt 1")
+              require(os.environ["GITHUB_REPOSITORY"] == REPO, "unexpected reader repository")
+              run = get_json("/actions/runs/" + str(ORIGINAL_RUN), ROOT / "official-run.json", token)
+              require(run["id"] == ORIGINAL_RUN and run["run_attempt"] == 1 and run["event"] == "push" and
+                      run["head_sha"] == ORIGINAL_HEAD and run["head_branch"] == ORIGINAL_BRANCH and
+                      run["path"] == ".github/workflows/p8-mac-supervisor-diagnosis-28fe.yml" and
+                      run["status"] == "completed" and run["conclusion"] == "success" and
+                      run["repository"]["id"] == 1249213794 and run["head_repository"]["id"] == 1249213794,
+                      "original run identity/status differs")
+              jobs = get_json("/actions/runs/" + str(ORIGINAL_RUN) + "/attempts/1/jobs?per_page=100&page=1",
+                              ROOT / "official-jobs.json", token)
+              require(jobs["total_count"] == 2 and {j["id"] for j in jobs["jobs"]} == {s["job"] for s in SPECS}
+                      and len(jobs["jobs"]) == 2, "original job set differs")
+              require(all(j["run_id"] == ORIGINAL_RUN and j["run_attempt"] == 1 and j["head_sha"] == ORIGINAL_HEAD and
+                          j["status"] == "completed" and j["conclusion"] == "success" for j in jobs["jobs"]),
+                      "original job identity/status differs")
+              collection = get_json("/actions/runs/" + str(ORIGINAL_RUN) + "/artifacts?per_page=100&page=1",
+                                    ROOT / "official-artifacts.json", token)
+              require(collection["total_count"] == 2 and len(collection["artifacts"]) == 2 and
+                      {a["id"] for a in collection["artifacts"]} == {s["id"] for s in SPECS}, "original artifact set differs")
+              artifacts = {a["id"]: a for a in collection["artifacts"]}
+              for spec in SPECS:
+                  result = {"artifact_id": spec["id"], "passed": False}
+                  try:
+                      result = read_one(spec, artifacts[spec["id"]], ROOT / str(spec["id"]), token)
+                  except Exception as error:
+                      result["error"] = {"class": type(error).__name__, "message": str(error) if isinstance(error, ValueError) else "readback failed; preserved original input"}
+                  receipt["artifacts"].append(result)
+                  write_json(ROOT / ("artifact-" + str(spec["id"]) + "-result.json"), result)
+              receipt["passed"] = len(receipt["artifacts"]) == 2 and all(row["passed"] for row in receipt["artifacts"])
+          except Exception as error:
+              receipt["errors"].append({"class": type(error).__name__, "message": str(error) if isinstance(error, ValueError) else "metadata or readback failed; preserved available inputs"})
+          finally:
+              token = None
+              receipt["finished_at"] = now()
+              receipt["exit_code"] = 0 if receipt["passed"] and not receipt["errors"] else 2
+              write_json(ROOT / "receipt.json", receipt)
+              print(json.dumps({"kind": "readback_receipt", "value": receipt}, ensure_ascii=True, allow_nan=False), flush=True)
+          sys.exit(receipt["exit_code"])
+          
+          PY
+      - name: Preserve original bytes, metadata and readback results including failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-mac-diag-readback-${{ github.run_id }}-attempt${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-mac-diag-readback-${{ github.run_id }}-attempt${{ github.run_attempt }}
+          include-hidden-files: true
+          if-no-files-found: error

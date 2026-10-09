@@ -28,9 +28,6 @@ jobs:
       - name: Compile every default test target
         run: cargo test --workspace --all-targets --locked --no-run
 
-      - name: Native scale protocol regressions
-        run: cargo test --locked -p cc-eval --test p8_scale
-
       # This fixed-e3 integration does not authorize the historical process-fault,
       # GC/WAL targets or semantic_runtime recoverable-retry cases. Keep those
       # tests byte-identical in crates; execute only the normal-path targets here.

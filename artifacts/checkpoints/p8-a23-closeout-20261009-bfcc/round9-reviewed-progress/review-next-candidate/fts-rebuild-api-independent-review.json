@@ -1,0 +1,224 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-10-09T05:49:04.436725+00:00",
+  "reviewer": "/root/todo_audit",
+  "author": "/root/execution_recon",
+  "verdict": "accepted_scoped_api_restoration_and_existing_rebuild_owner_error_chain",
+  "scope": "Non-author read-only review of public API restoration, sole production opt-in call, and original owner error propagation. Not a complete FTS algorithm or release/scale review.",
+  "base_commit": "5cae24fbdf456dcf06932d9ed83a4c600d538136",
+  "production_source": [
+    {
+      "path": "review-next-candidate/fts-prototype/attempt05-rebuild-opt-in/source/crates/cc-db/src/index_db_snapshot_insert.rs",
+      "bytes": 18581,
+      "sha256": "1dbc014e9798dfac6d1d2b82bc9913fb4603e6aeb301e9e0fd22c8823a2cb1ee"
+    },
+    {
+      "path": "review-next-candidate/fts-prototype/attempt05-rebuild-opt-in/source/crates/cc-db/src/index_db_write_batch.rs",
+      "bytes": 56514,
+      "sha256": "25f82e53d9479c357cbe7a02741f24cb92114f580e2dcddd8b1056e2080b52d7"
+    },
+    {
+      "path": "review-next-candidate/fts-prototype/attempt05-rebuild-opt-in/source/crates/cc-db/src/snapshot_write_txn.rs",
+      "bytes": 9084,
+      "sha256": "7c941b0e7fca4c48ec0c8b44ee81108a2c201e0b28ab7a69f285dbc329eb446f"
+    },
+    {
+      "path": "review-next-candidate/fts-prototype/attempt05-rebuild-opt-in/source/crates/cc-index/src/indexer_phases/snapshot.rs",
+      "bytes": 10144,
+      "sha256": "bca23a73b0a2de0ca38f9593fbb526b69a7acc138b9ec8a680001fb79e666e9e"
+    }
+  ],
+  "production_source_current_equals_attempt05": true,
+  "attempt05_diff": {
+    "path": "review-next-candidate/fts-prototype/attempt05-rebuild-opt-in/source.diff",
+    "bytes": 29698,
+    "sha256": "9cb5553afb265ea9ed0e998f5cba81f2d2101753809ba370053ab614c102a8d7"
+  },
+  "attempt06_diff": {
+    "path": "review-next-candidate/fts-prototype/attempt06-private-flush-full/source.diff",
+    "bytes": 32923,
+    "sha256": "c582eab3f79ea897516886604c294aeb1e44963e3810fd6bcae7d9bbb8e8cb4f"
+  },
+  "attempt06_test": {
+    "path": "candidate-fts/crates/cc-db/src/snapshot_fts_tests.rs",
+    "bytes": 21298,
+    "sha256": "e48aa695cea4b096b6fcd8afece3226c05c0751c10774bfea218377b958bf778"
+  },
+  "attempt06_test_scope": "Only an additional private flush-full control according to author; no credit assigned by this scoped review to that separate test execution.",
+  "findings": [
+    {
+      "id": "public_api_restored",
+      "status": "verified",
+      "path": "crates/cc-db/src/snapshot_write_txn.rs",
+      "lines": "65-78",
+      "detail": "Original write_file_data function is byte-identical to parent, including sequential per-file insert and immediate error propagation. No canonical-schema probes or deferred FTS operation are reached from this public entry.",
+      "function_bytes": 408,
+      "function_sha256": "85a85c85553980141ac93735c865a4fa189ccdac5bf90d29b4b384d76f241000"
+    },
+    {
+      "id": "old_insert_path_preserved",
+      "status": "verified",
+      "path": "crates/cc-db/src/index_db_write_batch.rs",
+      "detail": "Removing only newly added private deferred helper plus its doc comment makes entire file byte-identical to parent; old insert_snapshot_file_data_precompressed still selects defer_fts=false."
+    },
+    {
+      "id": "explicit_opt_in",
+      "status": "verified",
+      "path": "crates/cc-db/src/snapshot_write_txn.rs",
+      "lines": "80-122",
+      "detail": "New public method explicitly documents that it neither owns nor rolls back the borrowed transaction, can leave incomplete mirrors on failure, and requires owner to propagate error, abandon entire staging transaction/database, and prevent publication."
+    },
+    {
+      "id": "single_production_caller",
+      "status": "verified",
+      "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+      "line": 111,
+      "detail": "Only production use is shared full snapshot body and retains question-mark propagation. Substituting the old method name yields the entire parent file exactly. Other new-name hits are the method definition and test helper.",
+      "matches": [
+        "crates/cc-db/src/snapshot_write_txn.rs:90:    pub fn write_file_data_for_rebuild(",
+        "crates/cc-db/src/snapshot_fts_tests.rs:109:    SnapshotWriteTxn::new(conn).write_file_data_for_rebuild(files, &PrecompressedChunks::new())",
+        "crates/cc-index/src/indexer_phases/snapshot.rs:111:        txn.write_file_data_for_rebuild(write_units, chunk_blobs)?;"
+      ]
+    },
+    {
+      "id": "temp_owner_boundary",
+      "status": "verified_source",
+      "path": "crates/cc-db/src/index_db_rebuild.rs",
+      "lines": "238-301",
+      "detail": "write_fn(&tx)? precedes commit; error branch drops temporary connection, tries to remove temporary main file and returns Err. build_rebuild_staging propagates build_temp Err before returning generation; run_rebuild_protocol propagates staging Err before swap. No error recovery publishes the partial database."
+    },
+    {
+      "id": "direct_owner_boundary",
+      "status": "verified_source",
+      "path": "crates/cc-db/src/direct_writer.rs",
+      "lines": "97-127",
+      "detail": "write_fn(&tx)? precedes commit and database completion; surrounding rebuild callback propagates Err before swap. journal_mode=OFF means this review does not claim physical rollback of the disposable temporary database: the publication guarantee comes from aborting the staging protocol."
+    },
+    {
+      "id": "authorizer_compatibility",
+      "status": "source_reasoning_only",
+      "detail": "Restoration removes the newly introduced schema query from old public write_file_data, avoiding that new authorizer failure point for legacy callers. No dedicated SQLite authorizer experiment was run by reviewer."
+    },
+    {
+      "id": "first_error_order",
+      "status": "intentional_scoped_change",
+      "detail": "FTS failures in opt-in method may surface after later base writes in the current 256-file window. This is explicitly documented and acceptable only with stated owner abort/no-publication protocol; not promised for legacy public method."
+    }
+  ],
+  "unchanged_owner_files": [
+    {
+      "path": "candidate-fts/crates/cc-db/src/index_db_rebuild.rs",
+      "bytes": 18869,
+      "sha256": "5ba69e2dc037a57c72c83f8e43d029af34ff790b466eb9b1d54bdeb618e17f1b",
+      "equals_parent_bytes": true
+    },
+    {
+      "path": "candidate-fts/crates/cc-db/src/direct_writer.rs",
+      "bytes": 21881,
+      "sha256": "f503106e972535c273bcd1bebb34b844e0f1e3091ae33a9f39f6854590c292be",
+      "equals_parent_bytes": true
+    }
+  ],
+  "regression_control": {
+    "function_identical_between_failure_and_fix": true,
+    "function_sha256": "78a80910dbaa0c2fc94c92aeba66d3fcd86faeeb76fdc42c3ff03c4c274523ea",
+    "assertions": "Two files, second-file missing-path literal FK error; both callers explicitly catch error then commit; full dump equality plus files_fts count2/literal_fts count1; old API is called directly, not shared new helper.",
+    "original_receipts": [
+      {
+        "attempt": "attempt04-expected-failure",
+        "receipt": {
+          "path": "review-next-candidate/fts-prototype/attempt04-expected-failure/public-api-regression.json",
+          "bytes": 2580,
+          "sha256": "34a7774a4155d9eec4d34e25faf05b1b97acb041d0a2e116be7601728ee114b9"
+        },
+        "command": [
+          "/Users/jin/.cargo/bin/cargo",
+          "+1.95.0",
+          "test",
+          "--offline",
+          "--locked",
+          "-p",
+          "cc-db",
+          "--lib",
+          "index_db_snapshot_insert::snapshot_fts_tests::public_entry_preserves_partial_state_when_caller_commits_after_error",
+          "--",
+          "--exact",
+          "--test-threads=1",
+          "--nocapture"
+        ],
+        "exit_code": 101,
+        "counts": {
+          "passed": 0,
+          "failed": 1
+        },
+        "source_before_after_equal": true,
+        "original_streams": [
+          {
+            "path": "review-next-candidate/fts-prototype/attempt04-expected-failure/public-api-regression.stdout",
+            "bytes": 390,
+            "sha256": "cbb4c920a50118081d383d880a36bb75e5cbf8a574b2be0d925ddec4308531df"
+          },
+          {
+            "path": "review-next-candidate/fts-prototype/attempt04-expected-failure/public-api-regression.stderr",
+            "bytes": 8523,
+            "sha256": "854f89259f903a86c751aac7cc73f4ef65d4ebb2626f14f68d780f07d9ab2467"
+          }
+        ],
+        "evidence_kind": "reviewer read original receipt/stdout/stderr and recomputed digests; no rerun"
+      },
+      {
+        "attempt": "attempt05-rebuild-opt-in",
+        "receipt": {
+          "path": "review-next-candidate/fts-prototype/attempt05-rebuild-opt-in/public-api-regression.json",
+          "bytes": 2941,
+          "sha256": "181581d055bc7239d00eb9753c0ee7e8dc5e3143b0e7f05f6830f87e0de8f7a9"
+        },
+        "command": [
+          "/Users/jin/.cargo/bin/cargo",
+          "+1.95.0",
+          "test",
+          "--offline",
+          "--locked",
+          "-p",
+          "cc-db",
+          "--lib",
+          "index_db_snapshot_insert::snapshot_fts_tests::public_entry_preserves_partial_state_when_caller_commits_after_error",
+          "--",
+          "--exact",
+          "--test-threads=1",
+          "--nocapture"
+        ],
+        "exit_code": 0,
+        "counts": {
+          "passed": 1,
+          "failed": 0
+        },
+        "source_before_after_equal": true,
+        "original_streams": [
+          {
+            "path": "review-next-candidate/fts-prototype/attempt05-rebuild-opt-in/public-api-regression.stdout",
+            "bytes": 241,
+            "sha256": "893332a922feaafb5e6291a0d42d42a6c639432945a8e70c8cfa9a796adf8270"
+          },
+          {
+            "path": "review-next-candidate/fts-prototype/attempt05-rebuild-opt-in/public-api-regression.stderr",
+            "bytes": 363,
+            "sha256": "7864b60835ed761f3811da8bb7afd6b7faece3879774260b0530e9a6c183b7b5"
+          }
+        ],
+        "evidence_kind": "reviewer read original receipt/stdout/stderr and recomputed digests; no rerun"
+      }
+    ]
+  },
+  "blockers_in_this_scope": [],
+  "limitations": [
+    "Method visibility and borrowed Connection type do not enforce ownership or error propagation. Correctness requires the explicit caller protocol.",
+    "No new test, build, benchmark or workflow was dispatched by reviewer.",
+    "No formal 100k/15-table performance gate or TODO credit.",
+    "Old 30-pair timing belongs only to earlier prototype and is not evidence for corrected A source.",
+    "Author-reported cc-index Clippy101 remains a separate unmet overall validation; this report does not call whole candidate passed.",
+    "Private flush-full control and complete canonical-schema/rowid algorithm were outside this final narrow API review scope."
+  ],
+  "todo_credit": 0,
+  "remaining_original_todos": 29
+}

@@ -1,0 +1,174 @@
+{
+  "schema_version": 1,
+  "original_log": {
+    "path": "review-pr/pr170-ci-and-macos-submit-v1/pr170-check-job-113677253767.log",
+    "bytes": 1064089,
+    "sha256": "a7ec31c417cb2099cea629fb18f7459af392e19f3f234f873da5d52d68b9394e"
+  },
+  "job_id": 113677253767,
+  "run_id": 37886395820,
+  "source_url": "https://github.com/jyqj/codecortex/actions/runs/37886395820/job/113677253767",
+  "lines": [
+    {
+      "line": 96,
+      "text": "2026-10-09T04:59:00.7701066Z ##[group]Fetching the repository"
+    },
+    {
+      "line": 97,
+      "text": "2026-10-09T04:59:00.7708041Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +5aacfec719a369d86688987ce8eea96116edeb33:refs/remotes/pull/170/merge"
+    },
+    {
+      "line": 98,
+      "text": "2026-10-09T04:59:21.5025193Z From https://github.com/jyqj/codecortex"
+    },
+    {
+      "line": 99,
+      "text": "2026-10-09T04:59:21.5025760Z  * [new ref]         5aacfec719a369d86688987ce8eea96116edeb33 -> pull/170/merge"
+    },
+    {
+      "line": 100,
+      "text": "2026-10-09T04:59:21.5050823Z ##[endgroup]"
+    },
+    {
+      "line": 101,
+      "text": "2026-10-09T04:59:21.5051738Z ##[group]Determining the checkout info"
+    },
+    {
+      "line": 164,
+      "text": "2026-10-09T04:59:24.1987471Z "
+    },
+    {
+      "line": 165,
+      "text": "2026-10-09T04:59:24.1987787Z HEAD is now at 5aacfec Merge 26768b5e38ed1784bf77a8c4fe57baf01a19c626 into b21cce4c8661589267ad5719f850accbec088d2f"
+    },
+    {
+      "line": 166,
+      "text": "2026-10-09T04:59:24.2112598Z ##[endgroup]"
+    },
+    {
+      "line": 167,
+      "text": "2026-10-09T04:59:24.2153091Z [command]/usr/bin/git log -1 --format=%H"
+    },
+    {
+      "line": 168,
+      "text": "2026-10-09T04:59:24.2176914Z 5aacfec719a369d86688987ce8eea96116edeb33"
+    },
+    {
+      "line": 169,
+      "text": "2026-10-09T04:59:24.2542881Z ##[group]Run dtolnay/rust-toolchain@stable"
+    },
+    {
+      "line": 170,
+      "text": "2026-10-09T04:59:24.2543055Z with:"
+    },
+    {
+      "line": 5191,
+      "text": "2026-10-09T05:06:33.6500112Z \u001b[36;1mPYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/source_integrity -v\u001b[0m"
+    },
+    {
+      "line": 5192,
+      "text": "2026-10-09T05:06:33.6500480Z \u001b[36;1mpython3 scripts/verify_reviewed_source_v15.py --source-version p8-completion-source-20261009-v15\u001b[0m"
+    },
+    {
+      "line": 5193,
+      "text": "2026-10-09T05:06:33.6500820Z \u001b[36;1mpython3 scripts/verify_historical_integrations_v2.py\u001b[0m"
+    },
+    {
+      "line": 5194,
+      "text": "2026-10-09T05:06:33.6560671Z shell: /usr/bin/bash -e {0}"
+    },
+    {
+      "line": 5855,
+      "text": "2026-10-09T05:13:20.7421466Z  * branch              b0f0c0d00e38508e7e43b0e87d1215d7f6413969 -> FETCH_HEAD"
+    },
+    {
+      "line": 5856,
+      "text": "2026-10-09T05:13:51.6766629Z test_complete_current_bytes_and_validation_are_bound (test_reviewed_source_v15.P8CompletionSourceTests.test_complete_current_bytes_and_validation_are_bound) ... ok"
+    },
+    {
+      "line": 5857,
+      "text": "2026-10-09T05:13:51.7836629Z test_current_inventory_tamper_is_rejected (test_reviewed_source_v15.P8CompletionSourceTests.test_current_inventory_tamper_is_rejected) ... ok"
+    },
+    {
+      "line": 5858,
+      "text": "2026-10-09T05:13:54.5298052Z test_historical_context_is_real_and_current_protection_cannot_change (test_reviewed_source_v15.P8CompletionSourceTests.test_historical_context_is_real_and_current_protection_cannot_change) ... ok"
+    },
+    {
+      "line": 5859,
+      "text": "2026-10-09T05:13:55.0463275Z test_old_approval_rejection_propagates (test_reviewed_source_v15.P8CompletionSourceTests.test_old_approval_rejection_propagates) ... ok"
+    },
+    {
+      "line": 5878,
+      "text": "2026-10-09T05:14:43.6007075Z ----------------------------------------------------------------------"
+    },
+    {
+      "line": 5879,
+      "text": "2026-10-09T05:14:43.6007409Z Ran 181 tests in 432.427s"
+    },
+    {
+      "line": 5880,
+      "text": "2026-10-09T05:14:43.6007506Z "
+    },
+    {
+      "line": 5881,
+      "text": "2026-10-09T05:14:43.6007561Z OK"
+    },
+    {
+      "line": 5882,
+      "text": "2026-10-09T05:15:50.9224374Z {\"schema_version\": 10, \"source_version\": \"p8-completion-source-20261009-v15\", \"previous_source_version\": \"p8-oracle-compat-source-20261008-v14\", \"base_source\": \"7354db236c9d9850a75f31672697ae9eab44565e\", \"product_source\": \"90838d6c890b12f031fa0be9d1956cfbdef9e8d6\", \"review_source\": \"b0f0c0d00e38508e7e43b0e87d1215d7f6413969\", \"scope\": \"independently_reviewed_source_and_validation_inputs\", \"runtime_and_quality_claims\": \"require_separate_execution_evidence\", \"status\": \"passed\", \"complete_inputs\": 1089, \"executed_previous_proof\": \"p8-oracle-compat-source-20261008-v14\"}"
+    },
+    {
+      "line": 5883,
+      "text": "2026-10-09T05:15:52.2827537Z From https://github.com/jyqj/codecortex"
+    },
+    {
+      "line": 5884,
+      "text": "2026-10-09T05:15:52.2827927Z  * branch                186ac53e121fe9ec770a6a293e4291be3a6e36b1 -> FETCH_HEAD"
+    },
+    {
+      "line": 8187,
+      "text": "2026-10-09T05:19:58.3248239Z ##[endgroup]"
+    },
+    {
+      "line": 8188,
+      "text": "2026-10-09T05:20:38.1888018Z {\"binary\": \"/home/runner/work/_temp/p7-017-default/codecortex\", \"receipt\": \"/home/runner/work/_temp/p7-017-default/build-receipt.json\", \"package_kind\": \"default\", \"features\": [], \"sha256\": \"705c9c520214318298c6554f411379599db7e1247bcc4c2fc232f64d6411d17d\", \"source_commit\": \"5aacfec719a369d86688987ce8eea96116edeb33\", \"source_inputs\": 1089, \"profile\": \"dev\"}"
+    },
+    {
+      "line": 8189,
+      "text": "2026-10-09T05:20:38.6412716Z \u001b[1m\u001b[92m    Finished\u001b[0m `test` profile [unoptimized + debuginfo] target(s) in 0.43s"
+    },
+    {
+      "line": 8190,
+      "text": "2026-10-09T05:20:38.6487584Z \u001b[1m\u001b[92m     Running\u001b[0m tests/benchmark_adapters.rs (target/debug/deps/benchmark_adapters-c020438f13cd0cf1)"
+    },
+    {
+      "line": 9525,
+      "text": "2026-10-09T05:21:29.5782981Z ##[endgroup]"
+    },
+    {
+      "line": 9526,
+      "text": "2026-10-09T05:22:10.9456749Z {\"binary\": \"/home/runner/work/_temp/p7-017-semantic/codecortex\", \"receipt\": \"/home/runner/work/_temp/p7-017-semantic/build-receipt.json\", \"package_kind\": \"semantic\", \"features\": [\"semantic\"], \"sha256\": \"5446f12b886aabcc273abcb380e8ceee1faadc7eb08460488bc0997e5159daec\", \"source_commit\": \"5aacfec719a369d86688987ce8eea96116edeb33\", \"source_inputs\": 1089, \"profile\": \"dev\"}"
+    },
+    {
+      "line": 9527,
+      "text": "2026-10-09T05:22:11.0695097Z \u001b[1m\u001b[92m    Finished\u001b[0m `test` profile [unoptimized + debuginfo] target(s) in 0.11s"
+    },
+    {
+      "line": 9528,
+      "text": "2026-10-09T05:22:11.0771417Z \u001b[1m\u001b[92m     Running\u001b[0m tests/benchmark_adapters.rs (target/debug/deps/benchmark_adapters-341623644d38bfb5)"
+    }
+  ],
+  "actual_cli_result": {
+    "schema_version": 10,
+    "source_version": "p8-completion-source-20261009-v15",
+    "previous_source_version": "p8-oracle-compat-source-20261008-v14",
+    "base_source": "7354db236c9d9850a75f31672697ae9eab44565e",
+    "product_source": "90838d6c890b12f031fa0be9d1956cfbdef9e8d6",
+    "review_source": "b0f0c0d00e38508e7e43b0e87d1215d7f6413969",
+    "scope": "independently_reviewed_source_and_validation_inputs",
+    "runtime_and_quality_claims": "require_separate_execution_evidence",
+    "status": "passed",
+    "complete_inputs": 1089,
+    "executed_previous_proof": "p8-oracle-compat-source-20261008-v14"
+  }
+}

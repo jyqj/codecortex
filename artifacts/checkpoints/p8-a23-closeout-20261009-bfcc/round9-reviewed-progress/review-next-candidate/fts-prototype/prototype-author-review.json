@@ -1,0 +1,126 @@
+{
+  "schema_version": 1,
+  "author": "execution_recon",
+  "written_at": "2026-10-09T05:27:06.675175+00:00",
+  "parent": "5cae24fbdf456dcf06932d9ed83a4c600d538136",
+  "branch": "task/p8-fts-rowid-bfcc-20261009",
+  "uncommitted": true,
+  "production_paths": [
+    "crates/cc-db/src/index_db_snapshot_insert.rs",
+    "crates/cc-db/src/index_db_write_batch.rs",
+    "crates/cc-db/src/snapshot_write_txn.rs"
+  ],
+  "new_test": "crates/cc-db/src/snapshot_fts_tests.rs",
+  "current_source": [
+    {
+      "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+      "bytes": 18581,
+      "sha256": "1dbc014e9798dfac6d1d2b82bc9913fb4603e6aeb301e9e0fd22c8823a2cb1ee",
+      "git_blob": "c4eee424e815aafce896379387fb894d99d490e6"
+    },
+    {
+      "path": "crates/cc-db/src/index_db_write_batch.rs",
+      "bytes": 56514,
+      "sha256": "25f82e53d9479c357cbe7a02741f24cb92114f580e2dcddd8b1056e2080b52d7",
+      "git_blob": "32ed0414d16321032a45aa6b8f0a5333da7acf81"
+    },
+    {
+      "path": "crates/cc-db/src/snapshot_write_txn.rs",
+      "bytes": 8035,
+      "sha256": "668152e3463f5d88c80b5b6f3d97af07b2d3906dc2d2a8e319a40cc3544fd62e",
+      "git_blob": "3b2d71b890c2d644dc9311c15d24fdffb3b07cf2"
+    },
+    {
+      "path": "crates/cc-db/src/snapshot_fts_tests.rs",
+      "bytes": 17178,
+      "sha256": "11e0f78dce74a60342d36126db89da063a868045c4aa313b418abe9fc47fbdfd",
+      "git_blob": "c684afaa280c493815e32b5a02eca3265aaca4b5"
+    }
+  ],
+  "binary_identity": [
+    {
+      "path": "fts-prototype-target/debug/deps/cc_db-3413f1f6e5dcc03e",
+      "bytes": 21696984,
+      "sha256": "6db32da119c53a3ba162e2e2166093352661c5f3784ae982b9442ed550b1ce2e",
+      "file_output": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/fts-prototype-target/debug/deps/cc_db-3413f1f6e5dcc03e: Mach-O 64-bit executable arm64"
+    },
+    {
+      "path": "fts-prototype-target/release/deps/cc_db-4b9f5fdc8297db23",
+      "bytes": 6682576,
+      "sha256": "79e02693ae54b1173928c6b788948dd410f90142e30b2345935e3f8d6f9e2244",
+      "file_output": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/fts-prototype-target/release/deps/cc_db-4b9f5fdc8297db23: Mach-O 64-bit executable arm64"
+    }
+  ],
+  "scope": "Prototype only; no commit/push/new P/R/G or formal studies. No original TODO credit.",
+  "implementation": {
+    "file_window_limit": 256,
+    "leaf_row_and_payload_bounds": "original64/8/1 and64KiB unchanged",
+    "canonical_schema_gate": "Once per write_file_data: actual main type/name/tbl_name/sql excluding only indexes equals same-SQLite fresh FULL_SCHEMA_SQL cached result; any TEMP schema object, custom schema or autocommit uses retained original per-row entry. Errors are propagated.",
+    "safe_rowid_gate": "Before each window: checked usize sum of every literal attempt, checked i64 count conversion and checked max+count less than i64MAX separately for files/literal_index. Unsafe windows retain original mirrors.",
+    "writes": "Original base/leaf/identity order preserved; only files_fts/literal_fts move to fixed rowid-bounded INSERT SELECT ORDER BY rowid, after each window.",
+    "atomicity": "Same transaction and publication boundary; no changes to epoch/CAS/schema/index/cache/registered parameters.",
+    "error_order": "FTS errors may surface after later base/leaf errors within window; exact original first-error ordering is explicitly not claimed."
+  },
+  "validation": [
+    {
+      "attempt": "attempt01",
+      "source": "initial guarded production +six controls",
+      "rustfmt": 0,
+      "cc_db_library": {
+        "exit": 0,
+        "passed": 200,
+        "failed": 0,
+        "ignored": 2,
+        "ignored_names": [
+          "index_db::tests::mismatch_rebuild_stress_loop",
+          "index_db_rebuild::fault_tests::rebuild_swap_child"
+        ]
+      },
+      "strict_cc_db_clippy": 0
+    },
+    {
+      "attempt": "attempt02",
+      "source": "same three production files; complete logical dump and seventh small diagnostic test",
+      "rustfmt": 0,
+      "cc_db_snapshot_release": {
+        "exit": 0,
+        "passed": 10,
+        "failed": 0,
+        "ignored": 0,
+        "filtered": 193
+      },
+      "strict_cc_db_clippy": 0
+    }
+  ],
+  "actual_sql_observation": {
+    "files": 257,
+    "old_mirror_statement_runs": 514,
+    "candidate_mirror_statement_runs": 4,
+    "literal_select_plan": "SEARCH literal_index USING INTEGER PRIMARY KEY (rowid>? AND rowid<?)"
+  },
+  "correctness_controls": [
+    "cross256/513 boundaries; within/across-window OR IGNORE duplicates and late literal attributed to prior file",
+    "all logical tables and logical FTS rowid/content/search results; excludes only physical shadow pages and nondeterministic files.indexed_at",
+    "nearMAX worstcount causes fallback, including successful legacy random rowid behavior",
+    "autocommit partial-failure mirrors preserved",
+    "custom trigger deleting prior literal/base mirror, TEMP trigger/table shadow, foreign-key schema addition all force per-row fallback",
+    "late duplicate/FK errors roll back already flushed windows; actual temp rebuild failure retains live generation, logical data and successful reopen"
+  ],
+  "small_diagnostic": {
+    "report": "attempt02/ab-ba-diagnostic-review.json",
+    "measured_pairs": 30,
+    "warmup_pairs": 2,
+    "all64_retained": true,
+    "median_candidate_over_original": 0.7148552799312984,
+    "AB": 0.7189812429221244,
+    "BA": 0.7136849008072805,
+    "scope": "257-file write+commit, schema guard timed; schema creation/fixture/parity/index-recreation/swap not timed. Shared Mac environment; no isolation or100k speedup claim."
+  },
+  "outstanding": [
+    "Non-author source review pending root.",
+    "Actual temp-rebuild callback passed failure/rollback control, but fast-path activation not yet separately asserted inside that adapter callback; equivalent canonical fixture activation and SQL counts are directly observed.",
+    "No new formal1k/100k/150 samples; old a23/G2 identities/status unchanged."
+  ],
+  "remaining_original_todos": 29,
+  "original_todo_credit": 0
+}

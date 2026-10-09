@@ -1,0 +1,141 @@
+{
+  "schema": "fts-private-flush-error-control-addendum-v1",
+  "created_at": "2026-10-09T05:45:26.351225+00:00",
+  "historical_A_review": {
+    "path": "review-next-candidate/fts-prototype/rebuild-opt-in-author-review.json",
+    "bytes": 15257,
+    "sha256": "f9db5f10c6e62c4bc6ffebc2d872e356752f392a75cff476c6927b25b67aec2e"
+  },
+  "source": {
+    "head": "5cae24fbdf456dcf06932d9ed83a4c600d538136",
+    "paths": [
+      {
+        "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+        "bytes": 18581,
+        "sha256": "1dbc014e9798dfac6d1d2b82bc9913fb4603e6aeb301e9e0fd22c8823a2cb1ee"
+      },
+      {
+        "path": "crates/cc-db/src/index_db_write_batch.rs",
+        "bytes": 56514,
+        "sha256": "25f82e53d9479c357cbe7a02741f24cb92114f580e2dcddd8b1056e2080b52d7"
+      },
+      {
+        "path": "crates/cc-db/src/snapshot_write_txn.rs",
+        "bytes": 9084,
+        "sha256": "7c941b0e7fca4c48ec0c8b44ee81108a2c201e0b28ab7a69f285dbc329eb446f"
+      },
+      {
+        "path": "crates/cc-db/src/snapshot_fts_tests.rs",
+        "bytes": 21298,
+        "sha256": "e48aa695cea4b096b6fcd8afece3226c05c0751c10774bfea218377b958bf778"
+      },
+      {
+        "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+        "bytes": 10144,
+        "sha256": "bca23a73b0a2de0ca38f9593fbb526b69a7acc138b9ec8a680001fb79e666e9e"
+      }
+    ],
+    "diff": {
+      "path": "source.diff",
+      "bytes": 32923,
+      "sha256": "c582eab3f79ea897516886604c294aeb1e44963e3810fd6bcae7d9bbb8e8cb4f"
+    },
+    "scope_correction": "Only the new focused private flush control was compiled/executed in attempt06; 204 other tests were filtered by the exact selector. The inherited skip_reason label in controller-original metadata referred to attempt05 only."
+  },
+  "source_bridge": {
+    "four_production_files_identical_to_attempt05": true,
+    "only_test_delta": "one appended independent private flush failure control; all prior test bytes retained",
+    "old_public_API_regression_and_A_test_receipts": "remain bound to attempt05 source; production identity unchanged, latest test insertion separately compiled and executed"
+  },
+  "command": [
+    "/Users/jin/.cargo/bin/cargo",
+    "+1.95.0",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "cc-db",
+    "--lib",
+    "index_db_snapshot_insert::snapshot_fts_tests::private_fts_flush_full_error_abandons_actual_rebuild_without_publication",
+    "--",
+    "--exact",
+    "--test-threads=1",
+    "--nocapture"
+  ],
+  "exit_code": 0,
+  "tests": {
+    "passed": 1,
+    "failed": 0,
+    "ignored": 0,
+    "filtered_out": 204
+  },
+  "diagnostic": {
+    "actual_mapped_error": "database error: database or disk is full",
+    "direct_writer_physical_rollback_claim": false,
+    "freelist_count": 0,
+    "max_page_count": 541,
+    "page_count_before_flush": 541,
+    "page_size": 4096,
+    "public_end_to_end_injection": false,
+    "scope": "private flush plus actual temp rebuild owner",
+    "summary_bytes": 1835008
+  },
+  "assertions": [
+    "actual owned temp rebuild has canonical schema guard active",
+    "base file insertion succeeds with files_fts still empty",
+    "page cap equals actual current page count; summary bytes exceed available free pages",
+    "the production private flush helper returns the exact mapped SQLite FULL message",
+    "error is returned through actual rebuild owner",
+    "old live generation and complete logical table contents remain unchanged",
+    "reopening old live DB keeps same generation and full contents"
+  ],
+  "proof_boundary": [
+    "private flush plus actual owner, not public-entry end-to-end fault injection",
+    "No DirectWriter physical rollback claim",
+    "CcError::Database retains SQLite display text, so this receipt asserts exact returned FULL message under the deliberate page cap; no numeric error code was invented or read through unsafe FFI",
+    "No production instrumentation, schema, formal workload, budget, dependency, or API change for this control",
+    "No repeated AB/BA, full library suite, workspace suite, or known failing cc-index Clippy run"
+  ],
+  "remaining_limits": [
+    "Prior cc-index strict Clippy exit 101 remains real; latest source is not declared all-validation-passed",
+    "No whole-peak or internal FTS buffer bound; window bounds file count only",
+    "No performance result for A API combination, original 100k or full N150 is supplied"
+  ],
+  "raw": {
+    "controller.py": {
+      "path": "review-next-candidate/fts-prototype/attempt06-private-flush-full/controller.py",
+      "bytes": 3512,
+      "sha256": "8906fc88659fc7293f20ce7dc2cb51d4f51aab4d9f39bf04a873f473d852b006"
+    },
+    "private-flush-full.json": {
+      "path": "review-next-candidate/fts-prototype/attempt06-private-flush-full/private-flush-full.json",
+      "bytes": 2942,
+      "sha256": "30711250ca30a90e762cbeb651ac80c888b733118550a1e03fc8d03aa3f9421e"
+    },
+    "private-flush-full.stdout": {
+      "path": "review-next-candidate/fts-prototype/attempt06-private-flush-full/private-flush-full.stdout",
+      "bytes": 245,
+      "sha256": "4b78840fb2ed5c7b964d3c4272c1a5b19da53650187b9332b58534f406d59c93"
+    },
+    "private-flush-full.stderr": {
+      "path": "review-next-candidate/fts-prototype/attempt06-private-flush-full/private-flush-full.stderr",
+      "bytes": 696,
+      "sha256": "7644413c5b6e3e47c5beb31c0647d3c45e9f670105e101533b035f7a9fbe0f38"
+    },
+    "source.diff": {
+      "path": "review-next-candidate/fts-prototype/attempt06-private-flush-full/source.diff",
+      "bytes": 32923,
+      "sha256": "c582eab3f79ea897516886604c294aeb1e44963e3810fd6bcae7d9bbb8e8cb4f"
+    },
+    "frozen-source.controller-original.json": {
+      "path": "review-next-candidate/fts-prototype/attempt06-private-flush-full/frozen-source.controller-original.json",
+      "bytes": 1275,
+      "sha256": "75d88e29b4adb3cb9ea3297017b41489dd8095532b63517ee5b2041712b5b4a3"
+    }
+  },
+  "metadata_correction": "Controller-produced frozen-source metadata carried an inherited attempt05 skip_reason. The exact original is preserved separately; corrected frozen-source explicitly says attempt06 is one exact focused control. Child command/stdio/exit and source identities were never changed.",
+  "official_SQLite_reference": {
+    "url": "https://www.sqlite.org/limits.html",
+    "scope": "max_page_count cap produces SQLITE_FULL when a write needs pages beyond it"
+  }
+}

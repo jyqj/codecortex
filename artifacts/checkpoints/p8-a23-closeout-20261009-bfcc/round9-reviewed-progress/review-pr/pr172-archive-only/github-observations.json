@@ -1,0 +1,179 @@
+{
+  "initial": {
+    "head": "c6a19b32bd2f676f024df9d5070ab673a85515c1",
+    "base": "7d5402a17cfdd06274e8204ec544bd4db104f872",
+    "changed_files": 0,
+    "body": "## 为什么需要这次变更\n\n#167 已将固定 E 实现正常合入主线；相应 native 原始工件、报告和历史失败记录需要在仓库中形成可恢复、可复核的交付。这次 PR 在实际主线 `b21cce4c8661589267ad5719f850accbec088d2f` 上增加证据文件。\n\n## 变更内容\n\n- 复制四个已独立审查的 checkpoint 子树：41 份固定 E 原始 ZIP，共 766,285,636 字节，以 207 个精确分片保存；同时保留 runtime/lifecycle、recovery/platform/gates、规模四片审查及历史失败材料。\n- 在 `artifacts/benchmarks/37871838957/` 与 `artifacts/benchmarks/37871838975/` 交付 74 份原报告及导航文件，加一份实际原始包公开证明；追加 `CURRENT-DELIVERY` 说明真实公开的父提交中已完整包含 75 份报告/证明、44 个相关分片和两份清单。旧 pending 记录保持原字节。\n- 保存实际主线合并 CI 的原日志、P8-017/P8-018 的只读证据映射，以及 #161 的原任务注释、固定历史 Git 引用和真实关闭收据。#161 已在确认 head 与独有证据保留后正常关闭，原分支继续保留；#160 未采纳的 collector 改进明确留作独立后续工作。\n\n合计相对基线新增 **453 个 artifact 文件**。源码、工作流、当前任务定义与状态、主线原有证据均保持原样；通过精确复制四个子树追加原件，没有合并旧证据分支的源码。\n\n## 验证\n\n- 原始 ZIP 字节、报告成员、原 native 重放结果和实际 Git 树具有相互独立的审查记录。第一提交 `8aeb66d28d3d14266fc5c5a305e3f2b95a8526c6` 的420条新增路径、全部既有 source/task/artifact 边界已核对；第二提交只追加33个已审交付状态及管理记录。\n- `CURRENT-DELIVERY` 独审重建78个 Git tree，核对真实公开父提交中的121条原路径；任务完成范围没有随交付状态扩大。\n- 主线基线 M 的5组普通 push 工作流、19个 jobs均成功，包括原 task、historical v2 与 v15 source guards；该基线 CI 不冒充本 PR 的新 CI。本 PR 的普通检查另行等待实际结果。\n\n## 尚未完成的原验收\n\n规模研究仍固定在 E `a23bb72d3c954f385b99fe81ce9189885c208557`。此准备快照只接纳 **4/150 个分片、41/1500 个样本**，100k仍在运行。原 N=30、150分片/1500样本、预算和验证器要求全部保留；此 PR 的证据交付不替代完整矩阵、aggregate或发布审批。\n\n**原TODO总账：192项，163已完成，29未完成；此PR新增完全完成的原TODO为0项。**\n\n## 创建前的主线变化\n\n创建前实际主线已因外部 #171 合并前进到 `7d5402a17cfdd06274e8204ec544bd4db104f872`。实际 Git 树核对显示，源码和任务仍与上述 M 相同；仅新增 `artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/`。它与本 PR 新增的七个 checkpoint 目录和两个 benchmark 目录均无路径交集，可正常三方合并并保留双方证据。#171 另保留了待核对具体执行范围的 Mac workspace 回归材料，归档本身不授予额外的平台验收结论。\n"
+  },
+  "final": {
+    "pr": {
+      "state": "open",
+      "draft": false,
+      "head": "c6a19b32bd2f676f024df9d5070ab673a85515c1",
+      "base": "7d5402a17cfdd06274e8204ec544bd4db104f872",
+      "mergeable": true,
+      "mergeable_state": "unstable",
+      "changed_files": 0,
+      "updated_at": "2026-10-09T05:28:51Z",
+      "url": "https://github.com/jyqj/codecortex/pull/172"
+    },
+    "checks": [
+      {
+        "name": "all eight platform cells",
+        "id": 113688043857,
+        "status": "in_progress",
+        "conclusion": null,
+        "head_sha": "c6a19b32bd2f676f024df9d5070ab673a85515c1",
+        "details_url": "https://github.com/jyqj/codecortex/actions/runs/37888773454/job/113688043857"
+      },
+      {
+        "name": "cold macos / stable / semantic",
+        "id": 113684713411,
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "c6a19b32bd2f676f024df9d5070ab673a85515c1",
+        "details_url": "https://github.com/jyqj/codecortex/actions/runs/37888773454/job/113684713411"
+      },
+      {
+        "name": "offline (default)",
+        "id": 113684713410,
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "c6a19b32bd2f676f024df9d5070ab673a85515c1",
+        "details_url": "https://github.com/jyqj/codecortex/actions/runs/37888773438/job/113684713410"
+      },
+      {
+        "name": "closeout",
+        "id": 113684713338,
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "c6a19b32bd2f676f024df9d5070ab673a85515c1",
+        "details_url": "https://github.com/jyqj/codecortex/actions/runs/37888773438/job/113684713338"
+      },
+      {
+        "name": "cold macos / 1.95 / semantic",
+        "id": 113684713321,
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "c6a19b32bd2f676f024df9d5070ab673a85515c1",
+        "details_url": "https://github.com/jyqj/codecortex/actions/runs/37888773454/job/113684713321"
+      },
+      {
+        "name": "offline (semantic)",
+        "id": 113684713314,
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "c6a19b32bd2f676f024df9d5070ab673a85515c1",
+        "details_url": "https://github.com/jyqj/codecortex/actions/runs/37888773438/job/113684713314"
+      },
+      {
+        "name": "cold linux / stable / default",
+        "id": 113684713302,
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "c6a19b32bd2f676f024df9d5070ab673a85515c1",
+        "details_url": "https://github.com/jyqj/codecortex/actions/runs/37888773454/job/113684713302"
+      },
+      {
+        "name": "cold macos / stable / default",
+        "id": 113684713285,
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "c6a19b32bd2f676f024df9d5070ab673a85515c1",
+        "details_url": "https://github.com/jyqj/codecortex/actions/runs/37888773454/job/113684713285"
+      },
+      {
+        "name": "cold linux / stable / semantic",
+        "id": 113684713249,
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "c6a19b32bd2f676f024df9d5070ab673a85515c1",
+        "details_url": "https://github.com/jyqj/codecortex/actions/runs/37888773454/job/113684713249"
+      },
+      {
+        "name": "cold linux / 1.95 / semantic",
+        "id": 113684713238,
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "c6a19b32bd2f676f024df9d5070ab673a85515c1",
+        "details_url": "https://github.com/jyqj/codecortex/actions/runs/37888773454/job/113684713238"
+      },
+      {
+        "name": "lifecycle",
+        "id": 113684713224,
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "c6a19b32bd2f676f024df9d5070ab673a85515c1",
+        "details_url": "https://github.com/jyqj/codecortex/actions/runs/37888773436/job/113684713224"
+      },
+      {
+        "name": "cold macos / 1.95 / default",
+        "id": 113684713220,
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "c6a19b32bd2f676f024df9d5070ab673a85515c1",
+        "details_url": "https://github.com/jyqj/codecortex/actions/runs/37888773454/job/113684713220"
+      },
+      {
+        "name": "cold linux / 1.95 / default",
+        "id": 113684713217,
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "c6a19b32bd2f676f024df9d5070ab673a85515c1",
+        "details_url": "https://github.com/jyqj/codecortex/actions/runs/37888773454/job/113684713217"
+      },
+      {
+        "name": "actual recovery and rollback matrix",
+        "id": 113684713076,
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "c6a19b32bd2f676f024df9d5070ab673a85515c1",
+        "details_url": "https://github.com/jyqj/codecortex/actions/runs/37888773454/job/113684713076"
+      },
+      {
+        "name": "mechanism",
+        "id": 113684713069,
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "c6a19b32bd2f676f024df9d5070ab673a85515c1",
+        "details_url": "https://github.com/jyqj/codecortex/actions/runs/37888773438/job/113684713069"
+      },
+      {
+        "name": "msrv",
+        "id": 113684712786,
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "c6a19b32bd2f676f024df9d5070ab673a85515c1",
+        "details_url": "https://github.com/jyqj/codecortex/actions/runs/37888773299/job/113684712786"
+      },
+      {
+        "name": "check",
+        "id": 113684712716,
+        "status": "in_progress",
+        "conclusion": null,
+        "head_sha": "c6a19b32bd2f676f024df9d5070ab673a85515c1",
+        "details_url": "https://github.com/jyqj/codecortex/actions/runs/37888773299/job/113684712716"
+      },
+      {
+        "name": "security",
+        "id": 113684712509,
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "c6a19b32bd2f676f024df9d5070ab673a85515c1",
+        "details_url": "https://github.com/jyqj/codecortex/actions/runs/37888773299/job/113684712509"
+      },
+      {
+        "name": "engineering",
+        "id": 113684712408,
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "c6a19b32bd2f676f024df9d5070ab673a85515c1",
+        "details_url": "https://github.com/jyqj/codecortex/actions/runs/37888773259/job/113684712408"
+      }
+    ],
+    "main": {
+      "sha": "7d5402a17cfdd06274e8204ec544bd4db104f872",
+      "tree": "ad76a3b0a99c1f0bc1035e1815372ce8a3998282"
+    }
+  }
+}

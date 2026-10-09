@@ -1,0 +1,547 @@
+{
+  "results": [
+    {
+      "name": "rustfmt",
+      "command": [
+        "/Users/jin/.cargo/bin/rustup",
+        "run",
+        "1.95.0",
+        "rustfmt",
+        "--edition",
+        "2021",
+        "crates/cc-db/src/index_db_snapshot_insert.rs",
+        "crates/cc-db/src/index_db_write_batch.rs",
+        "crates/cc-db/src/snapshot_write_txn.rs",
+        "crates/cc-db/src/snapshot_fts_tests.rs",
+        "crates/cc-index/src/indexer_phases/snapshot.rs"
+      ],
+      "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-fts",
+      "started_at": "2026-10-09T05:39:56.456006+00:00",
+      "source_before": [
+        {
+          "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+          "bytes": 18581,
+          "sha256": "1dbc014e9798dfac6d1d2b82bc9913fb4603e6aeb301e9e0fd22c8823a2cb1ee"
+        },
+        {
+          "path": "crates/cc-db/src/index_db_write_batch.rs",
+          "bytes": 56514,
+          "sha256": "25f82e53d9479c357cbe7a02741f24cb92114f580e2dcddd8b1056e2080b52d7"
+        },
+        {
+          "path": "crates/cc-db/src/snapshot_write_txn.rs",
+          "bytes": 9084,
+          "sha256": "7c941b0e7fca4c48ec0c8b44ee81108a2c201e0b28ab7a69f285dbc329eb446f"
+        },
+        {
+          "path": "crates/cc-db/src/snapshot_fts_tests.rs",
+          "bytes": 18136,
+          "sha256": "49c22638f9f97a69229b4abddd17c329c7bd2ce860b39c6d4f568cd4b34b5661"
+        },
+        {
+          "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+          "bytes": 10144,
+          "sha256": "bca23a73b0a2de0ca38f9593fbb526b69a7acc138b9ec8a680001fb79e666e9e"
+        }
+      ],
+      "environment": {
+        "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+        "CARGO_TARGET_DIR": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/fts-prototype-target",
+        "CARGO_BUILD_JOBS": "2"
+      },
+      "status": "completed",
+      "pid": 42463,
+      "exit_code": 0,
+      "finished_at": "2026-10-09T05:39:56.581005+00:00",
+      "source_after": [
+        {
+          "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+          "bytes": 18581,
+          "sha256": "1dbc014e9798dfac6d1d2b82bc9913fb4603e6aeb301e9e0fd22c8823a2cb1ee"
+        },
+        {
+          "path": "crates/cc-db/src/index_db_write_batch.rs",
+          "bytes": 56514,
+          "sha256": "25f82e53d9479c357cbe7a02741f24cb92114f580e2dcddd8b1056e2080b52d7"
+        },
+        {
+          "path": "crates/cc-db/src/snapshot_write_txn.rs",
+          "bytes": 9084,
+          "sha256": "7c941b0e7fca4c48ec0c8b44ee81108a2c201e0b28ab7a69f285dbc329eb446f"
+        },
+        {
+          "path": "crates/cc-db/src/snapshot_fts_tests.rs",
+          "bytes": 18136,
+          "sha256": "49c22638f9f97a69229b4abddd17c329c7bd2ce860b39c6d4f568cd4b34b5661"
+        },
+        {
+          "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+          "bytes": 10144,
+          "sha256": "bca23a73b0a2de0ca38f9593fbb526b69a7acc138b9ec8a680001fb79e666e9e"
+        }
+      ],
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "public-api-regression",
+      "command": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "cc-db",
+        "--lib",
+        "index_db_snapshot_insert::snapshot_fts_tests::public_entry_preserves_partial_state_when_caller_commits_after_error",
+        "--",
+        "--exact",
+        "--test-threads=1",
+        "--nocapture"
+      ],
+      "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-fts",
+      "started_at": "2026-10-09T05:39:56.639666+00:00",
+      "source_before": [
+        {
+          "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+          "bytes": 18581,
+          "sha256": "1dbc014e9798dfac6d1d2b82bc9913fb4603e6aeb301e9e0fd22c8823a2cb1ee"
+        },
+        {
+          "path": "crates/cc-db/src/index_db_write_batch.rs",
+          "bytes": 56514,
+          "sha256": "25f82e53d9479c357cbe7a02741f24cb92114f580e2dcddd8b1056e2080b52d7"
+        },
+        {
+          "path": "crates/cc-db/src/snapshot_write_txn.rs",
+          "bytes": 9084,
+          "sha256": "7c941b0e7fca4c48ec0c8b44ee81108a2c201e0b28ab7a69f285dbc329eb446f"
+        },
+        {
+          "path": "crates/cc-db/src/snapshot_fts_tests.rs",
+          "bytes": 18136,
+          "sha256": "49c22638f9f97a69229b4abddd17c329c7bd2ce860b39c6d4f568cd4b34b5661"
+        },
+        {
+          "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+          "bytes": 10144,
+          "sha256": "bca23a73b0a2de0ca38f9593fbb526b69a7acc138b9ec8a680001fb79e666e9e"
+        }
+      ],
+      "environment": {
+        "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+        "CARGO_TARGET_DIR": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/fts-prototype-target",
+        "CARGO_BUILD_JOBS": "2"
+      },
+      "status": "completed",
+      "pid": 42467,
+      "exit_code": 0,
+      "finished_at": "2026-10-09T05:39:58.919921+00:00",
+      "source_after": [
+        {
+          "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+          "bytes": 18581,
+          "sha256": "1dbc014e9798dfac6d1d2b82bc9913fb4603e6aeb301e9e0fd22c8823a2cb1ee"
+        },
+        {
+          "path": "crates/cc-db/src/index_db_write_batch.rs",
+          "bytes": 56514,
+          "sha256": "25f82e53d9479c357cbe7a02741f24cb92114f580e2dcddd8b1056e2080b52d7"
+        },
+        {
+          "path": "crates/cc-db/src/snapshot_write_txn.rs",
+          "bytes": 9084,
+          "sha256": "7c941b0e7fca4c48ec0c8b44ee81108a2c201e0b28ab7a69f285dbc329eb446f"
+        },
+        {
+          "path": "crates/cc-db/src/snapshot_fts_tests.rs",
+          "bytes": 18136,
+          "sha256": "49c22638f9f97a69229b4abddd17c329c7bd2ce860b39c6d4f568cd4b34b5661"
+        },
+        {
+          "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+          "bytes": 10144,
+          "sha256": "bca23a73b0a2de0ca38f9593fbb526b69a7acc138b9ec8a680001fb79e666e9e"
+        }
+      ],
+      "stdout": {
+        "bytes": 241,
+        "sha256": "893332a922feaafb5e6291a0d42d42a6c639432945a8e70c8cfa9a796adf8270"
+      },
+      "stderr": {
+        "bytes": 363,
+        "sha256": "7864b60835ed761f3811da8bb7afd6b7faece3879774260b0530e9a6c183b7b5"
+      }
+    },
+    {
+      "name": "cc-db-lib",
+      "command": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "cc-db",
+        "--lib",
+        "--",
+        "--test-threads=1",
+        "--nocapture",
+        "--skip",
+        "index_db_snapshot_insert::snapshot_fts_tests::small_write_stage_ab_ba_diagnostic_keeps_complete_outputs"
+      ],
+      "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-fts",
+      "started_at": "2026-10-09T05:39:58.924903+00:00",
+      "source_before": [
+        {
+          "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+          "bytes": 18581,
+          "sha256": "1dbc014e9798dfac6d1d2b82bc9913fb4603e6aeb301e9e0fd22c8823a2cb1ee"
+        },
+        {
+          "path": "crates/cc-db/src/index_db_write_batch.rs",
+          "bytes": 56514,
+          "sha256": "25f82e53d9479c357cbe7a02741f24cb92114f580e2dcddd8b1056e2080b52d7"
+        },
+        {
+          "path": "crates/cc-db/src/snapshot_write_txn.rs",
+          "bytes": 9084,
+          "sha256": "7c941b0e7fca4c48ec0c8b44ee81108a2c201e0b28ab7a69f285dbc329eb446f"
+        },
+        {
+          "path": "crates/cc-db/src/snapshot_fts_tests.rs",
+          "bytes": 18136,
+          "sha256": "49c22638f9f97a69229b4abddd17c329c7bd2ce860b39c6d4f568cd4b34b5661"
+        },
+        {
+          "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+          "bytes": 10144,
+          "sha256": "bca23a73b0a2de0ca38f9593fbb526b69a7acc138b9ec8a680001fb79e666e9e"
+        }
+      ],
+      "environment": {
+        "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+        "CARGO_TARGET_DIR": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/fts-prototype-target",
+        "CARGO_BUILD_JOBS": "2"
+      },
+      "status": "completed",
+      "pid": 42482,
+      "exit_code": 0,
+      "finished_at": "2026-10-09T05:40:44.663416+00:00",
+      "source_after": [
+        {
+          "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+          "bytes": 18581,
+          "sha256": "1dbc014e9798dfac6d1d2b82bc9913fb4603e6aeb301e9e0fd22c8823a2cb1ee"
+        },
+        {
+          "path": "crates/cc-db/src/index_db_write_batch.rs",
+          "bytes": 56514,
+          "sha256": "25f82e53d9479c357cbe7a02741f24cb92114f580e2dcddd8b1056e2080b52d7"
+        },
+        {
+          "path": "crates/cc-db/src/snapshot_write_txn.rs",
+          "bytes": 9084,
+          "sha256": "7c941b0e7fca4c48ec0c8b44ee81108a2c201e0b28ab7a69f285dbc329eb446f"
+        },
+        {
+          "path": "crates/cc-db/src/snapshot_fts_tests.rs",
+          "bytes": 18136,
+          "sha256": "49c22638f9f97a69229b4abddd17c329c7bd2ce860b39c6d4f568cd4b34b5661"
+        },
+        {
+          "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+          "bytes": 10144,
+          "sha256": "bca23a73b0a2de0ca38f9593fbb526b69a7acc138b9ec8a680001fb79e666e9e"
+        }
+      ],
+      "stdout": {
+        "bytes": 16769,
+        "sha256": "b61f4b510328d3b1aa51716c91353bf89163956d05c2e5c9daf231f23321b67f"
+      },
+      "stderr": {
+        "bytes": 992,
+        "sha256": "1f777c9964d6fe6c33f1672c66798fe0fcd69d9d5dee51b31bd450c5f2f4745a"
+      }
+    },
+    {
+      "name": "snapshot-leaf-batching",
+      "command": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "cc-index",
+        "--test",
+        "snapshot_leaf_batching",
+        "--",
+        "--test-threads=1",
+        "--nocapture"
+      ],
+      "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-fts",
+      "started_at": "2026-10-09T05:40:44.670378+00:00",
+      "source_before": [
+        {
+          "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+          "bytes": 18581,
+          "sha256": "1dbc014e9798dfac6d1d2b82bc9913fb4603e6aeb301e9e0fd22c8823a2cb1ee"
+        },
+        {
+          "path": "crates/cc-db/src/index_db_write_batch.rs",
+          "bytes": 56514,
+          "sha256": "25f82e53d9479c357cbe7a02741f24cb92114f580e2dcddd8b1056e2080b52d7"
+        },
+        {
+          "path": "crates/cc-db/src/snapshot_write_txn.rs",
+          "bytes": 9084,
+          "sha256": "7c941b0e7fca4c48ec0c8b44ee81108a2c201e0b28ab7a69f285dbc329eb446f"
+        },
+        {
+          "path": "crates/cc-db/src/snapshot_fts_tests.rs",
+          "bytes": 18136,
+          "sha256": "49c22638f9f97a69229b4abddd17c329c7bd2ce860b39c6d4f568cd4b34b5661"
+        },
+        {
+          "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+          "bytes": 10144,
+          "sha256": "bca23a73b0a2de0ca38f9593fbb526b69a7acc138b9ec8a680001fb79e666e9e"
+        }
+      ],
+      "environment": {
+        "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+        "CARGO_TARGET_DIR": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/fts-prototype-target",
+        "CARGO_BUILD_JOBS": "2"
+      },
+      "status": "completed",
+      "pid": 42870,
+      "exit_code": 0,
+      "finished_at": "2026-10-09T05:41:14.061701+00:00",
+      "source_after": [
+        {
+          "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+          "bytes": 18581,
+          "sha256": "1dbc014e9798dfac6d1d2b82bc9913fb4603e6aeb301e9e0fd22c8823a2cb1ee"
+        },
+        {
+          "path": "crates/cc-db/src/index_db_write_batch.rs",
+          "bytes": 56514,
+          "sha256": "25f82e53d9479c357cbe7a02741f24cb92114f580e2dcddd8b1056e2080b52d7"
+        },
+        {
+          "path": "crates/cc-db/src/snapshot_write_txn.rs",
+          "bytes": 9084,
+          "sha256": "7c941b0e7fca4c48ec0c8b44ee81108a2c201e0b28ab7a69f285dbc329eb446f"
+        },
+        {
+          "path": "crates/cc-db/src/snapshot_fts_tests.rs",
+          "bytes": 18136,
+          "sha256": "49c22638f9f97a69229b4abddd17c329c7bd2ce860b39c6d4f568cd4b34b5661"
+        },
+        {
+          "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+          "bytes": 10144,
+          "sha256": "bca23a73b0a2de0ca38f9593fbb526b69a7acc138b9ec8a680001fb79e666e9e"
+        }
+      ],
+      "stdout": {
+        "bytes": 601,
+        "sha256": "95f2a525f6c01da582060b4fd3a70fc9608de769fa1334d8f5f7efd0d1ecc5b1"
+      },
+      "stderr": {
+        "bytes": 3472,
+        "sha256": "d0c4ae9f60f3961ea51474c669c8d80ceee1197dc82b26aa724add9053f455a7"
+      }
+    },
+    {
+      "name": "cc-db-clippy",
+      "command": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "clippy",
+        "--offline",
+        "--locked",
+        "-p",
+        "cc-db",
+        "--lib",
+        "--tests",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-fts",
+      "started_at": "2026-10-09T05:41:14.062651+00:00",
+      "source_before": [
+        {
+          "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+          "bytes": 18581,
+          "sha256": "1dbc014e9798dfac6d1d2b82bc9913fb4603e6aeb301e9e0fd22c8823a2cb1ee"
+        },
+        {
+          "path": "crates/cc-db/src/index_db_write_batch.rs",
+          "bytes": 56514,
+          "sha256": "25f82e53d9479c357cbe7a02741f24cb92114f580e2dcddd8b1056e2080b52d7"
+        },
+        {
+          "path": "crates/cc-db/src/snapshot_write_txn.rs",
+          "bytes": 9084,
+          "sha256": "7c941b0e7fca4c48ec0c8b44ee81108a2c201e0b28ab7a69f285dbc329eb446f"
+        },
+        {
+          "path": "crates/cc-db/src/snapshot_fts_tests.rs",
+          "bytes": 18136,
+          "sha256": "49c22638f9f97a69229b4abddd17c329c7bd2ce860b39c6d4f568cd4b34b5661"
+        },
+        {
+          "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+          "bytes": 10144,
+          "sha256": "bca23a73b0a2de0ca38f9593fbb526b69a7acc138b9ec8a680001fb79e666e9e"
+        }
+      ],
+      "environment": {
+        "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+        "CARGO_TARGET_DIR": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/fts-prototype-target",
+        "CARGO_BUILD_JOBS": "2"
+      },
+      "status": "completed",
+      "pid": 44113,
+      "exit_code": 0,
+      "finished_at": "2026-10-09T05:41:15.977915+00:00",
+      "source_after": [
+        {
+          "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+          "bytes": 18581,
+          "sha256": "1dbc014e9798dfac6d1d2b82bc9913fb4603e6aeb301e9e0fd22c8823a2cb1ee"
+        },
+        {
+          "path": "crates/cc-db/src/index_db_write_batch.rs",
+          "bytes": 56514,
+          "sha256": "25f82e53d9479c357cbe7a02741f24cb92114f580e2dcddd8b1056e2080b52d7"
+        },
+        {
+          "path": "crates/cc-db/src/snapshot_write_txn.rs",
+          "bytes": 9084,
+          "sha256": "7c941b0e7fca4c48ec0c8b44ee81108a2c201e0b28ab7a69f285dbc329eb446f"
+        },
+        {
+          "path": "crates/cc-db/src/snapshot_fts_tests.rs",
+          "bytes": 18136,
+          "sha256": "49c22638f9f97a69229b4abddd17c329c7bd2ce860b39c6d4f568cd4b34b5661"
+        },
+        {
+          "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+          "bytes": 10144,
+          "sha256": "bca23a73b0a2de0ca38f9593fbb526b69a7acc138b9ec8a680001fb79e666e9e"
+        }
+      ],
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "bytes": 199,
+        "sha256": "b55ae0a0c89480c869716c58948f3dae4cf153c7939c6fabec608067f6588187"
+      }
+    },
+    {
+      "name": "cc-index-clippy",
+      "command": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "clippy",
+        "--offline",
+        "--locked",
+        "-p",
+        "cc-index",
+        "--lib",
+        "--test",
+        "snapshot_leaf_batching",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-fts",
+      "started_at": "2026-10-09T05:41:15.978762+00:00",
+      "source_before": [
+        {
+          "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+          "bytes": 18581,
+          "sha256": "1dbc014e9798dfac6d1d2b82bc9913fb4603e6aeb301e9e0fd22c8823a2cb1ee"
+        },
+        {
+          "path": "crates/cc-db/src/index_db_write_batch.rs",
+          "bytes": 56514,
+          "sha256": "25f82e53d9479c357cbe7a02741f24cb92114f580e2dcddd8b1056e2080b52d7"
+        },
+        {
+          "path": "crates/cc-db/src/snapshot_write_txn.rs",
+          "bytes": 9084,
+          "sha256": "7c941b0e7fca4c48ec0c8b44ee81108a2c201e0b28ab7a69f285dbc329eb446f"
+        },
+        {
+          "path": "crates/cc-db/src/snapshot_fts_tests.rs",
+          "bytes": 18136,
+          "sha256": "49c22638f9f97a69229b4abddd17c329c7bd2ce860b39c6d4f568cd4b34b5661"
+        },
+        {
+          "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+          "bytes": 10144,
+          "sha256": "bca23a73b0a2de0ca38f9593fbb526b69a7acc138b9ec8a680001fb79e666e9e"
+        }
+      ],
+      "environment": {
+        "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+        "CARGO_TARGET_DIR": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/fts-prototype-target",
+        "CARGO_BUILD_JOBS": "2"
+      },
+      "status": "completed",
+      "pid": 44179,
+      "exit_code": 101,
+      "finished_at": "2026-10-09T05:41:28.927354+00:00",
+      "source_after": [
+        {
+          "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+          "bytes": 18581,
+          "sha256": "1dbc014e9798dfac6d1d2b82bc9913fb4603e6aeb301e9e0fd22c8823a2cb1ee"
+        },
+        {
+          "path": "crates/cc-db/src/index_db_write_batch.rs",
+          "bytes": 56514,
+          "sha256": "25f82e53d9479c357cbe7a02741f24cb92114f580e2dcddd8b1056e2080b52d7"
+        },
+        {
+          "path": "crates/cc-db/src/snapshot_write_txn.rs",
+          "bytes": 9084,
+          "sha256": "7c941b0e7fca4c48ec0c8b44ee81108a2c201e0b28ab7a69f285dbc329eb446f"
+        },
+        {
+          "path": "crates/cc-db/src/snapshot_fts_tests.rs",
+          "bytes": 18136,
+          "sha256": "49c22638f9f97a69229b4abddd17c329c7bd2ce860b39c6d4f568cd4b34b5661"
+        },
+        {
+          "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+          "bytes": 10144,
+          "sha256": "bca23a73b0a2de0ca38f9593fbb526b69a7acc138b9ec8a680001fb79e666e9e"
+        }
+      ],
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "bytes": 3269,
+        "sha256": "eb0aa0beda845753883eecbc94a59f8fcdfc5f4d9ee95a23f5a8046e0f5d516e"
+      }
+    }
+  ],
+  "wrapper_scope": "Records real child status; wrapper0 never means all validation passed."
+}

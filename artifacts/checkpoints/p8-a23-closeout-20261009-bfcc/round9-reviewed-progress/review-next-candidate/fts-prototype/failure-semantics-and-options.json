@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "author": "execution_recon",
+  "observed_at": "2026-10-09T05:32:44.662219+00:00",
+  "verdict": "current_public_API_prototype_not_ready_to_merge_due_to_partial_error_semantics",
+  "no_further_production_changes": true,
+  "precise_regression": "Canonical connection with an enclosing caller-owned transaction: file1 succeeds, file2 fails before end-of-window flush. Original public write_file_data has already mirrored file1; new path can leave its base without files/literal FTS. Caller can catch Err and commit because public SnapshotWriteTxn borrows Connection and owns no transaction. Schema and rowid checks do not fix this.",
+  "current_production_calls": [
+    {
+      "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+      "line": 111,
+      "fact": "Only production call to write_file_data; propagates ? before remaining snapshot content."
+    },
+    {
+      "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+      "lines": [
+        160,
+        193,
+        224
+      ],
+      "fact": "Three wrappers instantiate seam and return contents Result directly to owning adapters."
+    },
+    {
+      "path": "crates/cc-db/src/index_db_rebuild.rs",
+      "lines": [
+        271,
+        287
+      ],
+      "fact": "Temp-staging transaction calls write_fn? before commit, on Err drops transaction/connection and removes temp file."
+    },
+    {
+      "path": "crates/cc-db/src/index_db_rebuild.rs",
+      "lines": [
+        351,
+        358
+      ],
+      "fact": "build_rebuild_staging? stops before swap on any build error."
+    },
+    {
+      "path": "crates/cc-db/src/direct_writer.rs",
+      "lines": [
+        97,
+        103
+      ],
+      "fact": "DirectWriter owns transaction and write_fn? precedes commit; error returns before adapter success. journal OFF means physical rollback durability is not claimed; containing rebuild protocol still prevents failed temp publication."
+    }
+  ],
+  "existing_late_failure_control": {
+    "failure_injection": "Second-window duplicate files PRIMARY KEY or literal foreign-key failure, both in original base insertion, after first256FTS flush.",
+    "rollback": "Transaction drop removes canonical WAL fixture writes; actual adapter failure retains original live generation/content/reopen.",
+    "flush_failure": "Not yet directly exercised. No claim that prior base-error test is a flush-error test."
+  },
+  "actual_adapter_activation": {
+    "attempt": "attempt03",
+    "command_receipt": "review-next-candidate/fts-prototype/attempt03/actual-staging-activation.json",
+    "exit_code": 0,
+    "source_test_sha256": "96cbce8a174a73a8c42ba4839a52cd0513a44a8ae13f4ccc8c385d866bbce0a7",
+    "assertion": "can_defer_snapshot_fts(conn) true inside real rebuild_with_temp_db callback",
+    "thirty_pairs_not_repeated": true
+  },
+  "options": [
+    {
+      "name": "A_minimal_new_rebuild_entry",
+      "production_file_count": 4,
+      "paths": [
+        "crates/cc-db/src/index_db_snapshot_insert.rs",
+        "crates/cc-db/src/index_db_write_batch.rs",
+        "crates/cc-db/src/snapshot_write_txn.rs",
+        "crates/cc-index/src/indexer_phases/snapshot.rs"
+      ],
+      "changes": "Restore public write_file_data original exact loop. Place batching under a new explicitly rebuild-only method. Change only shared contents callsite111, covering all three existing owning adapters; retain their existing ?/abort publication protocol.",
+      "new_contract": "On any error, entire rebuild owner must abandon transaction/staging and never publish. This is a new API with its own caller obligation; an &Connection signature alone does not enforce ownership.",
+      "minimum_validation": "Old public API catch-error-then-commit must retain original partial rows+FTS; new method all differential/canonical guard/nearMAX controls plus actual adapter fast activation and late base error; add real flush error with owner no-publish assertion, retain all failures. At least relevant cc-index compile/regression tests due one new callsite.",
+      "limitations": "No silent weakening of old API documentation; no all-batch savepoint added to old method. If own atomic rollback is required even for callers violating new API obligation, a distinct ownership/callback/savepoint design is needed and not part of the current minimal change."
+    },
+    {
+      "name": "B_archive_only",
+      "changes": "Retain complete source/receipts/timing as an explicitly unmerged prototype with known public API regression; do not promote it."
+    }
+  ],
+  "awaiting_parent_choice": true,
+  "source_scope_credit_only": true,
+  "original_todo_credit": 0,
+  "remaining_original_todos": 29
+}

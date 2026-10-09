@@ -1,0 +1,355 @@
+{
+  "schema": "fts-rebuild-opt-in-engineering-review-v1",
+  "reviewed_at": "2026-10-09T05:42:51.249546+00:00",
+  "reviewer": "execution_recon (author); root and todo_audit independent source review separate",
+  "source": {
+    "head": "5cae24fbdf456dcf06932d9ed83a4c600d538136",
+    "paths": [
+      {
+        "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+        "bytes": 18581,
+        "sha256": "1dbc014e9798dfac6d1d2b82bc9913fb4603e6aeb301e9e0fd22c8823a2cb1ee"
+      },
+      {
+        "path": "crates/cc-db/src/index_db_write_batch.rs",
+        "bytes": 56514,
+        "sha256": "25f82e53d9479c357cbe7a02741f24cb92114f580e2dcddd8b1056e2080b52d7"
+      },
+      {
+        "path": "crates/cc-db/src/snapshot_write_txn.rs",
+        "bytes": 9084,
+        "sha256": "7c941b0e7fca4c48ec0c8b44ee81108a2c201e0b28ab7a69f285dbc329eb446f"
+      },
+      {
+        "path": "crates/cc-db/src/snapshot_fts_tests.rs",
+        "bytes": 18136,
+        "sha256": "49c22638f9f97a69229b4abddd17c329c7bd2ce860b39c6d4f568cd4b34b5661"
+      },
+      {
+        "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+        "bytes": 10144,
+        "sha256": "bca23a73b0a2de0ca38f9593fbb526b69a7acc138b9ec8a680001fb79e666e9e"
+      }
+    ],
+    "diff": {
+      "path": "source.diff",
+      "bytes": 29698,
+      "sha256": "9cb5553afb265ea9ed0e998f5cba81f2d2101753809ba370053ab614c102a8d7"
+    },
+    "skip_reason": "Only our optional 30-pair timing diagnostic is explicitly skipped: root prohibits repeating it. All pre-existing cc-db library controls run unchanged."
+  },
+  "native_runner_job": "wc_job_Svn0J7st6vNsfdlc",
+  "decision": {
+    "engineering_status": "tests_passed_with_known_unmodified_Mac_baseline_clippy_failure; not overall validation passed",
+    "eligible_for_formal_measurement_credit": false,
+    "new_original_todos_completed": 0,
+    "remaining_original_todos": 29,
+    "commit_push_or_new_P_R_G": false
+  },
+  "api_repair": {
+    "historical_regression": "Initial prototype changed public write_file_data partial-error state. Real two-file FK error caught and committed produced a failing full-table equality assertion, not a compiler failure.",
+    "historical_receipt": {
+      "path": "review-next-candidate/fts-prototype/attempt04-expected-failure/public-api-regression.json",
+      "bytes": 2580,
+      "sha256": "34a7774a4155d9eec4d34e25faf05b1b97acb041d0a2e116be7601728ee114b9"
+    },
+    "fixed_same_assertion_receipt": {
+      "path": "review-next-candidate/fts-prototype/attempt05-rebuild-opt-in/public-api-regression.json",
+      "bytes": 2941,
+      "sha256": "181581d055bc7239d00eb9753c0ee7e8dc5e3143b0e7f05f6830f87e0de8f7a9"
+    },
+    "fixed_same_assertion_result": "exit 0; 1 passed, 0 failed; same test also passes within full cc-db library suite.",
+    "old_public_method": "Exact original G docs, signature and loop restored; no schema reads or fast-path guard are executed by this method, retaining prior authorizer and partial-error behavior.",
+    "source_identity_proof": {
+      "path": "review-next-candidate/fts-prototype/attempt05-rebuild-opt-in/api-source-bridge.json",
+      "bytes": 354,
+      "sha256": "ef329a218be3302acfd7b55b7922132a553bbcc1077981861946122495ddb240"
+    },
+    "new_opt_in_method": "write_file_data_for_rebuild; borrows &Connection and does not own or roll back transaction. Caller contract requires propagating every Err, abandoning failed staging transaction/database, and preventing publication.",
+    "only_cc_index_delta": "crates/cc-index/src/indexer_phases/snapshot.rs:111 replaces one call with write_file_data_for_rebuild. All three owning adapters and their ? / commit / swap code are unchanged.",
+    "ownership_limit": "Rust types do not enforce owner policy. DirectWriter journal OFF does not promise physical rollback; failed staging is never a successful publishable build.",
+    "changed_error_order": "Only opt-in API may report FTS errors after later base rows in a <=256 file window. It must not be used for catch-and-commit partial success."
+  },
+  "preserved_fast_path_guards": [
+    "Autocommit uses original per-row insertion.",
+    "Same bundled SQLite FULL_SCHEMA_SQL non-index definition comparison is cached; any actual non-index schema difference or any TEMP object selects original path. Explicit indexes may be dropped without disabling fast path.",
+    "Schema inspection/setup errors propagate from opt-in API; no metadata error is silently ignored. Old public API does not acquire this new error surface.",
+    "File count and every literal candidate count use checked conversion/addition; unsafe or near-maximum implicit rowid capacity selects original per-row path.",
+    "Fixed rowid > before AND <= after ORDER BY rowid SQL selects actual surviving base rows once, including OR IGNORE duplicates and cross-unit literal file_path.",
+    "Original per-row entry remains reference/fallback. Leaf tiers 64/8/1, leaf 64KiB bound, chunks_fts/file_paths triggers, schema/index/cache/epoch/commit behavior and formal budgets are unchanged."
+  ],
+  "validation": [
+    {
+      "name": "rustfmt",
+      "command": [
+        "/Users/jin/.cargo/bin/rustup",
+        "run",
+        "1.95.0",
+        "rustfmt",
+        "--edition",
+        "2021",
+        "crates/cc-db/src/index_db_snapshot_insert.rs",
+        "crates/cc-db/src/index_db_write_batch.rs",
+        "crates/cc-db/src/snapshot_write_txn.rs",
+        "crates/cc-db/src/snapshot_fts_tests.rs",
+        "crates/cc-index/src/indexer_phases/snapshot.rs"
+      ],
+      "exit_code": 0,
+      "source_unchanged": true,
+      "receipt": {
+        "path": "review-next-candidate/fts-prototype/attempt05-rebuild-opt-in/rustfmt.json",
+        "bytes": 2953,
+        "sha256": "179c9fd8e642bc79ec42cddb16dc568a2777c9eed9dae7376d861d1af03a7830"
+      },
+      "stdout": {
+        "path": "review-next-candidate/fts-prototype/attempt05-rebuild-opt-in/rustfmt.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "review-next-candidate/fts-prototype/attempt05-rebuild-opt-in/rustfmt.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "public-api-regression",
+      "command": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "cc-db",
+        "--lib",
+        "index_db_snapshot_insert::snapshot_fts_tests::public_entry_preserves_partial_state_when_caller_commits_after_error",
+        "--",
+        "--exact",
+        "--test-threads=1",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "source_unchanged": true,
+      "receipt": {
+        "path": "review-next-candidate/fts-prototype/attempt05-rebuild-opt-in/public-api-regression.json",
+        "bytes": 2941,
+        "sha256": "181581d055bc7239d00eb9753c0ee7e8dc5e3143b0e7f05f6830f87e0de8f7a9"
+      },
+      "stdout": {
+        "path": "review-next-candidate/fts-prototype/attempt05-rebuild-opt-in/public-api-regression.stdout",
+        "bytes": 241,
+        "sha256": "893332a922feaafb5e6291a0d42d42a6c639432945a8e70c8cfa9a796adf8270"
+      },
+      "stderr": {
+        "path": "review-next-candidate/fts-prototype/attempt05-rebuild-opt-in/public-api-regression.stderr",
+        "bytes": 363,
+        "sha256": "7864b60835ed761f3811da8bb7afd6b7faece3879774260b0530e9a6c183b7b5"
+      }
+    },
+    {
+      "name": "cc-db-lib",
+      "command": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "cc-db",
+        "--lib",
+        "--",
+        "--test-threads=1",
+        "--nocapture",
+        "--skip",
+        "index_db_snapshot_insert::snapshot_fts_tests::small_write_stage_ab_ba_diagnostic_keeps_complete_outputs"
+      ],
+      "exit_code": 0,
+      "source_unchanged": true,
+      "receipt": {
+        "path": "review-next-candidate/fts-prototype/attempt05-rebuild-opt-in/cc-db-lib.json",
+        "bytes": 2919,
+        "sha256": "f816e02478403fe69dc0dd73045583a269affbdee7e94f3127f6151ed1112278"
+      },
+      "stdout": {
+        "path": "review-next-candidate/fts-prototype/attempt05-rebuild-opt-in/cc-db-lib.stdout",
+        "bytes": 16769,
+        "sha256": "b61f4b510328d3b1aa51716c91353bf89163956d05c2e5c9daf231f23321b67f"
+      },
+      "stderr": {
+        "path": "review-next-candidate/fts-prototype/attempt05-rebuild-opt-in/cc-db-lib.stderr",
+        "bytes": 992,
+        "sha256": "1f777c9964d6fe6c33f1672c66798fe0fcd69d9d5dee51b31bd450c5f2f4745a"
+      }
+    },
+    {
+      "name": "snapshot-leaf-batching",
+      "command": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "cc-index",
+        "--test",
+        "snapshot_leaf_batching",
+        "--",
+        "--test-threads=1",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "source_unchanged": true,
+      "receipt": {
+        "path": "review-next-candidate/fts-prototype/attempt05-rebuild-opt-in/snapshot-leaf-batching.json",
+        "bytes": 2840,
+        "sha256": "51b3ac1ed7a42b0c2373a278d07b54974f838ad1afc4021309d195879f733f00"
+      },
+      "stdout": {
+        "path": "review-next-candidate/fts-prototype/attempt05-rebuild-opt-in/snapshot-leaf-batching.stdout",
+        "bytes": 601,
+        "sha256": "95f2a525f6c01da582060b4fd3a70fc9608de769fa1334d8f5f7efd0d1ecc5b1"
+      },
+      "stderr": {
+        "path": "review-next-candidate/fts-prototype/attempt05-rebuild-opt-in/snapshot-leaf-batching.stderr",
+        "bytes": 3472,
+        "sha256": "d0c4ae9f60f3961ea51474c669c8d80ceee1197dc82b26aa724add9053f455a7"
+      }
+    },
+    {
+      "name": "cc-db-clippy",
+      "command": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "clippy",
+        "--offline",
+        "--locked",
+        "-p",
+        "cc-db",
+        "--lib",
+        "--tests",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "source_unchanged": true,
+      "receipt": {
+        "path": "review-next-candidate/fts-prototype/attempt05-rebuild-opt-in/cc-db-clippy.json",
+        "bytes": 2793,
+        "sha256": "d5e67611edeeab163eee6a6837641c37ed7350619eac214bc312d47ead6724c9"
+      },
+      "stdout": {
+        "path": "review-next-candidate/fts-prototype/attempt05-rebuild-opt-in/cc-db-clippy.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "review-next-candidate/fts-prototype/attempt05-rebuild-opt-in/cc-db-clippy.stderr",
+        "bytes": 199,
+        "sha256": "b55ae0a0c89480c869716c58948f3dae4cf153c7939c6fabec608067f6588187"
+      }
+    },
+    {
+      "name": "cc-index-clippy",
+      "command": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "clippy",
+        "--offline",
+        "--locked",
+        "-p",
+        "cc-index",
+        "--lib",
+        "--test",
+        "snapshot_leaf_batching",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 101,
+      "source_unchanged": true,
+      "receipt": {
+        "path": "review-next-candidate/fts-prototype/attempt05-rebuild-opt-in/cc-index-clippy.json",
+        "bytes": 2831,
+        "sha256": "2772b7fdc8e61a7887aa12831ea7465affb0740dabccaefed467ac103477584a"
+      },
+      "stdout": {
+        "path": "review-next-candidate/fts-prototype/attempt05-rebuild-opt-in/cc-index-clippy.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "review-next-candidate/fts-prototype/attempt05-rebuild-opt-in/cc-index-clippy.stderr",
+        "bytes": 3269,
+        "sha256": "eb0aa0beda845753883eecbc94a59f8fcdfc5f4d9ee95a23f5a8046e0f5d516e"
+      }
+    }
+  ],
+  "test_totals": {
+    "public_regression_exact": {
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0
+    },
+    "cc_db_lib": {
+      "passed": 201,
+      "failed": 0,
+      "ignored": 2,
+      "filtered_out": 1,
+      "original_ignored": [
+        "index_db::tests::mismatch_rebuild_stress_loop",
+        "index_db_rebuild::fault_tests::rebuild_swap_child"
+      ],
+      "only_filtered": "Our optional small_write_stage_ab_ba_diagnostic_keeps_complete_outputs; root prohibited repeating the 30-pair timing diagnostic, all original library controls retained."
+    },
+    "snapshot_leaf_batching": {
+      "passed": 6,
+      "failed": 0,
+      "ignored": 0
+    }
+  },
+  "clippy_failure": {
+    "actual_exit": 101,
+    "crate": "cc-index",
+    "unchanged_path": "crates/cc-index/src/project_model/python_inventory.rs",
+    "diagnostics": [
+      "unused config_cache::Loader and python imports",
+      "unused bound",
+      "unused sum",
+      "unused supported_document",
+      "OutputMeter never constructed"
+    ],
+    "scope": "No sixth file changed; no allow or lint reduction; standalone cc-db strict Clippy exited 0."
+  },
+  "coverage_limits": [
+    "Existing snapshot_leaf_batching integration controls exercise retained old public leaf semantics; changed cc-index shared call compiles, while actual opt-in runtime guard/failure behavior is exercised through cc-db real rebuild owner control.",
+    "Late failure is base duplicate/FK on file 257 after a prior flushed window, not injected FTS flush I/O or SQLITE_FULL. Direct flush failure remains unexecuted.",
+    "No whole-workload peak or internal FTS statement buffer peak has been measured or bounded. Window is at most 256 files; one file can contain a large literal payload. Leaf 64KiB bound is not an FTS window memory bound.",
+    "No new full-scale benchmark, original primary replacement, 100k result, N150 or formal TODO acceptance is claimed.",
+    "Authorizer-restricted metadata may make the new opt-in method fail before inserts; this is explicit opt-in behavior, while original public API was restored byte-for-byte."
+  ],
+  "performance_identity": {
+    "historical_diagnostic": {
+      "path": "review-next-candidate/fts-prototype/attempt02/ab-ba-diagnostic-review.json",
+      "bytes": 6275,
+      "sha256": "5684d8834ba7732cd487c70678aaa961a7e83546a3cf1b75245631a4de3e8c6d"
+    },
+    "statement": "All 30 measured AB/BA pairs and ~0.715 median candidate/original ratio belong only to historical initial-public-API prototype source. They support reviewing the design direction, not the A API combination, full pipeline or formal scale performance.",
+    "A_timing_diagnostic_executed": false
+  },
+  "preservation": {
+    "pre_api_source": {
+      "path": "review-next-candidate/fts-prototype/pre-api-change-freeze/manifest.json",
+      "bytes": 1458,
+      "sha256": "0e78ef041602b3720a6d10d26b066ae64b9c5317d0974e035046554fe843b62b"
+    },
+    "historical_attempts": "attempt01/02/03 and expected-failure attempt04 retained unchanged.",
+    "controller": {
+      "path": "review-next-candidate/fts-prototype/attempt05-rebuild-opt-in/controller.py",
+      "bytes": 4239,
+      "sha256": "80bb1175a01fa6939f826421ca1393d6beaf2481512fa96f0dbe5eb05da2bc75"
+    },
+    "all_current_source_frozen": true
+  }
+}

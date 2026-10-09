@@ -1,0 +1,832 @@
+{
+  "schema_version": 1,
+  "evidence": [
+    {
+      "id": "contributor-command-contract",
+      "ref": "7d5402a17cfdd06274e8204ec544bd4db104f872",
+      "path": "CONTRIBUTING.md",
+      "sha256": "00117f468fc463787e21ac2f413da760fa32eb0b1e382d7bdcf486e8d4c496f4",
+      "git_blob": "3fa01470513c15935a32488ca83bbddcc48f32d3",
+      "ranges": [
+        {
+          "start": 35,
+          "end": 50,
+          "lines": [
+            {
+              "line": 35,
+              "text": "## 提交前检查"
+            },
+            {
+              "line": 36,
+              "text": ""
+            },
+            {
+              "line": 37,
+              "text": "未配置 pre-commit 钩子。提交前运行："
+            },
+            {
+              "line": 38,
+              "text": ""
+            },
+            {
+              "line": 39,
+              "text": "```bash"
+            },
+            {
+              "line": 40,
+              "text": "cargo fmt --all -- --check \\"
+            },
+            {
+              "line": 41,
+              "text": "  && cargo clippy --workspace --all-targets -- -D warnings \\"
+            },
+            {
+              "line": 42,
+              "text": "  && cargo test --workspace \\"
+            },
+            {
+              "line": 43,
+              "text": "  && cargo test -p cc-eval -- integration_fixtures_and_corpus"
+            },
+            {
+              "line": 44,
+              "text": "```"
+            },
+            {
+              "line": 45,
+              "text": ""
+            },
+            {
+              "line": 46,
+              "text": "真实工作区性能回归检查："
+            },
+            {
+              "line": 47,
+              "text": ""
+            },
+            {
+              "line": 48,
+              "text": "```bash"
+            },
+            {
+              "line": 49,
+              "text": "CODECORTEX_WRITE_REAL_BENCHMARK=1 \\"
+            },
+            {
+              "line": 50,
+              "text": "  cargo test -p cc-eval benchmark_real_workspace -- --ignored --nocapture"
+            }
+          ]
+        },
+        {
+          "start": 59,
+          "end": 69,
+          "lines": [
+            {
+              "line": 59,
+              "text": "本机遇到 SDK/TAPI 不兼容时，只为构建子进程指定兼容 SDK，不切换系统全局设置："
+            },
+            {
+              "line": 60,
+              "text": ""
+            },
+            {
+              "line": 61,
+              "text": "```sh"
+            },
+            {
+              "line": 62,
+              "text": "python3 scripts/p0-validation.py \\"
+            },
+            {
+              "line": 63,
+              "text": "  --sdkroot /path/to/compatible/MacOSX.sdk \\"
+            },
+            {
+              "line": 64,
+              "text": "  --target-dir target/p0-validation \\"
+            },
+            {
+              "line": 65,
+              "text": "  --evidence-dir artifacts/benchmarks/a-new-validation-run \\"
+            },
+            {
+              "line": 66,
+              "text": "  --product-binary /path/to/exact/codecortex"
+            },
+            {
+              "line": 67,
+              "text": "```"
+            },
+            {
+              "line": 68,
+              "text": ""
+            },
+            {
+              "line": 69,
+              "text": "该脚本保留命令、退出码、源码摘要、ignored 数量和日志。`rustc 1.97` 的成功不替代 `1.95` MSRV 验证；未安装的工具链要记录 blocked/not_run。现有全仓 `-D warnings` 规则不因 benchmark 变更而降低；旧代码产生的 warning 需要作为独立基线问题报告。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v15-binding-and-inventory",
+      "ref": "7d5402a17cfdd06274e8204ec544bd4db104f872",
+      "path": "scripts/verify_reviewed_source_v15.py",
+      "sha256": "9076ef4ae7d117d4868725fb7ff5dabf56bd850e5df8d0b049d2bbe0b72da6d6",
+      "git_blob": "c8b96fed01151dfdb0e7cf63a34c6e6a7eb708a1",
+      "ranges": [
+        {
+          "start": 1,
+          "end": 5,
+          "lines": [
+            {
+              "line": 1,
+              "text": "#!/usr/bin/env python3"
+            },
+            {
+              "line": 2,
+              "text": "\"\"\"Verify the existing approval chains and an independently reviewed P8 engineering delta."
+            },
+            {
+              "line": 3,
+              "text": ""
+            },
+            {
+              "line": 4,
+              "text": "The new record admits fixed implementation and validation inputs. It neither"
+            },
+            {
+              "line": 5,
+              "text": "relabels historical executions nor grants task, quality or release approval."
+            }
+          ]
+        },
+        {
+          "start": 17,
+          "end": 41,
+          "lines": [
+            {
+              "line": 17,
+              "text": "ROOT = Path(__file__).resolve().parents[1]"
+            },
+            {
+              "line": 18,
+              "text": "VERSION = \"p8-completion-source-20261009-v15\""
+            },
+            {
+              "line": 19,
+              "text": "BASE = \"7354db236c9d9850a75f31672697ae9eab44565e\""
+            },
+            {
+              "line": 20,
+              "text": "PRODUCT = \"254009277688d64677361a0ca33e5dea73f295ef\""
+            },
+            {
+              "line": 21,
+              "text": "REVIEW = \"3a11f30f9f00a89fe3cd481b3b7609066728baad\""
+            },
+            {
+              "line": 22,
+              "text": "REVIEW_PATH = \"artifacts/checkpoints/p8-scale-cache-20261009/independent-source-review.json\""
+            },
+            {
+              "line": 23,
+              "text": "REGISTRY = ROOT / \"scripts/reviewed-source-registry-v15.json\""
+            },
+            {
+              "line": 24,
+              "text": "REGISTRY_SHA256 = \"030e795021ddb4897cc05c061aa608b7e3d34be2c3410787468b6d0a68568ed9\""
+            },
+            {
+              "line": 25,
+              "text": "FROZEN = ("
+            },
+            {
+              "line": 26,
+              "text": "    \"scripts/verify_reviewed_source_v14.py\","
+            },
+            {
+              "line": 27,
+              "text": "    \"scripts/reviewed-source-registry-v14.json\","
+            },
+            {
+              "line": 28,
+              "text": "    \"tests/source_integrity/test_reviewed_source_v14.py\","
+            },
+            {
+              "line": 29,
+              "text": "    \"scripts/v14_historical_context.py\","
+            },
+            {
+              "line": 30,
+              "text": "    \"tests/source_integrity/v14_historical_test_adapter.py\","
+            },
+            {
+              "line": 31,
+              "text": "    \"tests/source_integrity/test_v14_historical_context.py\","
+            },
+            {
+              "line": 32,
+              "text": ")"
+            },
+            {
+              "line": 33,
+              "text": "VALIDATION_ROOTS = (\"scripts\", \".github/workflows\", \"tests/source_integrity\")"
+            },
+            {
+              "line": 34,
+              "text": "# The selected guard and its registry are the new trust root. Their fixed"
+            },
+            {
+              "line": 35,
+              "text": "# references are installed after the reviewed product commit. The current CI"
+            },
+            {
+              "line": 36,
+              "text": "# selector is separately constrained by expected_ci(), which runs the old proof."
+            },
+            {
+              "line": 37,
+              "text": "VALIDATION_EXCLUSIONS = frozenset({"
+            },
+            {
+              "line": 38,
+              "text": "    \"scripts/verify_reviewed_source_v15.py\","
+            },
+            {
+              "line": 39,
+              "text": "    \"scripts/reviewed-source-registry-v15.json\","
+            },
+            {
+              "line": 40,
+              "text": "    \".github/workflows/ci.yml\","
+            },
+            {
+              "line": 41,
+              "text": "})"
+            }
+          ]
+        },
+        {
+          "start": 99,
+          "end": 110,
+          "lines": [
+            {
+              "line": 99,
+              "text": "def validation_inventory(ref):"
+            },
+            {
+              "line": 100,
+              "text": "    rows = git.git(\"ls-tree\", \"-r\", \"-z\", ref, \"--\", *VALIDATION_ROOTS)"
+            },
+            {
+              "line": 101,
+              "text": "    result = {}"
+            },
+            {
+              "line": 102,
+              "text": "    for row in rows.split(b\"\\0\"):"
+            },
+            {
+              "line": 103,
+              "text": "        if not row:"
+            },
+            {
+              "line": 104,
+              "text": "            continue"
+            },
+            {
+              "line": 105,
+              "text": "        metadata, path = row.decode().split(\"\\t\", 1)"
+            },
+            {
+              "line": 106,
+              "text": "        mode, kind, _oid = metadata.split()"
+            },
+            {
+              "line": 107,
+              "text": "        if validation_path(path):"
+            },
+            {
+              "line": 108,
+              "text": "            require(kind == \"blob\" and mode in {\"100644\", \"100755\"},"
+            },
+            {
+              "line": 109,
+              "text": "                    \"unsupported validation input mode: \" + path)"
+            },
+            {
+              "line": 110,
+              "text": "            result[path] = git.sha(git.blob(ref, path))"
+            }
+          ]
+        },
+        {
+          "start": 134,
+          "end": 141,
+          "lines": [
+            {
+              "line": 134,
+              "text": "def verify_snapshots(root=ROOT):"
+            },
+            {
+              "line": 135,
+              "text": "    verify_pins()"
+            },
+            {
+              "line": 136,
+              "text": "    require(BASE == history.HISTORICAL_HEAD, \"v15 historical base differs\")"
+            },
+            {
+              "line": 137,
+              "text": "    git.ensure_refs([BASE, PRODUCT, REVIEW])"
+            },
+            {
+              "line": 138,
+              "text": "    history.verify_current_history(root)"
+            },
+            {
+              "line": 139,
+              "text": "    for path in FROZEN:"
+            },
+            {
+              "line": 140,
+              "text": "        unchanged_file(root, path, git.blob(BASE, path), \"v14 approval snapshot changed\")"
+            },
+            {
+              "line": 141,
+              "text": ""
+            }
+          ]
+        },
+        {
+          "start": 143,
+          "end": 193,
+          "lines": [
+            {
+              "line": 143,
+              "text": "def reconstruct(registry, inherited, root=ROOT):"
+            },
+            {
+              "line": 144,
+              "text": "    check_identity(registry)"
+            },
+            {
+              "line": 145,
+              "text": "    require(set(inherited) == git.inputs(BASE)"
+            },
+            {
+              "line": 146,
+              "text": "            and all(raw == git.blob(BASE, path) for path, raw in inherited.items()),"
+            },
+            {
+              "line": 147,
+              "text": "            \"v15 base is not the proven inherited source\")"
+            },
+            {
+              "line": 148,
+              "text": "    source_inputs = git.inputs(PRODUCT)"
+            },
+            {
+              "line": 149,
+              "text": "    changes = set(git.git(\"diff\", \"--name-only\", BASE, PRODUCT, \"--\","
+            },
+            {
+              "line": 150,
+              "text": "                          \"crates\", \"Cargo.toml\", \"Cargo.lock\").decode().splitlines())"
+            },
+            {
+              "line": 151,
+              "text": "    delta = registry.get(\"delta\", {})"
+            },
+            {
+              "line": 152,
+              "text": "    require(isinstance(delta, dict) and changes == set(delta) and bool(changes),"
+            },
+            {
+              "line": 153,
+              "text": "            \"v15 reviewed source delta inventory differs\")"
+            },
+            {
+              "line": 154,
+              "text": "    # Deletions are deliberately not part of this fixed implementation review."
+            },
+            {
+              "line": 155,
+              "text": "    require(set(inherited) <= source_inputs, \"v15 source unexpectedly removes an inherited input\")"
+            },
+            {
+              "line": 156,
+              "text": "    raw_review = git.blob(REVIEW, REVIEW_PATH)"
+            },
+            {
+              "line": 157,
+              "text": "    require(git.sha(raw_review) == registry.get(\"review_sha256\"), \"v15 review digest differs\")"
+            },
+            {
+              "line": 158,
+              "text": "    unchanged_file(root, REVIEW_PATH, raw_review, \"v15 fixed independent review changed\")"
+            },
+            {
+              "line": 159,
+              "text": "    review = json.loads(raw_review)"
+            },
+            {
+              "line": 160,
+              "text": "    require(review.get(\"source\") == PRODUCT and review.get(\"base\") == BASE"
+            },
+            {
+              "line": 161,
+              "text": "            and review.get(\"verdict\") == \"accepted_scoped\""
+            },
+            {
+              "line": 162,
+              "text": "            and review.get(\"scope\") == identities()[\"scope\"]"
+            },
+            {
+              "line": 163,
+              "text": "            and isinstance(review.get(\"independent_reviewers\"), list)"
+            },
+            {
+              "line": 164,
+              "text": "            and bool(review[\"independent_reviewers\"])"
+            },
+            {
+              "line": 165,
+              "text": "            and all(isinstance(name, str) and name.strip()"
+            },
+            {
+              "line": 166,
+              "text": "                    for name in review[\"independent_reviewers\"])"
+            },
+            {
+              "line": 167,
+              "text": "            and review.get(\"unresolved_blockers\") == []"
+            },
+            {
+              "line": 168,
+              "text": "            and set(review.get(\"paths\", {})) == changes,"
+            },
+            {
+              "line": 169,
+              "text": "            \"v15 review does not accept the exact source delta\")"
+            },
+            {
+              "line": 170,
+              "text": "    result = dict(inherited)"
+            },
+            {
+              "line": 171,
+              "text": "    for path in sorted(changes):"
+            },
+            {
+              "line": 172,
+              "text": "        before = inherited.get(path)"
+            },
+            {
+              "line": 173,
+              "text": "        after = git.blob(PRODUCT, path)"
+            },
+            {
+              "line": 174,
+              "text": "        expected = {\"before_sha256\": None if before is None else git.sha(before),"
+            },
+            {
+              "line": 175,
+              "text": "                    \"sha256\": git.sha(after)}"
+            },
+            {
+              "line": 176,
+              "text": "        require(delta[path] == expected, \"v15 before/after digest differs: \" + path)"
+            },
+            {
+              "line": 177,
+              "text": "        require(review[\"paths\"][path] == expected,"
+            },
+            {
+              "line": 178,
+              "text": "                \"v15 independent source review differs: \" + path)"
+            },
+            {
+              "line": 179,
+              "text": "        result[path] = after"
+            },
+            {
+              "line": 180,
+              "text": "    require(set(result) == source_inputs"
+            },
+            {
+              "line": 181,
+              "text": "            and all(raw == git.blob(PRODUCT, path) for path, raw in result.items()),"
+            },
+            {
+              "line": 182,
+              "text": "            \"v15 complete source inventory or bytes differ\")"
+            },
+            {
+              "line": 183,
+              "text": "    complete = {path: git.sha(raw) for path, raw in result.items()}"
+            },
+            {
+              "line": 184,
+              "text": "    require(complete == registry.get(\"complete_inputs\"), \"v15 complete manifest differs\")"
+            },
+            {
+              "line": 185,
+              "text": "    require(review.get(\"complete_inputs\") == complete,"
+            },
+            {
+              "line": 186,
+              "text": "            \"v15 independent review complete manifest differs\")"
+            },
+            {
+              "line": 187,
+              "text": "    extra = registry.get(\"validation_inputs\")"
+            },
+            {
+              "line": 188,
+              "text": "    require(isinstance(extra, dict) and extra"
+            },
+            {
+              "line": 189,
+              "text": "            and review.get(\"validation_inputs\") == extra,"
+            },
+            {
+              "line": 190,
+              "text": "            \"v15 validation review inventory differs\")"
+            },
+            {
+              "line": 191,
+              "text": "    require(extra == validation_inventory(PRODUCT), \"v15 complete validation manifest differs\")"
+            },
+            {
+              "line": 192,
+              "text": "    verify_validation_inputs(root, extra)"
+            },
+            {
+              "line": 193,
+              "text": "    return result"
+            }
+          ]
+        },
+        {
+          "start": 196,
+          "end": 241,
+          "lines": [
+            {
+              "line": 196,
+              "text": "def approved_union(registry, root=ROOT):"
+            },
+            {
+              "line": 197,
+              "text": "    check_identity(registry)"
+            },
+            {
+              "line": 198,
+              "text": "    git.ensure_refs([BASE, PRODUCT, REVIEW])"
+            },
+            {
+              "line": 199,
+              "text": "    # The new helper, tests and adapter are reviewed inputs, not exclusions."
+            },
+            {
+              "line": 200,
+              "text": "    # Reject their current bytes before any historical-context proof uses them."
+            },
+            {
+              "line": 201,
+              "text": "    verify_validation_inputs(root, validation_inventory(PRODUCT))"
+            },
+            {
+              "line": 202,
+              "text": "    verify_snapshots(root)"
+            },
+            {
+              "line": 203,
+              "text": "    inherited = history.approved_union(previous, root=root)"
+            },
+            {
+              "line": 204,
+              "text": "    return reconstruct(registry, inherited, root=root)"
+            },
+            {
+              "line": 205,
+              "text": ""
+            },
+            {
+              "line": 206,
+              "text": ""
+            },
+            {
+              "line": 207,
+              "text": "def expected_ci():"
+            },
+            {
+              "line": 208,
+              "text": "    original = previous.expected_ci()"
+            },
+            {
+              "line": 209,
+              "text": "    old = \"verify_reviewed_source_v14.py --source-version \" + previous.VERSION"
+            },
+            {
+              "line": 210,
+              "text": "    new = \"verify_reviewed_source_v15.py --source-version \" + VERSION"
+            },
+            {
+              "line": 211,
+              "text": "    require(original.count(old) == 1, \"v14 CI selector differs\")"
+            },
+            {
+              "line": 212,
+              "text": "    return original.replace(old, new)"
+            },
+            {
+              "line": 213,
+              "text": ""
+            },
+            {
+              "line": 214,
+              "text": ""
+            },
+            {
+              "line": 215,
+              "text": "def verify_ci(root=ROOT):"
+            },
+            {
+              "line": 216,
+              "text": "    target = root / \".github/workflows/ci.yml\""
+            },
+            {
+              "line": 217,
+              "text": "    require(not target.is_symlink() and target.is_file()"
+            },
+            {
+              "line": 218,
+              "text": "            and target.read_text() == expected_ci(),"
+            },
+            {
+              "line": 219,
+              "text": "            \"CI differs beyond the explicit v15 selector\")"
+            },
+            {
+              "line": 220,
+              "text": "    unchanged_file(root, \".github/workflows/p7-engineering.yml\","
+            },
+            {
+              "line": 221,
+              "text": "                   git.blob(BASE, \".github/workflows/p7-engineering.yml\"),"
+            },
+            {
+              "line": 222,
+              "text": "                   \"P7 engineering workflow changed\")"
+            },
+            {
+              "line": 223,
+              "text": ""
+            },
+            {
+              "line": 224,
+              "text": ""
+            },
+            {
+              "line": 225,
+              "text": "def main():"
+            },
+            {
+              "line": 226,
+              "text": "    if sys.flags.optimize:"
+            },
+            {
+              "line": 227,
+              "text": "        raise SystemExit(\"source verification requires Python without -O\")"
+            },
+            {
+              "line": 228,
+              "text": "    parser = argparse.ArgumentParser(description=__doc__)"
+            },
+            {
+              "line": 229,
+              "text": "    parser.add_argument(\"--source-version\", required=True, choices=[VERSION])"
+            },
+            {
+              "line": 230,
+              "text": "    parser.parse_args()"
+            },
+            {
+              "line": 231,
+              "text": "    expected = approved_union(load_registry())"
+            },
+            {
+              "line": 232,
+              "text": "    tracked = git.git(\"ls-files\", \"--\", \"crates\", \"Cargo.toml\", \"Cargo.lock\")"
+            },
+            {
+              "line": 233,
+              "text": "    for path, raw in expected.items():"
+            },
+            {
+              "line": 234,
+              "text": "        unchanged_file(ROOT, path, raw, \"v15 complete source input changed\")"
+            },
+            {
+              "line": 235,
+              "text": "    git.verify_tree(ROOT, expected, tracked.decode().splitlines())"
+            },
+            {
+              "line": 236,
+              "text": "    validation_tracked = git.git(\"ls-files\", \"--\", *VALIDATION_ROOTS).decode().splitlines()"
+            },
+            {
+              "line": 237,
+              "text": "    require({path for path in validation_tracked if validation_path(path)}"
+            },
+            {
+              "line": 238,
+              "text": "            == set(validation_inventory(PRODUCT)), \"v15 tracked validation inventory differs\")"
+            },
+            {
+              "line": 239,
+              "text": "    verify_ci()"
+            },
+            {
+              "line": 240,
+              "text": "    print(json.dumps(dict(identities(), status=\"passed\", complete_inputs=len(expected),"
+            },
+            {
+              "line": 241,
+              "text": "                          executed_previous_proof=previous.VERSION)))"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ci-original-proof-step",
+      "ref": "7d5402a17cfdd06274e8204ec544bd4db104f872",
+      "path": ".github/workflows/ci.yml",
+      "sha256": "7e659bc2f8cf1565238b2903864639a2e4bfc0887721d9482f128f6e83b81914",
+      "git_blob": "8c7325eb88b791f909e72c4b6c79b417185e4386",
+      "ranges": [
+        {
+          "start": 45,
+          "end": 55,
+          "lines": [
+            {
+              "line": 45,
+              "text": "      - name: Fixed resource driver harmless fixtures and TODO consistency"
+            },
+            {
+              "line": 46,
+              "text": "        run: |"
+            },
+            {
+              "line": 47,
+              "text": "          # Read-only AST comparator object; never check out or run its driver."
+            },
+            {
+              "line": 48,
+              "text": "          git fetch --no-tags origin da8b618cbf8b67683c6b16880419089f7159c15e"
+            },
+            {
+              "line": 49,
+              "text": "          PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/resource_harness -v"
+            },
+            {
+              "line": 50,
+              "text": "          python3 scripts/code_index_plan.py"
+            },
+            {
+              "line": 51,
+              "text": "          PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s scripts/tests -p 'test_p8_*.py' -v"
+            },
+            {
+              "line": 52,
+              "text": "          python3 scripts/p8_facts.py --check"
+            },
+            {
+              "line": 53,
+              "text": "          PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/source_integrity -v"
+            },
+            {
+              "line": 54,
+              "text": "          python3 scripts/verify_reviewed_source_v15.py --source-version p8-completion-source-20261009-v15"
+            },
+            {
+              "line": 55,
+              "text": "          python3 scripts/verify_historical_integrations_v2.py"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "main-to-g3-guard-four-pin-only-delta",
+      "base": "7d5402a17cfdd06274e8204ec544bd4db104f872",
+      "head": "26768b5e38ed1784bf77a8c4fe57baf01a19c626",
+      "diff": "diff --git a/scripts/verify_reviewed_source_v15.py b/scripts/verify_reviewed_source_v15.py\nindex c8b96fed..1b8b544b 100644\n--- a/scripts/verify_reviewed_source_v15.py\n+++ b/scripts/verify_reviewed_source_v15.py\n@@ -17,11 +17,11 @@ import v15_historical_context as history\n ROOT = Path(__file__).resolve().parents[1]\n VERSION = \"p8-completion-source-20261009-v15\"\n BASE = \"7354db236c9d9850a75f31672697ae9eab44565e\"\n-PRODUCT = \"254009277688d64677361a0ca33e5dea73f295ef\"\n-REVIEW = \"3a11f30f9f00a89fe3cd481b3b7609066728baad\"\n-REVIEW_PATH = \"artifacts/checkpoints/p8-scale-cache-20261009/independent-source-review.json\"\n+PRODUCT = \"90838d6c890b12f031fa0be9d1956cfbdef9e8d6\"\n+REVIEW = \"b0f0c0d00e38508e7e43b0e87d1215d7f6413969\"\n+REVIEW_PATH = \"artifacts/checkpoints/p8-mainb21-snapshot-leaf-integration-20261009/independent-source-review.json\"\n REGISTRY = ROOT / \"scripts/reviewed-source-registry-v15.json\"\n-REGISTRY_SHA256 = \"030e795021ddb4897cc05c061aa608b7e3d34be2c3410787468b6d0a68568ed9\"\n+REGISTRY_SHA256 = \"ccd5ac1a81f50ca78e7179db7a8d83177d699e58d87c5781aa4f8ae4ee7f1b92\"\n FROZEN = (\n     \"scripts/verify_reviewed_source_v14.py\",\n     \"scripts/reviewed-source-registry-v14.json\",\n"
+    }
+  ]
+}

@@ -1,0 +1,621 @@
+{
+  "schema_version": 1,
+  "evidence": [
+    {
+      "id": "main-pinned-admission-custody",
+      "ref": "7d5402a17cfdd06274e8204ec544bd4db104f872",
+      "path": "scripts/p8_corpus_audit.py",
+      "sha256": "4488cd5fef6b1f11a9a383bd296817c2d2fe79fa66130ca164d605b7932563e3",
+      "lines": [
+        {
+          "line": 25,
+          "text": "ROOT = Path(__file__).resolve().parents[1]"
+        },
+        {
+          "line": 26,
+          "text": "PREFIX = \"crates/cc-eval/benchmarks/public-v19/\""
+        },
+        {
+          "line": 27,
+          "text": "ANCHOR = \"5385f5a7a2a875c6d5cbd049bdde039bf71bbf32\""
+        },
+        {
+          "line": 28,
+          "text": "ADMISSION = PREFIX + \"protocol/global-dev-review/typescript-extension/admission.json\""
+        },
+        {
+          "line": 29,
+          "text": "SOURCES = PREFIX + \"protocol/source-locks.json\""
+        },
+        {
+          "line": 30,
+          "text": "CUSTODY = PREFIX + \"protocol/custody/decision.json\""
+        },
+        {
+          "line": 31,
+          "text": "COMPONENTS = PREFIX + \"protocol/global-dev-review/typescript-extension/global-components.json\""
+        },
+        {
+          "line": 32,
+          "text": "CONTROL_PINS = {"
+        },
+        {
+          "line": 33,
+          "text": "    ADMISSION: \"b4388ca60612f6734719b348bf30e05dd0752b7b754f47cc078b590e35c1e425\","
+        },
+        {
+          "line": 34,
+          "text": "    SOURCES: \"c17f10b6b289c427c1324a73b5251ed1985272882a073c1763e8fe774da174b4\","
+        },
+        {
+          "line": 35,
+          "text": "    CUSTODY: \"a8c88f2479843566d74a8a47f05da81da0588029dffa681c313e64939f344f9c\","
+        },
+        {
+          "line": 36,
+          "text": "    COMPONENTS: \"6324f6152aad34d3c8614b8db0991be800d9a91b32cb092950ea5a95229a94d7\","
+        }
+      ]
+    },
+    {
+      "id": "main-corpus-scope-limits",
+      "ref": "7d5402a17cfdd06274e8204ec544bd4db104f872",
+      "path": "scripts/p8_corpus_audit.py",
+      "sha256": "4488cd5fef6b1f11a9a383bd296817c2d2fe79fa66130ca164d605b7932563e3",
+      "lines": [
+        {
+          "line": 355,
+          "text": "        errors[\"global_component_coverage_drift\"] = 1"
+        },
+        {
+          "line": 356,
+          "text": "    if len(components) != admission[\"global_review\"][\"conservative_global_correlation_components\"]:"
+        },
+        {
+          "line": 357,
+          "text": "        errors[\"global_component_count_drift\"] = 1"
+        },
+        {
+          "line": 358,
+          "text": "    custody = blobs.json(ANCHOR + \":\" + CUSTODY)"
+        },
+        {
+          "line": 359,
+          "text": "    result = {"
+        },
+        {
+          "line": 360,
+          "text": "        \"schema_version\": 1, \"scope\": \"fixed_public_dev_integrity_and_coverage_only\","
+        },
+        {
+          "line": 361,
+          "text": "        \"status\": \"passed_local_audit\" if not errors else \"failed_local_audit\", \"errors\": errors,"
+        },
+        {
+          "line": 362,
+          "text": "        \"observed_at_utc\": datetime.now(timezone.utc).isoformat(),"
+        },
+        {
+          "line": 363,
+          "text": "        \"worktree_head\": git(root, \"rev-parse\", \"HEAD\").decode().strip(),"
+        },
+        {
+          "line": 364,
+          "text": "        \"audit_script_sha256\": sha(read_bytes(Path(__file__), limit=MAX_BLOB)),"
+        },
+        {
+          "line": 365,
+          "text": "        \"historical_public_protocol_sha\": ANCHOR,"
+        },
+        {
+          "line": 366,
+          "text": "        \"historical_admission_sha256\": CONTROL_PINS[ADMISSION],"
+        },
+        {
+          "line": 367,
+          "text": "        \"input_blobs_verified\": len(blobs.cache), \"input_bytes_verified\": blobs.total_bytes,"
+        },
+        {
+          "line": 368,
+          "text": "        \"verified_inputs_sha256\": {k: sha(v) for k, v in sorted(blobs.cache.items())},"
+        },
+        {
+          "line": 369,
+          "text": "        \"repositories\": repos,"
+        },
+        {
+          "line": 370,
+          "text": "        \"totals\": {\"native_dev_rows\": len(native), \"compat_dev_rows\": len(compat),"
+        },
+        {
+          "line": 371,
+          "text": "                   \"repositories\": len(repos), \"source_files\": sum(r[\"source_files_checked\"] for r in repos.values()),"
+        },
+        {
+          "line": 372,
+          "text": "                   \"source_spans\": sum(r[\"source_spans_checked\"] for r in repos.values()),"
+        },
+        {
+          "line": 373,
+          "text": "                   \"categories\": dict(sorted(categories.items())), \"languages\": dict(sorted(languages.items())),"
+        },
+        {
+          "line": 374,
+          "text": "                   \"distinct_family_labels\": len({r[\"query_family\"] for r in native}),"
+        },
+        {
+          "line": 375,
+          "text": "                   \"historical_conservative_components_rechecked\": len(components),"
+        },
+        {
+          "line": 376,
+          "text": "                   \"normalized_duplicate_query_groups\": sum(n > 1 for n in fingerprints.values()),"
+        },
+        {
+          "line": 377,
+          "text": "                   \"new_independent_gold_reviews\": 0, \"formal_accepted_families\": 0},"
+        },
+        {
+          "line": 378,
+          "text": "        \"coverage_gaps\": {\"missing_categories\": sorted(CATEGORIES - categories.keys()),"
+        },
+        {
+          "line": 379,
+          "text": "                          \"missing_languages\": sorted(LANGUAGES - languages.keys()),"
+        },
+        {
+          "line": 380,
+          "text": "                          \"missing_candidate_repositories\": [\"serde\", \"vite\"],"
+        },
+        {
+          "line": 381,
+          "text": "                          \"mixed_monorepo_certified\": False, \"formal_family_target\": 600,"
+        },
+        {
+          "line": 382,
+          "text": "                          \"formal_family_shortfall\": 600},"
+        },
+        {
+          "line": 383,
+          "text": "        \"custody\": {\"decision_sha256\": CONTROL_PINS[CUSTODY], \"status\": custody[\"status\"],"
+        },
+        {
+          "line": 384,
+          "text": "                    \"historically_reported_candidate_ids\": custody[\"would_be_holdout_ids\"],"
+        },
+        {
+          "line": 385,
+          "text": "                    \"historically_reported_exposed_lower_bound\": custody[\"known_exposed_ids_lower_bound\"],"
+        },
+        {
+          "line": 386,
+          "text": "                    \"clean_holdout_certified\": 0, \"body_reads_this_run\": 0},"
+        },
+        {
+          "line": 387,
+          "text": "        \"release_certified\": False,"
+        },
+        {
+          "line": 388,
+          "text": "        \"not_run\": [\"cc_eval_blake3_validate\", \"production_retrieval\", \"new_source_gold_semantic_review\","
+        },
+        {
+          "line": 389,
+          "text": "                    \"upstream_checkout_cleanliness\", \"formal_family_independence\", \"heldout_evaluation\","
+        },
+        {
+          "line": 390,
+          "text": "                    \"facet_graph_quality\", \"six_repository_release_certification\"],"
+        },
+        {
+          "line": 391,
+          "text": "    }"
+        }
+      ]
+    },
+    {
+      "id": "old-65-statistical-contract",
+      "ref": "3babaa5aa0b11971e20b65625992a9b0dd7b8968",
+      "path": "crates/cc-eval/benchmarks/public-v19/protocol/PREREGISTRATION.md",
+      "sha256": "dc3f5f89933c6bb403cf65908c9922acd5b817cbb5e6c00c7b2e2d442e36a04c",
+      "lines": [
+        {
+          "line": 35,
+          "text": "## Aggregation, paired intervals and margins"
+        },
+        {
+          "line": 36,
+          "text": ""
+        },
+        {
+          "line": 37,
+          "text": "Design decision: compute each per-query metric as the arithmetic mean of its3 scheduled repetition scores; repeated requests never multiply N. Report query micro mean over all eligible query variants (transparently counts variants), equal-weight repository macro mean, repository/category cell means and equal-weight category macro mean over nonempty frozen cells. Also report family-balanced means: mean variants within global family, then equal family weight, and within each repo equal-weight family means. Primary quality comparison uses family-balanced repository macro, not a translation-heavy query micro mean. All denominators and missing/unsupported applicability counts accompany each metric; no aggregate includes quarantine. Cross-repo components are single sampling clusters; their repo-specific outcomes stay attached."
+        },
+        {
+          "line": 38,
+          "text": ""
+        },
+        {
+          "line": 39,
+          "text": "Freeze paired candidate-minus-baseline per-query deltas, then mean repeated measurements/variants inside a global-family cluster. Primary95% paired family-cluster percentile bootstrap:10000 replicates, seed20261003, deterministic Python `random.Random(seed)` with ordered sorted keys, nearest-rank quantiles ranksceil(.025*B)-1 andceil(.975*B)-1. Design decision, chosen before ranking; not an existing evaluator capability. For components confined to one repo, resample N_repo clusters with replacement independently within each fixed repository, recompute weighted macro/micro using attached cases. For cross-repo components, group by their exact repository-membership signature, resample original N_signature clusters within each signature and carry **all repo outcomes together**; this preserves pairing/leakage units and repository counts without treating a component as independent per repo. Do not split components to obtain narrower intervals. Report fixed six-repository conditional inference, not generalization to all unseen repositories. Category/exact/semantic subgroup use the same cluster draws with pre-frozen eligibility; empty strata produce not_applicable. Fewer than2 independent eligible components or otherwise degenerate/missing denominators =>inconclusive, not bootstrap-certified pass. Two-arm results missing for scheduled cases invalidate comparison; tool failures with valid rows remain observed0 quality and availability failures. Existing cc-eval bootstrap2000 unstratified family means and compare policy are **different diagnostics**, not this global interval."
+        },
+        {
+          "line": 40,
+          "text": ""
+        },
+        {
+          "line": 41,
+          "text": "All metrics/deltas and intervals are reported, no post-hoc chosen best metric or slice. Primary native quality nDCG10 and PrimaryTop1 are co-primary descriptive outcomes; compat is separate. Semantic/exact family subsets are pre-frozen via source-task categories/tags and reviewer receipt, never inferred from performance. Any exploratory extra slice is labelled exploratory. No hypothesis selection after ranking. No significance claim that ignores multiple inspected slices; any confirmatory multi-arm extension needs preregistered multiplicity handling before execution."
+        },
+        {
+          "line": 42,
+          "text": ""
+        },
+        {
+          "line": 43,
+          "text": "Authority09 §10 suggests absolute nDCG degradation0.01 and PrimaryTop1 one percentage point as **review triggers**, not tolerable correctness errors or automatic acceptance/non-inferiority margins. Freeze those triggers as candidate-minus-baseline mean <-0.01 for each metric; CI crossing a trigger is inconclusive, a reviewer decides next action without changing frozen gold. For performance >10% requires explanation/review, >20% blocks a adequately sampled comparable profile; no latency pass from this quality design (no200-sample tail certification)."
+        },
+        {
+          "line": 44,
+          "text": ""
+        },
+        {
+          "line": 45,
+          "text": "**No permissive non-inferiority margin is invented.** Conservative preregistered design choice for a future separately authorized semantic benefit claim: held-out semantic family-balanced nDCG paired95% lower CI>0, and held-out exact family-balanced nDCG and PrimaryTop1 lower CI>=0 (zero tolerated regression in this design), with integrity criteria satisfied. Authority requires semantic gain and no material exact degradation but does not specify this numeric exact bound; zero is explicitly our conservative decision. Current task cannot test these live arms. If unavailable data or CI uncertainty prevents these conditions, status=inconclusive/blocked, never passed. General V19 gate is not automatically decided by these two numerical outcomes: all required corpus, independent review, custody, source/facet/span/availability and reporting obligations remain."
+        }
+      ]
+    },
+    {
+      "id": "old-65-custody-never-authorizes",
+      "ref": "3babaa5aa0b11971e20b65625992a9b0dd7b8968",
+      "path": "crates/cc-eval/benchmarks/public-v19/protocol/custody/check_custody.py",
+      "sha256": "f947047aa289478f6f9575dc740a3dec457806a48501f4b4d896a33d9be873c7",
+      "lines": [
+        {
+          "line": 103,
+          "text": "            'would_be_holdout_ids':sum(r['would_be_holdout_ids'] for r in rows),"
+        },
+        {
+          "line": 104,
+          "text": "            'known_exposed_ids_lower_bound':sum(r['known_exposed_ids_lower_bound'] for r in rows),"
+        },
+        {
+          "line": 105,
+          "text": "            'clean_holdout_ids_certified_by_checker':0, 'affected_global_components':'unknown_relation_graph_required',"
+        },
+        {
+          "line": 106,
+          "text": "            'other_shards_custody':'unknown_not_assumed_clean',"
+        },
+        {
+          "line": 107,
+          "text": "            'not_verified':['ACL_or_principal_identity','actual_read_events','first_public_or_shared_visibility',"
+        },
+        {
+          "line": 108,
+          "text": "                            'body_exposure_hash_authenticity','independent_source_gold_review','semantic_family_relations']}"
+        },
+        {
+          "line": 109,
+          "text": ""
+        },
+        {
+          "line": 110,
+          "text": ""
+        },
+        {
+          "line": 111,
+          "text": "def main():"
+        },
+        {
+          "line": 112,
+          "text": "    p = argparse.ArgumentParser(description=__doc__)"
+        },
+        {
+          "line": 113,
+          "text": "    p.add_argument('--snapshot', type=Path, required=True)"
+        },
+        {
+          "line": 114,
+          "text": "    p.add_argument('--output', type=Path, required=True)"
+        },
+        {
+          "line": 115,
+          "text": "    args = p.parse_args()"
+        },
+        {
+          "line": 116,
+          "text": "    try:"
+        },
+        {
+          "line": 117,
+          "text": "        raw = args.snapshot.read_bytes()"
+        },
+        {
+          "line": 118,
+          "text": "        if len(raw) > 1_000_000:"
+        },
+        {
+          "line": 119,
+          "text": "            raise ValueError"
+        },
+        {
+          "line": 120,
+          "text": "        result = audit(json.loads(raw), sha(raw))"
+        },
+        {
+          "line": 121,
+          "text": "    except (OSError, ValueError):"
+        },
+        {
+          "line": 122,
+          "text": "        result = {'status':'invalid_metadata_receipt','errors':{'metadata_input':1},'clean_holdout_ids_certified_by_checker':0}"
+        },
+        {
+          "line": 123,
+          "text": "    args.output.write_text(json.dumps(result, indent=2) + '\\n')"
+        },
+        {
+          "line": 124,
+          "text": "    print(json.dumps({'status':result['status'], 'clean_holdout_ids':0, 'receipt_sha256':sha(args.output.read_bytes())}))"
+        },
+        {
+          "line": 125,
+          "text": "    return 1  # The checker never certifies real access control or clean holdout."
+        }
+      ]
+    },
+    {
+      "id": "main-existing-statistical-diagnostic",
+      "ref": "7d5402a17cfdd06274e8204ec544bd4db104f872",
+      "path": "crates/cc-eval/src/benchmark/ablation/strategy/reporting.rs",
+      "sha256": "a0fbbc5ea5e3948d3a0748b09e0acb5ab0a28332ae722a1aec3e879331388b23",
+      "lines": [
+        {
+          "line": 112,
+          "text": "    let family_means = means(&families);"
+        },
+        {
+          "line": 113,
+          "text": "    let values = family_means.values().copied().collect::<Vec<_>>();"
+        },
+        {
+          "line": 114,
+          "text": "    let strata = strata.into_iter().map(|((split, category), families)| {"
+        },
+        {
+          "line": 115,
+          "text": "        let family_means = means(&families);"
+        },
+        {
+          "line": 116,
+          "text": "        let values = family_means.values().copied().collect::<Vec<_>>();"
+        },
+        {
+          "line": 117,
+          "text": "        json!({\"profile\":profile,\"split\":split,\"category\":category,"
+        },
+        {
+          "line": 118,
+          "text": "            \"family_means\":family_means,\"family_ndcg_delta_ci\":statistics::bootstrap(&values, seed)})"
+        },
+        {
+          "line": 119,
+          "text": "    }).collect::<Vec<_>>();"
+        },
+        {
+          "line": 120,
+          "text": "    Ok("
+        },
+        {
+          "line": 121,
+          "text": "        json!({\"profile\":profile,\"effect_interpretation\":\"none; authored/fake mechanism observations only\","
+        },
+        {
+          "line": 122,
+          "text": "        \"direction\":\"candidate minus local\",\"method\":\"paired query means; family bootstrap; category/split strata reported separately\","
+        },
+        {
+          "line": 123,
+          "text": "        \"seed\":seed,\"bootstrap_draws\":2_000,\"percentile_indices_zero_based\":[49,1949],"
+        },
+        {
+          "line": 124,
+          "text": "        \"no_answer_queries_excluded_from_effect_ci\":queries.iter().filter(|query| query.no_answer).count(),"
+        },
+        {
+          "line": 125,
+          "text": "        \"family_means\":family_means,\"family_ndcg_delta_ci\":statistics::bootstrap(&values, seed),"
+        },
+        {
+          "line": 126,
+          "text": "        \"cases\":cases,\"strata\":strata,"
+        },
+        {
+          "line": 127,
+          "text": "        \"quality_gate\":\"not_evaluated; fake/engineering effects have no semantic benefit interpretation\"}),"
+        }
+      ]
+    },
+    {
+      "id": "main-existing-bootstrap",
+      "ref": "7d5402a17cfdd06274e8204ec544bd4db104f872",
+      "path": "crates/cc-eval/src/benchmark/statistics.rs",
+      "sha256": "3eb2da83662bab96dbb3625a0a6998a7586ce300df4766b4ab7f22409143d4e2",
+      "lines": [
+        {
+          "line": 68,
+          "text": "pub fn bootstrap(values: &[f64], seed: u64) -> Option<Interval> {"
+        },
+        {
+          "line": 69,
+          "text": "    if values.is_empty() || values.iter().any(|v| !v.is_finite()) {"
+        },
+        {
+          "line": 70,
+          "text": "        return None;"
+        },
+        {
+          "line": 71,
+          "text": "    }"
+        },
+        {
+          "line": 72,
+          "text": "    let mean = values.iter().sum::<f64>() / values.len() as f64;"
+        },
+        {
+          "line": 73,
+          "text": "    let mut s = seed;"
+        },
+        {
+          "line": 74,
+          "text": "    let mut draws = Vec::with_capacity(2000);"
+        },
+        {
+          "line": 75,
+          "text": "    for _ in 0..2000 {"
+        },
+        {
+          "line": 76,
+          "text": "        let mut total = 0.0;"
+        },
+        {
+          "line": 77,
+          "text": "        for _ in values {"
+        },
+        {
+          "line": 78,
+          "text": "            total += values[(next(&mut s) as usize) % values.len()];"
+        },
+        {
+          "line": 79,
+          "text": "        }"
+        },
+        {
+          "line": 80,
+          "text": "        draws.push(total / values.len() as f64);"
+        },
+        {
+          "line": 81,
+          "text": "    }"
+        },
+        {
+          "line": 82,
+          "text": "    draws.sort_by(f64::total_cmp);"
+        },
+        {
+          "line": 83,
+          "text": "    Some(Interval {"
+        },
+        {
+          "line": 84,
+          "text": "        mean,"
+        },
+        {
+          "line": 85,
+          "text": "        low: draws[49],"
+        },
+        {
+          "line": 86,
+          "text": "        high: draws[1949],"
+        },
+        {
+          "line": 87,
+          "text": "        independent_units: values.len(),"
+        },
+        {
+          "line": 88,
+          "text": "    })"
+        },
+        {
+          "line": 89,
+          "text": "}"
+        },
+        {
+          "line": 90,
+          "text": ""
+        },
+        {
+          "line": 91,
+          "text": "/// A lifecycle label requires observations made by the runner. The suite name,"
+        },
+        {
+          "line": 92,
+          "text": "/// repetition number, query text and originating-work cost receipt are not cache"
+        },
+        {
+          "line": 93,
+          "text": "/// evidence. In particular, a reused query need not have hit the result cache."
+        },
+        {
+          "line": 94,
+          "text": "#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]"
+        },
+        {
+          "line": 95,
+          "text": "#[serde(rename_all = \"snake_case\")]"
+        },
+        {
+          "line": 96,
+          "text": "pub enum MeasurementOperation {"
+        },
+        {
+          "line": 97,
+          "text": "    Build,"
+        },
+        {
+          "line": 98,
+          "text": "    Query,"
+        },
+        {
+          "line": 99,
+          "text": "    #[default]"
+        },
+        {
+          "line": 100,
+          "text": "    Unknown,"
+        },
+        {
+          "line": 101,
+          "text": "}"
+        },
+        {
+          "line": 102,
+          "text": "#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]"
+        },
+        {
+          "line": 103,
+          "text": "#[serde(rename_all = \"snake_case\")]"
+        },
+        {
+          "line": 104,
+          "text": "pub enum ResultCacheObservation {"
+        },
+        {
+          "line": 105,
+          "text": "    Hit,"
+        },
+        {
+          "line": 106,
+          "text": "    Miss,"
+        },
+        {
+          "line": 107,
+          "text": "    #[default]"
+        },
+        {
+          "line": 108,
+          "text": "    Unknown,"
+        },
+        {
+          "line": 109,
+          "text": "}"
+        },
+        {
+          "line": 110,
+          "text": "#[derive(Debug, Clone, Default, Serialize, Deserialize)]"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,659 @@
+{
+  "schema": "downstream-acceptance-gap-review-v1",
+  "reviewer": "/root/todo_audit",
+  "reviewed_at_utc": "2026-10-09T09:04:45.180048+00:00",
+  "verdict": "core_subacceptance_evidence_not_full_task_closure; concrete_runtime_attribution_gap_remains",
+  "scope": "Read-only original-definition review of P8-007/008/009/010/011/012/013/016, existing small/raw reports, exact main/#175 source locations and staged README. No changed acceptance, product implementation, new tests/workloads, provider use or remote mutations.",
+  "ledger": {
+    "baseline_source": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529",
+    "baseline_tasks_sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207",
+    "observed_staged_tasks_sha256": "e7e19b6700b20b1a02754737cace7bbe5c21893dc67e3d6a29ffed00aa1ee828",
+    "original_total": 192,
+    "done": 163,
+    "remaining": 29,
+    "new_original_tasks_completed": 0,
+    "requested_ten_original_task_goal": "not_completed"
+  },
+  "README_review": {
+    "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/README.md",
+    "sha256": "5a71b59348fcd4b4d9a5c428770e2eabc033aee62b7ce0fafd5ddf9d820c1954",
+    "scope": "Static consistency with the retained engineering/acceptance reports; no newly claimed remote PR/run state or future native result.",
+    "consistent_boundaries": [
+      "G275/P2/source identities separated",
+      "P2 workspace failure retained",
+      "cold upper CI and resource/cost nulls retained",
+      "actual active clients1/4/7/12 retained",
+      "local3pass4not_run distinct",
+      "historical source pair not released-package attestation",
+      "native initial124tests4errors retained; later actual181tests and separate v15 CLI both exit0 at unchanged G"
+    ],
+    "final_native_receipt": {
+      "path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/native-source-checks/receipt.json",
+      "sha256": "a1fa063e889d04e2e14eb58015ee8b651df31a92af7a566fe29124d17764baeb",
+      "both_log_hashes_reconciled": true,
+      "source": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529",
+      "actual_two_commands_exit_zero": true
+    },
+    "modification_suggestions": [
+      {
+        "id": "readme-seven-invocations",
+        "state": "already_corrected_and_rechecked",
+        "finding": "The initial README said seven offline comparisons; the read version now correctly says seven offline command invocations and explicitly says overwrite refusal creates no additional comparison report."
+      },
+      {
+        "id": "readme-full-attribution-gap",
+        "state": "already_added_and_rechecked_in_read_README",
+        "placement": "Open acceptance and PR management, before the scale-study paragraph",
+        "text": "The reviewed G275 runtime artifacts retain client dispatch/admission/call timing distributions, indexer build-stage timing and sampled queue counters. They do not contain separated backend queue/service, database-lock wait or worker-contention timing required by the full benchmark attribution specification. Completing that scope needs bounded product diagnostics, an independently reviewed exact candidate and new source-bound measurements; the original G275 samples remain unchanged. Completing the scale dependency alone does not fill these missing observations."
+      },
+      {
+        "id": "readme-complementary-fault-scope",
+        "state": "recommended_clarification",
+        "placement": "After the G275 evidence-package table",
+        "text": "The local recovery receipt remains 3 passed / 4 not_run. Same-source active HTTP seeds separately cover disconnect, active cache corruption and incarnation replacement; original exact production tests cover persistence crash boundaries. The retained exact-test binaries/logs/receipts support their asserted boundaries; inner per-seed databases were not independently re-reviewed. This preserves each original receipt without describing the four limited-submatrix rows as four untested whole-task fault domains."
+      },
+      {
+        "id": "readme-current-receipts",
+        "state": "actual_terminal_native_receipt_and_log_hashes_rechecked",
+        "finding": "The current README correctly records the actual unchanged G native suite and v15 CLI exit0, while preserving both initial failures and the separate P2 workspace exit101. Its receipt and both original log hashes were rechecked; native log reports 181 tests in1304.289s, OK. The completed G275 CI and artifact-consumption bridges are separate source-scoped records; reference both without assigning G50d9/P2 checks to G275."
+      }
+    ]
+  },
+  "requirements": {
+    "task_ledger": {
+      "source": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529",
+      "path": "docs/roadmap/code-index-v2/tasks.json",
+      "sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207"
+    },
+    "performance_sampling": {
+      "source": "bd4693351149a443bd0054a37508c53f74ed7b52",
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "section_or_symbol": "section 9",
+      "url": "https://github.com/jyqj/codecortex/blob/bd4693351149a443bd0054a37508c53f74ed7b52/docs/roadmap/code-index-v2/09-BENCHMARK.md"
+    },
+    "completion_definition": {
+      "source": "bd4693351149a443bd0054a37508c53f74ed7b52",
+      "path": "docs/roadmap/code-index-v2/02-CONTRACTS.md",
+      "section_or_symbol": "C15/C16",
+      "url": "https://github.com/jyqj/codecortex/blob/bd4693351149a443bd0054a37508c53f74ed7b52/docs/roadmap/code-index-v2/02-CONTRACTS.md"
+    },
+    "validation_layers_and_minimums": {
+      "source": "bd4693351149a443bd0054a37508c53f74ed7b52",
+      "path": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+      "section_or_symbol": "sections 1/2/3/4",
+      "url": "https://github.com/jyqj/codecortex/blob/bd4693351149a443bd0054a37508c53f74ed7b52/docs/roadmap/code-index-v2/06-VALIDATION.md"
+    }
+  },
+  "task_reviews": [
+    {
+      "id": "P8-007",
+      "core_evidence": "Existing mixed C1/4/8/16 and held fake-backfill populations, terminal outcomes and progress checks pass their original scoped checkers.",
+      "remaining_intrinsic_gap": "Original benchmark section 9 backend queue/service, DB lock wait and worker contention attribution is not supplied by the reviewed mixed/held artifacts. Existing client phase distributions and separate DB availability probes are insufficient for that full attribution claim.",
+      "classification": "confirmed_measurement_scope_gap_for_complete_original_section_9",
+      "not_new_gates": [
+        "No requirement that observed active calls equal configured C exactly was found; C>1 read/build overlap was exercised.",
+        "Discrete queue counts and finite run progress need honest labels, not a new continuous telemetry requirement.",
+        "No mandatory per-request unique ID in the original task is invented; ID linkage is an implementation means to make future attribution reliable."
+      ],
+      "immediate_action": "Coordinate the bounded instrumentation design and PR #175 ownership using source-location-review.json; source/run evidence cannot be repaired offline.",
+      "original_status_unchanged": "in_progress",
+      "original_depends_on": [
+        "P8-006"
+      ],
+      "direct_dependency_statuses": {
+        "P8-006": "in_progress"
+      },
+      "original_validations": [
+        "V11",
+        "V20"
+      ],
+      "whole_task_accepted_done": false,
+      "core_findings_source": "275e8799d4947d297329073eaa3ca675d3fd0777"
+    },
+    {
+      "id": "P8-008",
+      "core_evidence": "30 empty-index cold builds, 400 new-process reopen queries, 400 distinct uncached queries and 400 cache-hit queries, all samples and original N/distributions/CI are preserved.",
+      "remaining_intrinsic_gap": null,
+      "classification": "no_additional_core_gap_found_in_declared_lifecycle_scope",
+      "not_new_gates": [
+        "OS cache clearing is explicitly optional/controlled in section 9; never calling these cold-disk observations complies.",
+        "Cold N30 upper CI null is an honest inconclusive tail result, not missing CI. It does not support a stable-tail/release claim."
+      ],
+      "immediate_action": "Retain the nulls and exact timing definitions; no rerun is justified solely to make unavailable cold-tail endpoints finite.",
+      "original_status_unchanged": "in_progress",
+      "original_depends_on": [
+        "P8-007"
+      ],
+      "direct_dependency_statuses": {
+        "P8-007": "in_progress"
+      },
+      "original_validations": [
+        "V20"
+      ],
+      "whole_task_accepted_done": false,
+      "core_findings_source": "275e8799d4947d297329073eaa3ca675d3fd0777"
+    },
+    {
+      "id": "P8-009",
+      "core_evidence": "Client/server/tree identities, current-vs-high-water memory distinctions, all-fixture physical disk ownership, FTS non-double-counting and reported/estimated cost categories were independently reconciled.",
+      "remaining_intrinsic_gap": null,
+      "classification": "no_additional_core_accounting_gap_found_in_declared_disabled_provider_scope",
+      "not_new_gates": [
+        "Unavailable or unmeasured resources/costs must remain null under the original specification; zero and mandatory paid-provider work would be incorrect substitutes.",
+        "A continuous memory peak or one-active-index footprint is not claimed by all-30-fixture snapshots."
+      ],
+      "immediate_action": "Keep units/ownership/nulls; complete the common exact-source regression reconciliation, not a new paid-provider study.",
+      "original_status_unchanged": "in_progress",
+      "original_depends_on": [
+        "P8-008"
+      ],
+      "direct_dependency_statuses": {
+        "P8-008": "in_progress"
+      },
+      "original_validations": [
+        "V20"
+      ],
+      "whole_task_accepted_done": false,
+      "core_findings_source": "275e8799d4947d297329073eaa3ca675d3fd0777"
+    },
+    {
+      "id": "P8-010",
+      "core_evidence": "The original one-hour workload, fixed mutation cycle, branch switches, catalog compactions, cache reuse, original RSS rule and unrepaired full fifteen-table endpoint parity have scoped passing evidence.",
+      "remaining_intrinsic_gap": "The shared complete section-9 backend/DB/worker attribution remains absent; the reviewed boundedness/progress observations themselves are not a new failure.",
+      "classification": "core_soak_controls_covered_but_shared_full_performance_attribution_open",
+      "not_new_gates": [
+        "Soak active maximum 1 under its original write-admission lock is the declared profile, not a failed C4 saturation gate.",
+        "The compound read includes all four RPCs in one offered denominator; it must not be pooled as extra independent latency samples.",
+        "Sampled queue/resource counters do not certify arbitrary continuous peaks; no such new condition is added to the original soak checker."
+      ],
+      "immediate_action": "Reuse existing build/client phase evidence for explanation; do not rerun an unchanged one-hour workload expecting it to reveal unrecorded backend times.",
+      "original_status_unchanged": "in_progress",
+      "original_depends_on": [
+        "P8-009"
+      ],
+      "direct_dependency_statuses": {
+        "P8-009": "in_progress"
+      },
+      "original_validations": [
+        "V07",
+        "V17",
+        "V20"
+      ],
+      "whole_task_accepted_done": false,
+      "core_findings_source": "275e8799d4947d297329073eaa3ca675d3fd0777"
+    },
+    {
+      "id": "P8-011",
+      "core_evidence": "All five literal fault domains have same-source coverage: local kill/busy/delete, three active HTTP seeds for disconnect/cache corruption/real incarnation replacement, plus original exact production persistence controls.",
+      "remaining_intrinsic_gap": null,
+      "classification": "no_missing_literal_fault_domain_found_after_complementary_same_source_evidence",
+      "coverage_map": {
+        "kill process": "original local stopped/pending RPC SIGKILL and restart",
+        "network disconnect": "seeds 223/227/229 real HTTP request disconnected before response; durable pending and local fallback; recovery after new authored source",
+        "cache corruption": "same active seeds mutate a genuinely published payload and format; query coverage becomes partial and recovers after restoring original bytes",
+        "database busy": "real BEGIN IMMEDIATE contention, SQLite code 5, no new-version commit while held, bounded recovery",
+        "database replacement": "hold an actual old-incarnation HTTP worker, perform full rebuild, release and reject stale publication; persisted manifest and reopened product checked"
+      },
+      "legacy_not_run_interpretation": "The local 3 passed / 4 not_run receipt remains immutable. Its domains are complemented by separate active/test receipts; they are not four current whole-task missing scenarios.",
+      "internal_crash_evidence_limit": "The exact tests include uncommitted/claimed/response/artifact/published SIGKILL and sidecar/rename/reopen/write serialization. The uploaded fault-test-00/01 retain exact binaries, full build/execution logs and receipts, not their inner per-seed SQLite/results files; no independent inner-DB review is claimed.",
+      "V17_V18_mapping": "V17 names crash/lease/swap/cache/GC/bounded-charge behavior. V18 is MCP/config compatibility and has no per-seed SQLite-upload requirement. Neither original P8-011 text nor V17/V18 specifies mandatory publication of each inner database; do not invent that new gate.",
+      "not_new_gates": [
+        "No physical power-loss, external paid-provider billing, unchanged-source automatic-retry speed or released-binary assertion is inferred."
+      ],
+      "immediate_action": "Preserve the explicit domain-to-original-receipt mapping and common regression evidence; no duplicate fault workload is needed merely because the limited local submatrix retains not_run rows.",
+      "original_status_unchanged": "in_progress",
+      "original_depends_on": [
+        "P7-020",
+        "P8-007",
+        "P8-010"
+      ],
+      "direct_dependency_statuses": {
+        "P7-020": "done",
+        "P8-007": "in_progress",
+        "P8-010": "in_progress"
+      },
+      "original_validations": [
+        "V14",
+        "V17",
+        "V18"
+      ],
+      "whole_task_accepted_done": false,
+      "core_findings_source": "275e8799d4947d297329073eaa3ca675d3fd0777"
+    },
+    {
+      "id": "P8-012",
+      "core_evidence": "Eight same-G275 Linux/macOS x MSRV1.95.0/stable x default/semantic cells used fresh targets and real release binaries with original stdio smoke; original collector replay passed.",
+      "remaining_intrinsic_gap": null,
+      "classification": "no_additional_platform_build_matrix_gap_found",
+      "not_new_gates": [
+        "Fresh target is required; empty downloaded dependency cache or hermetic compiler certification is not added.",
+        "Default/semantic smoke with semantic disabled establishes local platform startup, not HTTP/live-provider certification."
+      ],
+      "immediate_action": "Bind existing exact-source related regressions/CI and original eight-cell evidence; do not add platforms or rerun unchanged cells without a remaining risk.",
+      "original_status_unchanged": "in_progress",
+      "original_depends_on": [
+        "P8-011"
+      ],
+      "direct_dependency_statuses": {
+        "P8-011": "in_progress"
+      },
+      "original_validations": [
+        "V01",
+        "V21"
+      ],
+      "whole_task_accepted_done": false,
+      "core_findings_source": "275e8799d4947d297329073eaa3ca675d3fd0777"
+    },
+    {
+      "id": "P8-013",
+      "core_evidence": "Original quality/performance/lock failures return nonzero; inconclusive is nonzero; raw/report preservation, malformed policy and overwrite refusal are covered by the original six tests and separate offline commands.",
+      "remaining_intrinsic_gap": null,
+      "classification": "no_additional_named_failure_gate_behavior_gap_found",
+      "not_new_gates": [
+        "Six exact tests, five original comparison reports, seven offline invocations and six generated offline reports are different counts.",
+        "The original zero-plan in-memory assertion is not a missing imaginary CLI report."
+      ],
+      "immediate_action": "Keep corrected README terminology and explicit expected exits 1/1/1/1/2/2/2; do not turn deliberate nonzero controls into failed acceptance.",
+      "original_status_unchanged": "in_progress",
+      "original_depends_on": [
+        "P8-012"
+      ],
+      "direct_dependency_statuses": {
+        "P8-012": "in_progress"
+      },
+      "original_validations": [
+        "V03",
+        "V04",
+        "V20"
+      ],
+      "whole_task_accepted_done": false,
+      "core_findings_source": "275e8799d4947d297329073eaa3ca675d3fd0777"
+    },
+    {
+      "id": "P8-016",
+      "core_evidence": "Unmodified historical schema24 binary opens actual schema25 and rebuilds to24; current binary rebuilds to25; original DB/source/config backups, default/semantic-disabled fallback and active format/space/namespace isolation are observed.",
+      "remaining_intrinsic_gap": null,
+      "classification": "no_additional_literal_rollback_behavior_gap_found",
+      "not_new_gates": [
+        "The task says older binary/new schema and exercised recovery, not a required published release tag pair. Historical source builds satisfy that literal distinction without certifying a released package.",
+        "Engineering/dev recovery binaries and separate injected1025/local cache not_run reports retain their original labels."
+      ],
+      "immediate_action": "Keep source-pair and package fallback receipts separate from final G8 release acceptance; no fabricated released-tag requirement or repeated rollback run.",
+      "original_status_unchanged": "in_progress",
+      "original_depends_on": [
+        "P7-020",
+        "P8-012",
+        "P8-013"
+      ],
+      "direct_dependency_statuses": {
+        "P7-020": "done",
+        "P8-012": "in_progress",
+        "P8-013": "in_progress"
+      },
+      "original_validations": [
+        "V13",
+        "V17",
+        "V21"
+      ],
+      "whole_task_accepted_done": false,
+      "core_findings_source": "275e8799d4947d297329073eaa3ca675d3fd0777"
+    }
+  ],
+  "cross_task_requirements": {
+    "target_identity": "These behavioral observations belong to G275. They cannot certify b4/P2, PR181, PR175 or a new combined diagnostics candidate; C16 requires actual target SHA evidence or an independently proven complete relevant source-input equivalence.",
+    "related_regressions": {
+      "status": "accepted_original_product_validation_and_source_admission_consumption_bridge; original_v15_execution_identity_retained",
+      "independent_report": "validation/round6-g275-ci-recheck.json",
+      "independent_report_sha256": "442d42557e22e89e6e1156f97fb928032e3225ee0d520b665a309814acff0a9b",
+      "source_admission_artifact_bridge": "validation/round6-g275-source-artifact-bridge.json",
+      "source_admission_artifact_bridge_sha256": "6ab1478e07b7772fb163717d3def4c05c94af93232d61f94d91a794fcbd8e794",
+      "known_existing_original_run": "https://github.com/jyqj/codecortex/actions/runs/37890756949/attempts/1",
+      "actual_checkout": "d53ea0be17a53d1354ee1d6f0a111c5e588e91f5",
+      "completed_bridge": "All 12 non-artifacts root entries equal G275 by mode/type/Git OID; all 1089 product and 139 validation registry paths/modes/blobs independently reconciled. Original CI check/MSRV/security jobs and their steps succeeded.",
+      "original_python": {
+        "unique_methods": 636,
+        "suites": [
+          46,
+          409,
+          181
+        ],
+        "failed_or_skipped": 0
+      },
+      "original_rust": {
+        "test_summaries": 418,
+        "passed": 3281,
+        "failed": 0,
+        "ignored": 132
+      },
+      "original_v15": "Exactly one original passing source-proof result executed at d53ea0be17a53d1354ee1d6f0a111c5e588e91f5. The separate fixed artifact-consumption bridge reconciles 187 consumed artifact paths and 236 protected paths by mode/type/blob. All 20853 pre-existing G275 artifacts are unchanged; the 443 additions are confined to the a23-closeout directory, which the unchanged guard does not enumerate as current-root inputs. This supplements the product/validation bridge without renaming the actual execution checkout.",
+      "boundary": "The exact-source product/validation and source-admission-consumption bridges exist in the two named independent reports. This neither fixes P2 workspace exit101 nor transfers G50d9 native results to G275."
+    },
+    "dependencies": "P7-020 is already done. The P8-007->008->009->010->011->012->013->016 ordering remains open; no downstream status can close while its actual dependencies remain in_progress.",
+    "final_release_scope": "G8 requires the chosen full release profile and zero blockers. The separate final P8-019/P8-020 archive/release review must establish that scope. Dev engineering fault/pair binaries do not become release-profile measurements, while that global gate does not invent a released-tag prerequisite for P8-016.",
+    "live_effect_scope": "P7/P8 distinguish engineering/fake and live effect certification; no paid-provider requirement is newly attached to these eight local/core tasks."
+  },
+  "runtime_attribution_source_review": {
+    "path": "validation/p8-runtime-attribution-source-audit/source-location-review.json",
+    "sha256": "928784b43f9d84ec4fc049b924847a7297576d80dccdaa583b0a14fbb5d1dcd5",
+    "main": "bd4693351149a443bd0054a37508c53f74ed7b52",
+    "pr175_head": "8da1f956f6b0dd3413a37c639a79e1e0d939de81",
+    "conclusion": "partial_existing_observer_data_reusable_but_full_spec_attribution_requires_product_changes"
+  },
+  "current_actions": {
+    "possible_without_new_product_run": [
+      "Publish the exact existing evidence-to-original-requirement mapping and the concrete attribution gap.",
+      "Archive the now-completed independent G275 original CI/source equivalence reconciliation with its exact run and source bridge.",
+      "Coordinate a minimal bounded diagnostic implementation with issue158/PR175/PR180 owners; no independent duplicate edit or current-study mutation.",
+      "Optionally surface already-recorded indexer/client timing fields as partial attribution, retaining original statistics owner and labels."
+    ],
+    "not_possible_from_original_bytes": [
+      "backend queue/service times",
+      "per-operation DB lock acquisition waits",
+      "worker capacity/admission/service timing",
+      "unique RPC IDs for identical old operation responses"
+    ],
+    "no_immediate_full_closure_action": "An observer-only change cannot close the confirmed full attribution gap. No other new hard core gap was found in the six lifecycle/accounting/fault/platform/failure-gate/rollback tasks after their same-source complementary evidence was considered."
+  },
+  "independent_scope_addendum": {
+    "path": "validation/g275-acceptance-review-pr/scope-addendum.json",
+    "sha256": "19ecfe678e6473633244b51f5fefedf2fd16fa437927c7f50a71a9e8524044af"
+  },
+  "read_file_inventory": [
+    {
+      "path": "validation/g275-acceptance-review-pr/scope-addendum.json",
+      "bytes": 4674,
+      "sha256": "19ecfe678e6473633244b51f5fefedf2fd16fa437927c7f50a71a9e8524044af"
+    },
+    {
+      "path": "validation/g275-runtime-acceptance-review/c1/extracted/p8-runtime/statistics.json",
+      "bytes": 46058,
+      "sha256": "6db5c42c9cdf311cc0ecc87861605a362bef2ac62fcd69f5dc09947fae5325e9"
+    },
+    {
+      "path": "validation/g275-runtime-acceptance-review/c1/offline-review/statistics.json",
+      "bytes": 46058,
+      "sha256": "6db5c42c9cdf311cc0ecc87861605a362bef2ac62fcd69f5dc09947fae5325e9"
+    },
+    {
+      "path": "validation/g275-runtime-acceptance-review/c16/extracted/p8-runtime/statistics.json",
+      "bytes": 46450,
+      "sha256": "d1f88ab75b95326f5de0791dbb19fe2d1e0a2213942e81ba96b2258a4dd0b9a1"
+    },
+    {
+      "path": "validation/g275-runtime-acceptance-review/c16/offline-review/statistics.json",
+      "bytes": 46450,
+      "sha256": "d1f88ab75b95326f5de0791dbb19fe2d1e0a2213942e81ba96b2258a4dd0b9a1"
+    },
+    {
+      "path": "validation/g275-runtime-acceptance-review/c4/extracted/p8-runtime/statistics.json",
+      "bytes": 46192,
+      "sha256": "8031b14e27337cec852eba520943a23f10277e0eb75d2025a6d669375e709f8c"
+    },
+    {
+      "path": "validation/g275-runtime-acceptance-review/c4/offline-review/statistics.json",
+      "bytes": 46192,
+      "sha256": "8031b14e27337cec852eba520943a23f10277e0eb75d2025a6d669375e709f8c"
+    },
+    {
+      "path": "validation/g275-runtime-acceptance-review/c8/extracted/p8-runtime/statistics.json",
+      "bytes": 46296,
+      "sha256": "f2f3681b4492c3677897230928e1d8dfbb704cd2f680114e8f4827081359671a"
+    },
+    {
+      "path": "validation/g275-runtime-acceptance-review/c8/offline-review/statistics.json",
+      "bytes": 46296,
+      "sha256": "f2f3681b4492c3677897230928e1d8dfbb704cd2f680114e8f4827081359671a"
+    },
+    {
+      "path": "validation/g275-runtime-acceptance-review/soak/extracted/p8-runtime/statistics.json",
+      "bytes": 46403,
+      "sha256": "2e7b356c831989b1bee66b6dfd0453e44f88b46278bda59667cbe9dab9170c53"
+    },
+    {
+      "path": "validation/g275-runtime-acceptance-review/soak/offline-review/statistics.json",
+      "bytes": 46403,
+      "sha256": "2e7b356c831989b1bee66b6dfd0453e44f88b46278bda59667cbe9dab9170c53"
+    },
+    {
+      "path": "validation/p8-runtime-attribution-source-audit/github-source-snapshot.json",
+      "bytes": 3255,
+      "sha256": "35fdb318bcd627b6d489f62838a0e9d0fd09dbfb1a0fdfe316145d5854e78756"
+    },
+    {
+      "path": "validation/p8-runtime-attribution-source-audit/main/crates/cc-db/src/index_db.rs",
+      "bytes": 49499,
+      "sha256": "6202a556d78731b88757a08cdbc77f83112db17e3000fe2eaef9572a65915d4e"
+    },
+    {
+      "path": "validation/p8-runtime-attribution-source-audit/main/crates/cc-db/src/semantic_publish.rs",
+      "bytes": 18582,
+      "sha256": "3b7c6af1f94604eed757dd5ceaeb99da5ef2caf91eec98a3f0ec24cb83f53826"
+    },
+    {
+      "path": "validation/p8-runtime-attribution-source-audit/main/crates/cc-db/src/semantic_queue.rs",
+      "bytes": 6987,
+      "sha256": "78452087441c24209358c7da0bd825e13344735425b151ee72035e9db20023ae"
+    },
+    {
+      "path": "validation/p8-runtime-attribution-source-audit/main/crates/cc-db/src/unit_of_work.rs",
+      "bytes": 14150,
+      "sha256": "265a0c4cbddfd237e1cde1e199599389b10b87aa140ea72ecb7a85439aa39142"
+    },
+    {
+      "path": "validation/p8-runtime-attribution-source-audit/main/crates/cc-eval/src/benchmark/ablation.rs",
+      "bytes": 47313,
+      "sha256": "cc57dff94bb4f826f01aff6b29fa2287e367f7d47b5696c8a495dc6320587fab"
+    },
+    {
+      "path": "validation/p8-runtime-attribution-source-audit/main/crates/cc-eval/src/benchmark/p8_load.rs",
+      "bytes": 45617,
+      "sha256": "79058e65744a0e953d84c95ba58287feae0491c5fda8d3441fa65b1d9bb6ce31"
+    },
+    {
+      "path": "validation/p8-runtime-attribution-source-audit/main/crates/cc-eval/src/bin/p8-runtime-statistics.rs",
+      "bytes": 17027,
+      "sha256": "c32527a5d64dd9580fa642ac546d3536202291c5900967b1876b7283c1d364f5"
+    },
+    {
+      "path": "validation/p8-runtime-attribution-source-audit/main/crates/cc-eval/tests/p7_worker_contention.rs",
+      "bytes": 23104,
+      "sha256": "e010748008b954fab03530f9907ba72be9ccbe74abfeb5a5ee6eace17e9be612"
+    },
+    {
+      "path": "validation/p8-runtime-attribution-source-audit/main/crates/cc-index/src/indexer.rs",
+      "bytes": 60618,
+      "sha256": "dace7ecc9a63c4b2c69b90182e140c9227455569df9546bde5e2d2bfdee8d093"
+    },
+    {
+      "path": "validation/p8-runtime-attribution-source-audit/main/crates/cc-model/src/query.rs",
+      "bytes": 7202,
+      "sha256": "157e0f1f750287f16c2622297d1d08d9b7921a6ce54c1e1bcf3aa1842bfa13aa"
+    },
+    {
+      "path": "validation/p8-runtime-attribution-source-audit/main/crates/cc-model/src/retrieval.rs",
+      "bytes": 20599,
+      "sha256": "bb228628e1e63edd74c5314dde157209da2279d3064198ea256f6a54bece20e0"
+    },
+    {
+      "path": "validation/p8-runtime-attribution-source-audit/main/crates/cc-search/src/execution.rs",
+      "bytes": 14311,
+      "sha256": "8c1f42b3aeccfd174631b57fe5e0e4aca3546c6d954ecce6324e55dd6536fa4b"
+    },
+    {
+      "path": "validation/p8-runtime-attribution-source-audit/main/crates/cc-semantic/src/admission.rs",
+      "bytes": 110474,
+      "sha256": "37076aa35fb846495d63d24ba83541746ed43e3a8d138df34b5e22abb0fa4c1c"
+    },
+    {
+      "path": "validation/p8-runtime-attribution-source-audit/main/crates/cc-server/src/capability_status.rs",
+      "bytes": 36179,
+      "sha256": "0a57e96cb0b72d53463f1388b8a4b80632f01573750e33e02dfb7f8f19938c59"
+    },
+    {
+      "path": "validation/p8-runtime-attribution-source-audit/main/crates/cc-server/src/engine.rs",
+      "bytes": 83012,
+      "sha256": "b323ee1c6c469cb0f0abe42d6f23ff4a7045df124735af09dcafbc8f4e2ac8b1"
+    },
+    {
+      "path": "validation/p8-runtime-attribution-source-audit/main/crates/cc-server/src/handlers/context.rs",
+      "bytes": 17063,
+      "sha256": "74a018c909969a1bbf97007613a99a98d15d801b7deadb8e9c5e581cd9266262"
+    },
+    {
+      "path": "validation/p8-runtime-attribution-source-audit/main/crates/cc-server/src/handlers/facade.rs",
+      "bytes": 29621,
+      "sha256": "2045e98cf957edf5fb6e2345aa41686dd6364ac36aedb1869d39663e6f12af1b"
+    },
+    {
+      "path": "validation/p8-runtime-attribution-source-audit/main/crates/cc-server/src/mcp.rs",
+      "bytes": 37424,
+      "sha256": "555e9ec55d433566ef7388bf1c0eac413550fe5cf4cc579a8a49367308034e4c"
+    },
+    {
+      "path": "validation/p8-runtime-attribution-source-audit/main/crates/cc-server/src/query_handle.rs",
+      "bytes": 5979,
+      "sha256": "7b331043093f243e8ad23516098d008216cda0cecb3c3fa63a7947a5f226b420"
+    },
+    {
+      "path": "validation/p8-runtime-attribution-source-audit/main/crates/cc-server/src/semantic_runtime.rs",
+      "bytes": 72426,
+      "sha256": "44d1671247408d7b4b99c55cca8d07d4073cb2ce38d16728bdafe828ae77d6e2"
+    },
+    {
+      "path": "validation/p8-runtime-attribution-source-audit/main/crates/cc-server/src/service_factory.rs",
+      "bytes": 15036,
+      "sha256": "c05a251999bb92fb273958566cfcdc7a8121ee5a5e2bc9f42e6ce0fc25388836"
+    },
+    {
+      "path": "validation/p8-runtime-attribution-source-audit/main/docs/P8_RUNTIME_EVIDENCE.md",
+      "bytes": 8616,
+      "sha256": "48189f265e42a34dc0768c8861105a8080fe64fbe7282e5d3d3d8805e71833ad"
+    },
+    {
+      "path": "validation/p8-runtime-attribution-source-audit/main/docs/roadmap/code-index-v2/02-CONTRACTS.md",
+      "bytes": 14819,
+      "sha256": "66cca99c35f7f9ff1c9d1a7832ab71adec074058e126b188f6e06aff65adb0ad"
+    },
+    {
+      "path": "validation/p8-runtime-attribution-source-audit/main/docs/roadmap/code-index-v2/06-VALIDATION.md",
+      "bytes": 10172,
+      "sha256": "64a9fde995077f8349edc76ee501825feca6717c6c60ab7c03cc535142016aad"
+    },
+    {
+      "path": "validation/p8-runtime-attribution-source-audit/main/docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "bytes": 20488,
+      "sha256": "0c8bcbed17ea4e83b1dc55e9828f93a27e2a334a0d0eaa056302944260d0a731"
+    },
+    {
+      "path": "validation/p8-runtime-attribution-source-audit/main/scripts/p8_runtime.py",
+      "bytes": 58896,
+      "sha256": "0656766656ad73b69e6e28db742115ec9b3dd0440c515f694b7568d3cf87c79d"
+    },
+    {
+      "path": "validation/p8-runtime-attribution-source-audit/main/scripts/resource_harness/runtime.py",
+      "bytes": 11117,
+      "sha256": "5876d2b0102f6e3a38189b2337c1783500393acde0dc04666d7f97ff34d92cc5"
+    },
+    {
+      "path": "validation/p8-runtime-attribution-source-audit/pr175/crates/cc-eval/src/benchmark/statistics.rs",
+      "bytes": 15854,
+      "sha256": "ad331897b23e067909c21a0b4848b1ac39ea208453e340c922c6830cb9264264"
+    },
+    {
+      "path": "validation/p8-runtime-attribution-source-audit/pr175/crates/cc-eval/src/bin/p8-runtime-statistics.rs",
+      "bytes": 20760,
+      "sha256": "d6595a2c01fd31fc9635f3110b1887d49df98b1e9988e089c98298a52c3a20a9"
+    },
+    {
+      "path": "validation/p8-runtime-attribution-source-audit/pr175/docs/P8_RUNTIME_EVIDENCE.md",
+      "bytes": 8911,
+      "sha256": "ca11059f1da6060ac9b31320efd8a4637d2b5a16968ee2e2795c3341f1b54a9d"
+    },
+    {
+      "path": "validation/p8-runtime-attribution-source-audit/pr175/scripts/p8_runtime.py",
+      "bytes": 58530,
+      "sha256": "9f052e72615f084463c3bd4d29c561c088d20ffcb38bb0de351c5d408a17387b"
+    },
+    {
+      "path": "validation/p8-runtime-attribution-source-audit/source-inputs.json",
+      "bytes": 9627,
+      "sha256": "23bde0d50b395e043b821b1e6e76d4cd20b2f3bf28895192df87be9ccb03806f"
+    },
+    {
+      "path": "validation/publication-stage/artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/README.md",
+      "bytes": 10599,
+      "sha256": "5a71b59348fcd4b4d9a5c428770e2eabc033aee62b7ce0fafd5ddf9d820c1954"
+    },
+    {
+      "path": "validation/publication-stage/artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-lifecycle-review/original-observations-summary.json",
+      "bytes": 16221,
+      "sha256": "b1b84bd421b19cf7a48164259823c1f37cf7a341cb8fe50f18a03d995a03ecf1"
+    },
+    {
+      "path": "validation/publication-stage/artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-lifecycle-review/raw-review.json",
+      "bytes": 7271,
+      "sha256": "2e22e1bd4653afad5d7c81e38e9cfd7ad2227db6eb8404802cc75e87c153f58f"
+    },
+    {
+      "path": "validation/publication-stage/artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-platform-gates-rollback-review/failure-gates-acceptance-review.json",
+      "bytes": 10360,
+      "sha256": "497bf8610b7a5342f39e1bbf3857d6a6373a153116c8f18d586d021071b8ee18"
+    },
+    {
+      "path": "validation/publication-stage/artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-platform-gates-rollback-review/platform-acceptance-review.json",
+      "bytes": 9844,
+      "sha256": "9ed834a723302f5171039127d87a8c4c4548c8106b43b97dc0e2c72afb370069"
+    },
+    {
+      "path": "validation/publication-stage/artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-platform-gates-rollback-review/rollback-fault-acceptance-review.json",
+      "bytes": 28801,
+      "sha256": "8f7d89a40ce00ed0656bc1030036fcb22706bdd525a3e9aa1175e72016c649fb"
+    },
+    {
+      "path": "validation/publication-stage/artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-runtime-review/queue-review.json",
+      "bytes": 4829,
+      "sha256": "335fc311a291d7fcdf2bb335bdf8c80e5af27d08f83e82881eafe5e7569fe32c"
+    },
+    {
+      "path": "validation/publication-stage/artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-runtime-review/raw-review.json",
+      "bytes": 69648,
+      "sha256": "54bea82f81e7fefd353bacecc748b4f3ab646a151946af9fe225df48fa10c7dd"
+    },
+    {
+      "path": "validation/publication-stage/artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/native-source-checks/native-suite.log",
+      "bytes": 29281,
+      "sha256": "1f1213dcf359c12fe295b4bfcea0e3c974fe43c6d49e7395478895544d445430"
+    },
+    {
+      "path": "validation/publication-stage/artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/native-source-checks/receipt.json",
+      "bytes": 2383,
+      "sha256": "a1fa063e889d04e2e14eb58015ee8b651df31a92af7a566fe29124d17764baeb"
+    },
+    {
+      "path": "validation/publication-stage/artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/native-source-checks/v15-cli.log",
+      "bytes": 572,
+      "sha256": "3b5efb3db6a1cf7c66a52a8aabadb207a48f2117e295deeebede0b023306397f"
+    },
+    {
+      "path": "validation/publication-stage/docs/roadmap/code-index-v2/tasks.json",
+      "bytes": 822872,
+      "sha256": "e7e19b6700b20b1a02754737cace7bbe5c21893dc67e3d6a29ffed00aa1ee828"
+    },
+    {
+      "path": "validation/round6-g275-ci-recheck.json",
+      "bytes": 13348,
+      "sha256": "442d42557e22e89e6e1156f97fb928032e3225ee0d520b665a309814acff0a9b"
+    },
+    {
+      "path": "validation/round6-g275-source-artifact-bridge.json",
+      "bytes": 48624,
+      "sha256": "6ab1478e07b7772fb163717d3def4c05c94af93232d61f94d91a794fcbd8e794"
+    }
+  ],
+  "preserved_limits": [
+    "Source-bound exact test success is not an independently re-read inner per-seed DB.",
+    "Honest nulls, unsaturated configured clients, discrete sampling and historical-source binary identity do not automatically create new acceptance failures.",
+    "The registered original performance attribution requirement is not waived by a narrower runner passing.",
+    "Product/source files, original raw, workloads, timeouts, gates, ledger fields/statuses and remote study state were not modified."
+  ]
+}

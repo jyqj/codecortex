@@ -1,0 +1,101 @@
+{
+  "schema": "v13-inventory-cascade-diagnostic-v1",
+  "reviewer": "/root/todo_audit",
+  "observed_at_utc": "2026-10-09T08:31:15.521653+00:00",
+  "source_head_reported_by_original_run": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529",
+  "source_logs_sha256": {
+    "native-suite.log": "1644159e1002188445cd638ecc819b5e5a54ff39de6e1e00b6dff93c236fba84",
+    "v15-cli.log": "49a60d01aa2ac42baad3e4760d5874ee2d40e9fce560f77253a431138441ea52",
+    "receipt.json": "f03c60bd283831c13d7344a18e46588dc00c0a1d87261cf14803038f5d02da3a"
+  },
+  "verdict": "v13 inventory failure is explained by the failed v14 adapter installation; no unexplained current v15 validation path or byte drift observed",
+  "observed_v13_default_root": "/workspace/scratch/50c364fd60b1/codecortex",
+  "cause_chain": [
+    {
+      "source": "tests/source_integrity/test_reviewed_source_v14.py",
+      "line": 27,
+      "finding": "Unittest discovery calls historical.install at module import before tests execute."
+    },
+    {
+      "source": "tests/source_integrity/v14_historical_test_adapter.py",
+      "lines": "71-83",
+      "finding": "install imports the v13 test/guard, then calls history.verify_current_history BEFORE creating HistoricalContext and assigning original.guard = selected."
+    },
+    {
+      "source": "validation/native-source-checks/native-suite.log",
+      "lines": "147-176",
+      "finding": "The v14 import fails inside that first history.verify_current_history -> _catalogue -> _blob -> git show, with historical Git input unavailable. Therefore original.guard remains the actual v13 module."
+    },
+    {
+      "source": "tests/source_integrity/test_reviewed_source_v13.py",
+      "lines": "19-36",
+      "finding": "Its imported guard still has the real module default ROOT, so setUpClass calls approved_union against the current G50d9 worktree instead of the intended frozen v13 context."
+    },
+    {
+      "source": "scripts/verify_reviewed_source_v13.py",
+      "lines": "100-105",
+      "finding": "The exact v13 inventory rule correctly rejects later admitted validation paths in this wrong-default-root situation. There is no explicit success/fallback branch and none should be added."
+    }
+  ],
+  "inventory_observation": {
+    "v13_expected": 99,
+    "v13_current_disk": 139,
+    "v13_extra_paths": [
+      ".github/workflows/p8-gates.yml",
+      ".github/workflows/p8-lifecycle.yml",
+      ".github/workflows/p8-platform.yml",
+      ".github/workflows/p8-runtime.yml",
+      ".github/workflows/p8-scale.yml",
+      ".github/workflows/p8-surface-window-controls.yml",
+      "scripts/p8_backfill.py",
+      "scripts/p8_external_candidate.py",
+      "scripts/p8_gate_controls.py",
+      "scripts/p8_lifecycle.py",
+      "scripts/p8_native_registry.py",
+      "scripts/p8_resources.py",
+      "scripts/p8_runner_capacity.py",
+      "scripts/p8_runtime.py",
+      "scripts/p8_runtime_build.py",
+      "scripts/p8_scale_matrix.py",
+      "scripts/reviewed-source-registry-v14.json",
+      "scripts/reviewed-source-registry-v15.json",
+      "scripts/tests/test_p7_stdio_build_profile.py",
+      "scripts/tests/test_p8_backfill.py",
+      "scripts/tests/test_p8_external_candidate.py",
+      "scripts/tests/test_p8_lifecycle.py",
+      "scripts/tests/test_p8_native_registry.py",
+      "scripts/tests/test_p8_platform_independent_review.py",
+      "scripts/tests/test_p8_resources.py",
+      "scripts/tests/test_p8_runner_capacity.py",
+      "scripts/tests/test_p8_runtime.py",
+      "scripts/tests/test_p8_runtime_cache.py",
+      "scripts/tests/test_p8_runtime_evidence.py",
+      "scripts/tests/test_p8_runtime_finalization.py",
+      "scripts/tests/test_p8_scale_matrix.py",
+      "scripts/v14_historical_context.py",
+      "scripts/v15_historical_context.py",
+      "scripts/verify_reviewed_source_v14.py",
+      "scripts/verify_reviewed_source_v15.py",
+      "tests/source_integrity/test_reviewed_source_v14.py",
+      "tests/source_integrity/test_reviewed_source_v15.py",
+      "tests/source_integrity/test_v14_historical_context.py",
+      "tests/source_integrity/v14_historical_test_adapter.py",
+      "tests/source_integrity/v15_historical_test_adapter.py"
+    ],
+    "v13_missing_paths": [],
+    "v15_expected": 139,
+    "v15_current_disk": 139,
+    "v15_extra_paths": [],
+    "v15_missing_paths": [],
+    "v15_digest_mismatches": [],
+    "all_v13_extra_paths_are_current_v15_admitted_or_expected_guard_files": true
+  },
+  "primary_blocker": "The historical helper failed to retrieve a catalogue Git blob. It hides stderr and combines nonzero return with MAX_BLOB length, so this report does not invent the missing SHA/path; pr_audit owns precise refs/blobs diagnosis and hydration.",
+  "permitted_recovery": "Hydrate the exact missing immutable original blobs without changing branches, source, guard, exclusions, tests, registry, or assertions; then root reruns original native entry/suite under actual G identity. Do not delete the legitimate v14/v15 files to make standalone v13 pass.",
+  "limitations": [
+    "Read-only source/log/inventory diagnosis. No historical context was constructed and no native proof/tests were rerun.",
+    "No Git fetch, lazy fetch, product execution, or repository mutation performed.",
+    "A successful hydration and later native proof are not pre-certified by this diagnosis."
+  ],
+  "mutations": "Only this scratch diagnostic JSON written."
+}

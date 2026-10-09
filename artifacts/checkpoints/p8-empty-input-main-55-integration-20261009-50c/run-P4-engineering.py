@@ -1,0 +1,88 @@
+import datetime
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+import time
+
+sys.dont_write_bytecode = True
+root = Path('/workspace/scratch/50c364fd60b1/codecortex')
+out = Path('/workspace/scratch/50c364fd60b1/validation/main-55-integration/engineering-checks')
+out.mkdir(exist_ok=False)
+product = sys.argv[1]
+assert len(product) == 40 and all(c in '0123456789abcdef' for c in product)
+sys.path.insert(0, str(root / 'scripts'))
+from p7_build_identity import source_snapshot
+
+overrides = {
+    'PATH': '/workspace/scratch/50c364fd60b1/cargo/bin:' + os.environ['PATH'],
+    'CARGO_HOME': '/workspace/scratch/50c364fd60b1/cargo',
+    'RUSTUP_HOME': '/workspace/scratch/50c364fd60b1/rustup',
+    'CARGO_TARGET_DIR': '/workspace/scratch/50c364fd60b1/target-final',
+    'CARGO_BUILD_JOBS': '4',
+    'CARGO_INCREMENTAL': '0',
+    'CARGO_PROFILE_DEV_DEBUG': '0',
+    'CARGO_PROFILE_TEST_DEBUG': '0',
+    'PYTHONDONTWRITEBYTECODE': '1',
+}
+env = {**os.environ, **overrides}
+commands = [
+    ('format', ['cargo', 'fmt', '--all', '--', '--check']),
+    ('clippy', ['cargo', 'clippy', '--workspace', '--all-targets', '--locked', '--offline', '--', '-D', 'warnings']),
+    ('index-all-targets', ['cargo', 'test', '-p', 'cc-index', '--all-targets', '--locked', '--offline']),
+    ('search-lib', ['cargo', 'test', '-p', 'cc-search', '--lib', '--locked', '--offline']),
+    ('installer-unit', ['cargo', 'test', '-p', 'cc-server', '--bin', 'codecortex', '--locked', '--offline', 'installer::', '--', '--test-threads=1']),
+    ('installer-cli', ['cargo', 'test', '-p', 'cc-server', '--test', 'installer_cli', '--locked', '--offline', '--', '--test-threads=1']),
+    ('statistics-lib-controls', ['cargo', 'test', '-p', 'cc-eval', '--lib', '--locked', '--offline', 'legacy_latency_ns_tests']),
+    ('runtime-statistics-bin', ['cargo', 'test', '-p', 'cc-eval', '--bin', 'p8-runtime-statistics', '--locked', '--offline']),
+    ('eval-corpus-lib', ['cargo', 'test', '-p', 'cc-eval', '--lib', '--locked', '--offline', 'integration_fixtures_and_corpus']),
+]
+before = source_snapshot(root)
+assert before['source_commit'] == product
+assert subprocess.check_output(['git', 'diff', '--name-only', product, '--'], cwd=root) == b''
+record = {
+    'scope': 'Actual fixed-P4 engineering composition regression; not a workspace-wide, full-scale, platform, provider or release certification.',
+    'source_before': before,
+    'expected_product_source': product,
+    'started_at_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+    'environment_overrides': overrides,
+    'rustc': subprocess.check_output(['rustc', '-Vv'], env=env, text=True),
+    'commands': [],
+    'workspace_full_suite': 'not_run_on_P4; retained P2 exit 101 and original G CI retain their own identities',
+    'corpus_scope': 'The existing named corpus test is in the cc-eval lib target; this run explicitly selects --lib and does not claim the old broader Cargo invocation.',
+}
+
+def save():
+    (out / 'receipt.json').write_text(json.dumps(record, indent=2, sort_keys=True) + '\n')
+
+save()
+for name, command in commands:
+    head_before = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip()
+    assert head_before == product
+    started = time.monotonic()
+    path = out / (name + '.log')
+    with path.open('xb') as log:
+        result = subprocess.run(command, cwd=root, env=env, stdout=log, stderr=subprocess.STDOUT)
+    head_after = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip()
+    row = {'name': name, 'command': command, 'exit_code': result.returncode,
+           'elapsed_seconds': time.monotonic() - started,
+           'head_before': head_before, 'head_after': head_after,
+           'log': path.name, 'log_sha256': hashlib.sha256(path.read_bytes()).hexdigest()}
+    record['commands'].append(row)
+    save()
+    print(json.dumps(row), flush=True)
+    if result.returncode or head_after != product:
+        break
+record['source_after'] = source_snapshot(root)
+record['source_inputs_equal'] = record['source_before']['inputs'] == record['source_after']['inputs']
+record['completed_at_utc'] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+record['all_selected_commands_passed'] = (
+    len(record['commands']) == len(commands)
+    and all(c['exit_code'] == 0 and c['head_after'] == product for c in record['commands'])
+    and record['source_inputs_equal']
+    and record['source_after']['source_commit'] == product
+)
+save()
+sys.exit(0 if record['all_selected_commands_passed'] else 1)

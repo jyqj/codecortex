@@ -1,0 +1,2879 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/scale_audit",
+  "repository": "jyqj/codecortex",
+  "round": 6,
+  "scope": "Bounded read-only current status, original TODO closure gates, and immutable-source CI/PR comparison. No new product/workload/study execution.",
+  "observation_window": {
+    "started_at_utc": "2026-10-09T08:41:56Z",
+    "last_live_study_and_main_read_at_utc": "2026-10-09T08:58:27.497Z",
+    "review_prepared_at_utc": "2026-10-09T09:05:30.388Z",
+    "freshness": "Per-endpoint observation timestamps are retained; queued/in-progress states may change after the snapshot."
+  },
+  "accounting": {
+    "total": 192,
+    "done": 163,
+    "in_progress": 16,
+    "todo": 12,
+    "blocked": 1,
+    "remaining": 29,
+    "target_original_todos": 10,
+    "new_original_todos_closed": 0,
+    "at_least_ten_completed": false
+  },
+  "authoritative_ledger": {
+    "head": "bd4693351149a443bd0054a37508c53f74ed7b52",
+    "branch_api": {
+      "url": "https://api.github.com/repos/jyqj/codecortex/branches/main",
+      "retrieved_at": "2026-10-09T08:58:27.420Z"
+    },
+    "raw_url": "https://raw.githubusercontent.com/jyqj/codecortex/bd4693351149a443bd0054a37508c53f74ed7b52/docs/roadmap/code-index-v2/tasks.json",
+    "retrieved_at": "2026-10-09T08:43:16.681Z",
+    "git_blob": "f400eb2b5a3f8c524978bee1dfa87f98efe4bce8",
+    "sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207",
+    "bytes": 802282,
+    "status_counts": {
+      "done": 163,
+      "blocked": 1,
+      "in_progress": 16,
+      "todo": 12
+    },
+    "fixed_head_unchanged_since_raw_read": true,
+    "remaining_tasks": [
+      {
+        "id": "P7-018",
+        "title": "受授权的真实provider小集认证",
+        "status": "blocked"
+      },
+      {
+        "id": "P8-005",
+        "title": "完整规模1k到100k",
+        "status": "in_progress"
+      },
+      {
+        "id": "P8-006",
+        "title": "增量规模与fanout曲线",
+        "status": "in_progress"
+      },
+      {
+        "id": "P8-007",
+        "title": "多并发与混合负载",
+        "status": "in_progress"
+      },
+      {
+        "id": "P8-008",
+        "title": "冷建/重开/热查分层",
+        "status": "in_progress"
+      },
+      {
+        "id": "P8-009",
+        "title": "内存/磁盘/费用总账",
+        "status": "in_progress"
+      },
+      {
+        "id": "P8-010",
+        "title": "长时soak与连续修改",
+        "status": "in_progress"
+      },
+      {
+        "id": "P8-011",
+        "title": "端到端故障与恢复认证",
+        "status": "in_progress"
+      },
+      {
+        "id": "P8-012",
+        "title": "MSRV与平台冷构建矩阵",
+        "status": "in_progress"
+      },
+      {
+        "id": "P8-013",
+        "title": "指标/门槛与失败退出最终认证",
+        "status": "in_progress"
+      },
+      {
+        "id": "P8-014",
+        "title": "可选LLM评审旁证流程",
+        "status": "in_progress"
+      },
+      {
+        "id": "P8-015",
+        "title": "真实语义效果发布认证",
+        "status": "in_progress"
+      },
+      {
+        "id": "P8-016",
+        "title": "数据库/配置/包回滚演练",
+        "status": "in_progress"
+      },
+      {
+        "id": "P8-017",
+        "title": "删除临时兼容和重复模块",
+        "status": "in_progress"
+      },
+      {
+        "id": "P8-018",
+        "title": "文档事实与安装契约同步",
+        "status": "in_progress"
+      },
+      {
+        "id": "P8-019",
+        "title": "发布工件与完整报告归档",
+        "status": "in_progress"
+      },
+      {
+        "id": "P8-020",
+        "title": "P8发布评审与遗留关闭",
+        "status": "in_progress"
+      },
+      {
+        "id": "P9-001",
+        "title": "ANN收益与选型决策",
+        "status": "todo"
+      },
+      {
+        "id": "P9-002",
+        "title": "ANN适配与过滤更新闭环",
+        "status": "todo"
+      },
+      {
+        "id": "P9-003",
+        "title": "ANN量化和规模认证",
+        "status": "todo"
+      },
+      {
+        "id": "P9-004",
+        "title": "ANN决策收口",
+        "status": "todo"
+      },
+      {
+        "id": "P9-005",
+        "title": "LSP按需生命周期",
+        "status": "todo"
+      },
+      {
+        "id": "P9-006",
+        "title": "LSP源码快照和冲突表达",
+        "status": "todo"
+      },
+      {
+        "id": "P9-007",
+        "title": "LSP精度/内存收益认证",
+        "status": "todo"
+      },
+      {
+        "id": "P9-008",
+        "title": "LSP工具面和安装边界收口",
+        "status": "todo"
+      },
+      {
+        "id": "P9-009",
+        "title": "可选rerank端口与降级",
+        "status": "todo"
+      },
+      {
+        "id": "P9-010",
+        "title": "rerank盲测与费用消融",
+        "status": "todo"
+      },
+      {
+        "id": "P9-011",
+        "title": "按需查询分解收益决策",
+        "status": "todo"
+      },
+      {
+        "id": "P9-012",
+        "title": "P9可选增强逐项结项",
+        "status": "todo"
+      }
+    ]
+  },
+  "scale_studies": [
+    {
+      "label": "g275",
+      "id": 37896198208,
+      "name": "P8 complete scale measurements",
+      "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+      "event": "pull_request",
+      "run_attempt": 1,
+      "status": "in_progress",
+      "conclusion": null,
+      "created_at": "2026-10-09T06:56:25Z",
+      "updated_at": "2026-10-09T07:17:50Z",
+      "html_url": "https://github.com/jyqj/codecortex/actions/runs/37896198208",
+      "run_api": {
+        "url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37896198208",
+        "retrieved_at": "2026-10-09T08:58:27.232Z"
+      },
+      "jobs_pagination": {
+        "per_page": 100,
+        "total_count": 6,
+        "returned": 6,
+        "complete": true,
+        "pages": [
+          {
+            "page": 1,
+            "url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37896198208/jobs?per_page=100&page=1",
+            "retrieved_at": "2026-10-09T08:58:27.497Z",
+            "returned": 6,
+            "total_count": 6
+          }
+        ]
+      },
+      "jobs": [
+        {
+          "id": 113707984715,
+          "name": "build",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T06:59:44Z",
+          "completed_at": "2026-10-09T07:04:32Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37896198208/job/113707984715",
+          "active_steps": [],
+          "failed_steps": []
+        },
+        {
+          "id": 113710393561,
+          "name": "preflight (10000, 0)",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T07:08:32Z",
+          "completed_at": "2026-10-09T07:16:56Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37896198208/job/113710393561",
+          "active_steps": [],
+          "failed_steps": []
+        },
+        {
+          "id": 113710393563,
+          "name": "preflight (50000, 0)",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T07:12:08Z",
+          "completed_at": "2026-10-09T08:24:13Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37896198208/job/113710393563",
+          "active_steps": [],
+          "failed_steps": []
+        },
+        {
+          "id": 113710393583,
+          "name": "preflight (5000, 0)",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T07:06:38Z",
+          "completed_at": "2026-10-09T07:10:31Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37896198208/job/113710393583",
+          "active_steps": [],
+          "failed_steps": []
+        },
+        {
+          "id": 113710393630,
+          "name": "preflight (1000, 0)",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T07:14:22Z",
+          "completed_at": "2026-10-09T07:15:26Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37896198208/job/113710393630",
+          "active_steps": [],
+          "failed_steps": []
+        },
+        {
+          "id": 113710393672,
+          "name": "preflight (100000, 0)",
+          "status": "in_progress",
+          "conclusion": null,
+          "started_at": "2026-10-09T07:17:49Z",
+          "completed_at": null,
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37896198208/job/113710393672",
+          "active_steps": [
+            {
+              "name": "Execute all phases for this registered single-repetition capacity slice",
+              "status": "in_progress",
+              "conclusion": null,
+              "number": 7,
+              "started_at": "2026-10-09T07:18:06Z",
+              "completed_at": null
+            }
+          ],
+          "failed_steps": []
+        }
+      ],
+      "failed_jobs": [],
+      "annotations_status": "no_failed_jobs_or_failed_steps_observed; no failure annotation query was necessary",
+      "artifacts_pagination": {
+        "url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37896198208/artifacts?per_page=100&page=1",
+        "retrieved_at": "2026-10-09T08:58:27.421Z",
+        "per_page": 100,
+        "page": 1,
+        "total_count": 10,
+        "returned": 10,
+        "complete": true
+      },
+      "artifacts": [
+        {
+          "id": 11603614090,
+          "name": "p8-scale-shard-50000-0-37896198208",
+          "size_in_bytes": 2964892,
+          "digest": "sha256:5ec468722f22f6802e643bc74844f04337e83ad42bbcdee15fe63208ed200773",
+          "expired": false,
+          "created_at": "2026-10-09T08:24:10Z",
+          "updated_at": "2026-10-09T08:24:10Z",
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11603614090"
+        },
+        {
+          "id": 11601336788,
+          "name": "p8-scale-shard-10000-0-37896198208",
+          "size_in_bytes": 853841,
+          "digest": "sha256:33944d8b9c895b62064ce89dc5d99a476b78cbcc97c2f9a57ccf190571e20374",
+          "expired": false,
+          "created_at": "2026-10-09T07:16:54Z",
+          "updated_at": "2026-10-09T07:16:54Z",
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11601336788"
+        },
+        {
+          "id": 11601142045,
+          "name": "p8-scale-shard-1000-0-37896198208",
+          "size_in_bytes": 952777,
+          "digest": "sha256:242eb240b06cccb6ffc6aa210a44a0985f969308661e7ad92b8451735c445171",
+          "expired": false,
+          "created_at": "2026-10-09T07:15:24Z",
+          "updated_at": "2026-10-09T07:15:24Z",
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11601142045"
+        },
+        {
+          "id": 11601130609,
+          "name": "p8-scale-capacity-5000-0-37896198208",
+          "size_in_bytes": 786,
+          "digest": "sha256:568d505fe7da83f8df0679a2932405dbc5c042fe89d45fdd67066210097f45cf",
+          "expired": false,
+          "created_at": "2026-10-09T07:06:55Z",
+          "updated_at": "2026-10-09T07:06:55Z",
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11601130609"
+        },
+        {
+          "id": 11601087740,
+          "name": "p8-scale-capacity-100000-0-37896198208",
+          "size_in_bytes": 786,
+          "digest": "sha256:7b830f3444bfa18a386775813730d9f8945f85a76ba30fae92eca8c448270311",
+          "expired": false,
+          "created_at": "2026-10-09T07:18:05Z",
+          "updated_at": "2026-10-09T07:18:05Z",
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11601087740"
+        },
+        {
+          "id": 11600946382,
+          "name": "p8-scale-shard-5000-0-37896198208",
+          "size_in_bytes": 583828,
+          "digest": "sha256:7d994e6d922d477ee07c5bb7ea478f180d927b7c108a965bff675be54a52cbb2",
+          "expired": false,
+          "created_at": "2026-10-09T07:10:29Z",
+          "updated_at": "2026-10-09T07:10:29Z",
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11600946382"
+        },
+        {
+          "id": 11600574581,
+          "name": "p8-scale-capacity-50000-0-37896198208",
+          "size_in_bytes": 785,
+          "digest": "sha256:abb0eebb51584c58f9ce243a229498acb7e5e4b51f554bb763b6e602e7f9ce24",
+          "expired": false,
+          "created_at": "2026-10-09T07:12:25Z",
+          "updated_at": "2026-10-09T07:12:25Z",
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11600574581"
+        },
+        {
+          "id": 11600444517,
+          "name": "p8-scale-capacity-10000-0-37896198208",
+          "size_in_bytes": 785,
+          "digest": "sha256:4fd49d2682ec5279689c4dd47bdf353881e407b869b92d9978b6f5b9504ea66e",
+          "expired": false,
+          "created_at": "2026-10-09T07:08:48Z",
+          "updated_at": "2026-10-09T07:08:48Z",
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11600444517"
+        },
+        {
+          "id": 11600309282,
+          "name": "p8-scale-build-37896198208",
+          "size_in_bytes": 9218801,
+          "digest": "sha256:9c13733e1bdb207301920f3dddb0bde4dcab278b31e4cdfd0dc8bc1f3c75ab67",
+          "expired": false,
+          "created_at": "2026-10-09T07:04:31Z",
+          "updated_at": "2026-10-09T07:04:31Z",
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11600309282"
+        },
+        {
+          "id": 11600229155,
+          "name": "p8-scale-capacity-1000-0-37896198208",
+          "size_in_bytes": 783,
+          "digest": "sha256:65c283361ecf9f6b1af395cd2fb51c2c14e8f5d74a2bd94110056ba314e623be",
+          "expired": false,
+          "created_at": "2026-10-09T07:14:41Z",
+          "updated_at": "2026-10-09T07:14:41Z",
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11600229155"
+        }
+      ],
+      "matrix": {
+        "source_workflow_url": "https://github.com/jyqj/codecortex/blob/275e8799d4947d297329073eaa3ca675d3fd0777/.github/workflows/p8-scale.yml",
+        "fixed_scales": [
+          1000,
+          5000,
+          10000,
+          50000,
+          100000
+        ],
+        "repetitions": 30,
+        "required_shards": 150,
+        "required_phase_samples": 1500,
+        "preflight_repetition": 0,
+        "preflight_job_timeout_minutes": 350,
+        "preflight_max_parallel": 5,
+        "measurement_repetitions": [
+          1,
+          29
+        ],
+        "measurement_required_shards": 145,
+        "measurement_job_timeout_minutes": 350,
+        "measurement_max_parallel": 10,
+        "measurement_jobs_created": 0,
+        "measurement_gated_by_all_five_preflights": true,
+        "uploaded_shard_artifacts": 4,
+        "shards_not_uploaded": 146,
+        "independently_accepted_shards": null,
+        "independently_accepted_samples": null,
+        "strict_full_aggregate_present": false,
+        "full_acceptance": false
+      },
+      "assessment": "Active original preflight has no terminal failure observed. Completion of100k and subsequent145-shard measurement remains unproven; existing metadata neither proves inevitable success nor a failure/waiver."
+    },
+    {
+      "label": "gc8",
+      "id": 37902429727,
+      "name": "P8 complete scale measurements",
+      "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "event": "workflow_dispatch",
+      "run_attempt": 1,
+      "status": "in_progress",
+      "conclusion": null,
+      "created_at": "2026-10-09T08:01:31Z",
+      "updated_at": "2026-10-09T08:20:44Z",
+      "html_url": "https://github.com/jyqj/codecortex/actions/runs/37902429727",
+      "run_api": {
+        "url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37902429727",
+        "retrieved_at": "2026-10-09T08:58:27.221Z"
+      },
+      "jobs_pagination": {
+        "per_page": 100,
+        "total_count": 6,
+        "returned": 6,
+        "complete": true,
+        "pages": [
+          {
+            "page": 1,
+            "url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37902429727/jobs?per_page=100&page=1",
+            "retrieved_at": "2026-10-09T08:58:27.501Z",
+            "returned": 6,
+            "total_count": 6
+          }
+        ]
+      },
+      "jobs": [
+        {
+          "id": 113727856139,
+          "name": "build",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T08:09:55Z",
+          "completed_at": "2026-10-09T08:13:59Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37902429727/job/113727856139",
+          "active_steps": [],
+          "failed_steps": []
+        },
+        {
+          "id": 113731945708,
+          "name": "preflight (100000, 0)",
+          "status": "in_progress",
+          "conclusion": null,
+          "started_at": "2026-10-09T08:16:38Z",
+          "completed_at": null,
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37902429727/job/113731945708",
+          "active_steps": [
+            {
+              "name": "Execute all phases for this registered single-repetition capacity slice",
+              "status": "in_progress",
+              "conclusion": null,
+              "number": 7,
+              "started_at": "2026-10-09T08:16:52Z",
+              "completed_at": null
+            }
+          ],
+          "failed_steps": []
+        },
+        {
+          "id": 113731945732,
+          "name": "preflight (50000, 0)",
+          "status": "in_progress",
+          "conclusion": null,
+          "started_at": "2026-10-09T08:16:15Z",
+          "completed_at": null,
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37902429727/job/113731945732",
+          "active_steps": [
+            {
+              "name": "Execute all phases for this registered single-repetition capacity slice",
+              "status": "in_progress",
+              "conclusion": null,
+              "number": 7,
+              "started_at": "2026-10-09T08:16:32Z",
+              "completed_at": null
+            }
+          ],
+          "failed_steps": []
+        },
+        {
+          "id": 113731945738,
+          "name": "preflight (1000, 0)",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T08:18:56Z",
+          "completed_at": "2026-10-09T08:20:08Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37902429727/job/113731945738",
+          "active_steps": [],
+          "failed_steps": []
+        },
+        {
+          "id": 113731945751,
+          "name": "preflight (10000, 0)",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T08:20:10Z",
+          "completed_at": "2026-10-09T08:26:39Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37902429727/job/113731945751",
+          "active_steps": [],
+          "failed_steps": []
+        },
+        {
+          "id": 113731945971,
+          "name": "preflight (5000, 0)",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T08:20:44Z",
+          "completed_at": "2026-10-09T08:24:27Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37902429727/job/113731945971",
+          "active_steps": [],
+          "failed_steps": []
+        }
+      ],
+      "failed_jobs": [],
+      "annotations_status": "no_failed_jobs_or_failed_steps_observed; no failure annotation query was necessary",
+      "artifacts_pagination": {
+        "url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37902429727/artifacts?per_page=100&page=1",
+        "retrieved_at": "2026-10-09T08:58:27.387Z",
+        "per_page": 100,
+        "page": 1,
+        "total_count": 9,
+        "returned": 9,
+        "complete": true
+      },
+      "artifacts": [
+        {
+          "id": 11604180154,
+          "name": "p8-scale-capacity-1000-0-37902429727",
+          "size_in_bytes": 780,
+          "digest": "sha256:c48b6b17e6b6f11060e87779ac7474bebe3d7e60c2e7dcf1dcec8cf53c863f9f",
+          "expired": false,
+          "created_at": "2026-10-09T08:19:13Z",
+          "updated_at": "2026-10-09T08:19:13Z",
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11604180154"
+        },
+        {
+          "id": 11604150025,
+          "name": "p8-scale-capacity-50000-0-37902429727",
+          "size_in_bytes": 783,
+          "digest": "sha256:34b761668d4cfb8d97e8c57d3e9274d71544acfb300b11b96b374a40a26bc47f",
+          "expired": false,
+          "created_at": "2026-10-09T08:16:32Z",
+          "updated_at": "2026-10-09T08:16:32Z",
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11604150025"
+        },
+        {
+          "id": 11603987249,
+          "name": "p8-scale-capacity-10000-0-37902429727",
+          "size_in_bytes": 792,
+          "digest": "sha256:6bd41c0b99d8a9675e47be94cbb3257f214f6f886c1d85893a2a994440f0addf",
+          "expired": false,
+          "created_at": "2026-10-09T08:20:23Z",
+          "updated_at": "2026-10-09T08:20:23Z",
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11603987249"
+        },
+        {
+          "id": 11603917265,
+          "name": "p8-scale-shard-10000-0-37902429727",
+          "size_in_bytes": 853881,
+          "digest": "sha256:d60fe7cb7227138409b32fae82d7c0900a5f7af26619f66d85f5a569e5d2e804",
+          "expired": false,
+          "created_at": "2026-10-09T08:26:37Z",
+          "updated_at": "2026-10-09T08:26:37Z",
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11603917265"
+        },
+        {
+          "id": 11603634172,
+          "name": "p8-scale-shard-5000-0-37902429727",
+          "size_in_bytes": 583842,
+          "digest": "sha256:56d75a0a58d20c62581ac90ff50364e3bbb1fde146c8eceaaa45357c18a9970e",
+          "expired": false,
+          "created_at": "2026-10-09T08:24:24Z",
+          "updated_at": "2026-10-09T08:24:24Z",
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11603634172"
+        },
+        {
+          "id": 11603522248,
+          "name": "p8-scale-build-37902429727",
+          "size_in_bytes": 9223368,
+          "digest": "sha256:5addb32810c97eeb46c22d0d359edbce88c97fe8f99153774461e6ec2914c83b",
+          "expired": false,
+          "created_at": "2026-10-09T08:13:56Z",
+          "updated_at": "2026-10-09T08:13:56Z",
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11603522248"
+        },
+        {
+          "id": 11603463004,
+          "name": "p8-scale-capacity-100000-0-37902429727",
+          "size_in_bytes": 782,
+          "digest": "sha256:05016c2ea0ccc9afacf3b44bf192ff0211103f0e42b76f952a160e5f1f613ed3",
+          "expired": false,
+          "created_at": "2026-10-09T08:16:52Z",
+          "updated_at": "2026-10-09T08:16:52Z",
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11603463004"
+        },
+        {
+          "id": 11603378825,
+          "name": "p8-scale-shard-1000-0-37902429727",
+          "size_in_bytes": 952891,
+          "digest": "sha256:397f54042726fe910e993f6c2f5d130db0d51599e3faae8c9750ae31db7bae9b",
+          "expired": false,
+          "created_at": "2026-10-09T08:20:06Z",
+          "updated_at": "2026-10-09T08:20:06Z",
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11603378825"
+        },
+        {
+          "id": 11602954796,
+          "name": "p8-scale-capacity-5000-0-37902429727",
+          "size_in_bytes": 782,
+          "digest": "sha256:57894b90f4519d09d87a9f6cc0952263f36bfe05b28977873245887504bc2df9",
+          "expired": false,
+          "created_at": "2026-10-09T08:21:00Z",
+          "updated_at": "2026-10-09T08:21:00Z",
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11602954796"
+        }
+      ],
+      "matrix": {
+        "source_workflow_url": "https://github.com/jyqj/codecortex/blob/c8be5afaac568ffd40ef86d3795423c3b73c9f39/.github/workflows/p8-scale.yml",
+        "fixed_scales": [
+          1000,
+          5000,
+          10000,
+          50000,
+          100000
+        ],
+        "repetitions": 30,
+        "required_shards": 150,
+        "required_phase_samples": 1500,
+        "preflight_repetition": 0,
+        "preflight_job_timeout_minutes": 350,
+        "preflight_max_parallel": 5,
+        "measurement_repetitions": [
+          1,
+          29
+        ],
+        "measurement_required_shards": 145,
+        "measurement_job_timeout_minutes": 350,
+        "measurement_max_parallel": 10,
+        "measurement_jobs_created": 0,
+        "measurement_gated_by_all_five_preflights": true,
+        "uploaded_shard_artifacts": 3,
+        "shards_not_uploaded": 147,
+        "independently_accepted_shards": null,
+        "independently_accepted_samples": null,
+        "strict_full_aggregate_present": false,
+        "full_acceptance": false
+      },
+      "assessment": "Active original preflight has no terminal failure observed. Completion of100k and subsequent145-shard measurement remains unproven; existing metadata neither proves inevitable success nor a failure/waiver."
+    }
+  ],
+  "prs": [
+    {
+      "number": 175,
+      "title": "fix: use Rust for legacy runtime latency quantiles",
+      "html_url": "https://github.com/jyqj/codecortex/pull/175",
+      "state": "open",
+      "draft": false,
+      "merged": false,
+      "mergeable": true,
+      "mergeable_state": "unstable",
+      "changed_files": 18,
+      "updated_at": "2026-10-09T08:30:34Z",
+      "head": {
+        "sha": "8da1f956f6b0dd3413a37c639a79e1e0d939de81",
+        "ref": "task/p8-runtime-statistics-owner-a217-20261009"
+      },
+      "base": {
+        "sha": "bd4693351149a443bd0054a37508c53f74ed7b52",
+        "ref": "main"
+      },
+      "metadata_api": {
+        "url": "https://api.github.com/repos/jyqj/codecortex/pulls/175",
+        "retrieved_at": "2026-10-09T08:54:28.750Z"
+      },
+      "check_runs": {
+        "url": "https://api.github.com/repos/jyqj/codecortex/commits/8da1f956f6b0dd3413a37c639a79e1e0d939de81/check-runs?per_page=100&page=1",
+        "retrieved_at": "2026-10-09T08:57:53.963Z",
+        "total_count": 25,
+        "returned": 25,
+        "per_page": 100,
+        "pagination_complete": true,
+        "counts": {
+          "queued": 20,
+          "success": 4,
+          "in_progress": 1
+        },
+        "checks": [
+          {
+            "id": 113737045720,
+            "name": "check",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:29:20Z",
+            "completed_at": null
+          },
+          {
+            "id": 113737045572,
+            "name": "msrv",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:29:20Z",
+            "completed_at": null
+          },
+          {
+            "id": 113737045385,
+            "name": "offline (semantic)",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:29:20Z",
+            "completed_at": null
+          },
+          {
+            "id": 113737045381,
+            "name": "security",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:29:20Z",
+            "completed_at": null
+          },
+          {
+            "id": 113737045360,
+            "name": "cold macos / stable / default",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:29:20Z",
+            "completed_at": null
+          },
+          {
+            "id": 113737045325,
+            "name": "closeout",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:29:20Z",
+            "completed_at": null
+          },
+          {
+            "id": 113737045321,
+            "name": "cold linux / 1.95 / default",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:29:20Z",
+            "completed_at": null
+          },
+          {
+            "id": 113737045257,
+            "name": "lifecycle",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:45:40Z",
+            "completed_at": "2026-10-09T08:54:50Z"
+          },
+          {
+            "id": 113737045192,
+            "name": "cold linux / 1.95 / semantic",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:29:20Z",
+            "completed_at": null
+          },
+          {
+            "id": 113737045171,
+            "name": "cold macos / 1.95 / semantic",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:29:20Z",
+            "completed_at": null
+          },
+          {
+            "id": 113737045165,
+            "name": "offline (default)",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:29:20Z",
+            "completed_at": null
+          },
+          {
+            "id": 113737045146,
+            "name": "cold macos / stable / semantic",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:29:20Z",
+            "completed_at": null
+          },
+          {
+            "id": 113737045099,
+            "name": "cold macos / 1.95 / default",
+            "status": "in_progress",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:50:01Z",
+            "completed_at": null
+          },
+          {
+            "id": 113737045047,
+            "name": "fake_backfill",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:29:20Z",
+            "completed_at": null
+          },
+          {
+            "id": 113737045040,
+            "name": "mixed (8)",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:29:20Z",
+            "completed_at": null
+          },
+          {
+            "id": 113737044993,
+            "name": "mechanism",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:45:21Z",
+            "completed_at": "2026-10-09T08:53:09Z"
+          },
+          {
+            "id": 113737044972,
+            "name": "mixed (4)",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:29:20Z",
+            "completed_at": null
+          },
+          {
+            "id": 113737044968,
+            "name": "cold linux / stable / default",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:29:20Z",
+            "completed_at": null
+          },
+          {
+            "id": 113737044909,
+            "name": "cold linux / stable / semantic",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:29:20Z",
+            "completed_at": null
+          },
+          {
+            "id": 113737044859,
+            "name": "engineering",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:53:11Z",
+            "completed_at": "2026-10-09T08:57:08Z"
+          },
+          {
+            "id": 113737044814,
+            "name": "mixed (1)",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:29:20Z",
+            "completed_at": null
+          },
+          {
+            "id": 113737044774,
+            "name": "mixed (16)",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:29:19Z",
+            "completed_at": null
+          },
+          {
+            "id": 113737044667,
+            "name": "actual recovery and rollback matrix",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:29:19Z",
+            "completed_at": null
+          },
+          {
+            "id": 113737044557,
+            "name": "gate_controls",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:40:40Z",
+            "completed_at": "2026-10-09T08:44:08Z"
+          },
+          {
+            "id": 113737044523,
+            "name": "soak",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:29:19Z",
+            "completed_at": null
+          }
+        ],
+        "all_check_heads_match_current_head": true
+      },
+      "workflows": {
+        "url": "https://api.github.com/repos/jyqj/codecortex/actions/runs?head_sha=8da1f956f6b0dd3413a37c639a79e1e0d939de81&per_page=100&page=1",
+        "retrieved_at": "2026-10-09T08:57:53.663Z",
+        "total_count": 7,
+        "returned": 7,
+        "pagination_complete": true,
+        "runs": [
+          {
+            "id": 37905248713,
+            "name": "P8 runtime observations",
+            "head_sha": "8da1f956f6b0dd3413a37c639a79e1e0d939de81",
+            "run_attempt": 1,
+            "status": "queued",
+            "conclusion": null,
+            "html_url": "https://github.com/jyqj/codecortex/actions/runs/37905248713"
+          },
+          {
+            "id": 37905248757,
+            "name": "CI",
+            "head_sha": "8da1f956f6b0dd3413a37c639a79e1e0d939de81",
+            "run_attempt": 1,
+            "status": "queued",
+            "conclusion": null,
+            "html_url": "https://github.com/jyqj/codecortex/actions/runs/37905248757"
+          },
+          {
+            "id": 37905248700,
+            "name": "P7 closeout evidence",
+            "head_sha": "8da1f956f6b0dd3413a37c639a79e1e0d939de81",
+            "run_attempt": 1,
+            "status": "queued",
+            "conclusion": null,
+            "html_url": "https://github.com/jyqj/codecortex/actions/runs/37905248700"
+          },
+          {
+            "id": 37905248714,
+            "name": "P8 platform cold builds",
+            "head_sha": "8da1f956f6b0dd3413a37c639a79e1e0d939de81",
+            "run_attempt": 1,
+            "status": "queued",
+            "conclusion": null,
+            "html_url": "https://github.com/jyqj/codecortex/actions/runs/37905248714"
+          },
+          {
+            "id": 37905248711,
+            "name": "P8 lifecycle and resource observations",
+            "head_sha": "8da1f956f6b0dd3413a37c639a79e1e0d939de81",
+            "run_attempt": 1,
+            "status": "completed",
+            "conclusion": "success",
+            "html_url": "https://github.com/jyqj/codecortex/actions/runs/37905248711"
+          },
+          {
+            "id": 37905248697,
+            "name": "P8 original failure gates",
+            "head_sha": "8da1f956f6b0dd3413a37c639a79e1e0d939de81",
+            "run_attempt": 1,
+            "status": "completed",
+            "conclusion": "success",
+            "html_url": "https://github.com/jyqj/codecortex/actions/runs/37905248697"
+          },
+          {
+            "id": 37905248693,
+            "name": "P7 engineering regressions",
+            "head_sha": "8da1f956f6b0dd3413a37c639a79e1e0d939de81",
+            "run_attempt": 1,
+            "status": "completed",
+            "conclusion": "success",
+            "html_url": "https://github.com/jyqj/codecortex/actions/runs/37905248693"
+          }
+        ]
+      },
+      "formal_reviews": {
+        "url": "https://api.github.com/repos/jyqj/codecortex/pulls/175/reviews?per_page=100&page=1",
+        "retrieved_at": "2026-10-09T08:57:53.907Z",
+        "returned": 0,
+        "pagination_complete": true,
+        "head_approvals": 0,
+        "reviews": []
+      },
+      "merge_readiness": "Not all configured workflows have completed at this exact head."
+    },
+    {
+      "number": 178,
+      "title": "perf(index): integrate bounded FTS rebuilds with reviewed macOS fixes",
+      "html_url": "https://github.com/jyqj/codecortex/pull/178",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "mergeable": true,
+      "mergeable_state": "unstable",
+      "changed_files": 225,
+      "updated_at": "2026-10-09T08:47:56Z",
+      "head": {
+        "sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+        "ref": "task/p8-combined-engineering-bfcc-20261009"
+      },
+      "base": {
+        "sha": "60e5ce3ccc86f5cccb40f6f9c32bbc7b77bf1e9d",
+        "ref": "main"
+      },
+      "metadata_api": {
+        "url": "https://api.github.com/repos/jyqj/codecortex/pulls/178",
+        "retrieved_at": "2026-10-09T08:54:28.804Z"
+      },
+      "check_runs": {
+        "url": "https://api.github.com/repos/jyqj/codecortex/commits/c8be5afaac568ffd40ef86d3795423c3b73c9f39/check-runs?per_page=100&page=1",
+        "retrieved_at": "2026-10-09T08:57:54.071Z",
+        "total_count": 32,
+        "returned": 32,
+        "per_page": 100,
+        "pagination_complete": true,
+        "counts": {
+          "queued": 5,
+          "success": 22,
+          "in_progress": 5
+        },
+        "checks": [
+          {
+            "id": 113746378011,
+            "name": "all eight platform cells",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:56:41Z",
+            "completed_at": null
+          },
+          {
+            "id": 113731945971,
+            "name": "preflight (5000, 0)",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:20:44Z",
+            "completed_at": "2026-10-09T08:24:27Z"
+          },
+          {
+            "id": 113731945751,
+            "name": "preflight (10000, 0)",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:20:10Z",
+            "completed_at": "2026-10-09T08:26:39Z"
+          },
+          {
+            "id": 113731945738,
+            "name": "preflight (1000, 0)",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:18:56Z",
+            "completed_at": "2026-10-09T08:20:08Z"
+          },
+          {
+            "id": 113731945732,
+            "name": "preflight (50000, 0)",
+            "status": "in_progress",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:16:15Z",
+            "completed_at": null
+          },
+          {
+            "id": 113731945708,
+            "name": "preflight (100000, 0)",
+            "status": "in_progress",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:16:38Z",
+            "completed_at": null
+          },
+          {
+            "id": 113727856139,
+            "name": "build",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:09:55Z",
+            "completed_at": "2026-10-09T08:13:59Z"
+          },
+          {
+            "id": 113726260410,
+            "name": "closeout",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T07:56:34Z",
+            "completed_at": null
+          },
+          {
+            "id": 113726260236,
+            "name": "offline (default)",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T07:56:34Z",
+            "completed_at": null
+          },
+          {
+            "id": 113726260197,
+            "name": "offline (semantic)",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:39:41Z",
+            "completed_at": "2026-10-09T08:42:15Z"
+          },
+          {
+            "id": 113726259977,
+            "name": "mechanism",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T07:58:00Z",
+            "completed_at": "2026-10-09T08:06:13Z"
+          },
+          {
+            "id": 113726259879,
+            "name": "cold linux / stable / default",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:46:59Z",
+            "completed_at": "2026-10-09T08:50:54Z"
+          },
+          {
+            "id": 113726259878,
+            "name": "cold macos / stable / semantic",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:50:48Z",
+            "completed_at": "2026-10-09T08:56:41Z"
+          },
+          {
+            "id": 113726259858,
+            "name": "cold linux / 1.95 / semantic",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:51:10Z",
+            "completed_at": "2026-10-09T08:55:03Z"
+          },
+          {
+            "id": 113726259824,
+            "name": "cold linux / stable / semantic",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:47:28Z",
+            "completed_at": "2026-10-09T08:51:06Z"
+          },
+          {
+            "id": 113726259821,
+            "name": "cold macos / 1.95 / default",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:33:46Z",
+            "completed_at": "2026-10-09T08:43:25Z"
+          },
+          {
+            "id": 113726259770,
+            "name": "cold macos / stable / default",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:27:20Z",
+            "completed_at": "2026-10-09T08:36:00Z"
+          },
+          {
+            "id": 113726259767,
+            "name": "cold macos / 1.95 / semantic",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:25:43Z",
+            "completed_at": "2026-10-09T08:33:21Z"
+          },
+          {
+            "id": 113726259683,
+            "name": "cold linux / 1.95 / default",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:45:38Z",
+            "completed_at": "2026-10-09T08:50:41Z"
+          },
+          {
+            "id": 113726259514,
+            "name": "actual recovery and rollback matrix",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:28:53Z",
+            "completed_at": "2026-10-09T08:34:25Z"
+          },
+          {
+            "id": 113726259498,
+            "name": "engineering",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:07:59Z",
+            "completed_at": "2026-10-09T08:12:02Z"
+          },
+          {
+            "id": 113726259431,
+            "name": "soak",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T07:56:34Z",
+            "completed_at": null
+          },
+          {
+            "id": 113726259426,
+            "name": "mixed (1)",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T07:56:34Z",
+            "completed_at": null
+          },
+          {
+            "id": 113726259355,
+            "name": "check",
+            "status": "in_progress",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:44:15Z",
+            "completed_at": null
+          },
+          {
+            "id": 113726259337,
+            "name": "mixed (16)",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T07:56:38Z",
+            "completed_at": "2026-10-09T08:09:43Z"
+          },
+          {
+            "id": 113726259293,
+            "name": "lifecycle",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:26:43Z",
+            "completed_at": "2026-10-09T08:35:54Z"
+          },
+          {
+            "id": 113726259202,
+            "name": "mixed (4)",
+            "status": "in_progress",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:55:27Z",
+            "completed_at": null
+          },
+          {
+            "id": 113726259185,
+            "name": "mixed (8)",
+            "status": "in_progress",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:52:25Z",
+            "completed_at": null
+          },
+          {
+            "id": 113726259179,
+            "name": "security",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:35:25Z",
+            "completed_at": "2026-10-09T08:38:51Z"
+          },
+          {
+            "id": 113726259100,
+            "name": "gate_controls",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:18:10Z",
+            "completed_at": "2026-10-09T08:19:51Z"
+          },
+          {
+            "id": 113726259004,
+            "name": "msrv",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:24:19Z",
+            "completed_at": "2026-10-09T08:25:34Z"
+          },
+          {
+            "id": 113726258977,
+            "name": "fake_backfill",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:28:41Z",
+            "completed_at": "2026-10-09T08:37:30Z"
+          }
+        ],
+        "all_check_heads_match_current_head": true
+      },
+      "workflows": {
+        "url": "https://api.github.com/repos/jyqj/codecortex/actions/runs?head_sha=c8be5afaac568ffd40ef86d3795423c3b73c9f39&per_page=100&page=1",
+        "retrieved_at": "2026-10-09T08:57:53.691Z",
+        "total_count": 8,
+        "returned": 8,
+        "pagination_complete": true,
+        "runs": [
+          {
+            "id": 37902429727,
+            "name": "P8 complete scale measurements",
+            "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+            "run_attempt": 1,
+            "status": "in_progress",
+            "conclusion": null,
+            "html_url": "https://github.com/jyqj/codecortex/actions/runs/37902429727"
+          },
+          {
+            "id": 37901930897,
+            "name": "P8 runtime observations",
+            "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+            "run_attempt": 1,
+            "status": "queued",
+            "conclusion": null,
+            "html_url": "https://github.com/jyqj/codecortex/actions/runs/37901930897"
+          },
+          {
+            "id": 37901931093,
+            "name": "P7 closeout evidence",
+            "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+            "run_attempt": 1,
+            "status": "queued",
+            "conclusion": null,
+            "html_url": "https://github.com/jyqj/codecortex/actions/runs/37901931093"
+          },
+          {
+            "id": 37901930990,
+            "name": "P7 engineering regressions",
+            "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+            "run_attempt": 1,
+            "status": "completed",
+            "conclusion": "success",
+            "html_url": "https://github.com/jyqj/codecortex/actions/runs/37901930990"
+          },
+          {
+            "id": 37901930843,
+            "name": "P8 original failure gates",
+            "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+            "run_attempt": 1,
+            "status": "completed",
+            "conclusion": "success",
+            "html_url": "https://github.com/jyqj/codecortex/actions/runs/37901930843"
+          },
+          {
+            "id": 37901930818,
+            "name": "P8 lifecycle and resource observations",
+            "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+            "run_attempt": 1,
+            "status": "completed",
+            "conclusion": "success",
+            "html_url": "https://github.com/jyqj/codecortex/actions/runs/37901930818"
+          },
+          {
+            "id": 37901930820,
+            "name": "CI",
+            "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+            "run_attempt": 1,
+            "status": "in_progress",
+            "conclusion": null,
+            "html_url": "https://github.com/jyqj/codecortex/actions/runs/37901930820"
+          },
+          {
+            "id": 37901931021,
+            "name": "P8 platform cold builds",
+            "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+            "run_attempt": 1,
+            "status": "queued",
+            "conclusion": null,
+            "html_url": "https://github.com/jyqj/codecortex/actions/runs/37901931021"
+          }
+        ]
+      },
+      "formal_reviews": {
+        "url": "https://api.github.com/repos/jyqj/codecortex/pulls/178/reviews?per_page=100&page=1",
+        "retrieved_at": "2026-10-09T08:57:53.631Z",
+        "returned": 0,
+        "pagination_complete": true,
+        "head_approvals": 0,
+        "reviews": []
+      },
+      "merge_readiness": "Not all configured workflows have completed at this exact head."
+    },
+    {
+      "number": 179,
+      "title": "perf(index): remove repeated resolver allocations",
+      "html_url": "https://github.com/jyqj/codecortex/pull/179",
+      "state": "open",
+      "draft": false,
+      "merged": false,
+      "mergeable": false,
+      "mergeable_state": "dirty",
+      "changed_files": 12,
+      "updated_at": "2026-10-09T08:20:11Z",
+      "head": {
+        "sha": "edd00e7618ec4dba921d5c80d57a31a732463c46",
+        "ref": "task/p8-resolver-allocations-a217-20261009"
+      },
+      "base": {
+        "sha": "840fa2e0a26ab60c138747a4309aba5df506edc1",
+        "ref": "task/p8-runtime-statistics-owner-a217-20261009"
+      },
+      "metadata_api": {
+        "url": "https://api.github.com/repos/jyqj/codecortex/pulls/179",
+        "retrieved_at": "2026-10-09T08:54:28.671Z"
+      },
+      "check_runs": {
+        "url": "https://api.github.com/repos/jyqj/codecortex/commits/edd00e7618ec4dba921d5c80d57a31a732463c46/check-runs?per_page=100&page=1",
+        "retrieved_at": "2026-10-09T08:57:53.883Z",
+        "total_count": 25,
+        "returned": 25,
+        "per_page": 100,
+        "pagination_complete": true,
+        "counts": {
+          "queued": 5,
+          "success": 18,
+          "in_progress": 2
+        },
+        "checks": [
+          {
+            "id": 113721516004,
+            "name": "cold linux / stable / default",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T07:41:20Z",
+            "completed_at": null
+          },
+          {
+            "id": 113721515968,
+            "name": "cold macos / 1.95 / default",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T07:41:20Z",
+            "completed_at": null
+          },
+          {
+            "id": 113721515916,
+            "name": "cold macos / 1.95 / semantic",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T07:41:20Z",
+            "completed_at": null
+          },
+          {
+            "id": 113721515857,
+            "name": "cold linux / 1.95 / semantic",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:38:29Z",
+            "completed_at": "2026-10-09T08:43:46Z"
+          },
+          {
+            "id": 113721515837,
+            "name": "lifecycle",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T07:47:16Z",
+            "completed_at": "2026-10-09T07:56:35Z"
+          },
+          {
+            "id": 113721515830,
+            "name": "cold macos / stable / semantic",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T07:41:20Z",
+            "completed_at": null
+          },
+          {
+            "id": 113721515785,
+            "name": "cold linux / stable / semantic",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:24:30Z",
+            "completed_at": "2026-10-09T08:30:36Z"
+          },
+          {
+            "id": 113721515752,
+            "name": "cold macos / stable / default",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:09:51Z",
+            "completed_at": "2026-10-09T08:18:19Z"
+          },
+          {
+            "id": 113721515712,
+            "name": "cold linux / 1.95 / default",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:43:07Z",
+            "completed_at": "2026-10-09T08:48:13Z"
+          },
+          {
+            "id": 113721515488,
+            "name": "actual recovery and rollback matrix",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:22:01Z",
+            "completed_at": "2026-10-09T08:27:11Z"
+          },
+          {
+            "id": 113721515480,
+            "name": "check",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T07:51:14Z",
+            "completed_at": "2026-10-09T08:18:51Z"
+          },
+          {
+            "id": 113721515425,
+            "name": "mixed (1)",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T07:41:19Z",
+            "completed_at": null
+          },
+          {
+            "id": 113721515383,
+            "name": "msrv",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T07:45:02Z",
+            "completed_at": "2026-10-09T07:46:36Z"
+          },
+          {
+            "id": 113721515365,
+            "name": "mixed (16)",
+            "status": "in_progress",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:55:06Z",
+            "completed_at": null
+          },
+          {
+            "id": 113721515362,
+            "name": "soak",
+            "status": "in_progress",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:44:36Z",
+            "completed_at": null
+          },
+          {
+            "id": 113721515330,
+            "name": "mixed (4)",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:32:23Z",
+            "completed_at": "2026-10-09T08:45:38Z"
+          },
+          {
+            "id": 113721515287,
+            "name": "engineering",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T07:41:42Z",
+            "completed_at": "2026-10-09T07:46:04Z"
+          },
+          {
+            "id": 113721515252,
+            "name": "mixed (8)",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:19:54Z",
+            "completed_at": "2026-10-09T08:32:55Z"
+          },
+          {
+            "id": 113721515236,
+            "name": "security",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T07:49:30Z",
+            "completed_at": "2026-10-09T07:53:08Z"
+          },
+          {
+            "id": 113721515165,
+            "name": "gate_controls",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:01:27Z",
+            "completed_at": "2026-10-09T08:03:55Z"
+          },
+          {
+            "id": 113721515138,
+            "name": "mechanism",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:38:45Z",
+            "completed_at": "2026-10-09T08:44:13Z"
+          },
+          {
+            "id": 113721515046,
+            "name": "offline (semantic)",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T07:51:09Z",
+            "completed_at": "2026-10-09T07:54:54Z"
+          },
+          {
+            "id": 113721515040,
+            "name": "offline (default)",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:33:24Z",
+            "completed_at": "2026-10-09T08:38:27Z"
+          },
+          {
+            "id": 113721514984,
+            "name": "fake_backfill",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:11:03Z",
+            "completed_at": "2026-10-09T08:20:02Z"
+          },
+          {
+            "id": 113721514903,
+            "name": "closeout",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T07:57:29Z",
+            "completed_at": "2026-10-09T08:06:52Z"
+          }
+        ],
+        "all_check_heads_match_current_head": true
+      },
+      "workflows": {
+        "url": "https://api.github.com/repos/jyqj/codecortex/actions/runs?head_sha=edd00e7618ec4dba921d5c80d57a31a732463c46&per_page=100&page=1",
+        "retrieved_at": "2026-10-09T08:57:53.742Z",
+        "total_count": 7,
+        "returned": 7,
+        "pagination_complete": true,
+        "runs": [
+          {
+            "id": 37900454073,
+            "name": "P8 platform cold builds",
+            "head_sha": "edd00e7618ec4dba921d5c80d57a31a732463c46",
+            "run_attempt": 1,
+            "status": "queued",
+            "conclusion": null,
+            "html_url": "https://github.com/jyqj/codecortex/actions/runs/37900454073"
+          },
+          {
+            "id": 37900453939,
+            "name": "P8 runtime observations",
+            "head_sha": "edd00e7618ec4dba921d5c80d57a31a732463c46",
+            "run_attempt": 1,
+            "status": "queued",
+            "conclusion": null,
+            "html_url": "https://github.com/jyqj/codecortex/actions/runs/37900453939"
+          },
+          {
+            "id": 37900453981,
+            "name": "P7 engineering regressions",
+            "head_sha": "edd00e7618ec4dba921d5c80d57a31a732463c46",
+            "run_attempt": 1,
+            "status": "completed",
+            "conclusion": "success",
+            "html_url": "https://github.com/jyqj/codecortex/actions/runs/37900453981"
+          },
+          {
+            "id": 37900454013,
+            "name": "P8 lifecycle and resource observations",
+            "head_sha": "edd00e7618ec4dba921d5c80d57a31a732463c46",
+            "run_attempt": 1,
+            "status": "completed",
+            "conclusion": "success",
+            "html_url": "https://github.com/jyqj/codecortex/actions/runs/37900454013"
+          },
+          {
+            "id": 37900453961,
+            "name": "P8 original failure gates",
+            "head_sha": "edd00e7618ec4dba921d5c80d57a31a732463c46",
+            "run_attempt": 1,
+            "status": "completed",
+            "conclusion": "success",
+            "html_url": "https://github.com/jyqj/codecortex/actions/runs/37900453961"
+          },
+          {
+            "id": 37900454012,
+            "name": "CI",
+            "head_sha": "edd00e7618ec4dba921d5c80d57a31a732463c46",
+            "run_attempt": 1,
+            "status": "completed",
+            "conclusion": "success",
+            "html_url": "https://github.com/jyqj/codecortex/actions/runs/37900454012"
+          },
+          {
+            "id": 37900453899,
+            "name": "P7 closeout evidence",
+            "head_sha": "edd00e7618ec4dba921d5c80d57a31a732463c46",
+            "run_attempt": 1,
+            "status": "completed",
+            "conclusion": "success",
+            "html_url": "https://github.com/jyqj/codecortex/actions/runs/37900453899"
+          }
+        ]
+      },
+      "formal_reviews": {
+        "url": "https://api.github.com/repos/jyqj/codecortex/pulls/179/reviews?per_page=100&page=1",
+        "retrieved_at": "2026-10-09T08:57:53.952Z",
+        "returned": 1,
+        "pagination_complete": true,
+        "head_approvals": 0,
+        "reviews": [
+          {
+            "id": 5467271098,
+            "state": "COMMENTED",
+            "commit_id": "26888651b9eedcd1f784463ce54f9cef46b703ee",
+            "submitted_at": "2026-10-09T07:44:52Z",
+            "html_url": "https://github.com/jyqj/codecortex/pull/179#pullrequestreview-5467271098"
+          }
+        ]
+      },
+      "merge_readiness": "Not all configured workflows have completed at this exact head."
+    },
+    {
+      "number": 180,
+      "title": "perf(p8): integrate bounded snapshot writes and resolver reuse",
+      "html_url": "https://github.com/jyqj/codecortex/pull/180",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "mergeable": true,
+      "mergeable_state": "unstable",
+      "changed_files": 131,
+      "updated_at": "2026-10-09T08:16:35Z",
+      "head": {
+        "sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732",
+        "ref": "integrate/p8-snapshot-oracle-28fe-20261009"
+      },
+      "base": {
+        "sha": "bd4693351149a443bd0054a37508c53f74ed7b52",
+        "ref": "main"
+      },
+      "metadata_api": {
+        "url": "https://api.github.com/repos/jyqj/codecortex/pulls/180",
+        "retrieved_at": "2026-10-09T08:54:28.694Z"
+      },
+      "check_runs": {
+        "url": "https://api.github.com/repos/jyqj/codecortex/commits/e6ab28bc5956e225e2015a57f601bc4d867d3732/check-runs?per_page=100&page=1",
+        "retrieved_at": "2026-10-09T08:57:53.799Z",
+        "total_count": 25,
+        "returned": 25,
+        "per_page": 100,
+        "pagination_complete": true,
+        "counts": {
+          "queued": 16,
+          "in_progress": 2,
+          "success": 7
+        },
+        "checks": [
+          {
+            "id": 113732521918,
+            "name": "check",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:15:43Z",
+            "completed_at": null
+          },
+          {
+            "id": 113732521789,
+            "name": "cold linux / stable / semantic",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:15:43Z",
+            "completed_at": null
+          },
+          {
+            "id": 113732521761,
+            "name": "cold macos / 1.95 / default",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:15:43Z",
+            "completed_at": null
+          },
+          {
+            "id": 113732521729,
+            "name": "cold macos / 1.95 / semantic",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:15:43Z",
+            "completed_at": null
+          },
+          {
+            "id": 113732521709,
+            "name": "cold linux / 1.95 / semantic",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:15:43Z",
+            "completed_at": null
+          },
+          {
+            "id": 113732521675,
+            "name": "cold linux / 1.95 / default",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:15:43Z",
+            "completed_at": null
+          },
+          {
+            "id": 113732521637,
+            "name": "cold macos / stable / semantic",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:15:43Z",
+            "completed_at": null
+          },
+          {
+            "id": 113732521602,
+            "name": "cold linux / stable / default",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:15:43Z",
+            "completed_at": null
+          },
+          {
+            "id": 113732521599,
+            "name": "cold macos / stable / default",
+            "status": "in_progress",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:52:10Z",
+            "completed_at": null
+          },
+          {
+            "id": 113732521552,
+            "name": "offline (semantic)",
+            "status": "in_progress",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:57:38Z",
+            "completed_at": null
+          },
+          {
+            "id": 113732521513,
+            "name": "security",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:44:11Z",
+            "completed_at": "2026-10-09T08:46:57Z"
+          },
+          {
+            "id": 113732521458,
+            "name": "mixed (16)",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:15:43Z",
+            "completed_at": null
+          },
+          {
+            "id": 113732521456,
+            "name": "closeout",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:15:43Z",
+            "completed_at": null
+          },
+          {
+            "id": 113732521428,
+            "name": "offline (default)",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:46:34Z",
+            "completed_at": "2026-10-09T08:51:28Z"
+          },
+          {
+            "id": 113732521405,
+            "name": "mixed (4)",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:15:43Z",
+            "completed_at": null
+          },
+          {
+            "id": 113732521359,
+            "name": "gate_controls",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:43:26Z",
+            "completed_at": "2026-10-09T08:45:18Z"
+          },
+          {
+            "id": 113732521327,
+            "name": "actual recovery and rollback matrix",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:15:43Z",
+            "completed_at": null
+          },
+          {
+            "id": 113732521258,
+            "name": "lifecycle",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:27:15Z",
+            "completed_at": "2026-10-09T08:33:54Z"
+          },
+          {
+            "id": 113732521240,
+            "name": "mixed (1)",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:15:43Z",
+            "completed_at": null
+          },
+          {
+            "id": 113732521203,
+            "name": "mechanism",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:38:14Z",
+            "completed_at": "2026-10-09T08:45:35Z"
+          },
+          {
+            "id": 113732521184,
+            "name": "fake_backfill",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:15:43Z",
+            "completed_at": null
+          },
+          {
+            "id": 113732521178,
+            "name": "msrv",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:39:20Z",
+            "completed_at": "2026-10-09T08:40:41Z"
+          },
+          {
+            "id": 113732521150,
+            "name": "mixed (8)",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:15:43Z",
+            "completed_at": null
+          },
+          {
+            "id": 113732521067,
+            "name": "engineering",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-09T08:30:39Z",
+            "completed_at": "2026-10-09T08:34:32Z"
+          },
+          {
+            "id": 113732520873,
+            "name": "soak",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-09T08:15:43Z",
+            "completed_at": null
+          }
+        ],
+        "all_check_heads_match_current_head": true
+      },
+      "workflows": {
+        "url": "https://api.github.com/repos/jyqj/codecortex/actions/runs?head_sha=e6ab28bc5956e225e2015a57f601bc4d867d3732&per_page=100&page=1",
+        "retrieved_at": "2026-10-09T08:57:53.927Z",
+        "total_count": 7,
+        "returned": 7,
+        "pagination_complete": true,
+        "runs": [
+          {
+            "id": 37903872591,
+            "name": "P8 runtime observations",
+            "head_sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732",
+            "run_attempt": 1,
+            "status": "queued",
+            "conclusion": null,
+            "html_url": "https://github.com/jyqj/codecortex/actions/runs/37903872591"
+          },
+          {
+            "id": 37903872651,
+            "name": "P8 platform cold builds",
+            "head_sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732",
+            "run_attempt": 1,
+            "status": "queued",
+            "conclusion": null,
+            "html_url": "https://github.com/jyqj/codecortex/actions/runs/37903872651"
+          },
+          {
+            "id": 37903872639,
+            "name": "P7 closeout evidence",
+            "head_sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732",
+            "run_attempt": 1,
+            "status": "queued",
+            "conclusion": null,
+            "html_url": "https://github.com/jyqj/codecortex/actions/runs/37903872639"
+          },
+          {
+            "id": 37903872633,
+            "name": "CI",
+            "head_sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732",
+            "run_attempt": 1,
+            "status": "queued",
+            "conclusion": null,
+            "html_url": "https://github.com/jyqj/codecortex/actions/runs/37903872633"
+          },
+          {
+            "id": 37903872571,
+            "name": "P8 lifecycle and resource observations",
+            "head_sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732",
+            "run_attempt": 1,
+            "status": "completed",
+            "conclusion": "success",
+            "html_url": "https://github.com/jyqj/codecortex/actions/runs/37903872571"
+          },
+          {
+            "id": 37903872563,
+            "name": "P7 engineering regressions",
+            "head_sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732",
+            "run_attempt": 1,
+            "status": "completed",
+            "conclusion": "success",
+            "html_url": "https://github.com/jyqj/codecortex/actions/runs/37903872563"
+          },
+          {
+            "id": 37903872564,
+            "name": "P8 original failure gates",
+            "head_sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732",
+            "run_attempt": 1,
+            "status": "completed",
+            "conclusion": "success",
+            "html_url": "https://github.com/jyqj/codecortex/actions/runs/37903872564"
+          }
+        ]
+      },
+      "formal_reviews": {
+        "url": "https://api.github.com/repos/jyqj/codecortex/pulls/180/reviews?per_page=100&page=1",
+        "retrieved_at": "2026-10-09T08:57:53.697Z",
+        "returned": 0,
+        "pagination_complete": true,
+        "head_approvals": 0,
+        "reviews": []
+      },
+      "merge_readiness": "Not all configured workflows have completed at this exact head."
+    }
+  ],
+  "coordination": {
+    "issue": 158,
+    "url": "https://github.com/jyqj/codecortex/issues/158",
+    "comments_api": "https://api.github.com/repos/jyqj/codecortex/issues/158/comments?per_page=100&page=1",
+    "retrieved_at": "2026-10-09T08:58:27.404Z",
+    "page": 1,
+    "per_page": 100,
+    "returned": 14,
+    "pagination_complete": true,
+    "latest_comments": [
+      {
+        "id": 6076658191,
+        "url": "https://github.com/jyqj/codecortex/issues/158#issuecomment-6076658191",
+        "created_at": "2026-10-09T07:41:10Z",
+        "updated_at": "2026-10-09T07:41:10Z",
+        "author": "jyqj",
+        "summary": "50c claimed only snapshot/interface paths; later08:10 update narrows performance claims to delayed allocation while retaining typed SQL/error order."
+      },
+      {
+        "id": 6077000948,
+        "url": "https://github.com/jyqj/codecortex/issues/158#issuecomment-6077000948",
+        "created_at": "2026-10-09T08:05:41Z",
+        "updated_at": "2026-10-09T08:05:41Z",
+        "author": "jyqj",
+        "summary": "Owner registered one Gc8 full study before its08:01 workflow dispatch; five rep0 preflights precede145 measurements and strict150-shard aggregation; independent source families remain separate."
+      },
+      {
+        "id": 6077068313,
+        "url": "https://github.com/jyqj/codecortex/issues/158#issuecomment-6077068313",
+        "created_at": "2026-10-09T08:10:29Z",
+        "updated_at": "2026-10-09T08:10:29Z",
+        "author": "jyqj",
+        "summary": "50c PR181 fixedP/R/G retained workspace sampler exit101; its own source checks and original workflow queues are separate from G275 raw audits. Ledger remains163done/29remaining."
+      },
+      {
+        "id": 6077649140,
+        "url": "https://github.com/jyqj/codecortex/issues/158#issuecomment-6077649140",
+        "created_at": "2026-10-09T08:50:50Z",
+        "updated_at": "2026-10-09T08:50:50Z",
+        "author": "jyqj",
+        "summary": "Owner froze PR180 at e6ab28bc, retained prior implementations, and reported only actual new MSRV/engineering checks. No new180 full study. Existing Gc8 study remains separate from G275. PR176 was closed superseded by180 with branch/evidence retained. OldG2 100k had an original native failure and a separate read-only evidence-export run; no currentG275 failure is inferred."
+      }
+    ]
+  },
+  "g275_original_regressions": {
+    "source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+    "api": {
+      "url": "https://api.github.com/repos/jyqj/codecortex/actions/runs?head_sha=275e8799d4947d297329073eaa3ca675d3fd0777&per_page=100&page=1",
+      "retrieved_at": "2026-10-09T08:46:36.480Z",
+      "total_count": 9,
+      "returned": 9,
+      "pagination_complete": true
+    },
+    "workflow_runs": [
+      {
+        "id": 37896198208,
+        "name": "P8 complete scale measurements",
+        "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+        "status": "in_progress",
+        "conclusion": null,
+        "run_attempt": 1,
+        "html_url": "https://github.com/jyqj/codecortex/actions/runs/37896198208"
+      },
+      {
+        "id": 37890757202,
+        "name": "P7 engineering regressions",
+        "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+        "status": "completed",
+        "conclusion": "success",
+        "run_attempt": 1,
+        "html_url": "https://github.com/jyqj/codecortex/actions/runs/37890757202"
+      },
+      {
+        "id": 37890757129,
+        "name": "P8 platform cold builds",
+        "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+        "status": "completed",
+        "conclusion": "success",
+        "run_attempt": 1,
+        "html_url": "https://github.com/jyqj/codecortex/actions/runs/37890757129"
+      },
+      {
+        "id": 37890757049,
+        "name": "P8 lifecycle and resource observations",
+        "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+        "status": "completed",
+        "conclusion": "success",
+        "run_attempt": 1,
+        "html_url": "https://github.com/jyqj/codecortex/actions/runs/37890757049"
+      },
+      {
+        "id": 37890756962,
+        "name": "P7 closeout evidence",
+        "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+        "status": "completed",
+        "conclusion": "success",
+        "run_attempt": 1,
+        "html_url": "https://github.com/jyqj/codecortex/actions/runs/37890756962"
+      },
+      {
+        "id": 37890756917,
+        "name": "P8 original failure gates",
+        "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+        "status": "completed",
+        "conclusion": "success",
+        "run_attempt": 1,
+        "html_url": "https://github.com/jyqj/codecortex/actions/runs/37890756917"
+      },
+      {
+        "id": 37890756949,
+        "name": "CI",
+        "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+        "status": "completed",
+        "conclusion": "success",
+        "run_attempt": 1,
+        "html_url": "https://github.com/jyqj/codecortex/actions/runs/37890756949"
+      },
+      {
+        "id": 37890757030,
+        "name": "P8 runtime observations",
+        "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+        "status": "completed",
+        "conclusion": "success",
+        "run_attempt": 1,
+        "html_url": "https://github.com/jyqj/codecortex/actions/runs/37890757030"
+      },
+      {
+        "id": 37890734575,
+        "name": "P8 same-prepare surface window controls only",
+        "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+        "status": "completed",
+        "conclusion": "success",
+        "run_attempt": 1,
+        "html_url": "https://github.com/jyqj/codecortex/actions/runs/37890734575"
+      }
+    ],
+    "ci_recheck": {
+      "path": "round6-g275-ci-recheck.json",
+      "sha256": "442d42557e22e89e6e1156f97fb928032e3225ee0d520b665a309814acff0a9b"
+    },
+    "source_consumption_bridge": {
+      "path": "round6-g275-source-artifact-bridge.json",
+      "sha256": "6ab1478e07b7772fb163717d3def4c05c94af93232d61f94d91a794fcbd8e794"
+    },
+    "conclusion": "The original CI run and source proof succeeded at actual checkout d53ea0be. All1089 product/139 validation inputs, all236 current historical protected paths and187 artifact approval inputs match G275 through an explicit complete relevant-source bridge. Actual checkout identity is retained; laterG50d9/native results are not substituted.",
+    "scope_limit": "Source admission and related CI regressions do not independently certify complete150-shard performance, omitted backend timing, release or live-provider effects."
+  },
+  "independent_existing_raw_subacceptance": [
+    {
+      "tasks": [
+        "P8-007",
+        "P8-010"
+      ],
+      "source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+      "run_id": 37890757030,
+      "review_path": "g275-runtime-acceptance-review/publication/raw-review.json",
+      "sha256": "54bea82f81e7fefd353bacecc748b4f3ab646a151946af9fe225df48fa10c7dd",
+      "status": "original_scoped_raw_checks_accepted",
+      "full_task_done": false
+    },
+    {
+      "tasks": [
+        "P8-008",
+        "P8-009"
+      ],
+      "source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+      "run_id": 37890757049,
+      "review_path": "g275-lifecycle-acceptance-review/publication/raw-review.json",
+      "sha256": "2e22e1bd4653afad5d7c81e38e9cfd7ad2227db6eb8404802cc75e87c153f58f",
+      "status": "original_scoped_raw_checks_accepted",
+      "full_task_done": false
+    },
+    {
+      "tasks": [
+        "P8-011",
+        "P8-012",
+        "P8-013",
+        "P8-016"
+      ],
+      "source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+      "review_path": "g275-acceptance-review-pr/publication/acceptance-summary.json",
+      "sha256": "63ae4dcb934203e38ab98c3b34bfbbd6606e3722026d1a4f720f246f4d84a619",
+      "status": "original_named_subacceptance_accepted",
+      "full_task_done": false
+    }
+  ],
+  "original_ten_task_review": [
+    {
+      "id": "P8-005",
+      "title": "完整规模1k到100k",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-004"
+      ],
+      "steps": [
+        "固定seed与release构建测1k/5k/10k/50k/100k",
+        "同时报chunk/edge/vector"
+      ],
+      "acceptance": [
+        "不存在只报文件数或把不同工作量直接算倍数",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V20"
+      ],
+      "benchmark_doc": "09-BENCHMARK.md",
+      "contracts_doc": "02-CONTRACTS.md",
+      "acceptance_subgates": {
+        "fixed_protocol_100k_candidate_once": "closed_declared_local_scope",
+        "fixed_protocol_100k_baseline_once": "closed_declared_local_scope",
+        "counts_fk_queries_c4_normal_eof_reopen": "closed_declared_local_scope",
+        "full_1k_5k_10k_50k_100k_scale_acceptance": "open",
+        "strict_paired_causal_performance": "not_established",
+        "whole_tree_memory_peak": "unknown"
+      },
+      "direct_dependency_statuses": {
+        "P8-004": "done"
+      },
+      "whole_task_accepted_done": false,
+      "related_regressions": "G275 original source-domain regression bridge accepted; actual checkout d53 retained.",
+      "existing_core_evidence": "G275 has four uploaded rep0 shard artifacts including newly successful50000; Gc8 has three. Neither has completed100000rep0, subsequent145 measurements, or a strict full aggregate.",
+      "remaining_intrinsic_gap": "Complete fixed-source5 scales x30repetitions x10phase samples and strict original raw aggregation have not finished. Full-study shard/sample acceptance is unknown, not zero or metadata-derived passed.",
+      "next_action_without_new_full_scale": "Allow the already-running same-source studies to reach their original terminal conditions; review the newly retained50000 shard/build/capacity originals if that bounded audit is assigned. Do not dispatch another full study or merge distinct-source samples.",
+      "task_closure_blockers": [
+        {
+          "kind": "original_acceptance_evidence_gap",
+          "description": "Complete fixed-source5 scales x30repetitions x10phase samples and strict original raw aggregation have not finished. Full-study shard/sample acceptance is unknown, not zero or metadata-derived passed."
+        }
+      ]
+    },
+    {
+      "id": "P8-006",
+      "title": "增量规模与fanout曲线",
+      "status": "in_progress",
+      "depends_on": [
+        "P7-020",
+        "P8-001",
+        "P8-005"
+      ],
+      "steps": [
+        "测no-op/body/API/config/batch和超预算闭包",
+        "输出各phase计数"
+      ],
+      "acceptance": [
+        "时间可归因且闭包完成后full parity，未完成有显式status",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V07",
+        "V20"
+      ],
+      "benchmark_doc": "09-BENCHMARK.md",
+      "contracts_doc": "02-CONTRACTS.md",
+      "direct_dependency_statuses": {
+        "P7-020": "done",
+        "P8-001": "done",
+        "P8-005": "in_progress"
+      },
+      "whole_task_accepted_done": false,
+      "related_regressions": "G275 original source-domain regression bridge accepted; actual checkout d53 retained.",
+      "existing_core_evidence": "The current original preflight executes all ten phases for each retained single repetition. Partial scale shards cannot prove a full incremental/fanout curve.",
+      "remaining_intrinsic_gap": "Complete same-source no-op/body/API/config/batch/over-budget phase counts, timing attribution and unrepaired full parity across the required full scale population remain unfinished with P8-005.",
+      "next_action_without_new_full_scale": "Review already retained shard phase counters, explicit incomplete statuses and original full-parity receipts; prepare the existing strict aggregation/evidence map without manufacturing missing cells.",
+      "task_closure_blockers": [
+        {
+          "kind": "original_dependency",
+          "id": "P8-005",
+          "status": "in_progress"
+        },
+        {
+          "kind": "original_acceptance_evidence_gap",
+          "description": "Complete same-source no-op/body/API/config/batch/over-budget phase counts, timing attribution and unrepaired full parity across the required full scale population remain unfinished with P8-005."
+        }
+      ]
+    },
+    {
+      "id": "P8-007",
+      "title": "多并发与混合负载",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-006"
+      ],
+      "steps": [
+        "C1/4/8/16 mixed read/build/backfill",
+        "记录offered load和排队"
+      ],
+      "acceptance": [
+        "无死锁饥饿，吞吐不能隐藏timeout与尾部",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V11",
+        "V20"
+      ],
+      "benchmark_doc": "09-BENCHMARK.md",
+      "contracts_doc": "02-CONTRACTS.md",
+      "direct_dependency_statuses": {
+        "P8-006": "in_progress"
+      },
+      "whole_task_accepted_done": false,
+      "related_regressions": "G275 original source-domain regression bridge accepted; actual checkout d53 retained.",
+      "existing_core_evidence": "Existing mixed C1/4/8/16 and held fake-backfill populations, terminal outcomes and progress checks pass their original scoped checkers.",
+      "remaining_intrinsic_gap": "Original benchmark section 9 backend queue/service, DB lock wait and worker contention attribution is not supplied by the reviewed mixed/held artifacts. Existing client phase distributions and separate DB availability probes are insufficient for that full attribution claim.",
+      "classification": "confirmed_measurement_scope_gap_for_complete_original_section_9",
+      "not_new_gates": [
+        "No requirement that observed active calls equal configured C exactly was found; C>1 read/build overlap was exercised.",
+        "Discrete queue counts and finite run progress need honest labels, not a new continuous telemetry requirement.",
+        "No mandatory per-request unique ID in the original task is invented; ID linkage is an implementation means to make future attribution reliable."
+      ],
+      "next_action_without_new_full_scale": "Coordinate the bounded instrumentation design and PR #175 ownership using source-location-review.json; source/run evidence cannot be repaired offline.",
+      "task_closure_blockers": [
+        {
+          "kind": "original_dependency",
+          "id": "P8-006",
+          "status": "in_progress"
+        },
+        {
+          "kind": "original_acceptance_evidence_gap",
+          "description": "Original benchmark section 9 backend queue/service, DB lock wait and worker contention attribution is not supplied by the reviewed mixed/held artifacts. Existing client phase distributions and separate DB availability probes are insufficient for that full attribution claim."
+        }
+      ]
+    },
+    {
+      "id": "P8-008",
+      "title": "冷建/重开/热查分层",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-007"
+      ],
+      "steps": [
+        "分离OS cache、process cold、result-cache hit与uncached warm",
+        "采全部样本"
+      ],
+      "acceptance": [
+        "无best-of，sample N/分布/CI齐全",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V20"
+      ],
+      "benchmark_doc": "09-BENCHMARK.md",
+      "contracts_doc": "02-CONTRACTS.md",
+      "direct_dependency_statuses": {
+        "P8-007": "in_progress"
+      },
+      "whole_task_accepted_done": false,
+      "related_regressions": "G275 original source-domain regression bridge accepted; actual checkout d53 retained.",
+      "existing_core_evidence": "30 empty-index cold builds, 400 new-process reopen queries, 400 distinct uncached queries and 400 cache-hit queries, all samples and original N/distributions/CI are preserved.",
+      "remaining_intrinsic_gap": null,
+      "classification": "no_additional_core_gap_found_in_declared_lifecycle_scope",
+      "not_new_gates": [
+        "OS cache clearing is explicitly optional/controlled in section 9; never calling these cold-disk observations complies.",
+        "Cold N30 upper CI null is an honest inconclusive tail result, not missing CI. It does not support a stable-tail/release claim."
+      ],
+      "next_action_without_new_full_scale": "Retain the nulls and exact timing definitions; no rerun is justified solely to make unavailable cold-tail endpoints finite.",
+      "task_closure_blockers": [
+        {
+          "kind": "original_dependency",
+          "id": "P8-007",
+          "status": "in_progress"
+        }
+      ]
+    },
+    {
+      "id": "P8-009",
+      "title": "内存/磁盘/费用总账",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-008"
+      ],
+      "steps": [
+        "分别client/server/process-tree和artifact/FTS大小",
+        "成本reported/estimated分栏"
+      ],
+      "acceptance": [
+        "单位和归属正确，不把unavailable填0或把runner当server",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V20"
+      ],
+      "benchmark_doc": "09-BENCHMARK.md",
+      "contracts_doc": "02-CONTRACTS.md",
+      "direct_dependency_statuses": {
+        "P8-008": "in_progress"
+      },
+      "whole_task_accepted_done": false,
+      "related_regressions": "G275 original source-domain regression bridge accepted; actual checkout d53 retained.",
+      "existing_core_evidence": "Client/server/tree identities, current-vs-high-water memory distinctions, all-fixture physical disk ownership, FTS non-double-counting and reported/estimated cost categories were independently reconciled.",
+      "remaining_intrinsic_gap": null,
+      "classification": "no_additional_core_accounting_gap_found_in_declared_disabled_provider_scope",
+      "not_new_gates": [
+        "Unavailable or unmeasured resources/costs must remain null under the original specification; zero and mandatory paid-provider work would be incorrect substitutes.",
+        "A continuous memory peak or one-active-index footprint is not claimed by all-30-fixture snapshots."
+      ],
+      "next_action_without_new_full_scale": "Keep units/ownership/nulls; complete the common exact-source regression reconciliation, not a new paid-provider study.",
+      "task_closure_blockers": [
+        {
+          "kind": "original_dependency",
+          "id": "P8-008",
+          "status": "in_progress"
+        }
+      ]
+    },
+    {
+      "id": "P8-010",
+      "title": "长时soak与连续修改",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-009"
+      ],
+      "steps": [
+        "持续编辑、删除、切分支、catalog压实、cache/worker复用",
+        "终点完整对账"
+      ],
+      "acceptance": [
+        "内存/队列不无界增长，长期索引和全量一致",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V07",
+        "V17",
+        "V20"
+      ],
+      "benchmark_doc": "09-BENCHMARK.md",
+      "contracts_doc": "02-CONTRACTS.md",
+      "direct_dependency_statuses": {
+        "P8-009": "in_progress"
+      },
+      "whole_task_accepted_done": false,
+      "related_regressions": "G275 original source-domain regression bridge accepted; actual checkout d53 retained.",
+      "existing_core_evidence": "The original one-hour workload, fixed mutation cycle, branch switches, catalog compactions, cache reuse, original RSS rule and unrepaired full fifteen-table endpoint parity have scoped passing evidence.",
+      "remaining_intrinsic_gap": "The shared complete section-9 backend/DB/worker attribution remains absent; the reviewed boundedness/progress observations themselves are not a new failure.",
+      "classification": "core_soak_controls_covered_but_shared_full_performance_attribution_open",
+      "not_new_gates": [
+        "Soak active maximum 1 under its original write-admission lock is the declared profile, not a failed C4 saturation gate.",
+        "The compound read includes all four RPCs in one offered denominator; it must not be pooled as extra independent latency samples.",
+        "Sampled queue/resource counters do not certify arbitrary continuous peaks; no such new condition is added to the original soak checker."
+      ],
+      "next_action_without_new_full_scale": "Reuse existing build/client phase evidence for explanation; do not rerun an unchanged one-hour workload expecting it to reveal unrecorded backend times.",
+      "task_closure_blockers": [
+        {
+          "kind": "original_dependency",
+          "id": "P8-009",
+          "status": "in_progress"
+        },
+        {
+          "kind": "original_acceptance_evidence_gap",
+          "description": "The shared complete section-9 backend/DB/worker attribution remains absent; the reviewed boundedness/progress observations themselves are not a new failure."
+        }
+      ]
+    },
+    {
+      "id": "P8-011",
+      "title": "端到端故障与恢复认证",
+      "status": "in_progress",
+      "depends_on": [
+        "P7-020",
+        "P8-007",
+        "P8-010"
+      ],
+      "steps": [
+        "kill进程/网络断开/缓存损坏/数据库忙/换库",
+        "保持raw故障工件"
+      ],
+      "acceptance": [
+        "没有假ready或删除复活，恢复与费用影响清楚",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V14",
+        "V17",
+        "V18"
+      ],
+      "benchmark_doc": "09-BENCHMARK.md",
+      "contracts_doc": "02-CONTRACTS.md",
+      "direct_dependency_statuses": {
+        "P7-020": "done",
+        "P8-007": "in_progress",
+        "P8-010": "in_progress"
+      },
+      "whole_task_accepted_done": false,
+      "related_regressions": "G275 original source-domain regression bridge accepted; actual checkout d53 retained.",
+      "existing_core_evidence": "All five literal fault domains have same-source coverage: local kill/busy/delete, three active HTTP seeds for disconnect/cache corruption/real incarnation replacement, plus original exact production persistence controls.",
+      "remaining_intrinsic_gap": null,
+      "classification": "no_missing_literal_fault_domain_found_after_complementary_same_source_evidence",
+      "not_new_gates": [
+        "No physical power-loss, external paid-provider billing, unchanged-source automatic-retry speed or released-binary assertion is inferred."
+      ],
+      "next_action_without_new_full_scale": "Preserve the explicit domain-to-original-receipt mapping and common regression evidence; no duplicate fault workload is needed merely because the limited local submatrix retains not_run rows.",
+      "task_closure_blockers": [
+        {
+          "kind": "original_dependency",
+          "id": "P8-007",
+          "status": "in_progress"
+        },
+        {
+          "kind": "original_dependency",
+          "id": "P8-010",
+          "status": "in_progress"
+        }
+      ]
+    },
+    {
+      "id": "P8-012",
+      "title": "MSRV与平台冷构建矩阵",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-011"
+      ],
+      "steps": [
+        "Linux/macOS、当前声明MSRV与stable、默认/semantic features",
+        "全新target"
+      ],
+      "acceptance": [
+        "SDK blocker解决或发布平台范围明确，缓存测试不替冷构建",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V01",
+        "V21"
+      ],
+      "benchmark_doc": "09-BENCHMARK.md",
+      "contracts_doc": "02-CONTRACTS.md",
+      "direct_dependency_statuses": {
+        "P8-011": "in_progress"
+      },
+      "whole_task_accepted_done": false,
+      "related_regressions": "G275 original source-domain regression bridge accepted; actual checkout d53 retained.",
+      "existing_core_evidence": "Eight same-G275 Linux/macOS x MSRV1.95.0/stable x default/semantic cells used fresh targets and real release binaries with original stdio smoke; original collector replay passed.",
+      "remaining_intrinsic_gap": null,
+      "classification": "no_additional_platform_build_matrix_gap_found",
+      "not_new_gates": [
+        "Fresh target is required; empty downloaded dependency cache or hermetic compiler certification is not added.",
+        "Default/semantic smoke with semantic disabled establishes local platform startup, not HTTP/live-provider certification."
+      ],
+      "next_action_without_new_full_scale": "Bind existing exact-source related regressions/CI and original eight-cell evidence; do not add platforms or rerun unchanged cells without a remaining risk.",
+      "task_closure_blockers": [
+        {
+          "kind": "original_dependency",
+          "id": "P8-011",
+          "status": "in_progress"
+        }
+      ]
+    },
+    {
+      "id": "P8-013",
+      "title": "指标/门槛与失败退出最终认证",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-012"
+      ],
+      "steps": [
+        "故意注入quality/perf/lock失败",
+        "验证退出和raw报告仍保留"
+      ],
+      "acceptance": [
+        "红线失败必非零，inconclusive不被自动passed",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V03",
+        "V04",
+        "V20"
+      ],
+      "benchmark_doc": "09-BENCHMARK.md",
+      "contracts_doc": "02-CONTRACTS.md",
+      "direct_dependency_statuses": {
+        "P8-012": "in_progress"
+      },
+      "whole_task_accepted_done": false,
+      "related_regressions": "G275 original source-domain regression bridge accepted; actual checkout d53 retained.",
+      "existing_core_evidence": "Original quality/performance/lock failures return nonzero; inconclusive is nonzero; raw/report preservation, malformed policy and overwrite refusal are covered by the original six tests and separate offline commands.",
+      "remaining_intrinsic_gap": null,
+      "classification": "no_additional_named_failure_gate_behavior_gap_found",
+      "not_new_gates": [
+        "Six exact tests, five original comparison reports, seven offline invocations and six generated offline reports are different counts.",
+        "The original zero-plan in-memory assertion is not a missing imaginary CLI report."
+      ],
+      "next_action_without_new_full_scale": "Keep corrected README terminology and explicit expected exits 1/1/1/1/2/2/2; do not turn deliberate nonzero controls into failed acceptance.",
+      "task_closure_blockers": [
+        {
+          "kind": "original_dependency",
+          "id": "P8-012",
+          "status": "in_progress"
+        }
+      ]
+    },
+    {
+      "id": "P8-016",
+      "title": "数据库/配置/包回滚演练",
+      "status": "in_progress",
+      "depends_on": [
+        "P7-020",
+        "P8-012",
+        "P8-013"
+      ],
+      "steps": [
+        "旧binary开新schema的受控重建、cache版本隔离、disable语义回退"
+      ],
+      "acceptance": [
+        "回滚不误读新向量/丢用户源码，恢复步骤实测",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V13",
+        "V17",
+        "V21"
+      ],
+      "benchmark_doc": "09-BENCHMARK.md",
+      "contracts_doc": "02-CONTRACTS.md",
+      "direct_dependency_statuses": {
+        "P7-020": "done",
+        "P8-012": "in_progress",
+        "P8-013": "in_progress"
+      },
+      "whole_task_accepted_done": false,
+      "related_regressions": "G275 original source-domain regression bridge accepted; actual checkout d53 retained.",
+      "existing_core_evidence": "Unmodified historical schema24 binary opens actual schema25 and rebuilds to24; current binary rebuilds to25; original DB/source/config backups, default/semantic-disabled fallback and active format/space/namespace isolation are observed.",
+      "remaining_intrinsic_gap": null,
+      "classification": "no_additional_literal_rollback_behavior_gap_found",
+      "not_new_gates": [
+        "The task says older binary/new schema and exercised recovery, not a required published release tag pair. Historical source builds satisfy that literal distinction without certifying a released package.",
+        "Engineering/dev recovery binaries and separate injected1025/local cache not_run reports retain their original labels."
+      ],
+      "next_action_without_new_full_scale": "Keep source-pair and package fallback receipts separate from final G8 release acceptance; no fabricated released-tag requirement or repeated rollback run.",
+      "task_closure_blockers": [
+        {
+          "kind": "original_dependency",
+          "id": "P8-012",
+          "status": "in_progress"
+        },
+        {
+          "kind": "original_dependency",
+          "id": "P8-013",
+          "status": "in_progress"
+        }
+      ]
+    }
+  ],
+  "guardrails": {
+    "workflow_dispatches": 0,
+    "cancellations": 0,
+    "reruns": 0,
+    "product_or_workload_executions": 0,
+    "github_mutations": 0,
+    "other_owner_branch_mutations": 0,
+    "large_artifact_downloads_this_round": 0,
+    "task_definition_or_status_changes": 0,
+    "no_cross_source_population_combination": true
+  },
+  "limitations": [
+    "Run metadata success and uploaded shard counts are not independent raw acceptance. Accepted shard/sample counts remain null without original strict aggregation.",
+    "Two live studies remain separate by source/run/seed/phase/repetition and artifact identity.",
+    "The eight G275 downstream original raw subacceptances do not remove original dependencies or supply unrecorded backend/DB/worker timing.",
+    "Fixed-current-source PR checks must finish at their actual heads; older green heads are not substituted.",
+    "Parent/other agents own product integration and external PR management; this review performs no such mutation."
+  ],
+  "pr175_pr179_relation": {
+    "report": {
+      "path": "round6-pr175-179-relationship.json",
+      "sha256": "58fd163ba8f8321f6a23623ff79ec65cc008956e42648def4a5682eccaa55d13"
+    },
+    "conclusion": "Current175 has not absorbed179; do not close179 as a duplicate of175. Two179 resolver product files remain old baseline bytes in175 and all8 resolver failure/review archive files are absent.",
+    "current_author_plan": {
+      "body_source_url": "https://github.com/jyqj/codecortex/pull/179",
+      "body_retrieved_at": "2026-10-09T08:54:28.671Z",
+      "quote": "After #175 is merged, retarget this PR to main and verify the actual integration before merging.",
+      "latest_coordination_comment": {
+        "id": 6077208345,
+        "html_url": "https://github.com/jyqj/codecortex/pull/179#issuecomment-6077208345",
+        "created_at": "2026-10-09T08:20:11Z",
+        "body": "已复核当前 head `edd00e7618ec4dba921d5c80d57a31a732463c46` 相对旧 C3 的实际完整比较：3 个后继提交严格为产品 `dc714a384cdde70ee326fafd1d9f0a04fbb9e117` → 审查 `7e978288745f19d36279fa4d796deacb506938ba` → 绑定 C4。源码只包含原 job 113709327167 日志要求的三处测试格式变化：catalog fixture assignment、legacy_candidates 签名、相同五元素数组换行。它们与我先前独立保留的 38,796 B 原日志（SHA256 `2af980744ee7016fd23bf6f92cfd158138496b2ac2f89af269beca1444a862b5`）吻合，没有改变生产算法、原 fixture 值或断言。其余变化为四份失败/审查归档和既有两份 v15 binding；guard 仅四个引用变化。\n\n当前源码自己的 [CI run 37900454012](https://github.com/jyqj/codecortex/actions/runs/37900454012) 已报告 success，旧 C3 的格式失败保留为历史事实，已不是当前 head 的格式阻碍。当前工程、lifecycle、failure-gate 工作流也报告 success；runtime、platform、P7 closeout 尚待各自最终结果，不称全部检查通过。\n\n#175 的独立基础仍在此 stack 内。暂保留该独立 PR；冻结的 #178 Gc8 正在进行自己的完整规模研究，这次 review 不把 C4 改动或结果放入 Gc8，也不更新原 TODO 完成数（仍 163 done / 29 remaining）。"
+      }
+    },
+    "unresolved_current_integration": "GitHub reports179 mergeable=false/dirty on its stack. Future retarget/integration needs owner coordination, a reviewed combined source binding and actual checks; no automatic closure is justified."
+  },
+  "local_evidence": [
+    {
+      "path": "round6-g275-ci-recheck.json",
+      "bytes": 13348,
+      "sha256": "442d42557e22e89e6e1156f97fb928032e3225ee0d520b665a309814acff0a9b"
+    },
+    {
+      "path": "round6-g275-ci-recheck.py",
+      "bytes": 9734,
+      "sha256": "83331411948dd86b20432c549a29d27d9e007b3b989a8f6fbf7c1f02d419e5f1"
+    },
+    {
+      "path": "round6-g275-ci-api-inputs.json",
+      "bytes": 36339,
+      "sha256": "e2777df6ce96965effcd0e418b0909e4152896596678933bbf1501742e4aaf61"
+    },
+    {
+      "path": "round6-g275-source-artifact-bridge.json",
+      "bytes": 48624,
+      "sha256": "6ab1478e07b7772fb163717d3def4c05c94af93232d61f94d91a794fcbd8e794"
+    },
+    {
+      "path": "round6-g275-source-artifact-bridge.py",
+      "bytes": 8292,
+      "sha256": "d569c6e12214b6155704e66861dee4ab8058ed251b47e836aa29f1c457c2b76e"
+    },
+    {
+      "path": "round6-pr175-179-relationship.json",
+      "bytes": 6992,
+      "sha256": "58fd163ba8f8321f6a23623ff79ec65cc008956e42648def4a5682eccaa55d13"
+    },
+    {
+      "path": "downstream-acceptance-gap-review.json",
+      "bytes": 37046,
+      "sha256": "e300d507d3b8a65c1e37d3d44b16adcf88ccd6d38436fb28233e46846913a982"
+    },
+    {
+      "path": "p8-runtime-attribution-source-audit/source-location-review.json",
+      "bytes": 23799,
+      "sha256": "928784b43f9d84ec4fc049b924847a7297576d80dccdaa583b0a14fbb5d1dcd5"
+    }
+  ],
+  "original_requirement_sources": {
+    "task_ledger": {
+      "source": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529",
+      "path": "docs/roadmap/code-index-v2/tasks.json",
+      "sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207"
+    },
+    "performance_sampling": {
+      "source": "bd4693351149a443bd0054a37508c53f74ed7b52",
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "section_or_symbol": "section 9",
+      "url": "https://github.com/jyqj/codecortex/blob/bd4693351149a443bd0054a37508c53f74ed7b52/docs/roadmap/code-index-v2/09-BENCHMARK.md"
+    },
+    "completion_definition": {
+      "source": "bd4693351149a443bd0054a37508c53f74ed7b52",
+      "path": "docs/roadmap/code-index-v2/02-CONTRACTS.md",
+      "section_or_symbol": "C15/C16",
+      "url": "https://github.com/jyqj/codecortex/blob/bd4693351149a443bd0054a37508c53f74ed7b52/docs/roadmap/code-index-v2/02-CONTRACTS.md"
+    },
+    "validation_layers_and_minimums": {
+      "source": "bd4693351149a443bd0054a37508c53f74ed7b52",
+      "path": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+      "section_or_symbol": "sections 1/2/3/4",
+      "url": "https://github.com/jyqj/codecortex/blob/bd4693351149a443bd0054a37508c53f74ed7b52/docs/roadmap/code-index-v2/06-VALIDATION.md"
+    }
+  },
+  "confirmed_shared_attribution_gap": {
+    "tasks": [
+      "P8-007",
+      "P8-010"
+    ],
+    "requirement": "Original09-BENCHMARK.md section9 and C15 call for queue/service/end-to-end and DB lock/worker contention attribution.",
+    "retained_client_statistics": [
+      "client_dispatch_wait",
+      "write_admission_and_preparation",
+      "client_call_to_terminal_including_validation",
+      "all_attempt_offered_to_terminal",
+      "scheduled_to_terminal",
+      "successful_offered_to_terminal"
+    ],
+    "missing_from_original_product_raw": [
+      "backend queue/service intervals",
+      "per-operation database lock acquisition waits",
+      "worker capacity/admission/service timing"
+    ],
+    "available_partial_explanations": [
+      "raw indexer build_timing",
+      "exact original client phase distributions with all terminal denominators",
+      "sampled ExecutionStats counters",
+      "three-seed backfill DB availability probes"
+    ],
+    "conclusion": "The original runner/raw subacceptance passes in declared scope, but those observations cannot supply the missing original benchmark attribution. This is a confirmed pre-existing requirement gap, not a newly invented saturation or continuous-peak gate.",
+    "source_locations_report": {
+      "path": "validation/p8-runtime-attribution-source-audit/source-location-review.json",
+      "sha256": "928784b43f9d84ec4fc049b924847a7297576d80dccdaa583b0a14fbb5d1dcd5",
+      "main": "bd4693351149a443bd0054a37508c53f74ed7b52",
+      "pr175_head": "8da1f956f6b0dd3413a37c639a79e1e0d939de81",
+      "conclusion": "partial_existing_observer_data_reusable_but_full_spec_attribution_requires_product_changes"
+    },
+    "remediation": "Full attribution needs a reviewed product diagnostic change and new source-bound execution evidence. An observer-only edit or offline rewrite cannot reconstruct unrecorded backend timestamps."
+  },
+  "next_actions_before_complete_scale": [
+    {
+      "priority": 1,
+      "action": "Preserve the explicit G275 original-CI and consumed-artifact source bridge with the existing runtime/lifecycle/platform/fault/gate/rollback raw reviews.",
+      "status": "completed_by_this_round",
+      "benefit": "Resolves the common related-regression/source-identity uncertainty for the G275 evidence family; does not change TODO status."
+    },
+    {
+      "priority": 2,
+      "action": "Coordinate a minimal backend/DB/worker timing diagnostic with current owners using the fixed source-location review.",
+      "status": "concrete_design_needed",
+      "benefit": "Addresses the confirmed original section9 attribution gap that cannot be filled from old runtime bytes.",
+      "constraints": "No uncoordinated edits to PR175/179/180 or mutation of the two active studies; new product changes require a fresh reviewed source identity and actual evidence."
+    },
+    {
+      "priority": 3,
+      "action": "Continue collecting terminal results from the already-running G275 and Gc8 studies and run their original offline strict aggregation only once complete originals exist.",
+      "status": "existing_work_in_progress",
+      "benefit": "The only direct route to originalP8-005/006 completion; every shard must keep its own source/run/repetition/phase identity.",
+      "constraints": "No new dispatch, cancellation, retry, lowered repetition count or cross-source pooling."
+    },
+    {
+      "priority": 4,
+      "action": "Keep PR179 independent. After175's original checks and actual merge, follow its author's retarget-to-main plan and review/test the actual combined source.",
+      "status": "owner_integration_pending",
+      "benefit": "Preserves unique resolver work and eight original failure/review records absent from175.",
+      "constraints": "Current175 does not supersede179; current179 is dirty and has pending runtime/platform checks."
+    },
+    {
+      "priority": 5,
+      "action": "Optionally review the existing G27550000 rep0 shard's original raw phase receipts/build/capacity binding without rerunning product code.",
+      "status": "bounded_read_only_work_available",
+      "benefit": "Can reduce future aggregation review work but cannot certify all150shards or create backend data absent from the product."
+    }
+  ],
+  "newly_resolved_uncertainties": [
+    "G27550000 rep0 completed successfully and uploaded its own artifact;100000 remains active.",
+    "Original G275-related CI and selected source approval have independently corroborated original logs and an explicit complete relevant-source bridge.",
+    "G275 lifecycle/resource originals were already independently accepted; no duplicate download or product run is needed.",
+    "PR175current8da does not contain PR179edd's two resolver product blobs or eight resolver review/failure records.",
+    "Original runtime client phase distributions exist; the remaining complete-section9 gap is backend/DB/worker attribution."
+  ]
+}

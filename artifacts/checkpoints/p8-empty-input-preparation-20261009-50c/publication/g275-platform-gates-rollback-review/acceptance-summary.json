@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_audit",
+  "source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+  "status": "accepted_named_G275_subacceptance_no_TODO_state_change",
+  "ledger": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "closed_by_this_review": 0
+  },
+  "task_map": [
+    {
+      "task": "P8-012",
+      "outcome": "Eight original cold-build cells accepted; original collector offline replay exit 0.",
+      "report": "platform-acceptance-review.json",
+      "open_dependencies": [
+        "P8-011"
+      ],
+      "done": false
+    },
+    {
+      "task": "P8-013",
+      "outcome": "Six exact original tests and seven offline invocations satisfy their separate failure predicates. Five existing reports compared, three identical and two differing only in copied input paths.",
+      "report": "failure-gates-acceptance-review.json",
+      "open_dependencies": [
+        "P8-012"
+      ],
+      "done": false
+    },
+    {
+      "task": "P8-016",
+      "outcome": "Actual default-package schema 25→historical 24→25 source-pair rollback and backups accepted. Separate same-G275 semantic/default disabled switch, three active format-rejection seeds and production space/namespace tests complement cache coverage.",
+      "report": "rollback-fault-acceptance-review.json",
+      "open_dependencies": [
+        "P8-012",
+        "P8-013"
+      ],
+      "done": false
+    },
+    {
+      "task": "P8-011",
+      "outcome": "Three local controls, three active fault seeds and seven exact production persistence/cache tests accepted within their original scope. Local 3 passed/4 not_run is preserved separately.",
+      "report": "rollback-fault-acceptance-review.json",
+      "open_dependencies": [
+        "P8-007",
+        "P8-010"
+      ],
+      "done": false
+    }
+  ],
+  "offline_reader_adapter_history": "Attempt 01 stopped before raw semantic checks because the new independent reader expected generic passed. The original status is passed_actual_source_version_pair. Only the reader's literal expectation was corrected; attempt 02 completed with exit 0. Both logs remain; neither is a product execution or product-test failure.",
+  "preserved_scope": [
+    "No source, guard, task state, PR state or workflow dispatch was changed by this review",
+    "No G275 outcome certifies b4fef722, new PR #181 or any other changed source",
+    "P8-005 and all incomplete prerequisite tasks remain open",
+    "Actual previous product is historical public source 277f2490fad3fa30f2812b5547bad033867c9ea5, not a released-package attestation",
+    "No paid provider, physical power-loss or new performance measurement claim"
+  ],
+  "provenance": "source-artifacts.json",
+  "temporary_download_credentials_included": false
+}

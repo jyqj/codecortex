@@ -1,0 +1,76 @@
+[
+  {
+    "path": "crates/cc-db/src/index_db_write_batch.rs",
+    "line": 956,
+    "lines": [
+      "                 // payload pre-compressed during prepare (off the write lock);",
+      "                 // fall back to compressing here for callers without a side-car.",
+      "                 let fallback;",
+      "-                let use_compressed: Option<&[u8]> = match chunk_blobs.and_then(|b| b.get(chunk_idx)) {",
+      "+                let use_compressed: Option<&[u8]> = match chunk_blobs.and_then(|b| b.get(chunk_idx))",
+      "+                {",
+      "                     Some(precomputed) => precomputed.as_deref(),",
+      "                     None => {",
+      "                         fallback = compress_chunk_text(&c.text);"
+    ],
+    "before": "                // payload pre-compressed during prepare (off the write lock);\n                // fall back to compressing here for callers without a side-car.\n                let fallback;\n                let use_compressed: Option<&[u8]> = match chunk_blobs.and_then(|b| b.get(chunk_idx)) {\n                    Some(precomputed) => precomputed.as_deref(),\n                    None => {\n                        fallback = compress_chunk_text(&c.text);\n",
+    "after": "                // payload pre-compressed during prepare (off the write lock);\n                // fall back to compressing here for callers without a side-car.\n                let fallback;\n                let use_compressed: Option<&[u8]> = match chunk_blobs.and_then(|b| b.get(chunk_idx))\n                {\n                    Some(precomputed) => precomputed.as_deref(),\n                    None => {\n                        fallback = compress_chunk_text(&c.text);\n"
+  },
+  {
+    "path": "crates/cc-db/src/rebuild_chunk_statement_tests.rs",
+    "line": 203,
+    "lines": [
+      " ",
+      " #[test]",
+      " fn rebuild_chunks_keep_lazy_empty_missing_fts_and_source_error_prefixes() {",
+      "-    let (_, empty) = compare_prefix(",
+      "-        &unit(0),",
+      "-        None,",
+      "-        \"DROP TABLE chunks_fts; DROP TABLE chunks;\",",
+      "-    );",
+      "+    let (_, empty) = compare_prefix(&unit(0), None, \"DROP TABLE chunks_fts; DROP TABLE chunks;\");",
+      "     assert!(empty.is_ok());",
+      " ",
+      "     let (conn, missing) = compare_prefix(&unit(2), None, \"DROP TABLE chunks_fts;\");"
+    ],
+    "before": "\n#[test]\nfn rebuild_chunks_keep_lazy_empty_missing_fts_and_source_error_prefixes() {\n    let (_, empty) = compare_prefix(\n        &unit(0),\n        None,\n        \"DROP TABLE chunks_fts; DROP TABLE chunks;\",\n    );\n    assert!(empty.is_ok());\n\n    let (conn, missing) = compare_prefix(&unit(2), None, \"DROP TABLE chunks_fts;\");\n",
+    "after": "\n#[test]\nfn rebuild_chunks_keep_lazy_empty_missing_fts_and_source_error_prefixes() {\n    let (_, empty) = compare_prefix(&unit(0), None, \"DROP TABLE chunks_fts; DROP TABLE chunks;\");\n    assert!(empty.is_ok());\n\n    let (conn, missing) = compare_prefix(&unit(2), None, \"DROP TABLE chunks_fts;\");\n"
+  },
+  {
+    "path": "crates/cc-db/src/rebuild_chunk_statement_tests.rs",
+    "line": 216,
+    "lines": [
+      " ",
+      "     let mut invalid = unit(2);",
+      "     invalid.outcome.chunks[0].source = Some(source(&invalid.outcome.chunks[0].text));",
+      "-    invalid.outcome.chunks[0].source.as_mut().unwrap().slice_digest = \"invalid\".into();",
+      "+    invalid.outcome.chunks[0]",
+      "+        .source",
+      "+        .as_mut()",
+      "+        .unwrap()",
+      "+        .slice_digest = \"invalid\".into();",
+      "     let (conn, early) = compare_prefix(&invalid, None, \"DROP TABLE chunks_fts;\");",
+      "     assert!(early.unwrap_err().contains(\"invalid chunk source evidence\"));",
+      "     assert!(rows(&conn, \"chunks\").is_empty());"
+    ],
+    "before": "\n    let mut invalid = unit(2);\n    invalid.outcome.chunks[0].source = Some(source(&invalid.outcome.chunks[0].text));\n    invalid.outcome.chunks[0].source.as_mut().unwrap().slice_digest = \"invalid\".into();\n    let (conn, early) = compare_prefix(&invalid, None, \"DROP TABLE chunks_fts;\");\n    assert!(early.unwrap_err().contains(\"invalid chunk source evidence\"));\n    assert!(rows(&conn, \"chunks\").is_empty());\n",
+    "after": "\n    let mut invalid = unit(2);\n    invalid.outcome.chunks[0].source = Some(source(&invalid.outcome.chunks[0].text));\n    invalid.outcome.chunks[0]\n        .source\n        .as_mut()\n        .unwrap()\n        .slice_digest = \"invalid\".into();\n    let (conn, early) = compare_prefix(&invalid, None, \"DROP TABLE chunks_fts;\");\n    assert!(early.unwrap_err().contains(\"invalid chunk source evidence\"));\n    assert!(rows(&conn, \"chunks\").is_empty());\n"
+  },
+  {
+    "path": "crates/cc-db/src/rebuild_chunk_statement_tests.rs",
+    "line": 323,
+    "lines": [
+      "     let old = Connection::open_in_memory().unwrap();",
+      "     let new = Connection::open_in_memory().unwrap();",
+      "     for conn in [&old, &new] {",
+      "-        conn.execute_batch(\"CREATE TABLE sample(a INTEGER)\").unwrap();",
+      "+        conn.execute_batch(\"CREATE TABLE sample(a INTEGER)\")",
+      "+            .unwrap();",
+      "     }",
+      "     let sql = \"INSERT INTO sample(a) VALUES(?1)\";",
+      "     let mut slot = None;"
+    ],
+    "before": "    let old = Connection::open_in_memory().unwrap();\n    let new = Connection::open_in_memory().unwrap();\n    for conn in [&old, &new] {\n        conn.execute_batch(\"CREATE TABLE sample(a INTEGER)\").unwrap();\n    }\n    let sql = \"INSERT INTO sample(a) VALUES(?1)\";\n    let mut slot = None;\n",
+    "after": "    let old = Connection::open_in_memory().unwrap();\n    let new = Connection::open_in_memory().unwrap();\n    for conn in [&old, &new] {\n        conn.execute_batch(\"CREATE TABLE sample(a INTEGER)\")\n            .unwrap();\n    }\n    let sql = \"INSERT INTO sample(a) VALUES(?1)\";\n    let mut slot = None;\n"
+  }
+]

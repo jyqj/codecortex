@@ -1,6 +1,6 @@
 # 测试计划
 
-最近一次 `cargo test --workspace --all-targets`：1258 passed + 15 ignored
+历史全仓测试基线（保留原记录）：1258 passed + 15 ignored
 （15 个 ignored：cc-eval 的 5 个真实工作区/增量基准、`scale_bench` 的 4 个
 合成规模/冷建相位基准、`soak` 的长驻 RSS soak、cc-db 的
 `incremental_write_bench` 写阶段基准与重建压力循环、cc-index 的
@@ -8,7 +8,22 @@
 `graph_traversal_bench` 共 3 个 release-only 微基准）。基线数字与本文档
 的一致性由 `scripts/update-doc-baselines.sh` 核对。
 
-## 单元测试
+## 当前局部执行记录（2026-10-09）
+
+产品提交 `b069c73a0d76736e1dfb3eb64e79cad6980b773f` 的本地全仓尝试在编译/链接
+阶段遇到 ENOSPC，未取得完整成功结果及可用于刷新本文的全仓计数。
+随后分批实际通过：`cc-index --lib` 427 项（另有 1 项原 ignored）、
+`cc-search --lib` 301 项、installer 单元 49 项、真实 installer CLI 集成 2 项，
+以及 `integration_fixtures_and_corpus` 筛选的 1 个 Rust test。
+这些是各次命令的执行范围，不相加作为全仓总数。
+完整命令、源码身份、原失败和复核见
+[本轮验证记录](../artifacts/checkpoints/p8-install-compat-36fea-20261009/SUMMARY.md)。
+
+以下表格保留历史快照，数量及覆盖描述不代表本提交已经重新执行的全仓基线。
+完整 workspace 测试实际通过后，应由 `scripts/update-doc-baselines.sh` 重新采集并核对，
+再据此更新文档中的基线；该脚本不自动改写文档。
+
+## 单元测试（历史基线）
 
 | Crate | 测试数 | 覆盖重点 |
 |-------|-------|----------|

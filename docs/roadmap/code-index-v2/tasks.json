@@ -12033,10 +12033,23 @@
           ],
           "scope": "Original requirement-to-evidence review and confirmed remaining performance attribution gap; original task definitions and source/run identities unchanged",
           "summary": "2026-10-09 50c 第6轮原条款复核：G275 scoped mixed/soak观测和原CI旧功能回归均有独立证据；原CI实际checkout d53ea0be与G275的1089产品/139validation及实际消费artifact逐Git对象等价，原执行身份保留。原09-BENCHMARK第9节要求的生产backend queue/service、DB lock wait与worker contention归因仍缺。现有client时序、build_timing、query_pool离散计数及旧p8_load/ablation的harness queue/service不可替代未记录的生产时长；main bd469和#175当前8da1f956均无完整导出。需协调最小产品诊断接线、独立新source绑定及原门槛下新观测，不能事后改原raw或仅重跑统计器假称完成。未增加并发必须打满、连续peak、内部seed DB上传或发行tag等新门槛。P8-006依赖与本项规范缺口仍开放；163 done/29剩余，本轮0原TODO关闭。"
+        },
+        {
+          "date": "2026-10-09",
+          "round": 8,
+          "target_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "status": "correction_of_prior_requirement_interpretation_not_task_completion",
+          "artifact_paths": [
+            "artifacts/checkpoints/p8-pr181-coordination-reconciliation-20261009-50c/runtime-attribution-reconciliation.json",
+            "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-runtime-review/raw-review.json",
+            "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/downstream-acceptance-gap-review.json"
+          ],
+          "scope": "Correct the session's overbroad interpretation of original benchmark section 9; preserve all original requirements, evidence, source identities, statuses and dependencies.",
+          "summary": "2026-10-09 50c 第8轮解释更正：第6轮把原09-BENCHMARK第9节的观测主题提升为必须新增完整生产backend逐操作queue/service和全锁点纯wait归因，表述过严。原条款没有限定采集层级、逐RPC IDs或为每项诊断再次跑一小时。G275自己的原release backfill证据已包含三seed、quiet/held、C1/4/8/16共768请求、每seed四个实际provider worker held，以及single_read_pool_checkout_us、read_statement_us和writer_acquire_and_rollback_us；最后一项是真实BEGIN IMMEDIATE/ROLLBACK可用性探针，包含SQL和rollback成本，不冒称纯锁等待。已有mixed/soak客户端时序、status采样与上述同源观测继续按原边界接受；C8只作独立原条款解释对照，不迁移其测量。撤回“因此必须新跨crate埋点/新研究才能满足第9节”的强制推论；更深backend分解只能列为可选诊断改进。旧raw、旧审查与源码位置建议全部保留，并以本条明确纠正解释。原150分片/1500样本完整规模、统计范围和硬依赖仍未闭合，任务状态不变；192 total/163 done/29 remaining，本轮0原TODO关闭。"
         }
       ],
       "conditional_dependencies": [],
-      "implementation_notes": "\n2026-10-07 P8本地推进第三轮：新增实际in-process MCP固定C1/4/8/16混合read/build驱动，固定offered计划、可见dispatch/queue/service/端到端时间、队列拒绝及超时分母不丢失。四组12文件36操作CLI观测均36/36成功；实际backend峰值1/3/6/8，C4/8/16观察到read/build重叠。完整backfill与性能认证未执行。\n2026-10-09 50c 第4轮：完成G275既有run37890757030的C1/C4/C8/C16与三seed fake-backfill原件独立验收。四档各900 offered=300 build+600 read，ID/参数/结构响应及终态完整；实际最大active client calls分别1/4/7/12，不冒充配置值均被打满。三seed backfill共768条请求，原assertion/执行收据覆盖held-after边界，未伪造单独快照。22次原seal/统计/15表oracle离线校验与重放均0，原输入不改；操作行不含RPC ID，按完整multiset对账，不声称每操作唯一RPC映射或backend queue/service分解。P8-006及其依赖未完成，状态仍in_progress，仅接受G275原子范围，不认证#181 b4。\n2026-10-09 50c 第6轮原条款复核：G275 scoped mixed/soak观测和原CI旧功能回归均有独立证据；原CI实际checkout d53ea0be与G275的1089产品/139validation及实际消费artifact逐Git对象等价，原执行身份保留。原09-BENCHMARK第9节要求的生产backend queue/service、DB lock wait与worker contention归因仍缺。现有client时序、build_timing、query_pool离散计数及旧p8_load/ablation的harness queue/service不可替代未记录的生产时长；main bd469和#175当前8da1f956均无完整导出。需协调最小产品诊断接线、独立新source绑定及原门槛下新观测，不能事后改原raw或仅重跑统计器假称完成。未增加并发必须打满、连续peak、内部seed DB上传或发行tag等新门槛。P8-006依赖与本项规范缺口仍开放；163 done/29剩余，本轮0原TODO关闭。\n"
+      "implementation_notes": "\n2026-10-07 P8本地推进第三轮：新增实际in-process MCP固定C1/4/8/16混合read/build驱动，固定offered计划、可见dispatch/queue/service/端到端时间、队列拒绝及超时分母不丢失。四组12文件36操作CLI观测均36/36成功；实际backend峰值1/3/6/8，C4/8/16观察到read/build重叠。完整backfill与性能认证未执行。\n2026-10-09 50c 第4轮：完成G275既有run37890757030的C1/C4/C8/C16与三seed fake-backfill原件独立验收。四档各900 offered=300 build+600 read，ID/参数/结构响应及终态完整；实际最大active client calls分别1/4/7/12，不冒充配置值均被打满。三seed backfill共768条请求，原assertion/执行收据覆盖held-after边界，未伪造单独快照。22次原seal/统计/15表oracle离线校验与重放均0，原输入不改；操作行不含RPC ID，按完整multiset对账，不声称每操作唯一RPC映射或backend queue/service分解。P8-006及其依赖未完成，状态仍in_progress，仅接受G275原子范围，不认证#181 b4。\n2026-10-09 50c 第6轮原条款复核：G275 scoped mixed/soak观测和原CI旧功能回归均有独立证据；原CI实际checkout d53ea0be与G275的1089产品/139validation及实际消费artifact逐Git对象等价，原执行身份保留。原09-BENCHMARK第9节要求的生产backend queue/service、DB lock wait与worker contention归因仍缺。现有client时序、build_timing、query_pool离散计数及旧p8_load/ablation的harness queue/service不可替代未记录的生产时长；main bd469和#175当前8da1f956均无完整导出。需协调最小产品诊断接线、独立新source绑定及原门槛下新观测，不能事后改原raw或仅重跑统计器假称完成。未增加并发必须打满、连续peak、内部seed DB上传或发行tag等新门槛。P8-006依赖与本项规范缺口仍开放；163 done/29剩余，本轮0原TODO关闭。\n\n2026-10-09 50c 第8轮解释更正：第6轮把原09-BENCHMARK第9节的观测主题提升为必须新增完整生产backend逐操作queue/service和全锁点纯wait归因，表述过严。原条款没有限定采集层级、逐RPC IDs或为每项诊断再次跑一小时。G275自己的原release backfill证据已包含三seed、quiet/held、C1/4/8/16共768请求、每seed四个实际provider worker held，以及single_read_pool_checkout_us、read_statement_us和writer_acquire_and_rollback_us；最后一项是真实BEGIN IMMEDIATE/ROLLBACK可用性探针，包含SQL和rollback成本，不冒称纯锁等待。已有mixed/soak客户端时序、status采样与上述同源观测继续按原边界接受；C8只作独立原条款解释对照，不迁移其测量。撤回“因此必须新跨crate埋点/新研究才能满足第9节”的强制推论；更深backend分解只能列为可选诊断改进。旧raw、旧审查与源码位置建议全部保留，并以本条明确纠正解释。原150分片/1500样本完整规模、统计范围和硬依赖仍未闭合，任务状态不变；192 total/163 done/29 remaining，本轮0原TODO关闭。\n"
     },
     {
       "id": "P8-008",
@@ -12289,10 +12302,23 @@
           ],
           "scope": "Independent original G275 runtime/soak subacceptance only; no original task status/dependency changes or b4/#181 certification",
           "summary": "2026-10-09 50c 第4轮：独立核验G275一小时原soak：3601 offered（1201 build/2400 compound read），实际工作区间3600.053700026秒，200次Git切换/25次catalog压实，原产品及full-control正常EOF且完整15表终点parity一致。四时间区段cache、每段六类mutation、3594次资源采样及原RSS判据均复算一致；1400 hits/1000 misses/999 invalidations，未把内部14400 RPC加成样本。保留status的query-pool计数及端点归零通过，但不声称连续occupancy或瞬态峰值。P8-009及其依赖未完成，状态仍in_progress，仅接受G275原soak子范围，不认证#181 b4。"
+        },
+        {
+          "date": "2026-10-09",
+          "round": 8,
+          "target_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "status": "correction_of_prior_requirement_interpretation_not_task_completion",
+          "artifact_paths": [
+            "artifacts/checkpoints/p8-pr181-coordination-reconciliation-20261009-50c/runtime-attribution-reconciliation.json",
+            "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/g275-runtime-review/raw-review.json",
+            "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/publication/downstream-acceptance-gap-review.json"
+          ],
+          "scope": "Correct the session's overbroad interpretation of original benchmark section 9; preserve all original requirements, evidence, source identities, statuses and dependencies.",
+          "summary": "2026-10-09 50c 第8轮解释更正：第6轮把原09-BENCHMARK第9节的观测主题提升为必须新增完整生产backend逐操作queue/service和全锁点纯wait归因，表述过严。原条款没有限定采集层级、逐RPC IDs或为每项诊断再次跑一小时。G275自己的原release backfill证据已包含三seed、quiet/held、C1/4/8/16共768请求、每seed四个实际provider worker held，以及single_read_pool_checkout_us、read_statement_us和writer_acquire_and_rollback_us；最后一项是真实BEGIN IMMEDIATE/ROLLBACK可用性探针，包含SQL和rollback成本，不冒称纯锁等待。已有mixed/soak客户端时序、status采样与上述同源观测继续按原边界接受；C8只作独立原条款解释对照，不迁移其测量。撤回“因此必须新跨crate埋点/新研究才能满足第9节”的强制推论；更深backend分解只能列为可选诊断改进。旧raw、旧审查与源码位置建议全部保留，并以本条明确纠正解释。原150分片/1500样本完整规模、统计范围和硬依赖仍未闭合，任务状态不变；192 total/163 done/29 remaining，本轮0原TODO关闭。"
         }
       ],
       "conditional_dependencies": [],
-      "implementation_notes": "\n2026-10-07 P8本地推进第三轮：新增有界长生命周期worker、body/add/rename/delete/API/restore循环、停止投递后排空和终点原15表+3公开探针对账；比较前不修复增量侧。四组每组12次修改，144操作/48修改均完成且终点一致。取消/deadline/raw预算有实测非零收据；仅短时smoke，未认证长时资源增长、真实切分支或catalog压实。\n2026-10-09 50c 第4轮：独立核验G275一小时原soak：3601 offered（1201 build/2400 compound read），实际工作区间3600.053700026秒，200次Git切换/25次catalog压实，原产品及full-control正常EOF且完整15表终点parity一致。四时间区段cache、每段六类mutation、3594次资源采样及原RSS判据均复算一致；1400 hits/1000 misses/999 invalidations，未把内部14400 RPC加成样本。保留status的query-pool计数及端点归零通过，但不声称连续occupancy或瞬态峰值。P8-009及其依赖未完成，状态仍in_progress，仅接受G275原soak子范围，不认证#181 b4。"
+      "implementation_notes": "\n2026-10-07 P8本地推进第三轮：新增有界长生命周期worker、body/add/rename/delete/API/restore循环、停止投递后排空和终点原15表+3公开探针对账；比较前不修复增量侧。四组每组12次修改，144操作/48修改均完成且终点一致。取消/deadline/raw预算有实测非零收据；仅短时smoke，未认证长时资源增长、真实切分支或catalog压实。\n2026-10-09 50c 第4轮：独立核验G275一小时原soak：3601 offered（1201 build/2400 compound read），实际工作区间3600.053700026秒，200次Git切换/25次catalog压实，原产品及full-control正常EOF且完整15表终点parity一致。四时间区段cache、每段六类mutation、3594次资源采样及原RSS判据均复算一致；1400 hits/1000 misses/999 invalidations，未把内部14400 RPC加成样本。保留status的query-pool计数及端点归零通过，但不声称连续occupancy或瞬态峰值。P8-009及其依赖未完成，状态仍in_progress，仅接受G275原soak子范围，不认证#181 b4。\n2026-10-09 50c 第8轮解释更正：第6轮把原09-BENCHMARK第9节的观测主题提升为必须新增完整生产backend逐操作queue/service和全锁点纯wait归因，表述过严。原条款没有限定采集层级、逐RPC IDs或为每项诊断再次跑一小时。G275自己的原release backfill证据已包含三seed、quiet/held、C1/4/8/16共768请求、每seed四个实际provider worker held，以及single_read_pool_checkout_us、read_statement_us和writer_acquire_and_rollback_us；最后一项是真实BEGIN IMMEDIATE/ROLLBACK可用性探针，包含SQL和rollback成本，不冒称纯锁等待。已有mixed/soak客户端时序、status采样与上述同源观测继续按原边界接受；C8只作独立原条款解释对照，不迁移其测量。撤回“因此必须新跨crate埋点/新研究才能满足第9节”的强制推论；更深backend分解只能列为可选诊断改进。旧raw、旧审查与源码位置建议全部保留，并以本条明确纠正解释。原150分片/1500样本完整规模、统计范围和硬依赖仍未闭合，任务状态不变；192 total/163 done/29 remaining，本轮0原TODO关闭。\n"
     },
     {
       "id": "P8-011",
@@ -12795,10 +12821,27 @@
           "review": "independent subagent review and main-agent integration; original acceptance/dependencies preserved",
           "rollback_status": "revert this task tooling; preserve original raw evidence and candidate source",
           "summary": "benchmark::statistics 的 distribution/quantile_interval 共用 nearest-rank；12项测量回归与独立范围审查完成。其他百分位实现、临时branch/schema与完整验收仍开放"
+        },
+        {
+          "date": "2026-10-09",
+          "round": 3,
+          "target_sha": "b069c73a0d76736e1dfb3eb64e79cad6980b773f",
+          "review_sha": "733b70584fd9cf5581096fb2edfc7006f9a7dd80",
+          "status": "scoped_engineering_accepted_full_task_open",
+          "artifact_paths": [
+            "artifacts/checkpoints/p8-install-compat-36fea-20261009/SUMMARY.md",
+            "artifacts/checkpoints/p8-install-compat-36fea-20261009/independent-source-review.json",
+            "artifacts/checkpoints/p8-install-compat-36fea-20261009/validation/bounded-gates/",
+            "artifacts/checkpoints/p8-install-compat-36fea-20261009/validation/python-discovery/"
+          ],
+          "scope": "Named implementation and actual local regression scopes; original dependency and full acceptance remain unchanged.",
+          "review": "Independent subagent source and behavior reviews; original failure identities retained.",
+          "rollback_status": "Revert the scoped product change if required; preserve original evidence and user configuration diagnostics.",
+          "summary": "18 duplicate engine tests removed; merged Rust statistics ownership and resolver changes retained; remaining default-lane catalogue ownership identified."
         }
       ],
       "conditional_dependencies": [],
-      "implementation_notes": "\n2026-10-08 第三轮：benchmark::statistics 的 distribution/quantile_interval 共用 nearest-rank；12项测量回归与独立范围审查完成。其他百分位实现、临时branch/schema与完整验收仍开放。只计原始TODO推进，完整前置/验收仍开放。"
+      "implementation_notes": "\n2026-10-08 第三轮：benchmark::statistics 的 distribution/quantile_interval 共用 nearest-rank；12项测量回归与独立范围审查完成。其他百分位实现、临时branch/schema与完整验收仍开放。只计原始TODO推进，完整前置/验收仍开放。\n\n2026-10-09 本线程三轮推进，产品 b069c73a0d76736e1dfb3eb64e79cad6980b773f：删除 engine.rs 中 18 个重复测试和重复 helper，净减 870 行，生产代码段、17 个其余测试及公开 API 保留；独立字节审查通过。基于已合 #175/#179 的整合源码，cc-index --lib 实跑 427 passed/1 原 ignored，cc-search --lib 301 passed。#175 已将 legacy runtime 纳秒统计交由 Rust 统一计算；#179 的 resolver 行为保持并有原控制与本轮回归。原硬依赖 P8-016 及完整 V18/V21 验收仍开放；当前 query policy 与 default_lanes 仍各维护一份内容相同的默认 lane 目录，后续需共同来源收口。证据见 artifacts/checkpoints/p8-install-compat-36fea-20261009/SUMMARY.md。原状态保持 in_progress，本轮不增加原 TODO done 数。"
     },
     {
       "id": "P8-018",
@@ -12852,10 +12895,27 @@
             "artifacts/checkpoints/p8-local-waves-20261007/round3"
           ],
           "limitations": "原硬依赖与完整验收保留；本地短时smoke/声明式事实检查不认证长时资源、backfill、真实provider、跨平台安装或发布。"
+        },
+        {
+          "date": "2026-10-09",
+          "round": 3,
+          "target_sha": "b069c73a0d76736e1dfb3eb64e79cad6980b773f",
+          "review_sha": "733b70584fd9cf5581096fb2edfc7006f9a7dd80",
+          "status": "scoped_engineering_accepted_full_task_open",
+          "artifact_paths": [
+            "artifacts/checkpoints/p8-install-compat-36fea-20261009/SUMMARY.md",
+            "artifacts/checkpoints/p8-install-compat-36fea-20261009/independent-source-review.json",
+            "artifacts/checkpoints/p8-install-compat-36fea-20261009/validation/bounded-gates/",
+            "artifacts/checkpoints/p8-install-compat-36fea-20261009/validation/python-discovery/"
+          ],
+          "scope": "Named implementation and actual local regression scopes; original dependency and full acceptance remain unchanged.",
+          "review": "Independent subagent source and behavior reviews; original failure identities retained.",
+          "rollback_status": "Revert the scoped product change if required; preserve original evidence and user configuration diagnostics.",
+          "summary": "Structured Codex TOML lifecycle and CLI failure exit fixed; installer49/CLI2 passed; documentation facts clarified without inventing a whole-workspace total."
         }
       ],
       "conditional_dependencies": [],
-      "implementation_notes": "\n2026-10-07 P8本地推进第三轮：新增stdlib事实生成/漂移检查，直接解析Cargo/schema/capabilities/tool/config源；同步当前8crate、schema25、30基础表+5FTS、14工具和semantic默认关闭/实际默认值。13个CLI正负例和实际SQLite DDL核对通过，CI新增事实检查；跨平台安装/真实运行认证未完成。"
+      "implementation_notes": "\n2026-10-07 P8本地推进第三轮：新增stdlib事实生成/漂移检查，直接解析Cargo/schema/capabilities/tool/config源；同步当前8crate、schema25、30基础表+5FTS、14工具和semantic默认关闭/实际默认值。13个CLI正负例和实际SQLite DDL核对通过，CI新增事实检查；跨平台安装/真实运行认证未完成。\n\n2026-10-09 本线程三轮推进，产品 b069c73a0d76736e1dfb3eb64e79cad6980b773f：Codex 安装/卸载改为结构化 TOML 编辑，精确服务键、路径转义、用户选项及注释保留均有回归；配置错误或 URL transport 冲突在写前报错，CLI 任一目标失败返回非零。原实现新增回归先失败，修复后 installer 49 单测和 2 真实 CLI 集成通过，独审注释反例修复后四次重装复核通过。README/TROUBLESHOOTING 同步安装契约与七项排障事实，TEST_PLAN 标明旧总数为历史基线。原全仓尝试 ENOSPC 未取得完整成功结果，后续规定语料与受影响模块分别通过；plan/facts 检查通过。原硬依赖 P8-017 与完整 V18/V21 验收仍开放，详情及原记录见 artifacts/checkpoints/p8-install-compat-36fea-20261009/SUMMARY.md。"
     },
     {
       "id": "P8-019",

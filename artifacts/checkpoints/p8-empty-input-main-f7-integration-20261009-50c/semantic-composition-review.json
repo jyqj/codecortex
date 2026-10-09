@@ -1,0 +1,763 @@
+{
+  "schema": "main-f7-P2-semantic-composition-review-v1",
+  "reviewer": "/root/todo_audit",
+  "reviewed_at_utc": "2026-10-09T09:50:29.475890+00:00",
+  "verdict": "static_semantic_compatibility_and_exact_P3_composition_verified; actual_combined_engineering_results_pending",
+  "scope": "Static review of all four Rust changes between M900 and f7, their interaction with the four corrected P2 files, and sixteen unchanged dependencies. No Cargo, native/CI/product workload, git fetch, Git object write, ref/index or shared-worktree mutation.",
+  "sources": {
+    "comparison_base": "900539f25ed9f9f78cf15895257f82f78810831e",
+    "new_main": "f7a003636b4902f569404f4e493e1fff7630093e",
+    "our_corrected_product": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+    "combined_P3": "034982202bdccc90b4938c6a6d6a56a36d4678af",
+    "earlier_document_merge": "3d571fad90f0c10030417d29faabcfe7c841972f",
+    "earlier_document_merge_is_not_new_product_execution": true
+  },
+  "main_four_Rust_changes": [
+    {
+      "source": "f7a003636b4902f569404f4e493e1fff7630093e",
+      "path": "crates/cc-eval/src/benchmark/statistics.rs",
+      "git_blob_oid": "415fbdc0a254729e4b7fa5f2fe040b3019d90aa9",
+      "sha256": "ad331897b23e067909c21a0b4848b1ac39ea208453e340c922c6830cb9264264",
+      "bytes": 15854,
+      "read_method": "GitHub fixed-ref fetch_file; independently recomputed Git blob matches local immutable tree",
+      "url": "https://github.com/jyqj/codecortex/blob/f7a003636b4902f569404f4e493e1fff7630093e/crates/cc-eval/src/benchmark/statistics.rs",
+      "baseline_source": "900539f25ed9f9f78cf15895257f82f78810831e",
+      "baseline_git_blob_oid": "869d8494d8b22fff029b5203a9ce73736e2ee368",
+      "baseline_sha256": "3eb2da83662bab96dbb3625a0a6998a7586ce300df4766b4ab7f22409143d4e2",
+      "exact_diff_sha256": "5ddcb6f19ba6319959498548fc460a9456e2a35f71c6acf92f1063537f95eb9f",
+      "diff_lines": 90
+    },
+    {
+      "source": "f7a003636b4902f569404f4e493e1fff7630093e",
+      "path": "crates/cc-eval/src/bin/p8-runtime-statistics.rs",
+      "git_blob_oid": "6273b16ebc403602b5aaf3eb0a9699b5cdfdca70",
+      "sha256": "d6595a2c01fd31fc9635f3110b1887d49df98b1e9988e089c98298a52c3a20a9",
+      "bytes": 20760,
+      "read_method": "GitHub fixed-ref fetch_file; independently recomputed Git blob matches local immutable tree",
+      "url": "https://github.com/jyqj/codecortex/blob/f7a003636b4902f569404f4e493e1fff7630093e/crates/cc-eval/src/bin/p8-runtime-statistics.rs",
+      "baseline_source": "900539f25ed9f9f78cf15895257f82f78810831e",
+      "baseline_git_blob_oid": "34f5cf8a67962edd94c277cf0e9dd299aa004235",
+      "baseline_sha256": "c32527a5d64dd9580fa642ac546d3536202291c5900967b1876b7283c1d364f5",
+      "exact_diff_sha256": "c8c3cb01cea824fe785806d80aa38c2e1525d740ceeadfa6b506222b0ab8f680",
+      "diff_lines": 123
+    },
+    {
+      "source": "f7a003636b4902f569404f4e493e1fff7630093e",
+      "path": "crates/cc-index/src/resolver/catalog.rs",
+      "git_blob_oid": "69ca350784614fcc3df3b93eac981023d18eaea0",
+      "sha256": "6b9116062c9cd345b4a5a56595ce6d2bac966a1465e8406901313a0750b086be",
+      "bytes": 39427,
+      "read_method": "GitHub fixed-ref fetch_file; independently recomputed Git blob matches local immutable tree",
+      "url": "https://github.com/jyqj/codecortex/blob/f7a003636b4902f569404f4e493e1fff7630093e/crates/cc-index/src/resolver/catalog.rs",
+      "baseline_source": "900539f25ed9f9f78cf15895257f82f78810831e",
+      "baseline_git_blob_oid": "78d9b810708ec45bff6ae42f1bb440850908fa92",
+      "baseline_sha256": "e377d824a40a648338477a16d47eaabebfc61a5d8c68d8c8ab86f5a5622854a1",
+      "exact_diff_sha256": "e0eec2c3d56bf25888cd424106c386466146b30fa8f6df00f5596738b064e7af",
+      "diff_lines": 149
+    },
+    {
+      "source": "f7a003636b4902f569404f4e493e1fff7630093e",
+      "path": "crates/cc-index/src/resolver/helpers.rs",
+      "git_blob_oid": "417e940d4682cc41c9adbeb2fb14b24d1d1fa8e2",
+      "sha256": "5f37cf6b0aaf47da076c9ce8bc3929cb627b0f13037dab1bc3e560157c8c7c88",
+      "bytes": 15113,
+      "read_method": "GitHub fixed-ref fetch_file; independently recomputed Git blob matches local immutable tree",
+      "url": "https://github.com/jyqj/codecortex/blob/f7a003636b4902f569404f4e493e1fff7630093e/crates/cc-index/src/resolver/helpers.rs",
+      "baseline_source": "900539f25ed9f9f78cf15895257f82f78810831e",
+      "baseline_git_blob_oid": "6d1f5c90aa27e573dcf2d885cee7fbeea96371c8",
+      "baseline_sha256": "48423f474abd90ad11c6e943036793ff5b01faf710cd412037e77a686ff7f2a0",
+      "exact_diff_sha256": "f7b0042512f49b6acb0a599a6588d3186e4b644f2631fd067fdb1eb55fd07b3e",
+      "diff_lines": 170
+    }
+  ],
+  "P2_four_files_to_preserve": [
+    {
+      "source": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+      "path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch.rs",
+      "bytes": 11716,
+      "sha256": "d2fa652cff62511546ad36d67bb402fa9a307ef060223fb12610ef31da69084a",
+      "git_blob_oid": "8d230b0a463bd53ab21e80e56af9d7fc9d3a0a2d",
+      "required_P3_relation": "byte-identical to this exact corrected P2 file"
+    },
+    {
+      "source": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+      "path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs",
+      "bytes": 9704,
+      "sha256": "1647126f382e4fed5e47b42780e08348d8239432eefc7c2012efa628df3c7c41",
+      "git_blob_oid": "d1888e13cb6bc1e4748cf372209b9686a705a1da",
+      "required_P3_relation": "byte-identical to this exact corrected P2 file"
+    },
+    {
+      "source": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+      "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+      "bytes": 10476,
+      "sha256": "f5aba522582adc5f206ab2c3a8a2de2217e0ea99058928396ab0bc473c55b2e5",
+      "git_blob_oid": "b1db699f6597d8a948e3797e153a75fe8f5b07de",
+      "required_P3_relation": "byte-identical to this exact corrected P2 file"
+    },
+    {
+      "source": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+      "path": "crates/cc-index/tests/full_snapshot_empty_config.rs",
+      "bytes": 3850,
+      "sha256": "fc5e8b7f4e8f8b8e3c1245ffcf724e79905413c203ccb298374cb8297a32b4ed",
+      "git_blob_oid": "c900883bd45b427a605330b6ce4ac359f99506ef",
+      "required_P3_relation": "byte-identical to this exact corrected P2 file"
+    }
+  ],
+  "disjoint_changed_paths": true,
+  "unchanged_composition_dependencies": [
+    {
+      "path": "crates/cc-index/src/indexer_phases/config_link.rs",
+      "sources": [
+        {
+          "source": "900539f25ed9f9f78cf15895257f82f78810831e",
+          "git_blob_oid": "d781cfa587b7a33bd555d1ddb3cb086612593712"
+        },
+        {
+          "source": "f7a003636b4902f569404f4e493e1fff7630093e",
+          "git_blob_oid": "d781cfa587b7a33bd555d1ddb3cb086612593712"
+        },
+        {
+          "source": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+          "git_blob_oid": "d781cfa587b7a33bd555d1ddb3cb086612593712"
+        }
+      ],
+      "bytes": 42105,
+      "sha256": "cc8086f8f4b894c645da222b53df194b22b5516e1a6d9002bea04d40ff00a7ff"
+    },
+    {
+      "path": "crates/cc-index/src/indexer_phases/resolve.rs",
+      "sources": [
+        {
+          "source": "900539f25ed9f9f78cf15895257f82f78810831e",
+          "git_blob_oid": "675be9852afd8e78144836758cd696780cbb8a3d"
+        },
+        {
+          "source": "f7a003636b4902f569404f4e493e1fff7630093e",
+          "git_blob_oid": "675be9852afd8e78144836758cd696780cbb8a3d"
+        },
+        {
+          "source": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+          "git_blob_oid": "675be9852afd8e78144836758cd696780cbb8a3d"
+        }
+      ],
+      "bytes": 39961,
+      "sha256": "862c042a7e1066bff4ccf9ae3766b2dca7109690eaa0ef67dc71bd200acd98dd"
+    },
+    {
+      "path": "crates/cc-index/src/indexer_phases/postprocess.rs",
+      "sources": [
+        {
+          "source": "900539f25ed9f9f78cf15895257f82f78810831e",
+          "git_blob_oid": "523bf56ac478634dd8b73e155dcfef82d13bef1b"
+        },
+        {
+          "source": "f7a003636b4902f569404f4e493e1fff7630093e",
+          "git_blob_oid": "523bf56ac478634dd8b73e155dcfef82d13bef1b"
+        },
+        {
+          "source": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+          "git_blob_oid": "523bf56ac478634dd8b73e155dcfef82d13bef1b"
+        }
+      ],
+      "bytes": 58349,
+      "sha256": "f634dad99a1330276e4096867b5101c725e79f45e6471896d8c6c8deac5fb097"
+    },
+    {
+      "path": "crates/cc-index/src/resolver/resolve_core.rs",
+      "sources": [
+        {
+          "source": "900539f25ed9f9f78cf15895257f82f78810831e",
+          "git_blob_oid": "a59b6fbffa5840f7ad14ad1b2b0dc116a1c7b792"
+        },
+        {
+          "source": "f7a003636b4902f569404f4e493e1fff7630093e",
+          "git_blob_oid": "a59b6fbffa5840f7ad14ad1b2b0dc116a1c7b792"
+        },
+        {
+          "source": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+          "git_blob_oid": "a59b6fbffa5840f7ad14ad1b2b0dc116a1c7b792"
+        }
+      ],
+      "bytes": 40080,
+      "sha256": "eeb9676cddf1d9159511811106c61bd5c4ae5a8d7af0fc2d355243c19a5a09a8"
+    },
+    {
+      "path": "crates/cc-index/src/resolver/types.rs",
+      "sources": [
+        {
+          "source": "900539f25ed9f9f78cf15895257f82f78810831e",
+          "git_blob_oid": "ece000325748d462e53cf1f92ac1c10f46d26fe4"
+        },
+        {
+          "source": "f7a003636b4902f569404f4e493e1fff7630093e",
+          "git_blob_oid": "ece000325748d462e53cf1f92ac1c10f46d26fe4"
+        },
+        {
+          "source": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+          "git_blob_oid": "ece000325748d462e53cf1f92ac1c10f46d26fe4"
+        }
+      ],
+      "bytes": 12803,
+      "sha256": "cca7dc406dc7083844429dd514e45c3cc617d5882149c74d5a3143fc21e752a0"
+    },
+    {
+      "path": "crates/cc-index/src/config_linker.rs",
+      "sources": [
+        {
+          "source": "900539f25ed9f9f78cf15895257f82f78810831e",
+          "git_blob_oid": "9493ee2e6405422676b4810daee2e7244b414fd4"
+        },
+        {
+          "source": "f7a003636b4902f569404f4e493e1fff7630093e",
+          "git_blob_oid": "9493ee2e6405422676b4810daee2e7244b414fd4"
+        },
+        {
+          "source": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+          "git_blob_oid": "9493ee2e6405422676b4810daee2e7244b414fd4"
+        }
+      ],
+      "bytes": 22223,
+      "sha256": "9a6e56304087a92dc9bbec804e354dc3df6f7b1e863d2276c552ac3b61294e74"
+    },
+    {
+      "path": "crates/cc-index/src/indexer_phases/write.rs",
+      "sources": [
+        {
+          "source": "900539f25ed9f9f78cf15895257f82f78810831e",
+          "git_blob_oid": "43cb5db0e02a69a8c315ea14386d016fe94527a1"
+        },
+        {
+          "source": "f7a003636b4902f569404f4e493e1fff7630093e",
+          "git_blob_oid": "43cb5db0e02a69a8c315ea14386d016fe94527a1"
+        },
+        {
+          "source": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+          "git_blob_oid": "43cb5db0e02a69a8c315ea14386d016fe94527a1"
+        }
+      ],
+      "bytes": 27566,
+      "sha256": "caa2ba07dd907158299a0cbf00f3264dd370f23c9900fb57750bfd5de42a685b"
+    },
+    {
+      "path": "crates/cc-index/src/build_plan.rs",
+      "sources": [
+        {
+          "source": "900539f25ed9f9f78cf15895257f82f78810831e",
+          "git_blob_oid": "ffe62dd2827b37461c8db914e11b8279a03b8f15"
+        },
+        {
+          "source": "f7a003636b4902f569404f4e493e1fff7630093e",
+          "git_blob_oid": "ffe62dd2827b37461c8db914e11b8279a03b8f15"
+        },
+        {
+          "source": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+          "git_blob_oid": "ffe62dd2827b37461c8db914e11b8279a03b8f15"
+        }
+      ],
+      "bytes": 76225,
+      "sha256": "fdfa0ea0404ebefe8d8d45c4e52d684c1b87d9e7125f4702c7578d2d16bb469c"
+    },
+    {
+      "path": "crates/cc-db/src/snapshot_write_txn.rs",
+      "sources": [
+        {
+          "source": "900539f25ed9f9f78cf15895257f82f78810831e",
+          "git_blob_oid": "20dc6ffc60d2a63320b56d1bd8e010e2937ffe26"
+        },
+        {
+          "source": "f7a003636b4902f569404f4e493e1fff7630093e",
+          "git_blob_oid": "20dc6ffc60d2a63320b56d1bd8e010e2937ffe26"
+        },
+        {
+          "source": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+          "git_blob_oid": "20dc6ffc60d2a63320b56d1bd8e010e2937ffe26"
+        }
+      ],
+      "bytes": 7058,
+      "sha256": "408fdf68044a2e37d493df71aff7be6140464368fd86e980107f370573c004c7"
+    },
+    {
+      "path": "crates/cc-index/src/project_model/mod.rs",
+      "sources": [
+        {
+          "source": "900539f25ed9f9f78cf15895257f82f78810831e",
+          "git_blob_oid": "dfb98b5feaa0808fddd2dcad62bde27d076b7123"
+        },
+        {
+          "source": "f7a003636b4902f569404f4e493e1fff7630093e",
+          "git_blob_oid": "dfb98b5feaa0808fddd2dcad62bde27d076b7123"
+        },
+        {
+          "source": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+          "git_blob_oid": "dfb98b5feaa0808fddd2dcad62bde27d076b7123"
+        }
+      ],
+      "bytes": 22957,
+      "sha256": "8d75c6e2d7dc5bd1ce41931b3d96b3d4c227f2722b1b82e93cb2f6abba83d923"
+    },
+    {
+      "path": "crates/cc-db/src/sql/index_v1.sql",
+      "sources": [
+        {
+          "source": "900539f25ed9f9f78cf15895257f82f78810831e",
+          "git_blob_oid": "998608d9c6d07eb4afec0ce7e13c1f85bfc7a441"
+        },
+        {
+          "source": "f7a003636b4902f569404f4e493e1fff7630093e",
+          "git_blob_oid": "998608d9c6d07eb4afec0ce7e13c1f85bfc7a441"
+        },
+        {
+          "source": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+          "git_blob_oid": "998608d9c6d07eb4afec0ce7e13c1f85bfc7a441"
+        }
+      ],
+      "bytes": 25396,
+      "sha256": "6d7ee2193f388281aeef3dc98b914f0fa6f9478dda90833bf41f6bc12350cd06"
+    },
+    {
+      "path": "crates/cc-db/src/index_migrate.rs",
+      "sources": [
+        {
+          "source": "900539f25ed9f9f78cf15895257f82f78810831e",
+          "git_blob_oid": "0de28f327cc989fafc112d6415491026de167bd1"
+        },
+        {
+          "source": "f7a003636b4902f569404f4e493e1fff7630093e",
+          "git_blob_oid": "0de28f327cc989fafc112d6415491026de167bd1"
+        },
+        {
+          "source": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+          "git_blob_oid": "0de28f327cc989fafc112d6415491026de167bd1"
+        }
+      ],
+      "bytes": 7941,
+      "sha256": "db6c7377fa47f27c7c163a40bdf8d93ea4db90c72e5ea78e587186e5eb39dcd2"
+    },
+    {
+      "path": "crates/cc-db/src/index_db_graph.rs",
+      "sources": [
+        {
+          "source": "900539f25ed9f9f78cf15895257f82f78810831e",
+          "git_blob_oid": "c436e07c26af18bf7e7d9862e35eaaa66e8fcea9"
+        },
+        {
+          "source": "f7a003636b4902f569404f4e493e1fff7630093e",
+          "git_blob_oid": "c436e07c26af18bf7e7d9862e35eaaa66e8fcea9"
+        },
+        {
+          "source": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+          "git_blob_oid": "c436e07c26af18bf7e7d9862e35eaaa66e8fcea9"
+        }
+      ],
+      "bytes": 111978,
+      "sha256": "95962a7545c9e13bdbefc5294a60c7ca674db5674ac11a82912113d264655ea0"
+    },
+    {
+      "path": "crates/cc-db/src/index_db_edges.rs",
+      "sources": [
+        {
+          "source": "900539f25ed9f9f78cf15895257f82f78810831e",
+          "git_blob_oid": "b5a56eace2370b9e4c3afab643cfd016b20c4622"
+        },
+        {
+          "source": "f7a003636b4902f569404f4e493e1fff7630093e",
+          "git_blob_oid": "b5a56eace2370b9e4c3afab643cfd016b20c4622"
+        },
+        {
+          "source": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+          "git_blob_oid": "b5a56eace2370b9e4c3afab643cfd016b20c4622"
+        }
+      ],
+      "bytes": 75482,
+      "sha256": "d1dd3e4022b5d3e516c200d7cf5c0efd039e220f75b4adde39261aeab8936452"
+    },
+    {
+      "path": "crates/cc-index/src/dispatch_synthesis/mod.rs",
+      "sources": [
+        {
+          "source": "900539f25ed9f9f78cf15895257f82f78810831e",
+          "git_blob_oid": "4a67edae340aa86855949579777f2d7fcdb5b3a0"
+        },
+        {
+          "source": "f7a003636b4902f569404f4e493e1fff7630093e",
+          "git_blob_oid": "4a67edae340aa86855949579777f2d7fcdb5b3a0"
+        },
+        {
+          "source": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+          "git_blob_oid": "4a67edae340aa86855949579777f2d7fcdb5b3a0"
+        }
+      ],
+      "bytes": 43627,
+      "sha256": "6c3dc3e98e5d366ceeb370f3346006647ff57b99c35feba7358022452536c91b"
+    },
+    {
+      "path": "crates/cc-index/src/synthesis_pipeline.rs",
+      "sources": [
+        {
+          "source": "900539f25ed9f9f78cf15895257f82f78810831e",
+          "git_blob_oid": "2ead048c249f784503b66a1f2cac1284b0adecc5"
+        },
+        {
+          "source": "f7a003636b4902f569404f4e493e1fff7630093e",
+          "git_blob_oid": "2ead048c249f784503b66a1f2cac1284b0adecc5"
+        },
+        {
+          "source": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+          "git_blob_oid": "2ead048c249f784503b66a1f2cac1284b0adecc5"
+        }
+      ],
+      "bytes": 5122,
+      "sha256": "d765e32dde7bbe2008a7c2db9bdb451a9ffb57098a30691e5a7a1ea9d2e5980f"
+    }
+  ],
+  "findings": [
+    {
+      "id": "export-key-set-and-index-order",
+      "blocking": false,
+      "references": [
+        {
+          "source": "f7a003636b4902f569404f4e493e1fff7630093e",
+          "path": "crates/cc-index/src/resolver/catalog.rs",
+          "symbols": [
+            "add_symbols_iter",
+            "direct_exports",
+            "exported",
+            "remove_files"
+          ],
+          "url": "https://github.com/jyqj/codecortex/blob/f7a003636b4902f569404f4e493e1fff7630093e/crates/cc-index/src/resolver/catalog.rs"
+        }
+      ],
+      "reasoning": "The original per-symbol key set is lower(name), optional lower(export_name), and default when flagged. The new path always inserts lower(name), suppresses an equal alias, and inserts default only when neither existing key is default. All collision cases produce the identical set, including empty and Unicode-lowercased strings. Each key receives the same symbol index once and in original symbol iteration order. Moving the one file-bucket lookup does not change lookup API or values.",
+      "consumer_boundary": "direct_exports performs keyed lookup; exported preserves the existing nonempty terminal branch and stable_candidates normalization. This is not a change to ambiguity, forwarding routes, symbol UID generation, symbol entries, by_uid, tombstones or remove/readd semantics.",
+      "existing_controls": [
+        "export_registration_matches_legacy_for_alias_collisions",
+        "export_registration_matches_legacy_after_remove_and_readd"
+      ]
+    },
+    {
+      "id": "path-score-and-candidate-order",
+      "blocking": false,
+      "references": [
+        {
+          "source": "f7a003636b4902f569404f4e493e1fff7630093e",
+          "path": "crates/cc-index/src/resolver/helpers.rs",
+          "symbols": [
+            "common_path_prefix_len",
+            "import_distance_candidates",
+            "stable_candidates",
+            "best_by_import_distance"
+          ],
+          "url": "https://github.com/jyqj/codecortex/blob/f7a003636b4902f569404f4e493e1fff7630093e/crates/cc-index/src/resolver/helpers.rs"
+        },
+        {
+          "source": "f7a003636b4902f569404f4e493e1fff7630093e",
+          "path": "crates/cc-index/src/resolver/resolve_core.rs",
+          "symbols": [],
+          "url": "https://github.com/jyqj/codecortex/blob/f7a003636b4902f569404f4e493e1fff7630093e/crates/cc-index/src/resolver/resolve_core.rs"
+        }
+      ],
+      "reasoning": "Streaming the same strip_ext(...).split(/) pair gives the same prefix count as materialized vectors, preserving empty, repeated/trailing separator, case, extension and Unicode semantics. The one-pass vector is the original-order subsequence tied at the current maximum; a strictly greater score clears only earlier lower-scored candidates. At completion it is exactly the old filter-at-global-max sequence, including duplicate indices and empty input. The identical stable_candidates function still owns presentation order and identity deduplication; uniqueness is still determined after that function.",
+      "API_boundary": "No changed function signature, visibility, return type, score formula, tie policy, invalid-index contract or resolver caller. These are pure reads of immutable CatalogEntry values.",
+      "existing_controls": [
+        "streamed_prefix_matches_original_path_segment_semantics",
+        "one_pass_distance_preserves_original_ties_duplicates_and_order"
+      ]
+    },
+    {
+      "id": "empty-config-and-resolver-composition",
+      "blocking": false,
+      "references": [
+        {
+          "source": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+          "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+          "symbols": [
+            "prepare_full_snapshot_payload",
+            "write_full_snapshot_contents"
+          ],
+          "url": "https://github.com/jyqj/codecortex/blob/b4fef72211e5967f4fba729d25d0ca2958094fd5/crates/cc-index/src/indexer_phases/snapshot.rs"
+        },
+        {
+          "source": "f7a003636b4902f569404f4e493e1fff7630093e",
+          "path": "crates/cc-index/src/indexer_phases/config_link.rs",
+          "symbols": [
+            "build_config_link_units_from_snapshot"
+          ],
+          "url": "https://github.com/jyqj/codecortex/blob/f7a003636b4902f569404f4e493e1fff7630093e/crates/cc-index/src/indexer_phases/config_link.rs"
+        },
+        {
+          "source": "f7a003636b4902f569404f4e493e1fff7630093e",
+          "path": "crates/cc-index/src/indexer_phases/resolve.rs",
+          "symbols": [],
+          "url": "https://github.com/jyqj/codecortex/blob/f7a003636b4902f569404f4e493e1fff7630093e/crates/cc-index/src/indexer_phases/resolve.rs"
+        }
+      ],
+      "reasoning": "P2 scans/signs the same inputs, removes typed project configuration tokens, and only then avoids cloning symbol targets/file paths when the remaining heuristic token list is empty. The skipped config builder uses its own name/qname and file lookup structures, not SymbolCatalog.by_export or import_distance_candidates. Nonempty tokens still take the exact prior builder path. f7 preserves the source records, resolver UID and candidate contracts consumed upstream; no #179 map is newly shared with this fast path.",
+      "preserved_boundaries": [
+        "Typed module resolution remains authoritative and occurs independently of heuristic token emptiness.",
+        "Signature, empty-token cache, rebuild timestamp, hierarchy/config writes and final graph baseline retain their prior ordering.",
+        "Staging, temp-db and DirectWriter all call the same payload helper; adapter implementations are unchanged.",
+        "Incremental seen_config_files and zero-token stale-reference cleanup remain in the byte-identical config_link module."
+      ],
+      "test_limit": "The two P2 public integration tests exercise the staged full-build path and incremental relinking. They do not independently force both legacy adapters or every nonempty config channel; those untouched branches retain their existing regressions. No new adapter fixture is required solely by this disjoint composition."
+    },
+    {
+      "id": "interface-prerequisites-and-resolver-composition",
+      "blocking": false,
+      "references": [
+        {
+          "source": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+          "path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch.rs",
+          "symbols": [
+            "compute_interface_dispatch_synthesis"
+          ],
+          "url": "https://github.com/jyqj/codecortex/blob/b4fef72211e5967f4fba729d25d0ca2958094fd5/crates/cc-index/src/dispatch_synthesis/interface_dispatch.rs"
+        },
+        {
+          "source": "f7a003636b4902f569404f4e493e1fff7630093e",
+          "path": "crates/cc-db/src/sql/index_v1.sql",
+          "symbols": [],
+          "url": "https://github.com/jyqj/codecortex/blob/f7a003636b4902f569404f4e493e1fff7630093e/crates/cc-db/src/sql/index_v1.sql"
+        },
+        {
+          "source": "f7a003636b4902f569404f4e493e1fff7630093e",
+          "path": "crates/cc-db/src/index_db_graph.rs",
+          "symbols": [],
+          "url": "https://github.com/jyqj/codecortex/blob/f7a003636b4902f569404f4e493e1fff7630093e/crates/cc-db/src/index_db_graph.rs"
+        },
+        {
+          "source": "f7a003636b4902f569404f4e493e1fff7630093e",
+          "path": "crates/cc-db/src/index_db_edges.rs",
+          "symbols": [],
+          "url": "https://github.com/jyqj/codecortex/blob/f7a003636b4902f569404f4e493e1fff7630093e/crates/cc-db/src/index_db_edges.rs"
+        },
+        {
+          "source": "f7a003636b4902f569404f4e493e1fff7630093e",
+          "path": "crates/cc-index/src/synthesis_pipeline.rs",
+          "symbols": [],
+          "url": "https://github.com/jyqj/codecortex/blob/f7a003636b4902f569404f4e493e1fff7630093e/crates/cc-index/src/synthesis_pipeline.rs"
+        }
+      ],
+      "reasoning": "The interface pass reads typed persisted call rows, then typed symbol rows, then implements rows after the original guards. Its own UID/container lookup maps are separate from the resolver catalog. The unchanged production symbols.symbol_uid UNIQUE constraint makes collecting nonempty interface/trait UIDs directly from decoded rows equivalent to collecting from the old final UID map. f7 changes neither that constraint nor typed reads or stored UID/kind/container shape.",
+      "preserved_boundaries": [
+        "Disabled pass returns without cleanup or reads.",
+        "Enabled empty-prerequisite returns retain delete_call_kinds for stale interface dispatch edges.",
+        "Prior in-round CALL deltas still exclude committed replaced kinds and overlay replacement calls before prerequisites.",
+        "Original call-before-symbol-before-implements error precedence remains; SQL/decoding errors are not suppressed by later empty prerequisites.",
+        "Container candidate row order, same-name container handling, implements fanout cap, edge IDs, deduplication and apply ordering are unchanged."
+      ],
+      "test_limit": "Existing cross-process compute/apply visibility is unchanged; this review does not grant an atomic multi-query snapshot or arbitrary weaker manually replaced schema semantics."
+    },
+    {
+      "id": "legacy-ns-statistics-API",
+      "blocking": false,
+      "references": [
+        {
+          "source": "f7a003636b4902f569404f4e493e1fff7630093e",
+          "path": "crates/cc-eval/src/benchmark/statistics.rs",
+          "symbols": [
+            "LegacyLatencyNs",
+            "legacy_latency_ns",
+            "nearest_rank"
+          ],
+          "url": "https://github.com/jyqj/codecortex/blob/f7a003636b4902f569404f4e493e1fff7630093e/crates/cc-eval/src/benchmark/statistics.rs"
+        },
+        {
+          "source": "f7a003636b4902f569404f4e493e1fff7630093e",
+          "path": "crates/cc-eval/src/bin/p8-runtime-statistics.rs",
+          "symbols": [
+            "validate",
+            "legacy_ns",
+            "replay"
+          ],
+          "url": "https://github.com/jyqj/codecortex/blob/f7a003636b4902f569404f4e493e1fff7630093e/crates/cc-eval/src/bin/p8-runtime-statistics.rs"
+        }
+      ],
+      "reasoning": "The statistics library adds a Serialize output type and a public helper that sorts original u64 nanoseconds and uses the existing nearest-rank function. The runtime adapter adds a legacy_ns field for all rows and read/build strata after the unchanged complete-plan/chronology validation. No successful-only filtering, microsecond conversion, denominator change or new cc-index dependency is introduced. The original microsecond distributions, confidence intervals, error status, outcome map and failure exit remain in place.",
+      "compatibility_limit": "The serialized runtime report intentionally gains an additive legacy_ns object. Old exact-byte reports cannot be compared against a new f7 replay and called unchanged original output. Preserve the actual observer/statistics source and existing single statistics owner; old G275 originals retain their own execution identity.",
+      "performance_scope": "These remain client offered-to-terminal observations. They do not fill the already-recorded original benchmark section9 production backend/DB/worker attribution gap."
+    }
+  ],
+  "existing_P2_ten_controls": {
+    "source": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+    "full_snapshot_config_tests": [
+      "empty_config_full_rebuild_clears_old_links_and_can_relink_later",
+      "typed_module_config_still_resolves_when_heuristic_tokens_are_empty"
+    ],
+    "interface_dispatch_tests": [
+      "empty_prerequisites_remove_stale_edges_without_removing_real_calls",
+      "no_calls_still_returns_before_reading_symbols_or_implements",
+      "ordinary_symbols_and_empty_interface_uid_do_not_read_implements",
+      "disabled_pass_does_not_read_or_schedule_cleanup",
+      "malformed_calls_are_not_hidden_by_empty_implements_or_later_errors",
+      "malformed_symbols_are_not_hidden_by_empty_implements",
+      "malformed_implements_and_query_errors_propagate_after_the_original_guards",
+      "prior_call_overlay_reaches_implementors_and_preserves_fanout_cap"
+    ],
+    "definitions_and_assertions_to_preserve_byte_for_byte": true,
+    "this_review_did_not_execute_them": true
+  },
+  "minimum_meaningful_combined_regressions": [
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "cc-index",
+        "--test",
+        "full_snapshot_empty_config"
+      ],
+      "expected_default_profile_selection": "2 existing P2 public SQLite/indexer controls",
+      "purpose": "Full rebuild old-link removal, empty metadata/cache, later incremental relinking, and typed TS alias resolution while heuristic tokens are empty."
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "cc-index",
+        "--lib",
+        "interface_dispatch"
+      ],
+      "expected_default_profile_selection": "8 existing P2 controls plus 2 original functional/fanout controls and 1 original signature control; 11 total based on unchanged source definitions",
+      "purpose": "Actual enabled/disabled cleanup, typed-read failure precedence, prior overlay and nonempty dispatch behavior under the combined binary."
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "cc-index",
+        "--lib",
+        "export_registration_matches_legacy"
+      ],
+      "expected_default_profile_selection": "2 existing #179 independent legacy-map oracle tests",
+      "purpose": "Export alias/default/Unicode collisions and symbol removal/readdition retain the original map and per-key index sequence."
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "cc-index",
+        "--lib",
+        "import_distance_regression_tests"
+      ],
+      "expected_default_profile_selection": "2 existing #179 path/candidate oracle tests",
+      "purpose": "Original path normalization, global-maximum ties, duplicate identities and stable order under the unchanged caller API."
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "cc-eval",
+        "--lib",
+        "legacy_latency_ns_tests"
+      ],
+      "expected_default_profile_selection": "2 existing #175 ns boundary/nearest-rank tests",
+      "purpose": "Empty/single/u64 and submicrosecond precision without relabeling microseconds."
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "cc-eval",
+        "--bin",
+        "p8-runtime-statistics"
+      ],
+      "expected_default_profile_selection": "5 existing binary tests including 2 added legacy_ns cases and 3 original validation/denominator/mutation cases",
+      "purpose": "Additive ns output preserves failures, rejected attempts, null empty strata, original microsecond output, input validation and one primary population."
+    }
+  ],
+  "regression_execution_policy": "These are selections from existing tests, not new gates or weakened fixtures. The root owns all Cargo execution. If its unified all-targets run already executes these selections successfully at the exact candidate, do not rerun them separately. Actual logs, source binding, selected counts and exit codes must be retained; no prior P2/f7 success is transferred to P3. Existing original engineering gates and any workspace failure retain their own outcome.",
+  "new_fixture_or_product_change_required_by_static_composition": false,
+  "P3_object_binding": {
+    "P3_commit": "034982202bdccc90b4938c6a6d6a56a36d4678af",
+    "P3_tree": "7e5ea7972eef08fe2a1874ed8d2b9af977d26358",
+    "parents": [
+      "3d571fad90f0c10030417d29faabcfe7c841972f",
+      "f7a003636b4902f569404f4e493e1fff7630093e"
+    ],
+    "status": "exact_commit_tree_and_requested_file_artifact_task_relations_verified",
+    "independent_object_review": "P3-composition-object-binding.json",
+    "independent_object_review_sha256": "7db1108e9a414cf5966185b8f3d79f57bdf9ffc34aab56973ca6422c9ee93887",
+    "four_P2_files": "Matched P2_four_files_to_preserve bytes and Git OIDs exactly, including the corrected expect_err test bytes.",
+    "four_new_main_files": "Matched main_four_Rust_changes f7 bytes/Git OIDs exactly; no replacement by M900/A versions.",
+    "all_other_f7_crates_inputs_preserved": true,
+    "other_f7_crates_paths": 1085,
+    "artifact_union": {
+      "M_document_merge_paths": 21887,
+      "f7_paths": 21774,
+      "overlap_paths": 21749,
+      "conflicting_overlap_paths": 0,
+      "M_only_paths": 138,
+      "f7_only_paths": 25,
+      "P3_paths": 21912,
+      "exact_union_mode_type_oid_equal": true,
+      "M_manifest_sha256": "e9d958308e0e8d622629aaea5bb0dddc8996314354e2f9b8a8ad5bb41855d5fd",
+      "f7_manifest_sha256": "5501880e0945fe5dfa8fefe52cf0f7aab209842bbb7d3b64920e0a25d7f40fab",
+      "P3_union_manifest_sha256": "1a094499de6ee205937f003ca2d63f59e34df8558c29c9cdc35d57050f24f260"
+    },
+    "tasks": {
+      "path": "docs/roadmap/code-index-v2/tasks.json",
+      "git_blob_oid": "5c3bfd50e882dad86652e1118e3b039f7ad3510f",
+      "sha256": "8e4742e00ee114fac549c86d560c6776f3384b4f0ad30179365b5a6ebbe678c3",
+      "bytes": 850141,
+      "same_as_document_merge": true,
+      "read_method": "git show fixed P3 object",
+      "total": 192,
+      "status_counts": {
+        "done": 163,
+        "in_progress": 16,
+        "todo": 12,
+        "blocked": 1
+      },
+      "remaining": 29,
+      "newly_closed": 0
+    },
+    "source_admission_boundary": "Root/pr_audit owns the complete registry/guard/R and subsequent source-admission comparison; exact product file composition is not source approval."
+  },
+  "execution_evidence_scope": {
+    "existing_source_controls": "The P2 ten test definitions and #175/#179 tests are inherited source inputs and were read here. Earlier P2, M900 or f7 run receipts retain their own identities.",
+    "actual_P3_object_checks": "This review actually verified fixed P3 commit/parents/tree, eight Rust paths, other f7 crates paths, full artifact union and unchanged task bytes.",
+    "actual_P3_Cargo_or_native_execution_by_this_reviewer": false,
+    "actual_P3_engineering_result": null,
+    "actual_P3_engineering_result_state": "Root is supervising a separate combined run; no terminal result or pass is claimed in this report.",
+    "root_test_selection": "Root reported fmt, workspace/all-target Clippy, cc-index all-targets, the two cc-eval selections above, and an explicitly selected cc-eval lib corpus test. These intentions are not command completion receipts.",
+    "no_repeated_covered_tests": "cc-index all-targets covers the original P2 controls and #179 controls; no duplicate selected runs are required if those actual results are available.",
+    "prior_pre_P3_static_report": "semantic-composition-pre-P3-review.json",
+    "prior_pre_P3_static_report_sha256": "8ca64b95c9e87341cf75d587920180086be92eb8e84a1c321adf7375f2649039"
+  },
+  "source_fetch_method": "Only four GitHub fixed-ref fetch_file reads for absent local f7 blobs. Recomputed Git SHA-1 and SHA-256 were matched to immutable local f7 tree OIDs. No git fetch or object-store mutation.",
+  "metadata_records": [
+    {
+      "path": "semantic-source-fetches.json",
+      "sha256": "37d8cb2dab0eac704834b3d64c52285f5bee8363942cac34cdb39148804fc933"
+    },
+    {
+      "path": "unchanged-composition-dependencies.json",
+      "sha256": "25a502184574050286e304e3efc0c0143312b50727fb90f6eae3962ef5e451fb"
+    }
+  ],
+  "todo_accounting": {
+    "original_total": 192,
+    "done": 163,
+    "remaining": 29,
+    "newly_closed": 0,
+    "source_semantic_review_is_not_task_acceptance": true
+  },
+  "not_claimed": [
+    "No compilation or test execution in this review.",
+    "No speedup, memory reduction, latency stability, scale acceptance or completed TODO inferred.",
+    "No runtime instrumentation gap closed by legacy client statistics.",
+    "No P3 workspace success, future publication bytes or source admission predeclared."
+  ]
+}

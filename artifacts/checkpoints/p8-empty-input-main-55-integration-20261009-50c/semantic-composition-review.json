@@ -1,0 +1,289 @@
+{
+  "P4_engineering_results": null,
+  "TODO_closed": 0,
+  "TODO_done": 163,
+  "TODO_remaining": 29,
+  "engine_mechanical_review": {
+    "bytes": 10352,
+    "file_name": "engine-static-review.json",
+    "sha256": "dc5ab34221afe5fe6908a7760797182371a336d2726e19d6ad16d2b4ed25473e"
+  },
+  "execution_boundary": "Root owns separately captured actual P4 engineering. No old b069/P2/P3/f7/G source result is relabeled as P4.",
+  "full_input_counts": {
+    "BASE_delta": 53,
+    "products": 1092,
+    "validation": 139
+  },
+  "inherited_original_reviews": [
+    {
+      "bytes": 25546,
+      "identity": "Original external-session non-author evidence, unchanged; not a P4 execution",
+      "mode_type_blob": {
+        "blob": "6df7be63a4f7660f23e01a84fcf7e3c22ae67038",
+        "mode": "100644",
+        "type": "blob"
+      },
+      "path": "artifacts/checkpoints/p8-install-compat-36fea-20261009/validation/review/cleanup-owner-inventory.json",
+      "sha256": "c6ca4f36f2cc9b6780f0ce77e0b733242ce16f29c1e367d44fb79521a809b8ba"
+    },
+    {
+      "bytes": 6536,
+      "identity": "Original external-session non-author evidence, unchanged; not a P4 execution",
+      "mode_type_blob": {
+        "blob": "2c5ce8d7246ef314c76c9bb1d1675df2438a33b4",
+        "mode": "100644",
+        "type": "blob"
+      },
+      "path": "artifacts/checkpoints/p8-install-compat-36fea-20261009/validation/review/engine-independent-review.json",
+      "sha256": "b6930409d8b5b6dfdabf92804125e44dae58b7a7a6979eff8d5d848368145147"
+    },
+    {
+      "bytes": 9273,
+      "identity": "Original external-session non-author evidence, unchanged; not a P4 execution",
+      "mode_type_blob": {
+        "blob": "7d6f11372cd57d765d82aef0d74f55ba4f6a64eb",
+        "mode": "100644",
+        "type": "blob"
+      },
+      "path": "artifacts/checkpoints/p8-install-compat-36fea-20261009/validation/review/installer-independent-review.json",
+      "sha256": "c856cc07a64bbcd33241ad935357397f9b580da6c83ce40dd78817bf6b219823"
+    }
+  ],
+  "parents": [
+    "27e60348f01d16298dd4d28f48dd1e2d47ee687c",
+    "55aa2bcf355441585bcf980e1d6f4fab8eebe59d"
+  ],
+  "product_execution_by_this_reviewer": false,
+  "project_validator_execution_by_this_reviewer": false,
+  "reviewer": "/root/pr_audit",
+  "schema": "P4-current-semantic-composition-review-v1",
+  "scope": "Current seven main55 deltas plus four retained P2 paths and selected unchanged contracts; complete immutable source composition",
+  "semantic_findings": [
+    {
+      "finding": "The complete main55 target and original FD9 delta were read. DocumentMut parses before mutation or write; only NotFound is treated as absent. Syntax, invalid UTF-8, wrong table shape, URL transport and non-UTF-8 binary-path failures propagate without rewriting the configuration. Normal, inline and dotted TOML tables are handled through table-like access. Installation addresses the exact parsed codecortex key and replaces only command and args. Existing value decoration and in-place item replacement preserve comments and quoted key formatting; env, timeout, enabled fields and other servers remain. Serialization escapes binary-path contents. Uninstallation removes only the exact parsed codecortex subtree, including nested fields; literal dotted names and header-looking multiline text are not mistaken for target sections. Absent config/server returns before writing. This source still uses an ordinary file write and introduces no atomic-replacement, cross-target rollback or concurrent-editor guarantee.",
+      "id": "INSTALLER_STRUCTURAL_TOML",
+      "paths": [
+        "crates/cc-server/src/installer/targets/codex_cli.rs"
+      ],
+      "status": "accepted_scoped"
+    },
+    {
+      "finding": "The full CLI and new real-process controls were read with unchanged installer orchestration and main. current_exe errors now propagate. Per-target reporting and processing of other targets remain unchanged; any collected target error returns CcError::Config, which the unchanged main converts to nonzero exit. Two Unix-only CLI tests use the Cargo-built executable and isolated HOME, USERPROFILE and XDG_CONFIG_HOME to check malformed-config failure without rewriting and exact install/uninstall preservation. These source controls do not claim a new Windows CLI execution or reversal of successfully updated other targets.",
+      "id": "INSTALLER_CLI_FAILURE",
+      "paths": [
+        "crates/cc-server/src/cli.rs",
+        "crates/cc-server/tests/installer_cli.rs"
+      ],
+      "status": "accepted_scoped"
+    },
+    {
+      "finding": "The added controls cover escaped literal paths; exact server-key matching; reinstall fields, prefix/value comments and idempotence; normal, inline and dotted tables; nested and multiline removal; malformed UTF-8/TOML/types without writes; byte-preserving absent-server removal; URL-transport refusal; and Unix non-UTF-8 binary-path refusal. The final in-place key replacement and explicit prefix-comment assertions preserve the earlier independently found and corrected comment-loss regression. Source review of these controls is distinct from their original or new execution.",
+      "id": "INSTALLER_CONTROLS",
+      "paths": [
+        "crates/cc-server/src/installer/targets/codex_cli.rs",
+        "crates/cc-server/tests/installer_cli.rs"
+      ],
+      "status": "accepted_scoped"
+    },
+    {
+      "finding": "The removed pub(crate) append_if_missing helper had only the replaced Codex production consumer; no reference remains in any actual product blob. The server adds toml_edit 0.22.27, already locked indirectly through cc-index -> toml 0.8.23 -> toml_edit. Parsing both complete lockfiles and removing only the new cc-server dependency edge reconstructs the old lockfile data exactly: no package version, checksum or transitive resolution changes. This is a source/dependency declaration check, not a new offline build result.",
+      "id": "INSTALLER_HELPER_AND_DEPENDENCY",
+      "paths": [
+        "Cargo.lock",
+        "crates/cc-server/Cargo.toml",
+        "crates/cc-server/src/installer/helpers.rs"
+      ],
+      "status": "accepted_scoped"
+    },
+    {
+      "finding": "The 18,720-byte production prefix before cfg(test) is byte-identical, SHA-256 4cc88b93e3db27bc5de0b9de4865df9db1299d7b9cc1d43b37ea5c2a51abc3fa. The remaining 17 test bodies and four helper bodies are byte-identical. Eighteen removed tests and one removed helper already reside in the unchanged, registered engine_lane_tests module. Seventeen duplicate tests and the helper match after indentation; lexical_lane_adapter_matches_inline_ranking differs only in its explanatory comment, with all executable bytes identical. No production scoring, RRF API or search policy changes. Broader duplicated local lane ownership remains outside this cleanup and no whole P8-017 closure is claimed.",
+      "id": "SEARCH_TEST_OWNERSHIP",
+      "paths": [
+        "crates/cc-search/src/engine.rs"
+      ],
+      "status": "accepted_scoped"
+    },
+    {
+      "finding": "The current main55-to-P4 delta and both controls were reread, and their full bodies match the original P2 and previously independently reviewed P3. Signature then fallible scan then typed-config exclusion still precede the empty-token decision. Only unused pure full symbol/file preparation is skipped; common payload metadata, token cache, writes and normal nonempty-token builder retain their inputs and behavior. The controls retain linked-to-empty full replacement, later incremental mutation/relinking and typed TS alias resolution with no heuristic tokens. No new execution of every snapshot adapter is claimed.",
+      "id": "CONFIG_EMPTY",
+      "paths": [
+        "crates/cc-index/src/indexer_phases/snapshot.rs",
+        "crates/cc-index/tests/full_snapshot_empty_config.rs"
+      ],
+      "status": "accepted_scoped"
+    },
+    {
+      "finding": "The current main55-to-P4 delta and complete eight controls were reread; full bodies match P2 and P3. Disabled behavior and cleanup ownership are unchanged. Typed CALL reads plus prior in-round CALL overlays precede symbols, which precede implements. Existing no-call and no-interface read boundaries remain. All selected rows still undergo the old typed decoding before the new empty-implements return. The persisted unique symbol_uid contract makes direct interface/trait membership equivalent to the old map projection, including omitted empty UIDs. Only unused full lookup maps move; no SQL-read reduction or changed error precedence is claimed. The normal fanout cap, insertion/deduplication and edge fields are unchanged. Malformed CALL/symbol/implements controls and three corrected expected expect_err assertions remain intact.",
+      "id": "INTERFACE_EMPTY",
+      "paths": [
+        "crates/cc-index/src/dispatch_synthesis/interface_dispatch.rs",
+        "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs"
+      ],
+      "status": "accepted_scoped"
+    },
+    {
+      "finding": "The seven main55 changes and four retained P2 product paths are disjoint. Installer and CLI changes do not alter resolver, config-link, database-write or synthesis contracts. The engine change is confined to duplicate test ownership. The previous #175 statistics and #179 resolver product changes remain exactly inherited through the main55 canonical, with no source or test execution relabeled. Twenty selected supporting paths retain complete mode/type/blob identity across P3, main55 and P4. All 1092 current product files, 139 validation files and all 53 BASE before/after deltas are independently read and hashed below; this complete inventory check is not a claim that every unchanged file was freshly semantically reread.",
+      "id": "P4_COMPOSITION",
+      "paths": [
+        "Cargo.lock",
+        "crates/cc-search/src/engine.rs",
+        "crates/cc-server/Cargo.toml",
+        "crates/cc-server/src/cli.rs",
+        "crates/cc-server/src/installer/helpers.rs",
+        "crates/cc-server/src/installer/targets/codex_cli.rs",
+        "crates/cc-server/tests/installer_cli.rs",
+        "crates/cc-index/src/dispatch_synthesis/interface_dispatch.rs",
+        "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs",
+        "crates/cc-index/src/indexer_phases/snapshot.rs",
+        "crates/cc-index/tests/full_snapshot_empty_config.rs"
+      ],
+      "status": "accepted_scoped"
+    }
+  ],
+  "source": "31a42daeb12da6936695abb08eb3912d4f3c6064",
+  "supporting_dependencies": {
+    "crates/cc-db/src/index_db_edges.rs": {
+      "blob": "b5a56eace2370b9e4c3afab643cfd016b20c4622",
+      "bytes": 75482,
+      "mode": "100644",
+      "sha256": "d1dd3e4022b5d3e516c200d7cf5c0efd039e220f75b4adde39261aeab8936452",
+      "type": "blob"
+    },
+    "crates/cc-db/src/index_db_graph.rs": {
+      "blob": "c436e07c26af18bf7e7d9862e35eaaa66e8fcea9",
+      "bytes": 111978,
+      "mode": "100644",
+      "sha256": "95962a7545c9e13bdbefc5294a60c7ca674db5674ac11a82912113d264655ea0",
+      "type": "blob"
+    },
+    "crates/cc-db/src/index_migrate.rs": {
+      "blob": "0de28f327cc989fafc112d6415491026de167bd1",
+      "bytes": 7941,
+      "mode": "100644",
+      "sha256": "db6c7377fa47f27c7c163a40bdf8d93ea4db90c72e5ea78e587186e5eb39dcd2",
+      "type": "blob"
+    },
+    "crates/cc-db/src/snapshot_write_txn.rs": {
+      "blob": "20dc6ffc60d2a63320b56d1bd8e010e2937ffe26",
+      "bytes": 7058,
+      "mode": "100644",
+      "sha256": "408fdf68044a2e37d493df71aff7be6140464368fd86e980107f370573c004c7",
+      "type": "blob"
+    },
+    "crates/cc-db/src/sql/index_v1.sql": {
+      "blob": "998608d9c6d07eb4afec0ce7e13c1f85bfc7a441",
+      "bytes": 25396,
+      "mode": "100644",
+      "sha256": "6d7ee2193f388281aeef3dc98b914f0fa6f9478dda90833bf41f6bc12350cd06",
+      "type": "blob"
+    },
+    "crates/cc-index/src/build_plan.rs": {
+      "blob": "ffe62dd2827b37461c8db914e11b8279a03b8f15",
+      "bytes": 76225,
+      "mode": "100644",
+      "sha256": "fdfa0ea0404ebefe8d8d45c4e52d684c1b87d9e7125f4702c7578d2d16bb469c",
+      "type": "blob"
+    },
+    "crates/cc-index/src/config_linker.rs": {
+      "blob": "9493ee2e6405422676b4810daee2e7244b414fd4",
+      "bytes": 22223,
+      "mode": "100644",
+      "sha256": "9a6e56304087a92dc9bbec804e354dc3df6f7b1e863d2276c552ac3b61294e74",
+      "type": "blob"
+    },
+    "crates/cc-index/src/dispatch_synthesis/mod.rs": {
+      "blob": "4a67edae340aa86855949579777f2d7fcdb5b3a0",
+      "bytes": 43627,
+      "mode": "100644",
+      "sha256": "6c3dc3e98e5d366ceeb370f3346006647ff57b99c35feba7358022452536c91b",
+      "type": "blob"
+    },
+    "crates/cc-index/src/indexer_phases/config_link.rs": {
+      "blob": "d781cfa587b7a33bd555d1ddb3cb086612593712",
+      "bytes": 42105,
+      "mode": "100644",
+      "sha256": "cc8086f8f4b894c645da222b53df194b22b5516e1a6d9002bea04d40ff00a7ff",
+      "type": "blob"
+    },
+    "crates/cc-index/src/indexer_phases/postprocess.rs": {
+      "blob": "523bf56ac478634dd8b73e155dcfef82d13bef1b",
+      "bytes": 58349,
+      "mode": "100644",
+      "sha256": "f634dad99a1330276e4096867b5101c725e79f45e6471896d8c6c8deac5fb097",
+      "type": "blob"
+    },
+    "crates/cc-index/src/indexer_phases/resolve.rs": {
+      "blob": "675be9852afd8e78144836758cd696780cbb8a3d",
+      "bytes": 39961,
+      "mode": "100644",
+      "sha256": "862c042a7e1066bff4ccf9ae3766b2dca7109690eaa0ef67dc71bd200acd98dd",
+      "type": "blob"
+    },
+    "crates/cc-index/src/indexer_phases/write.rs": {
+      "blob": "43cb5db0e02a69a8c315ea14386d016fe94527a1",
+      "bytes": 27566,
+      "mode": "100644",
+      "sha256": "caa2ba07dd907158299a0cbf00f3264dd370f23c9900fb57750bfd5de42a685b",
+      "type": "blob"
+    },
+    "crates/cc-index/src/project_model/mod.rs": {
+      "blob": "dfb98b5feaa0808fddd2dcad62bde27d076b7123",
+      "bytes": 22957,
+      "mode": "100644",
+      "sha256": "8d75c6e2d7dc5bd1ce41931b3d96b3d4c227f2722b1b82e93cb2f6abba83d923",
+      "type": "blob"
+    },
+    "crates/cc-index/src/resolver/resolve_core.rs": {
+      "blob": "a59b6fbffa5840f7ad14ad1b2b0dc116a1c7b792",
+      "bytes": 40080,
+      "mode": "100644",
+      "sha256": "eeb9676cddf1d9159511811106c61bd5c4ae5a8d7af0fc2d355243c19a5a09a8",
+      "type": "blob"
+    },
+    "crates/cc-index/src/resolver/types.rs": {
+      "blob": "ece000325748d462e53cf1f92ac1c10f46d26fe4",
+      "bytes": 12803,
+      "mode": "100644",
+      "sha256": "cca7dc406dc7083844429dd514e45c3cc617d5882149c74d5a3143fc21e752a0",
+      "type": "blob"
+    },
+    "crates/cc-index/src/synthesis_pipeline.rs": {
+      "blob": "2ead048c249f784503b66a1f2cac1284b0adecc5",
+      "bytes": 5122,
+      "mode": "100644",
+      "sha256": "d765e32dde7bbe2008a7c2db9bdb451a9ffb57098a30691e5a7a1ea9d2e5980f",
+      "type": "blob"
+    },
+    "crates/cc-search/src/engine_lane_tests.rs": {
+      "blob": "2da259536f72ae5ec4e9f9fffa3bf2ebdf8ff0b7",
+      "bytes": 51763,
+      "mode": "100644",
+      "sha256": "f6313e0a098f04be0692c9791927f0190d5cf6c3f3ae11a089372e584eb0e0a8",
+      "type": "blob"
+    },
+    "crates/cc-search/src/lib.rs": {
+      "blob": "bd573dbec512f8fec6debb95dea632d50b97ed51",
+      "bytes": 1712,
+      "mode": "100644",
+      "sha256": "274c15f6f5f8a09087fa18844c837dd5a512bcc81c1c303f2783e445877b1583",
+      "type": "blob"
+    },
+    "crates/cc-server/src/installer/mod.rs": {
+      "blob": "de7a57b323eb523b91d2e95e4eebaa95ce3e48ae",
+      "bytes": 9370,
+      "mode": "100644",
+      "sha256": "3855d218c90d93dbe0b3acd99692a50e94ee44974d22747fe90433ecb0554ac0",
+      "type": "blob"
+    },
+    "crates/cc-server/src/main.rs": {
+      "blob": "093fa2bb63fb07138996bfdc03a041d94dfa64e0",
+      "bytes": 287,
+      "mode": "100644",
+      "sha256": "6a11befd0f4cc6dbb77f2f8e88a79c195ee958edfa217ea37d8aea7225c9877b",
+      "type": "blob"
+    }
+  },
+  "tree": "286cca0c09c796227dfadc030af298b4f1c4e575",
+  "unresolved_blockers": [],
+  "verdict": "accepted_scoped"
+}

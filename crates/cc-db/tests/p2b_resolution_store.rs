@@ -239,7 +239,6 @@ fn corrupt_payload_is_rejected() {
     assert!(db.reads().resolution_manifests(&["a.py".into()]).is_err());
 }
 
-
 fn snapshot_dependency_unit(path: &str, count: usize) -> FileWriteUnit {
     let mut file = unit(path);
     file.outcome.resolution.dependencies.clear();
@@ -310,13 +309,21 @@ fn snapshot_dependency_manifest_and_rows_match_original_full_writer() {
         .unwrap();
     new.admin()
         .rebuild_with_temp_db(|conn| {
-            cc_db::SnapshotWriteTxn::new(conn)
-                .write_file_data(&files, &Default::default())
+            cc_db::SnapshotWriteTxn::new(conn).write_file_data(&files, &Default::default())
         })
         .unwrap();
-    assert_eq!(old.reads().generation().unwrap().index_epoch, old_before.index_epoch + 1);
-    assert_eq!(new.reads().generation().unwrap().index_epoch, new_before.index_epoch + 1);
-    assert_eq!(snapshot_dependency_tables(&old), snapshot_dependency_tables(&new));
+    assert_eq!(
+        old.reads().generation().unwrap().index_epoch,
+        old_before.index_epoch + 1
+    );
+    assert_eq!(
+        new.reads().generation().unwrap().index_epoch,
+        new_before.index_epoch + 1
+    );
+    assert_eq!(
+        snapshot_dependency_tables(&old),
+        snapshot_dependency_tables(&new)
+    );
     let paths: Vec<_> = files.iter().map(|file| file.rel_path.clone()).collect();
     let original = old.reads().resolution_manifests(&paths).unwrap();
     let batched = new.reads().resolution_manifests(&paths).unwrap();
@@ -329,10 +336,16 @@ fn snapshot_dependency_manifest_and_rows_match_original_full_writer() {
     new.writes()
         .replace_files_batch(&[snapshot_dependency_unit("n-73.py", 8)])
         .unwrap();
-    assert_eq!(new.reads().generation().unwrap().index_epoch, before.index_epoch + 1);
     assert_eq!(
-        new.reads().resolution_manifests(&["n-73.py".into()]).unwrap()["n-73.py"]
-            .dependencies.len(),
+        new.reads().generation().unwrap().index_epoch,
+        before.index_epoch + 1
+    );
+    assert_eq!(
+        new.reads()
+            .resolution_manifests(&["n-73.py".into()])
+            .unwrap()["n-73.py"]
+            .dependencies
+            .len(),
         8
     );
 }
@@ -344,7 +357,9 @@ fn snapshot_dependency_failure_keeps_live_rows_and_generation_like_original() {
     for snapshot in [false, true] {
         let path = directory.path().join(format!("failure-{snapshot}.db"));
         let db = IndexDb::open_with_read_pool_size(&path, 1).unwrap().0;
-        db.writes().replace_files_batch(&[unit("retained.py")]).unwrap();
+        db.writes()
+            .replace_files_batch(&[unit("retained.py")])
+            .unwrap();
         let before = db.reads().generation().unwrap();
         let retained = snapshot_dependency_tables(&db);
         let mut mode_errors = Vec::new();

@@ -440,7 +440,9 @@ mod tests {
             .prepare("SELECT rowid,file_path,kind,key FROM resolution_dependencies ORDER BY rowid")
             .unwrap();
         statement
-            .query_map([], |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?)))
+            .query_map([], |row| {
+                Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?))
+            })
             .unwrap()
             .collect::<rusqlite::Result<Vec<_>>>()
             .unwrap()

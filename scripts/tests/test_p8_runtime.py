@@ -73,9 +73,18 @@ def sha(path): return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 rows = [json.loads(line) for line in Path(a.raw).read_text().splitlines()]
 rows = [row for row in rows if row['kind'] == 'operation']
 code = int(any(row['status'] != 'success' for row in rows))
+# Distinct fixed values prove the active driver copies the replay wire. This
+# executable is a synthetic protocol control, not a quantile implementation.
+def legacy(n):
+    return dict(n=n, p50_ns=1999 if n else None, p95_ns=2999 if n else None,
+                p99_ns=3999 if n else None, maximum_ns=4999 if n else None,
+                scope='all_offered_terminal_outcomes_including_rejections_and_failures',
+                tail_stability_claim=False)
+legacy_ns = dict(latency=legacy(len(rows)), latency_by_operation={
+    kind: legacy(sum(row['operation'] == kind for row in rows)) for kind in ('read', 'build')})
 Path(a.output).write_text(json.dumps({'plan_sha256': sha(a.plan), 'raw_sha256': sha(a.raw),
     'replay_binary_sha256': sha(__file__), 'exit_code': code, 'recorded_samples': len(rows),
-    'observation_status': 'synthetic_control'}, sort_keys=True))
+    'observation_status': 'synthetic_control', 'legacy_ns': legacy_ns}, sort_keys=True))
 raise SystemExit(code)
 """)
         for name in ("source-before.json", "source-after.json", "product-build.jsonl", "seal.json"):
@@ -209,6 +218,42 @@ raise SystemExit(code)
         self.assertEqual(report["exit_code"], 0)
         self.assertEqual(report["failures"], [])
         self.assertEqual(report["outcomes"], {"success": 60})
+
+    def test_active_driver_copies_exact_nanosecond_replay_wire(self):
+        output, report = self.run_control(0)
+        legacy_ns = json.loads((output / "statistics.json").read_text())["legacy_ns"]
+        self.assertEqual(report["latency"], legacy_ns["latency"])
+        self.assertEqual(report["latency_by_operation"], legacy_ns["latency_by_operation"])
+        self.assertEqual(report["latency"]["p50_ns"], 1999)
+        self.assertEqual(report["latency"]["p95_ns"], 2999)
+        self.assertEqual(report["latency"]["p99_ns"], 3999)
+        self.assertEqual(report["latency"]["maximum_ns"], 4999)
+        self.assertEqual(report["latency"]["n"], 60)
+        self.assertEqual(report["latency_by_operation"]["read"]["n"], 40)
+        self.assertEqual(report["latency_by_operation"]["build"]["n"], 20)
+        self.assertFalse(report["latency"]["tail_stability_claim"])
+
+    def test_legacy_copy_rejects_bytes_changed_after_statistics_verification(self):
+        args, identity = self.prepare_control(0)
+        original_replay = runtime.replay_statistics
+
+        def changed_statistics(binary, output):
+            result = original_replay(binary, output)
+            path = output / "statistics.json"
+            changed = json.loads(path.read_text())
+            changed["legacy_ns"]["latency"]["p50_ns"] = 42
+            path.write_text(json.dumps(changed))
+            return result
+
+        with mock.patch.object(runtime, "verify_build", return_value=identity), \
+                mock.patch.object(runtime, "verify_receipt", return_value=identity["build_identity"]), \
+                mock.patch.object(runtime, "replay_statistics", side_effect=changed_statistics):
+            report = runtime.run(args)
+        self.assertEqual(report["status"], "failed")
+        self.assertEqual(report["exit_code"], 2)
+        self.assertIn("statistics bytes changed before legacy nanosecond summary copy", report["error"])
+        self.assertNotIn("latency", report)
+        runtime.verify_output(args.output)
 
     def test_raw_budget_failure_cancels_and_joins_before_sealing(self):
         output, report, submitted, _ = self.interrupted_control("raw_budget")
@@ -362,14 +407,6 @@ class RuntimeEvidenceTests(unittest.TestCase):
         result = runtime.rss_trend(samples)
         self.assertFalse(result["passed"])
         self.assertEqual(result["allowed_bytes"], 157 * mib)
-
-    def test_failed_outcomes_still_enter_latency_denominator(self):
-        rows = [{"offered_ns": 0, "finished_ns": value, "status": status}
-                for value, status in ((10, "success"), (100, "error"), (1000, "queue_rejected"))]
-        result = runtime.latency_summary(rows)
-        self.assertEqual(result["n"], 3)
-        self.assertEqual(result["maximum_ns"], 1000)
-        self.assertFalse(result["tail_stability_claim"])
 
     def test_mutations_use_real_git_and_do_not_grow_source(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -820,8 +857,18 @@ class RuntimeFailureLifecycleTests(unittest.TestCase):
             state["statistics_calls"] += 1
             rows = [json.loads(line) for line in (output / "raw.jsonl").read_text().splitlines()]
             attempts = [row for row in rows if row["kind"] == "operation"]
-            value = dict(exit_code=0, status="passed_observation", offered=len(attempts))
+            # These protocol controls do not compute or certify quantiles.
+            def legacy(n):
+                return dict(n=n, p50_ns=1999 if n else None, p95_ns=2999 if n else None,
+                            p99_ns=3999 if n else None, maximum_ns=4999 if n else None,
+                            scope="all_offered_terminal_outcomes_including_rejections_and_failures",
+                            tail_stability_claim=False)
+            value = dict(exit_code=0, status="passed_observation", offered=len(attempts),
+                         legacy_ns=dict(latency=legacy(len(attempts)), latency_by_operation={
+                             kind: legacy(sum(row["operation"] == kind for row in attempts))
+                             for kind in ("read", "build")}))
             (output / "statistics.json").write_text(json.dumps(value))
+            value["sha256"] = runtime.digest(output / "statistics.json")
             return value
 
         identity = dict(build_identity={"protocol_control": True})

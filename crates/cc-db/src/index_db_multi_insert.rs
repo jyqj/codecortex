@@ -114,7 +114,11 @@ impl IndexDb {
             3,
             rows,
             |stmt, base, dependency| {
-                bind_row!(stmt, base, [file_path, dependency.kind.as_str(), &dependency.key]);
+                bind_row!(
+                    stmt,
+                    base,
+                    [file_path, dependency.kind.as_str(), &dependency.key]
+                );
                 Ok(())
             },
         )

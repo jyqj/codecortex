@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "author": "/root",
+  "scope": "Apply exact single formatting hunk from original cargo fmt failure",
+  "parent_G": "1434317f54beee5fb78731dbe6df8a16511dbe9e",
+  "new_P": "57a731b12df8a3c9a70742a8c9d4590af65ea269",
+  "new_tree": "168e092d9e3891f9a725dcd313c93b1e8c160fed",
+  "original_failed_CI": {
+    "run": 37992802148,
+    "job": 114031059454,
+    "checkout": "385c95a827285c168926980fb00180e21947ccc4",
+    "log_git": "4f46828c73d447997f8b219923069c4eb3a781d3",
+    "actual_failure": "cargo fmt --all -- --check; one hunk in benchmark_oracle_streaming.rs at 102",
+    "subsequent_main_gates": "not_run due to formatting failure"
+  },
+  "changed_path": "crates/cc-eval/tests/benchmark_oracle_streaming.rs",
+  "before_blob": "8dd9dbdfd87b68324d5cc58408bc77ad2da7968e",
+  "after_blob": "a2a0c48b6f9bc7cbdb92ad5c505a5f38ae141174",
+  "only_hunk": {
+    "before": "        assert_eq!(same_source_row[\"incremental_digest\"], row[\"incremental_digest\"]);",
+    "after": "        assert_eq!(\n            same_source_row[\"incremental_digest\"],\n            row[\"incremental_digest\"]\n        );"
+  },
+  "production_code_changed": false,
+  "test_logic_changed": false,
+  "verification": {
+    "local_rustfmt": "not_run - unavailable",
+    "new_source_CI": "pending",
+    "original_failure_preserved": true
+  },
+  "creations": {
+    "blob": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Action completed."
+        }
+      ],
+      "structuredContent": {
+        "sha": "a2a0c48b6f9bc7cbdb92ad5c505a5f38ae141174"
+      },
+      "isError": false
+    },
+    "tree": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Action completed."
+        }
+      ],
+      "structuredContent": {
+        "sha": "168e092d9e3891f9a725dcd313c93b1e8c160fed"
+      },
+      "isError": false
+    },
+    "commit": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Action completed."
+        }
+      ],
+      "structuredContent": {
+        "sha": "57a731b12df8a3c9a70742a8c9d4590af65ea269"
+      },
+      "isError": false
+    }
+  }
+}

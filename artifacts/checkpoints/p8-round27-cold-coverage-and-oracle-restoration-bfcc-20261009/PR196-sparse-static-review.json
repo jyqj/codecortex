@@ -1,0 +1,116 @@
+{
+  "schema": "PR196-sparse-action-root-static-review-v1",
+  "source": "065f5ab5da1bc5de74cbd3e4c360b51e09200687",
+  "base": "23eab8a7ea1fdfd6333c2e5a001cfb41e2a10d69",
+  "reviewed_at": "2026-10-09 20:37:26 UTC",
+  "reviewer": "root",
+  "scope": "Read-only review of sparse action representation, dense-reference tests, and the four production action consumers. No new execution, no whole-tree validation and no performance acceptance.",
+  "verdict": "no new blocking correctness defect identified in this scope; current-head CI and combined source review remain required",
+  "inputs": [
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round27-PR196-scan-review/source/crates/cc-index/src/build_plan.rs",
+      "bytes": 76196,
+      "sha256": "ded1de1cfc8280027699bb0c73e23ec674f44ccf0dd405dc05275c1c113dde52",
+      "git_blob": "58a5c284071234a7e74cf87f475083125b62a174",
+      "diff_blob_match": true
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round27-PR196-scan-review/source/crates/cc-index/src/indexer.rs",
+      "bytes": 61450,
+      "sha256": "754e4e43a3bbed17dbb698ace750e244d589873c1caf0685f418e59664fbd175",
+      "git_blob": "c282c999f19fd35c37df68bb9230fb8f5b7456ed",
+      "diff_blob_match": true
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round27-PR196-scan-review/source/crates/cc-index/src/indexer_phases/dirty.rs",
+      "bytes": 34053,
+      "sha256": "ed68f63ccfdfd183d8f0670b660754362c5af1e1f7cb91e3efb91b00df14b7b8",
+      "git_blob": "3f60cf18a90aafbd5a9d27001d422854c000d7ab",
+      "diff_blob_match": true
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round27-PR196-scan-review/source/crates/cc-index/src/indexer_phases/reconcile.rs",
+      "bytes": 40798,
+      "sha256": "45624c0157259acb347ea5c7cdaa147fac40c77ea83f49cb621af522dfebe48a",
+      "git_blob": "bf8173fba9d1851dc1dd1d2293d1b1ee2bf121af",
+      "diff_blob_match": true
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round27-PR196-scan-review/source/crates/cc-index/src/indexer_phases/dependencies.rs",
+      "bytes": 4353,
+      "sha256": "7cfa2acca47bf1aa3d3ff9f6ca6e0ccdde64d1341c2ccd70dd64270138c85653",
+      "git_blob": "e37639788615bd1aa8953e9ec09d7027e752a001",
+      "diff_blob_match": false
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round27-PR196-scan-review/source/crates/cc-index/src/indexer_phases/write.rs",
+      "bytes": 27566,
+      "sha256": "caa2ba07dd907158299a0cbf00f3264dd370f23c9900fb57750bfd5de42a685b",
+      "git_blob": "43cb5db0e02a69a8c315ea14386d016fe94527a1",
+      "diff_blob_match": false
+    }
+  ],
+  "findings": [
+    {
+      "id": "sparse-representation",
+      "paths": [
+        "crates/cc-index/src/indexer.rs:1027-1072",
+        "crates/cc-index/src/build_plan.rs:743-790"
+      ],
+      "assessment": "build_write_actions retains each parsed Add/Update exactly as the old dense map. The original scanned_paths set is passed separately to production dirty reconciliation. Full builds still perform no dirty promotion."
+    },
+    {
+      "id": "skip-admission",
+      "paths": [
+        "crates/cc-index/src/indexer_phases/reconcile.rs:158-164",
+        "crates/cc-index/src/indexer.rs:620-644"
+      ],
+      "assessment": "An explicit action takes precedence. A path absent from sparse actions is eligible for old Skip behavior iff the captured scanned_paths inventory contains it. Scoped scans retain surviving off-event DB paths and exclude admitted removals. This preserves the previous dense admission boundary, including scanned but unreadable or unparsed paths."
+    },
+    {
+      "id": "pending-frontier",
+      "paths": [
+        "crates/cc-index/src/indexer_phases/reconcile.rs:212-217",
+        "crates/cc-index/src/indexer_phases/reconcile.rs:247-252"
+      ],
+      "assessment": "The unfinished-root test covers the union of explicit actions and scanned_paths, matching prior dense membership. Each promoted implicit Skip is materialized as DirtyResolveOnly before reload and write."
+    },
+    {
+      "id": "four-production-consumers",
+      "paths": [
+        "crates/cc-index/src/indexer_phases/dirty.rs:44-49",
+        "crates/cc-index/src/indexer_phases/dependencies.rs:61-66",
+        "crates/cc-index/src/indexer.rs:1096-1100",
+        "crates/cc-index/src/indexer_phases/write.rs:57-65"
+      ],
+      "assessment": "The consumers select Add/Update, Add, DirtyResolveOnly and DirtyResolveOnly respectively. They do not require explicit Skip entries. The changed-files, inventory, reload and write sets therefore retain their membership under the reviewed representation."
+    },
+    {
+      "id": "test-only-dense-wrapper",
+      "paths": [
+        "crates/cc-index/src/indexer_phases/dirty.rs:17-32",
+        "crates/cc-index/src/indexer.rs:1048-1072"
+      ],
+      "assessment": "The wrapper passing an empty scanned set is cfg(test) and consumes dense actions. Production compute passes real scanned_paths. Retaining the old dense construction under cfg(test) provides a distinct reference implementation."
+    },
+    {
+      "id": "static-test-coverage",
+      "paths": [
+        "crates/cc-index/src/indexer_phases/reconcile.rs:457-615",
+        "crates/cc-index/src/sparse_actions_tests.rs"
+      ],
+      "assessment": "The added real-DB frontier test compares initial, resume and rebase histories at four budgets, including off-event imports, scanned-unparsed inputs, removed and unadmitted paths, explicit Add and full durable frontier equality. The separate ignored diagnostic times action-map construction and consumers only. This review read these tests; it did not execute them."
+    }
+  ],
+  "limits": [
+    "No raw wall-clock, memory or whole-build gain is inferred from map sparsity.",
+    "The scan inventory, filesystem/hash/resolver work, admission and dirty budgets remain required.",
+    "Current PR196 CI was still in progress when this review began. Previous author local executions are not relabeled as execution on this head.",
+    "PR195 and PR196 share registry/guard binding paths. A future integration must regenerate full reviewed maps and source pins for the actual combined tree.",
+    "No original TODO count changes."
+  ],
+  "original_todos": {
+    "newly_completed": 0,
+    "remaining": 29
+  }
+}

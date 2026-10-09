@@ -1,0 +1,171 @@
+{
+  "schema": "PR196-installer-and-first-archive-pointer-independent-source-review-v1",
+  "reviewer": "/root/execution_recon",
+  "observed_at": "2026-10-09T20:37:45.406804+00:00",
+  "verdict": "accepted_scoped_source_review_no_new_blocker_found",
+  "head": "065f5ab5da1bc5de74cbd3e4c360b51e09200687",
+  "base_at_official_read": "23eab8a7ea1fdfd6333c2e5a001cfb41e2a10d69",
+  "product": "306c53bf600fcd0614bbb50d7409acfce69c3972",
+  "scope": "Only the five installer/helper/installer-CLI/archive-publisher/archive-test changed files. Root separately reviews scan; pr_triage reviews admission and CI. No whole-PR merge approval or execution credit.",
+  "source_manifest": [
+    {
+      "path": "crates/cc-server/src/installer/helpers.rs",
+      "git_blob": "711232da3e7c12b56640796d5207c6e9f185d969",
+      "bytes": 12509,
+      "sha256": "8bbf11a56e0c4931b2d37a9fc05721a66527c7df0a58ac1b0e044faad7ed705d"
+    },
+    {
+      "path": "crates/cc-server/src/installer/targets/claude_code.rs",
+      "git_blob": "3c780548a454fdc0f3f6bca80835cb637b6a6375",
+      "bytes": 14313,
+      "sha256": "710c6b8dce185a660a8a8270b17c90139a2065e2cd0c79758f1b3f6052202f07"
+    },
+    {
+      "path": "crates/cc-server/tests/installer_cli.rs",
+      "git_blob": "13374bf6b4600c840ae561b35c5d4e42872f6019",
+      "bytes": 6468,
+      "sha256": "e5ce2e4324caaa3f0988d4775f95b52546f44fe21a21f505586319e0d47c5f29"
+    },
+    {
+      "path": "scripts/p8_release_evidence.py",
+      "git_blob": "79c8ab476d1c9fb17a190a1c280f82c614a5dc1a",
+      "bytes": 30974,
+      "sha256": "797b7def657b8745065132e2b492806b9b381a06e3f29b403ef5bb5022eaf151"
+    },
+    {
+      "path": "scripts/tests/test_p8_release_evidence.py",
+      "git_blob": "855d03942af118ebdbfef2506a437e9a2b313ec7",
+      "bytes": 30196,
+      "sha256": "2e4ed8626f449b56b9edbf4e86c08d631a1101306194d7b98da46eabd678ef01"
+    }
+  ],
+  "method": {
+    "official_PR_and_changed_files_read": true,
+    "official_changed_blobs_fully_read": 5,
+    "Git_blob_recomputed_equal": 5,
+    "source_edit": false,
+    "new_tests_or_product_execution": false,
+    "holdout_body_read": false,
+    "PR_comment_or_ref_write": false
+  },
+  "findings": [
+    {
+      "area": "Claude hook ownership",
+      "paths": [
+        "crates/cc-server/src/installer/helpers.rs:141",
+        "crates/cc-server/src/installer/helpers.rs:185",
+        "crates/cc-server/src/installer/helpers.rs:225",
+        "crates/cc-server/src/installer/targets/claude_code.rs:12"
+      ],
+      "conclusion": "The predicate is now exact PreToolUse + Grep|Glob|Search + type command + exact generated gate path. Substring mentions and differing event/matcher/type/command no longer suppress installation or qualify for hook removal.",
+      "removal": "Only matching command objects are removed; sibling hook objects, their unknown fields, unrelated events/matchers, and nonempty group annotations remain. Empty group is removed only if an owned command was removed.",
+      "no_op": "No settings rewrite occurs when no exact owned command is found. Exact already-installed hook avoids another settings rewrite/append."
+    },
+    {
+      "area": "Configuration preflight and generic uninstall",
+      "paths": [
+        "crates/cc-server/src/installer/helpers.rs:60",
+        "crates/cc-server/src/installer/helpers.rs:84",
+        "crates/cc-server/src/installer/targets/claude_code.rs:31",
+        "crates/cc-server/src/installer/targets/claude_code.rs:82"
+      ],
+      "conclusion": "Generic removal rejects nonobject root/section before writing; absent section/key preserves original bytes. Claude validates the settings root/hooks/selected event/entry shape before editing MCP or gate files on both install and uninstall.",
+      "shape_scope": "Validation permits arbitrary hook object fields and optional matcher, but requires present matcher to be string, event array, entry objects, and hooks arrays of objects. It validates the targeted event only. It does not claim to implement all external Claude configuration schemas.",
+      "failure_scope": "This is early validation for those malformed shapes, not a multi-file transaction. I/O errors or concurrent edits after preflight are not made atomic by this change."
+    },
+    {
+      "area": "First archive latest publication",
+      "paths": [
+        "scripts/p8_release_evidence.py:507",
+        "scripts/p8_release_evidence.py:172",
+        "scripts/p8_release_evidence.py:557",
+        "scripts/p8_release_evidence.py:632"
+      ],
+      "conclusion": "For an initially absent latest, the new os.link uses a fully written, flushed/fsynced same-directory temporary file. Destination existence atomically causes failure instead of overwrite. The completed archive already exists and has been verified as an independent directory and remains available on pointer failure; CLI catches OSError and returns its error status. Temporary is removed in finally.",
+      "interleaving_reasoning": [
+        "A observes no latest; B creates any latest after A writes temporary. A os.link raises FileExistsError and does not replace B bytes.",
+        "Both first publishers observe absence and finish their temp files. Exactly one link can create the same destination; loser preserves both already-created archive directories.",
+        "An existing eligible owned pointer follows the unchanged os.replace branch, preserving sequential advance behavior."
+      ],
+      "new_filesystem_requirement": "First publication needs same-filesystem hardlink support. An unsupported/filesystem error fails closed; there is no unsafe replace fallback. No cross-platform runtime was executed in this review."
+    }
+  ],
+  "coverage_review": [
+    {
+      "file": "crates/cc-server/src/installer/helpers.rs",
+      "tests": [
+        "remove_rejects_non_object_root_and_section_without_rewriting",
+        "remove_absent_entry_preserves_exact_config_bytes"
+      ],
+      "assessment": "The new vectors cover array/null roots and sections and absent/whitespace configurations with byte-equality assertions; existing malformed JSON tests remain."
+    },
+    {
+      "file": "crates/cc-server/src/installer/targets/claude_code.rs",
+      "tests": [
+        "install_does_not_confuse_user_commands_with_the_owned_hook",
+        "uninstall_keeps_other_commands_in_the_owned_matcher_group",
+        "uninstall_only_matches_the_installed_event_matcher_and_command",
+        "invalid_hook_configuration_is_rejected_before_other_installation_files_change",
+        "uninstall_without_an_owned_hook_preserves_settings_bytes"
+      ],
+      "assessment": "Directly exercises substring false-positive, idempotence, matcher/event/type distinctions, user siblings and annotations, malformed targeted configuration before MCP/gate writes, and no-op bytes."
+    },
+    {
+      "file": "crates/cc-server/tests/installer_cli.rs",
+      "tests": [
+        "claude_install_and_uninstall_preserve_user_hooks_in_shared_groups",
+        "malformed_claude_hook_configuration_fails_without_modifying_other_installation_files",
+        "json_uninstall_rejects_wrong_types_and_preserves_configs_without_our_entry"
+      ],
+      "assessment": "Real CLI tests statically cover install/uninstall status propagation and multiple persistent files. This review did not run them or independently confirm the PR body historical counts."
+    },
+    {
+      "file": "scripts/tests/test_p8_release_evidence.py",
+      "tests": [
+        "test_first_latest_publication_preserves_a_concurrent_unrelated_file",
+        "test_concurrent_first_publishers_leave_one_pointer_and_both_archives",
+        "test_existing_owned_latest_still_advances_to_a_later_archive"
+      ],
+      "assessment": "The first test injects a user file at the former race window and checks exact bytes/error2/retained verified archive/temp cleanup. The second barrier ensures both first publishers pass the initial absent observation, then requires one winner and both archives. Third checks existing-owned sequential advance. Prior symlink/unrelated and partial archive tests remain."
+    }
+  ],
+  "residual_boundaries_not_new_patch_blockers": [
+    {
+      "id": "existing-owned-latest-race",
+      "path": "scripts/p8_release_evidence.py:509-521",
+      "origin": "Inherited existing-owned replacement behavior; PR body explicitly limits the race fix to first publication.",
+      "minimal_static_interleaving": "A reads an owned latest and sets replace_owned=true. B replaces it with a regular unrelated user file. The second path check accepts a regular non-symlink, then A os.replace overwrites B.",
+      "test_gap": "New tests cover first-create races and sequential owned advance, not this interleaving. Do not claim all concurrent latest updates preserve user files."
+    },
+    {
+      "id": "gate-file-and-MCP-name-ownership",
+      "paths": [
+        "crates/cc-server/src/installer/targets/claude_code.rs:35",
+        "crates/cc-server/src/installer/targets/claude_code.rs:61",
+        "crates/cc-server/src/installer/targets/claude_code.rs:86",
+        "crates/cc-server/src/installer/targets/claude_code.rs:98"
+      ],
+      "origin": "Unchanged fixed-name installer behavior, not introduced by this PR.",
+      "minimal_static_case": "With valid empty settings and preexisting user bytes at .claude/hooks/codecortex-discovery-gate, install still writes that path and uninstall still removes it. The .mcp.json codecortex key is also treated as owned by key name. No payload marker/content ownership check is added.",
+      "test_gap": "New user-hook tests establish JSON entry preservation; they do not establish preservation of arbitrary user-created gate-file contents or colliding MCP entries."
+    },
+    {
+      "id": "preflight-is-not-atomic-multifile-commit",
+      "paths": [
+        "crates/cc-server/src/installer/targets/claude_code.rs:31-74",
+        "crates/cc-server/src/installer/targets/claude_code.rs:82-99"
+      ],
+      "origin": "Existing sequential mutations retained.",
+      "test_gap": "No new interleaving or late I/O-failure rollback guarantee. Selected malformed-root/hooks/event cases are covered; inner malformed entry/matcher/hook-array variants are guarded in code but not all explicitly represented by new test vectors."
+    }
+  ],
+  "execution_and_acceptance_limits": {
+    "tests_executed_here": 0,
+    "runtime_pass_claimed_here": false,
+    "current_CI_owner": "pr_triage",
+    "original_study_source_or_budget_changed": false,
+    "new_original_TODO_completions": 0,
+    "remaining_original_TODOs": 29,
+    "conclusion": "The five-file source changes are acceptable for their stated narrow ownership and first-create no-clobber scope. Existing CI and product acceptance requirements remain; no merge or TODO completion is inferred."
+  }
+}

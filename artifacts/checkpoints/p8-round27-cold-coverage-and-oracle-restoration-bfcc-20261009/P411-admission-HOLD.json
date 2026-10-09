@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "source": "411336a666df78cfc96172b889f9109c3e84c295",
+  "recorded_at_utc": "2026-10-09T21:06:50.671097+00:00",
+  "admission": "HOLD",
+  "supersedes_admission_use_not_original_bytes": {
+    "canonical_git_blob": "4a6bd606e49c6e0a2bfcd49409a1f4b71d6cefc9",
+    "canonical_sha256": "054c7a37e2403375f234f74864a78abeea059e64845ac36953248b2c37b5856a"
+  },
+  "reason": "Inherited oracle witness can skip B scratch writes, changing the original same-limit A+B SQLITE_FULL behavior, and emits an additional public per-table JSON field. Prior bounded integration review did not re-review this inherited behavior; its accepted_scoped result must not be used as a merge gate while this finding is unresolved.",
+  "known_evidence": "Direct current-source read shows A spooled, equal_input_order returns true, B spool skipped and B digest taken from A. Existing disk exhaustion tests fail on A itself and do not establish A-fits/A+B-full. Existing witness assertions explicitly require the new public field.",
+  "runtime": "No new Rust or product execution; exact counterexample regression proposed for actual CI.",
+  "repair_scope": "Fresh candidate restores A then B spool and independent sorted cursors; removes shortcut helper and public field; retains batching, RowProjection, limits and payload reuse.",
+  "root_external_review_reference": {
+    "comment_id": 6089073639,
+    "PR195_draft_at": "2026-10-09T20:50:34Z",
+    "provenance": "Root-reported external review, not independently fetched here."
+  },
+  "newTODO": 0,
+  "remainingTODO": 29
+}

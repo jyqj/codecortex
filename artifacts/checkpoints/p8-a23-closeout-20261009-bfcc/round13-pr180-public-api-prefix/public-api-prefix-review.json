@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "reviewed_at": "2026-10-09T09:41:00Z",
+  "source": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+  "product": "b13ba8c1b738bc9c24b81cad1e88711fc9734283",
+  "scope": "PR180 source finding plus separately authorized SQL-only control",
+  "verdict": "needs_resolution_before_claiming_preserved_public_failure_semantics",
+  "finding": {
+    "title": "Snapshot dependency batching also changes the original public write_file_data failure prefix",
+    "severity": "API compatibility review blocker for unconditional acceptance",
+    "route": [
+      {
+        "path": "crates/cc-db/src/snapshot_write_txn.rs",
+        "git_blob": "e850a30b549fcd1f0bda38fb2900d61add6db029",
+        "line": 65,
+        "fact": "Unchanged public write_file_data calls insert_snapshot_file_data_precompressed per file"
+      },
+      {
+        "path": "crates/cc-db/src/index_db_write_batch.rs",
+        "git_blob": "c732fab2d5cc62209a89317f42a5a4adc4edf0fb",
+        "line": 810,
+        "fact": "Original public route passes snapshot_leaf_batches=true; new line861 selects insert_snapshot_on"
+      },
+      {
+        "path": "crates/cc-db/src/public_surface_store.rs",
+        "git_blob": "d0fa4c622876197bbb8c14b7d94f0d8ab3e1f318",
+        "line": 18,
+        "fact": "insert_snapshot_on selects replace_snapshot_on"
+      },
+      {
+        "path": "crates/cc-db/src/resolution_dependency_store.rs",
+        "git_blob": "97d3d9519fe10ed7cd30b9783164348998c02abc",
+        "line": 46,
+        "fact": "8 or more dependencies now use multi-row SQL on that route"
+      },
+      {
+        "path": "crates/cc-db/src/index_db_multi_insert.rs",
+        "git_blob": "a881c73c46693bb4ff098b283a05f57f04cb1ee4",
+        "line": 72,
+        "fact": "Greedy 64/8/1 statements propagate raw_execute errors without restoring the prior per-row prefix"
+      }
+    ],
+    "boundary": "Canonical rebuild owners still propagate Err before publication. This finding concerns an accepted borrowed Connection caller catching Err and committing partial work; byte-identical outer method does not imply identical callee behavior.",
+    "existing_control_gap": "New p2b_resolution_store trigger test uses rebuild_with_temp_db and validates live state preservation. It does not catch Err and commit the staged connection, so it cannot distinguish this public API behavior."
+  },
+  "sql_control": {
+    "receipt": "sql-prefix.receipt.json",
+    "script": "sql-prefix-counterexample.py",
+    "stdout": "sql-prefix.stdout",
+    "stderr": "sql-prefix.stderr",
+    "actual_exit_code": 0,
+    "sqlite_version": "3.53.1",
+    "source_ddl_blob": "998608d9c6d07eb4afec0ce7e13c1f85bfc7a441",
+    "source_trigger_blob": "f698d3427ad90c194cfdb5b7c241e0802c1267d1",
+    "population": 73,
+    "original_per_row_retained": 70,
+    "batch_64_8_1_retained": 64,
+    "same_error": "SQLITE_CONSTRAINT_TRIGGER(1811): injected dependency failure",
+    "both_transaction_active_after_error": true,
+    "both_commit_succeeded": true,
+    "not_claimed": [
+      "Rust product execution",
+      "Bundled Rust SQLite version execution",
+      "Performance measurement",
+      "Current Gc8 study failure or affected samples"
+    ]
+  },
+  "recommendation": "Keep the original public route on original per-dependency INSERTs. Use a separate explicit dependency-batching opt-in only under the rebuild-owner abandon-on-error boundary; do not weaken the old API documentation or silently add a broad savepoint. Add a public catch+commit regression plus the existing real owner nonpublication control before accepting the new binding.",
+  "frozen_sources_unmodified": true,
+  "no_remote_action": true
+}

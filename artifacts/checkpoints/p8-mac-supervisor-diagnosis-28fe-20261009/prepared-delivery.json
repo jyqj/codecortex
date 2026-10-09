@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "status": "prepared_static_reviewed_not_executed",
+  "repository": "jyqj/codecortex",
+  "controller_prefix": "artifacts/checkpoints/p8-mac-supervisor-diagnosis-28fe-20261009",
+  "source": {
+    "commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+    "tree": "58147c952505c44da1f41eb4b9c31643f2303b96",
+    "helper": {
+      "bytes": 159,
+      "sha256": "0e366f70d7deb927f196f6a0aeaedf6eda8665ff0a141df03148fab81fba31ae"
+    }
+  },
+  "files": [
+    {
+      "path": "observe.rs",
+      "bytes": 15946,
+      "git_blob": "5b8fba174872cbc27911272b4343520125a1e2f9",
+      "sha256": "dc9cc22732be459aada546324042fa0e726bd2ce9a6eaa0f011a0293bca76f8e"
+    },
+    {
+      "path": "run.py",
+      "bytes": 20957,
+      "git_blob": "76c777f119943e702807c656f6b84e3231b33640",
+      "sha256": "e281b673425b886a49e6b3f6a645bd2da347272c8e2f8ef27cb82a7466bcb6f7"
+    }
+  ],
+  "official_readback": "both complete raw bytes identical",
+  "cli": "python3 -B <controller>/run.py --source <independent exact A23 checkout> --output <precreated empty nonsymlink directory outside source>",
+  "v1_preserved": {
+    "observe_rs": "73510de94d36d0c23cd995d3c8953dbe3a153bba",
+    "run_py": "0cb34278bdd6f10872cc4e7b355e62f992b3829a"
+  },
+  "v1_to_v2_changes_blob": "6bb1dbf5b1d0e161a2f89d77aed16aa7e2cd42c3",
+  "local_materialization": {
+    "directory": "/dev/shm/codecortex-28fe-r21-mac-diag",
+    "status": "unconfirmed_after_backend_hang",
+    "reason": "initial v1 write/readback succeeded; v2 pure materialization command hung and tool wait terminated; use official v2 blobs, not unconfirmed local files"
+  },
+  "review": {
+    "nonauthor": "/root/recovery_audit",
+    "scope": "reported accepted static-only; all ten exact replacements independently reproduce v2; no dynamic success claimed"
+  },
+  "execution": {
+    "rustc": "not_run",
+    "syntax_execution": "not_run",
+    "case_original": "not_run",
+    "case_instrumented": "not_run",
+    "native_measurement": "not_run",
+    "refs_commits_dispatch": "not_created"
+  },
+  "limits": {
+    "original_worker_ms": 250,
+    "poll_ms": 10,
+    "outer_case_seconds": 2,
+    "containment_signal_at_seconds": 1.8,
+    "observer_reap_ceiling_ms": 1500,
+    "stderr_bytes": 16384,
+    "other_log_stream_bytes": 65536,
+    "fixed_case_order": [
+      "original",
+      "instrumented"
+    ],
+    "retries": 0
+  },
+  "boundaries": [
+    "Not original run_supervised/test480 regression acceptance.",
+    "Both cases use before-spawn worker clock; no excluded ready handshake.",
+    "Original helper bytes remain exact. Instrumented case only adds five shell builtin printf markers.",
+    "Marker timestamps are pipe receipt upper bounds, not shell execution times.",
+    "Memory stderr capture, summary existence checks, owned-PID sidecar writes, sanitized inherited environment, and bounded reaping differ from original and may perturb timing.",
+    "Ownership sidecar uses exclusive write_all without fsync inside clock; both sides of write are timed.",
+    "Owned group is signalled at most once; reaped child identity is disarmed. Contradictory observed PGID blocks outer signalling.",
+    "Worker exit observed during normal polling is separate from cleanup reaping; missing spawn ownership/timeout/unreaped state remains unknown, not success.",
+    "Immutable execution-start precedes toolchain query/compile; all command stdout/stderr and failures retained; final execution-receipt and output-manifest are derived.",
+    "Actual macOS regression remains unresolved until separately reviewed evidence; 29 original TODOs unchanged."
+  ]
+}

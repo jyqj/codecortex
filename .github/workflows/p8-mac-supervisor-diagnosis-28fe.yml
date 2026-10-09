@@ -1,0 +1,140 @@
+name: Fixed A23 Mac supervisor diagnosis
+
+on:
+  push:
+    branches: [diagnose/p8-mac-supervisor-28fe-20261009]
+
+permissions:
+  contents: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  GIT_OPTIONAL_LOCKS: '0'
+
+jobs:
+  diagnose:
+    name: Supervisor observation (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        os: [ubuntu-latest, macos-26]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Create immutable preservation receipts before checkout or compilation
+        id: initialize
+        run: |
+          python3 -B - <<'PY'
+          import datetime, json, os, pathlib, platform
+          root = pathlib.Path(os.environ['RUNNER_TEMP']) / (
+              'p8-mac-supervisor-diagnosis-' + os.environ['GITHUB_RUN_ID']
+              + '-attempt' + os.environ['GITHUB_RUN_ATTEMPT'])
+          root.mkdir()
+          (root / 'run').mkdir()
+          receipt = {
+              'schema': 'p8-mac-supervisor-workflow-start-v1',
+              'status': 'initialized_not_executed',
+              'recorded_at_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+              'expected_source': 'a23bb72d3c954f385b99fe81ce9189885c208557',
+              'controller_commit': os.environ['GITHUB_SHA'],
+              'platform': platform.platform(),
+              'metadata': {key: os.environ.get(key) for key in (
+                  'GITHUB_REPOSITORY', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT',
+                  'RUNNER_OS', 'RUNNER_ARCH', 'RUNNER_ENVIRONMENT',
+                  'ImageOS', 'ImageVersion', 'SDKROOT', 'DEVELOPER_DIR')},
+              'scope': 'Two fixed 250ms diagnostic cases; no product benchmark or task acceptance',
+          }
+          with (root / 'workflow-start.json').open('x', encoding='utf-8') as output:
+              json.dump(receipt, output, indent=2, allow_nan=False)
+              output.write('\n')
+          if os.environ['GITHUB_RUN_ATTEMPT'] != '1':
+              raise RuntimeError('this registered diagnostic only admits workflow attempt 1')
+          PY
+      - name: Obtain this exact diagnostic controller
+        id: controller
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+          path: controller
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /artifacts/checkpoints/p8-mac-supervisor-diagnosis-28fe-20261009/observe.rs
+            /artifacts/checkpoints/p8-mac-supervisor-diagnosis-28fe-20261009/run.py
+      - name: Obtain the two unchanged original A23 source files
+        id: original
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          ref: a23bb72d3c954f385b99fe81ce9189885c208557
+          path: original
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /crates/cc-eval/tests/p8_scale.rs
+            /crates/cc-eval/src/benchmark/p8_scale.rs
+      - name: Install the fixed Rust 1.95.0 toolchain
+        id: toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.95.0
+      - name: Record exactly one original and one instrumented supervisor observation
+        id: observation
+        run: |
+          output="$RUNNER_TEMP/p8-mac-supervisor-diagnosis-$GITHUB_RUN_ID-attempt$GITHUB_RUN_ATTEMPT"
+          controller="$GITHUB_WORKSPACE/controller/artifacts/checkpoints/p8-mac-supervisor-diagnosis-28fe-20261009"
+          set +e
+          python3 -B "$controller/run.py" \
+            --source "$GITHUB_WORKSPACE/original" --output "$output/run" \
+            >"$output/driver.stdout" 2>"$output/driver.stderr"
+          result=$?
+          set -e
+          printf '%s\n' "$result" >"$output/driver-exit-code.txt"
+          cat "$output/driver.stdout"
+          cat "$output/driver.stderr" >&2
+          exit "$result"
+      - name: Preserve actual workflow stage outcomes without upgrading any failure
+        if: always()
+        env:
+          P8_INITIALIZE_OUTCOME: ${{ steps.initialize.outcome }}
+          P8_CONTROLLER_OUTCOME: ${{ steps.controller.outcome }}
+          P8_ORIGINAL_OUTCOME: ${{ steps.original.outcome }}
+          P8_TOOLCHAIN_OUTCOME: ${{ steps.toolchain.outcome }}
+          P8_OBSERVATION_OUTCOME: ${{ steps.observation.outcome }}
+          P8_JOB_STATUS_BEFORE_UPLOAD: ${{ job.status }}
+        run: |
+          python3 -B - <<'PY'
+          import datetime, json, os, pathlib
+          root = pathlib.Path(os.environ['RUNNER_TEMP']) / (
+              'p8-mac-supervisor-diagnosis-' + os.environ['GITHUB_RUN_ID']
+              + '-attempt' + os.environ['GITHUB_RUN_ATTEMPT'])
+          if root.is_symlink():
+              raise RuntimeError('preservation root is a symlink')
+          root.mkdir(exist_ok=True)
+          receipt = {
+              'schema': 'p8-mac-supervisor-workflow-terminal-v1',
+              'recorded_at_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+              'controller_commit': os.environ['GITHUB_SHA'],
+              'expected_source': 'a23bb72d3c954f385b99fe81ce9189885c208557',
+              'stage_outcomes': {key: os.environ.get(key) for key in (
+                  'P8_INITIALIZE_OUTCOME', 'P8_CONTROLLER_OUTCOME', 'P8_ORIGINAL_OUTCOME',
+                  'P8_TOOLCHAIN_OUTCOME', 'P8_OBSERVATION_OUTCOME',
+                  'P8_JOB_STATUS_BEFORE_UPLOAD')},
+              'receipt_scope': 'Workflow outcome only; diagnostic sampling success is not original test or TODO acceptance',
+              'tasks_changed': False,
+          }
+          with (root / 'workflow-terminal.json').open('x', encoding='utf-8') as output:
+              json.dump(receipt, output, indent=2, allow_nan=False)
+              output.write('\n')
+          PY
+      - name: Retain original and instrumented observations including failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-mac-supervisor-diagnosis-${{ matrix.os }}-${{ github.run_id }}-attempt${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-mac-supervisor-diagnosis-${{ github.run_id }}-attempt${{ github.run_attempt }}
+          include-hidden-files: true
+          if-no-files-found: error

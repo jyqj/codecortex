@@ -194,7 +194,9 @@ fn prepared_frontier_keeps_legacy_bytes_and_late_failure_rolls_back_facts() {
     )
     .unwrap();
     let error = write(&db, &[unit("later.rs")], &pending(before.index_epoch)).unwrap_err();
-    assert!(error.to_string().contains("late frontier publication failure"));
+    assert!(error
+        .to_string()
+        .contains("late frontier publication failure"));
     assert_eq!(db.reads().generation().unwrap(), before);
     assert_eq!(db.reads().resolution_frontier().unwrap(), frontier_before);
     assert_eq!(

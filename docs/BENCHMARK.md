@@ -13,6 +13,26 @@
 真实 provider 收益及 G8 需各自当前候选证据。普通 baseline 或 comparison 的退出码 0
 不能自动提升为发行认证。下方 legacy 观测、目标值和历史性能结论保持各自原测量范围。
 
+### P8 平台证据边界（2026-10-09）
+
+固定源码 `a23bb72d3c954f385b99fe81ce9189885c208557` 的
+[八格平台执行](https://github.com/jyqj/codecortex/actions/runs/37871838952)
+覆盖 Linux/macOS × Rust 1.95.0/stable × default/semantic：每格使用新 target，
+执行 release 产品构建和 stdio smoke。这证明受测组合的构建与所执行协议；
+原回执没有记录 macOS SDK 版本，不能据此认证任意 SDK，也不等于 workspace
+回归、安装/卸载或完整发行验证。
+
+同一源码在 macOS 26.6.2、Rust 1.95.0、SDK 15.4 的
+[原 workspace 执行](https://github.com/jyqj/codecortex/blob/7d5402a17cfdd06274e8204ec544bd4db104f872/artifacts/checkpoints/p8-a23-closeout-20261009-bfcc/round6-reviewed-engineering/review-ci/premerge-workspace/attempt02-sdk154/execution-receipt.json)
+保留 exit 101；`subprocess_descendant_cannot_hold_stderr_past_worker_deadline`
+失败后的原 binary 单项执行也失败。这是未闭合的工程回归，不能由冷构建成功抵消。
+
+[后续 hosted macOS 15 诊断](https://github.com/jyqj/codecortex/actions/runs/37892853323)
+使用未修改的该源码，仅运行原单项测试和独立 observer；工作流状态成功，原 artifact
+尚待独立复核。它不代表 macOS 26.6.2 或完整 workspace 已通过，也不回写旧失败。
+准备好 helper 后的测试与首次执行新 helper 的测试应分别记录前置条件；二者的通过
+不能互换。当前平台范围和未完成项仍由各固定源码的原件与任务台账决定。
+
 ## P2-D：连续变更、独立真值与成本
 
 `cc-eval mutation-case --case <case.json> --output <新目录> --shrink-attempts 32` 可独立重放十四表增量/全量对照，并以手写关系谓词检查两条路径共同出错的盲区；有效失败保留原件并自动缩减阶段，错误输入不冒充产品反例。动态接口 Unknown、未闭合阶段和 reducer 自测分别报告。SQL 工作量、名称桶/墓碑增长、1k/5k release 机制成本与公开 MCP 回归口径见 [INCREMENTAL_VERIFICATION.md](internals/INCREMENTAL_VERIFICATION.md)；不据此认证 100k、尾延迟或语义 holdout。

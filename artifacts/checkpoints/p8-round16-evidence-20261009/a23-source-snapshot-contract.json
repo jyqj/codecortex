@@ -1,0 +1,41 @@
+{
+  "schema": "p8-a23-offline-root-field-actual-contract-check-v1",
+  "reviewer": "/root/pr_audit",
+  "observed_utc": "2026-10-09T04:49:06Z",
+  "status": "proposed_source_root_mismatch_not_present_in_fixed_a23_contract",
+  "source": "a23bb72d3c954f385b99fe81ce9189885c208557",
+  "identity_module": {
+    "blob": "4f2213705984effd6aa3cdb75a99cbb03a08c39e",
+    "bytes": 5940,
+    "sha256": "5003305105464936edf8f444fc0b93cd14a5d5f074dc650f16de2259e86f1cc5"
+  },
+  "original_build_receipt": {
+    "blob": "303f70c85626935155d1c17e6766e604942359e4",
+    "bytes": 313713,
+    "sha256": "4c675a6ee7f95a78a168622e1a601920bd018e0db95e34d65887ca21aa181725"
+  },
+  "actual_source_snapshot_keys": [
+    "input_count",
+    "inputs",
+    "manifest_sha256",
+    "source_commit",
+    "source_tree"
+  ],
+  "actual_observer_snapshot_keys": [
+    "files",
+    "manifest_sha256",
+    "source_commit"
+  ],
+  "source_before_after_exact": true,
+  "observer_before_after_exact": true,
+  "source_root_present": false,
+  "actual_source_return_block": "    return {\n        \"source_commit\": commit,\n        \"source_tree\": git(root, \"rev-parse\", commit + \"^{tree}\").decode().strip(),\n        \"input_count\": len(manifest),\n        \"manifest_sha256\": hashlib.sha256(json_bytes(manifest)).hexdigest(),\n        \"inputs\": manifest,\n    }",
+  "conclusion": "The fixed a23 source and observer snapshots contain no checkout-root field. Comparing current exact a23 snapshots in a separately owned /source checkout against the complete original snapshots is valid; adding root-field removal is neither required nor applied. Actual source commit/tree/input SHA and observer loaded-module checks remain intact. Original Cargo manifest/src/executable absolute producer paths are verified separately and are not rewritten.",
+  "controller_blob": "dd6db474b57fc3bd8170f3e548787e8b0d347a16",
+  "supplement_blob": "cad2e3b4cd4d80cdbc91c17cbe840607fb6d3ee0",
+  "candidate_changed": false,
+  "local_execution": false,
+  "new_measurements": false,
+  "TODO_closed": 0,
+  "TODO_remaining": 29
+}

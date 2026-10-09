@@ -1,0 +1,228 @@
+{
+  "schema": "existing-100k-cost-to-leaf-coverage-read-only-v1",
+  "status": "diagnostic_scope_only_no_new_workload_or_TODO_acceptance",
+  "observed_at": "2026-10-09 04:49:02 UTC",
+  "original_evidence": {
+    "source": "599a7050e7d52b5b7b93975c419138e175b3f754",
+    "run": 37835810882,
+    "artifact": 11589448699,
+    "zip_sha256": "sha256:a50c45d42d2193d6d1b0bba4e60bfe0b1948dc9b59b8eeccb654e71171b14479",
+    "status": "original_deadline_failure_preserved_not_accepted",
+    "admitted": false,
+    "completed_stages": 7,
+    "partial": "batch_100",
+    "not_started": "batch_1000",
+    "files": [
+      {
+        "ref": "b21cce4c8661589267ad5719f850accbec088d2f",
+        "path": "artifacts/checkpoints/p8-scale-cache-20261009/diagnostics/100k-original-stage-cost-addendum.json",
+        "bytes": 15246,
+        "sha256": "f69ef3072bba3fa64d8495358af974b60b9cdc04bfad747c03b59d7fc52a4ef6"
+      },
+      {
+        "ref": "b21cce4c8661589267ad5719f850accbec088d2f",
+        "path": "artifacts/checkpoints/p8-scale-cache-20261009/diagnostics/100k-original-failure-diagnostic.json",
+        "bytes": 20380,
+        "sha256": "992a94c8095ee3cfa865b15c29ab4c348282a3cbb7126fccb41a596bd5970f4d"
+      }
+    ]
+  },
+  "original_completed_wall": {
+    "complete_wall_s": 16980.557002,
+    "full_s": 4586.815696,
+    "incremental_s": 5787.715666,
+    "parity_s": 6606.02564,
+    "full_staging_nested_s": 3618.757797,
+    "incremental_prepare_s": 2724.44307,
+    "incremental_commit_s": 2765.550198,
+    "completed_partition_pct": {
+      "full_s": 27.012162766272958,
+      "incremental_s": 34.08436875962498,
+      "parity_s": 38.903468474102056
+    }
+  },
+  "important_timing_rules": [
+    "Only full build + incremental build + completed parity are disjoint here.",
+    "full_staging is nested inside full build, not an additional wall total; phase_ms and prepare/commit also overlap.",
+    "Unattributed1053.803998s includes unfinished batch100 interval, cleanup and harness. No exact inner parity/table stall can be inferred."
+  ],
+  "source_comparisons": {
+    "current_code_source": "0272a1fb152fd76a7cfb22386a580629d4038a64",
+    "ongoing_8e_source": "8e542e644b06a83fc82d18d9896cf82f5b2d796e",
+    "checks": [
+      {
+        "path": "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+        "old599": {
+          "bytes": 14546,
+          "sha256": "e6810a021a2a92c2dc44ced9c38013e5195dea105d0894d83661aa47bf4970f2"
+        },
+        "G2_blob": "3c05342f976f534861347c098c3229ce988dfb61",
+        "G2_and_8e_exact_bytes_equal": true,
+        "meaning": "Old599 had single-row spool. Actual8e/G2 already have bounded canonical insert batching; old599 oracle wall cannot predict their speed."
+      },
+      {
+        "path": "crates/cc-db/src/snapshot_write_txn.rs",
+        "G2_blob": "20dc6ffc60d2a63320b56d1bd8e010e2937ffe26",
+        "old8e": {
+          "bytes": 7049,
+          "sha256": "dfa574afde308fb5c80b7af31d759e63bbc7376e6e5e01b05dd2657fc4e96856"
+        },
+        "meaning": "Ongoing8e still calls insert_file_data_precompressed. G2 calls insert_snapshot_file_data_precompressed; leaf batching cannot affect this old running8e."
+      }
+    ]
+  },
+  "mapping": [
+    {
+      "scope": "Full snapshot six per-file leaf tables only",
+      "original_nested_wall_s": 3618.757797,
+      "code": [
+        "crates/cc-index/src/indexer_phases/snapshot.rs::write_full_snapshot_contents",
+        "crates/cc-db/src/snapshot_write_txn.rs::write_file_data",
+        "crates/cc-db/src/index_db_write_batch.rs::insert_snapshot_file_data_precompressed / insert_file_data_impl",
+        "crates/cc-db/src/index_db_snapshot_insert.rs::bounded_rows"
+      ],
+      "covered": [
+        "symbols",
+        "symbol_refs",
+        "call_edges",
+        "routes",
+        "semantic_edges",
+        "dispatch_sites"
+      ],
+      "conditions": "Only the snapshot seam passes true; each table/file must have>=8 rows; windows<=64 rows and64KiB payload,64/8/1 original binders. Large legal rows take original single path. No row crosses file/table.",
+      "not_covered": [
+        "files andfiles_fts",
+        "chunks andchunks_fts",
+        "public surfaces andresolution dependencies",
+        "document_manifest andidentity survivor/readback proofs",
+        "imports/test_edges/literals/http/data-flow",
+        "full payload preparation",
+        "schema/index rebuild",
+        "graph-signature baseline",
+        "commit/swap"
+      ],
+      "conclusion": "Only an unmeasured subset of this3618.758s nested block can improve; no observed per-table writer timer proves a fraction. This block is21.31% of recorded completed call wall, not a forecast or performance bound."
+    },
+    {
+      "scope": "Full15-table canonical oracle",
+      "old_completed_calls": 7,
+      "original_wall_s": 6606.02564,
+      "canonical_bytes_each_about": 10302684584,
+      "scratch_peak_bytes": 5984497664,
+      "max_table_rows": 1918691,
+      "max_table": "resolution_dependencies",
+      "code": [
+        "crates/cc-eval/src/benchmark/oracle/streaming.rs::spool",
+        "crates/cc-eval/src/benchmark/oracle/streaming.rs::compare_with_validated_limits"
+      ],
+      "remaining_work": "All rows projected/serialized for bothDBs; duplicate-preserving SQLite primary-tree insertion and ordered reads; every paired rowValue compared/hash. Existing batching cuts statement calls only; no rows/tables/parity calls removed.",
+      "leaf_covered": false,
+      "conclusion": "Largest old measured completed block. Need actual newG2 raw to identify its current share; no claim old599 timing applies after batching."
+    },
+    {
+      "scope": "Resume preparation and growing prefix SQL",
+      "original_incremental_prepare_s": 2724.44307,
+      "files_scanned_sum": 99600000,
+      "dependency_SQL": {
+        "rows": 182281184,
+        "statements": 433083,
+        "sorts": 430075,
+        "vm_steps": 8664156049,
+        "fullscan_steps": 0
+      },
+      "code": [
+        "crates/cc-db/src/resolution_dependency_store.rs::resolution_dependents_with_work",
+        "crates/cc-db/src/public_surface_store.rs::surface_dependents_bounded",
+        "crates/cc-index/src/indexer_phases/reconcile.rs::plan_dirty_reconciliation"
+      ],
+      "mechanism": "SQL limit=budget+1+excluded.len; queries sorted DISTINCT prefix and filters completed inRust. Across growing completed sets repeated prefix can be quadratic in closure size/budget. Current same-prepare window removes one final dependency query, but no cross-prepare caching and surface queries still present.",
+      "leaf_covered": false,
+      "limits": "Counters aggregate reverse queries, do not isolate each helper's wall. fullscan_steps=0 disproves claiming these are SQLite unindexed fulltable scans. Do not skip scans or persist caches across external changes/epoch fences."
+    },
+    {
+      "scope": "Incremental commit",
+      "original_incremental_commit_s": 2765.550198,
+      "code": [
+        "crates/cc-db/src/index_db_write_batch.rs::write_incremental_batch",
+        "crates/cc-db/src/index_db_multi_insert.rs::replace_reresolved_edges_batch",
+        "crates/cc-db/src/resolution_dependency_store.rs::replace_on"
+      ],
+      "existing_behavior": "Dirty writes already delete chunked file_path batches then table-major multi-row insert. Signature capture is path-scoped; normalFTS deletes resolve base-table rowids, not WHERE FTS.file_path scans. Per-file resolution-manifest normalization/serialization and dependency inserts remain.",
+      "leaf_covered": false,
+      "conclusion": "Real large bucket but current raw has no complete sub-phase attribution. Cannot assign it to fsync, FTS fullscan, missingindex, or identity O(n^2) merely from total. Existing debugstep timings would be the relevant evidence if present in actual original artifacts."
+    }
+  ],
+  "fixture_caveat": {
+    "source_blob": "5f009ffec46f66e4248ca4e80bd056cb536e58c0",
+    "function": "synth::code_file",
+    "facts": "Base fixture emits4 namedfunctions plus optional hub/needle/cycle/class extras; leaf threshold is8 actualrows per file/table.",
+    "limit": "Not all tables/files necessarily batch. No new parser execution or per-file table census performed; no claimed effective batching fraction."
+  },
+  "next_decision": "Wait for newG2 original100k raw and exactsource acceptance. Use completedstage timings and actual SQL counters to assess unchanged300min budget; retain oldfailed599/ongoing8e identities. No extra acceptance prerequisite for a23/PR167 closure and no new optimization implementation authorized.",
+  "source_bindings": [
+    {
+      "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+      "git_blob": "2188f67d83d44b49c3015598c7001d231fd22428",
+      "bytes": 13172,
+      "sha256": "e159376159f0f6f250ba4a6d328bde503c4e272ccd11f75a326bb24f85a89a0f"
+    },
+    {
+      "path": "crates/cc-db/src/index_db_write_batch.rs",
+      "git_blob": "2758481da50748be45f9c35a35832d2f2bc9b851",
+      "bytes": 56106,
+      "sha256": "8968b406f5c8f513489ace72bfc0077233484db687c97a92dbc13704d2e6fb7a"
+    },
+    {
+      "path": "crates/cc-db/src/snapshot_write_txn.rs",
+      "git_blob": "20dc6ffc60d2a63320b56d1bd8e010e2937ffe26",
+      "bytes": 7058,
+      "sha256": "408fdf68044a2e37d493df71aff7be6140464368fd86e980107f370573c004c7"
+    },
+    {
+      "path": "crates/cc-db/src/index_db_multi_insert.rs",
+      "git_blob": "539b9d19f1034a8cfd918090b1b48dacc177494c",
+      "bytes": 29410,
+      "sha256": "b621f633f231a98af42b6ead8c300956ad96ff1544bbbc392c3743b2e3038101"
+    },
+    {
+      "path": "crates/cc-db/src/index_db_rebuild.rs",
+      "git_blob": "3dd9692abd16f2a36958c036dd54f0946c94f70d",
+      "bytes": 18869,
+      "sha256": "5ba69e2dc037a57c72c83f8e43d029af34ff790b466eb9b1d54bdeb618e17f1b"
+    },
+    {
+      "path": "crates/cc-db/src/resolution_dependency_store.rs",
+      "git_blob": "6e90d4e85aae79d73d5d59b8defbd39d02c61097",
+      "bytes": 10207,
+      "sha256": "7afc688e8b6314f2f5373db35b38deb84f23feec88bcfb11210041fa9cdd29e4"
+    },
+    {
+      "path": "crates/cc-db/src/public_surface_store.rs",
+      "git_blob": "df522a327e68a820699ce21f4c5b9880f48d519c",
+      "bytes": 8537,
+      "sha256": "35c5b03670b3a2ed7add767f66ea46b4a7cd265dfffa3a77f81f04a8ed8d4650"
+    },
+    {
+      "path": "crates/cc-index/src/indexer_phases/reconcile.rs",
+      "git_blob": "9617e0f241c624ce35db3c6db8e5eba568fb7594",
+      "bytes": 15578,
+      "sha256": "0027e96cc8bc1a782644f585a94891feb8f73198a537ed14089148d84d708818"
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+      "git_blob": "3c05342f976f534861347c098c3229ce988dfb61",
+      "bytes": 29842,
+      "sha256": "5a51a72e8cb49c033754f860a3f5dc6366748ffe45a440da55cf7776cde7da0c"
+    },
+    {
+      "path": "crates/cc-eval/src/synth.rs",
+      "git_blob": "5f009ffec46f66e4248ca4e80bd056cb536e58c0",
+      "bytes": 31638,
+      "sha256": "7af80327ba392c3e067300b4ae090d2dbb779e98e581309b0048103727a4ed86"
+    }
+  ],
+  "new_TODO_closed": 0,
+  "TODO_remaining": 29,
+  "supersedes_unpublished_report": "defebc9784aa2fcb72a750592cdf1686548537e9",
+  "metadata_correction": "Use actual clock observation instead of the draft's rounded 04:49:00 timestamp; evidence, calculations, code bindings and scope unchanged."
+}

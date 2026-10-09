@@ -1,0 +1,1026 @@
+{
+  "schema_version": 1,
+  "status": "read_only_original_contract_closure_plan_not_task_completion",
+  "reviewer": "this-session /root/pr_audit",
+  "prepared_at_utc": "2026-10-09 04:56:58 UTC",
+  "measurement_source": "a23bb72d3c954f385b99fe81ce9189885c208557",
+  "source_manifest_sha256": "4e0aa6bbfd4d5bea00416bca2cd99318d865ffc526fdcb45897c4d300de3ac00",
+  "current_main_at_review": "b21cce4c8661589267ad5719f850accbec088d2f",
+  "counts": {
+    "task_total": 192,
+    "done": 163,
+    "remaining": 29,
+    "newly_closed": 0,
+    "requested_tasks": 10,
+    "component_scopes_already_qualified": 7,
+    "component_scopes_waiting_scale": 2,
+    "component_scope_waiting_existing_hour_offline_supplement": 1,
+    "currently_closeable_tasks": 0
+  },
+  "original_contract": {
+    "tasks": {
+      "path": "docs/roadmap/code-index-v2/tasks.json",
+      "blob": "f400eb2b5a3f8c524978bee1dfa87f98efe4bce8",
+      "bytes": 802282,
+      "sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207"
+    },
+    "benchmark": {
+      "blob": "5ced0c455e7e774a9d95da23187c64dcefc37314",
+      "sha256": "0c8bcbed17ea4e83b1dc55e9828f93a27e2a334a0d0eaa056302944260d0a731"
+    },
+    "validation": {
+      "blob": "fcbcf9e9280d41a4e8e138543d2bd217137a2c5e",
+      "sha256": "64a9fde995077f8349edc76ee501825feca6717c6c60ab7c03cc535142016aad"
+    },
+    "dependency_semantics": "depends_on 为硬集成依赖；conditional_dependencies 仅在 when 对应认证范围启用。未启用的条件任务仍标 todo/blocked/deferred，不算 done。optional-judge 不阻塞确定性或语义效果认证。",
+    "note": "N150 is the concrete frozen execution plan satisfying original scale/per-layer N30 requirements, not a literal new numeric condition inserted into tasks.json. All150 original cells and original combine gates remain binding for this study.",
+    "P7_020_conditional_dependencies": [
+      {
+        "task": "P7-018",
+        "when": "live semantic-effect certification; not required for engineering/fake profile"
+      }
+    ]
+  },
+  "tasks": [
+    {
+      "id": "P8-005",
+      "title": "完整规模1k到100k",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-004"
+      ],
+      "conditional_dependencies": [],
+      "steps": [
+        "固定seed与release构建测1k/5k/10k/50k/100k",
+        "同时报chunk/edge/vector"
+      ],
+      "acceptance": [
+        "不存在只报文件数或把不同工作量直接算倍数",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V20"
+      ],
+      "unfinished_hard_ancestors": [],
+      "direct_N150_dependency": true,
+      "component_status": "incomplete_original_registered_scale_study",
+      "qualified_component_evidence": "Original fixed-source index-0 shards 1k,5k,10k,50k have qualified original Linux validate_build/validate_shard results (14+9+9+9=41 group observations). These are four of the 150 originally registered shards, not N30.",
+      "remaining": "Original a23 100k index0 must finish and validate. Original workflow then expands the other 145 scale/index cells only if all five index0 jobs succeed. Independently receive every original source/build/capacity/raw shard and run original complete aggregate:150 shards,50 groups ×N30=1500 observations, original strata and all limits. Missing/failing cells remain missing/failed; no substitute or selective rerun.",
+      "reusable_artifact_ids": [
+        11593548201
+      ],
+      "close_after": [
+        "complete_original_scale_150_validation_and_aggregate",
+        "related_original_regression_and_source_evidence_bound"
+      ]
+    },
+    {
+      "id": "P8-006",
+      "title": "增量规模与fanout曲线",
+      "status": "in_progress",
+      "depends_on": [
+        "P7-020",
+        "P8-001",
+        "P8-005"
+      ],
+      "conditional_dependencies": [],
+      "steps": [
+        "测no-op/body/API/config/batch和超预算闭包",
+        "输出各phase计数"
+      ],
+      "acceptance": [
+        "时间可归因且闭包完成后full parity，未完成有显式status",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V07",
+        "V20"
+      ],
+      "unfinished_hard_ancestors": [
+        "P8-005"
+      ],
+      "direct_N150_dependency": true,
+      "component_status": "incomplete_same_registered_scale_study",
+      "qualified_component_evidence": "Same four independently validated original scale shards include no-op/body/API/config/batches and the registered small-scale fanout/overflow cases. Their complete and partial statuses, phase counts and 15-table parity remain literal.",
+      "remaining": "Finish and validate the same study as005; ensure every planned stage closes under original budgets or reports actual failure. Original phase attribution, closures, fanout/batch cases and full parity must survive aggregate validation. A second duplicate N150 study is not required.",
+      "reusable_artifact_ids": [
+        11593548201
+      ],
+      "close_after": [
+        "P8-005",
+        "same_complete_original_scale_150_validation_and_aggregate"
+      ]
+    },
+    {
+      "id": "P8-007",
+      "title": "多并发与混合负载",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-006"
+      ],
+      "conditional_dependencies": [],
+      "steps": [
+        "C1/4/8/16 mixed read/build/backfill",
+        "记录offered load和排队"
+      ],
+      "acceptance": [
+        "无死锁饥饿，吞吐不能隐藏timeout与尾部",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V11",
+        "V20"
+      ],
+      "unfinished_hard_ancestors": [
+        "P8-006",
+        "P8-005"
+      ],
+      "direct_N150_dependency": false,
+      "component_status": "qualified_independent_component_receipts_available",
+      "qualified_component_evidence": "Four original mixed cells C1/4/8/16:900 outcomes each(600 reads+300 builds), actual observed peaks1/4/7/12, all queue/service/end-to-end denominators, original no-repair15-table parity and statistics. Separate fake-backfill768=3seeds×2phases×4C×32 includes held provider/write/delete/model-switch progression and original watchdogs.",
+      "remaining": "Bind existing component receipts and unchanged regression/source evidence after006 closes. No new mixed/backfill workload is presently identified as necessary. Keep fake/local profile and real measured peaks; no invented simultaneous three-operation claim or stable per-cell N32 tail SLA.",
+      "reusable_artifact_ids": [
+        11592751905,
+        11591493782,
+        11593165899,
+        11592154271,
+        11591821446
+      ],
+      "close_after": [
+        "P8-006",
+        "bind_existing_V11_V20_component_evidence"
+      ]
+    },
+    {
+      "id": "P8-008",
+      "title": "冷建/重开/热查分层",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-007"
+      ],
+      "conditional_dependencies": [],
+      "steps": [
+        "分离OS cache、process cold、result-cache hit与uncached warm",
+        "采全部样本"
+      ],
+      "acceptance": [
+        "无best-of，sample N/分布/CI齐全",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V20"
+      ],
+      "unfinished_hard_ancestors": [
+        "P8-007",
+        "P8-006",
+        "P8-005"
+      ],
+      "direct_N150_dependency": false,
+      "component_status": "qualified_independent_component_receipts_available",
+      "qualified_component_evidence": "Original lifecycle1230=30 cold+400 reopen+400 uncached warm+400 cache hit, plus separate warmup1;431sessions/1200query witnesses. Actual source/cache separation, all observations and native replay bound.",
+      "remaining": "Bind the existing lifecycle receipts after007. Preserve unknown OS page cache and inconclusive cold-tail claims, all N and CI limitations. No best-of selection or duplicated lifecycle run is justified merely by dependency ledger updates.",
+      "reusable_artifact_ids": [
+        11591607348
+      ],
+      "close_after": [
+        "P8-007",
+        "bind_existing_layered_sample_and_statistics_evidence"
+      ]
+    },
+    {
+      "id": "P8-009",
+      "title": "内存/磁盘/费用总账",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-008"
+      ],
+      "conditional_dependencies": [],
+      "steps": [
+        "分别client/server/process-tree和artifact/FTS大小",
+        "成本reported/estimated分栏"
+      ],
+      "acceptance": [
+        "单位和归属正确，不把unavailable填0或把runner当server",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V20"
+      ],
+      "unfinished_hard_ancestors": [
+        "P8-008",
+        "P8-007",
+        "P8-006",
+        "P8-005"
+      ],
+      "direct_N150_dependency": false,
+      "component_status": "qualified_independent_component_receipts_available",
+      "qualified_component_evidence": "Lifecycle1261 resource snapshots plus90 final closed storage objects total128901120B; independent physical/logical/FTS ownership and cost fields. Original soak3594 server/runner samples also retained separately; continuous full-process-tree unavailable is not imputed from lifecycle snapshots.",
+      "remaining": "Bind existing resource/cost ledger after008. Preserve correct units/owners and null unavailable/disabled cost; do not add logical FTS bytes to physical SQLite totals or sum unrelated peaks. Original contract allows unavailable values explicitly.",
+      "reusable_artifact_ids": [
+        11591607348,
+        11594089439
+      ],
+      "close_after": [
+        "P8-008",
+        "bind_existing_resource_storage_cost_ledger"
+      ]
+    },
+    {
+      "id": "P8-010",
+      "title": "长时soak与连续修改",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-009"
+      ],
+      "conditional_dependencies": [],
+      "steps": [
+        "持续编辑、删除、切分支、catalog压实、cache/worker复用",
+        "终点完整对账"
+      ],
+      "acceptance": [
+        "内存/队列不无界增长，长期索引和全量一致",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V07",
+        "V17",
+        "V20"
+      ],
+      "unfinished_hard_ancestors": [
+        "P8-009",
+        "P8-008",
+        "P8-007",
+        "P8-006",
+        "P8-005"
+      ],
+      "direct_N150_dependency": false,
+      "component_status": "qualified_hour_core_and_pending_independent_full_wire_supplement",
+      "qualified_component_evidence": "Original a23 hour:3601 successful outcomes/2400 compound reads/1201 builds, duration3600.053467347s,200 branch changes/25compactions,3594 resource samples,1400hits/1000misses/999invalidations with all four actual quarters, original native statistics double replay and no-repair15-table terminal parity. Peer source-specific full ZIP/seals/core acceptance is preserved.",
+      "remaining": "Run the already statically reviewed pure-offline supplement on this same artifact:unique actual RPC IDs, exact parameters/full response values, four roles for all2400 reads, common clocks, independent endpoint population and ordered sampler projections, all9600 compound RPCs. Obtain actual exit0 and complete source/ZIP/seal/replay/reception inventory. This requests no new hour/product workload. After this and009, bind V07/V17/V20 scope.",
+      "reusable_artifact_ids": [
+        11594089439
+      ],
+      "close_after": [
+        "P8-009",
+        "actual_original_hour_full_wire_offline_supplement_pass"
+      ],
+      "pending_receiver": {
+        "plan": "994ba032ce4973e7e122aaa933ab6e1a220caa00",
+        "controller": "dd6db474b57fc3bd8170f3e548787e8b0d347a16",
+        "non_author_review": "acbf08b27f39429c59198ff0a06fe092142eae53",
+        "status": "accepted_scoped_static_only_no_actual_receiver_success_claim"
+      }
+    },
+    {
+      "id": "P8-011",
+      "title": "端到端故障与恢复认证",
+      "status": "in_progress",
+      "depends_on": [
+        "P7-020",
+        "P8-007",
+        "P8-010"
+      ],
+      "conditional_dependencies": [],
+      "steps": [
+        "kill进程/网络断开/缓存损坏/数据库忙/换库",
+        "保持raw故障工件"
+      ],
+      "acceptance": [
+        "没有假ready或删除复活，恢复与费用影响清楚",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V14",
+        "V17",
+        "V18"
+      ],
+      "unfinished_hard_ancestors": [
+        "P8-007",
+        "P8-006",
+        "P8-005",
+        "P8-010",
+        "P8-009",
+        "P8-008"
+      ],
+      "direct_N150_dependency": false,
+      "component_status": "qualified_independent_component_receipts_available",
+      "qualified_component_evidence": "Original recovery495 sealed evidence files/499ZIP members,7 fault tests+3local cases,13local/historical sessions,126active MCP+18fake HTTP over3seeds,14DB snapshots; actual SIGKILL missing response is exactly identified. Busy/replacement/cache corruption/provider disconnect/recovery readiness and data checks retained.",
+      "remaining": "Bind existing actual recovery component after007 and010; retain original engineering/fake profile and explicit failure/cost scope. No new paid/live provider or arbitrary power-loss task is imposed.",
+      "reusable_artifact_ids": [
+        11592146562
+      ],
+      "close_after": [
+        "P7-020",
+        "P8-007",
+        "P8-010",
+        "bind_existing_V14_V17_V18_evidence"
+      ]
+    },
+    {
+      "id": "P8-012",
+      "title": "MSRV与平台冷构建矩阵",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-011"
+      ],
+      "conditional_dependencies": [],
+      "steps": [
+        "Linux/macOS、当前声明MSRV与stable、默认/semantic features",
+        "全新target"
+      ],
+      "acceptance": [
+        "SDK blocker解决或发布平台范围明确，缓存测试不替冷构建",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V01",
+        "V21"
+      ],
+      "unfinished_hard_ancestors": [
+        "P8-011",
+        "P8-007",
+        "P8-006",
+        "P8-005",
+        "P8-010",
+        "P8-009",
+        "P8-008"
+      ],
+      "direct_N150_dependency": false,
+      "component_status": "qualified_independent_component_receipts_available",
+      "qualified_component_evidence": "Original8 fresh release cells Linux/macOS×1.95/stable1.99×default/semantic,59controls each, exact compiler/source/Cargo/binary and real stdio; strict complete collector original CLI actual exit0 counts8/0/0. Single-cell original exit2 for seven not-run cells is separate from export0/collector0.",
+      "remaining": "Bind existing eight-cell and collector receipts after011; platform scope and compiler-cache-cold boundary remain explicit. No repeat eight-cell matrix is required just to resolve the task dependency ledger.",
+      "reusable_artifact_ids": [
+        11591733636,
+        11592442010,
+        11592750594,
+        11592990763,
+        11591229630,
+        11591108235,
+        11591159319,
+        11592465349,
+        11592498371
+      ],
+      "close_after": [
+        "P8-011",
+        "bind_existing_V01_V21_evidence"
+      ]
+    },
+    {
+      "id": "P8-013",
+      "title": "指标/门槛与失败退出最终认证",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-012"
+      ],
+      "conditional_dependencies": [],
+      "steps": [
+        "故意注入quality/perf/lock失败",
+        "验证退出和raw报告仍保留"
+      ],
+      "acceptance": [
+        "红线失败必非零，inconclusive不被自动passed",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V03",
+        "V04",
+        "V20"
+      ],
+      "unfinished_hard_ancestors": [
+        "P8-012",
+        "P8-011",
+        "P8-007",
+        "P8-006",
+        "P8-005",
+        "P8-010",
+        "P8-009",
+        "P8-008"
+      ],
+      "direct_N150_dependency": false,
+      "component_status": "qualified_independent_component_receipts_available",
+      "qualified_component_evidence": "Original6 Rust gate tests plus independent retained actual CLI7 cases with exits1,1,1,1,2,2,2, covering quality/performance/insufficient-N/zero-denominator/lock drift/bad-policy/overwrite refusal; raw bad inputs and all337 original files retained.",
+      "remaining": "Bind actual nonzero/inconclusive/raw retention receipts after012. V20 complete study is already a transitive dependency; it does not require an additional separate N150 rerun for013. Expected negative exits certify failure behavior, not a quality/performance pass.",
+      "reusable_artifact_ids": [
+        11592180029
+      ],
+      "close_after": [
+        "P8-012",
+        "bind_existing_V03_V04_V20_failure_contract_evidence"
+      ]
+    },
+    {
+      "id": "P8-016",
+      "title": "数据库/配置/包回滚演练",
+      "status": "in_progress",
+      "depends_on": [
+        "P7-020",
+        "P8-012",
+        "P8-013"
+      ],
+      "conditional_dependencies": [],
+      "steps": [
+        "旧binary开新schema的受控重建、cache版本隔离、disable语义回退"
+      ],
+      "acceptance": [
+        "回滚不误读新向量/丢用户源码，恢复步骤实测",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V13",
+        "V17",
+        "V21"
+      ],
+      "unfinished_hard_ancestors": [
+        "P8-012",
+        "P8-011",
+        "P8-007",
+        "P8-006",
+        "P8-005",
+        "P8-010",
+        "P8-009",
+        "P8-008",
+        "P8-013"
+      ],
+      "direct_N150_dependency": false,
+      "component_status": "qualified_independent_component_receipts_available",
+      "qualified_component_evidence": "Same actual recovery original includes historical public source277f2490fad3fa30f2812b5547bad033867c9ea5 schema25→24→25→25, controlled25→1025→25→25, real old-binary rejection/DB preservation/current recovery/local queries, cache/config isolation and semantic-disable fallback.",
+      "remaining": "Bind existing version/config/DB recovery receipts after012 and013. State historical-source binary pair scope accurately; no published release/package claim or new release publication prerequisite is invented.",
+      "reusable_artifact_ids": [
+        11592146562
+      ],
+      "close_after": [
+        "P7-020",
+        "P8-012",
+        "P8-013",
+        "bind_existing_V13_V17_V21_rollback_evidence"
+      ]
+    }
+  ],
+  "source_specific_evidence_basis": {
+    "entry_audit": {
+      "blob": "bf8e303dfb22c90b171ca620b3277e0a2d2bdf4e",
+      "bytes": 102078,
+      "sha256": "fd31f7e527993cd974f1917acf984468135e1f8c9d9c49db2c5bde03d938713a"
+    },
+    "peer_archives": [
+      {
+        "commit": "4630e635cd762bfbd2726cf1dd49e37803c06034",
+        "scope": "qualified recovery/platform/gates/mixed/backfill/lifecycle/original CI/source reports"
+      },
+      {
+        "commit": "7c5bdb6aa79bcb4dccd964e90ca4a5ca78a9763c",
+        "scope": "subsequent original50k source-specific full Linux validation and retained original artifact"
+      },
+      {
+        "commit": "4998a1dba14e69c260206eaaa3198af97ab9fe9a",
+        "scope": "subsequent hour core and original statistics/cache/RSS/terminal raw review; new independent full-wire supplement still pending here"
+      }
+    ],
+    "completed_component_entry_metadata": [
+      {
+        "scope": "P8-011/P8-016 recovery and historical rollback component",
+        "reviewer": "/root/todo_audit",
+        "final_report": "round4-reviewed-progress/review-platform/independent-acceptance.json",
+        "supporting_reports": [
+          {
+            "path": "round4-reviewed-progress/review-platform/recovery-provenance-audit.json",
+            "bytes": 5861,
+            "sha256": "a6b101cc17c75882df54e190dac1dbec8352be3aa62572fb904dd0fccbd8591c"
+          },
+          {
+            "path": "round4-reviewed-progress/review-platform/recovery-raw-event-audit.json",
+            "bytes": 6317,
+            "sha256": "45e5ef47e598ef26b943b9540cafde0190e520bd3c7e3df2389b74287c980521"
+          },
+          {
+            "path": "round4-reviewed-progress/review-platform/recovery-database-rollback-audit.json",
+            "bytes": 15267,
+            "sha256": "193d6124e28f19d1b5ffc3a504ea0e589a72d72c3834a1deba6275a88634fb26"
+          }
+        ],
+        "original_artifact": {
+          "artifact_id": 11592146562,
+          "name": "p8-full-recovery-a23bb72d3c954f385b99fe81ce9189885c208557",
+          "size_in_bytes": 121408707,
+          "sha256": "bf0209c994ed0d4688814342aecddb6045ed24bbf7cd54a27621e2d5cabd091e",
+          "workflow_run": {
+            "id": 37871838952,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-scale-cache-a217-20261009",
+            "head_sha": "a23bb72d3c954f385b99fe81ce9189885c208557"
+          },
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11592146562",
+          "archive_download_url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11592146562/zip",
+          "created_at": "2026-10-09T02:27:31Z",
+          "expires_at": "2027-01-07T01:52:14Z",
+          "expired_at_capture": false,
+          "retained_original_native_project_path": "artifacts/benchmarks/p8-bfccb8494ba0/raw/11592146562/original.zip",
+          "metadata_sha256": "1b02b3d2002d48638588cd5f12eae6053735f322cf448543ebb180fef04998dc",
+          "transport_receipt_sha256": "3afbf2ab7d68ef581271f75568da4c5588d519fb177f3964f5ec5733f7bcc04a"
+        },
+        "accepted_observations": {
+          "original_fault_tests": 7,
+          "original_local_cases": 3,
+          "local_and_rollback_native_sessions": 13,
+          "local_and_rollback_requests": 79,
+          "local_and_rollback_responses": 78,
+          "only_missing_response": "owned SIGKILL process pending request 7; actual exit -9",
+          "active_seeds": [
+            {
+              "seed": 223,
+              "status": "accepted_original_raw_MCP_HTTP_and_lifecycle",
+              "mcp_requests": 42,
+              "mcp_responses": 42,
+              "provider_requests": 6,
+              "disconnects": 1,
+              "native_clean_exits": 2,
+              "semantic_lane_sequence": [
+                "complete",
+                "partial",
+                "complete",
+                "partial",
+                "complete"
+              ],
+              "event_sha256": "31fb5e7ced530ba2382c58bbcdd5414608e525fcd521f932c6be4fb59068e689"
+            },
+            {
+              "seed": 227,
+              "status": "accepted_original_raw_MCP_HTTP_and_lifecycle",
+              "mcp_requests": 42,
+              "mcp_responses": 42,
+              "provider_requests": 6,
+              "disconnects": 1,
+              "native_clean_exits": 2,
+              "semantic_lane_sequence": [
+                "complete",
+                "partial",
+                "complete",
+                "partial",
+                "complete"
+              ],
+              "event_sha256": "d36e7c8acb9eeeefe166186a24283731218fe68c8ece64f3e6cf21df1470b9a4"
+            },
+            {
+              "seed": 229,
+              "status": "accepted_original_raw_MCP_HTTP_and_lifecycle",
+              "mcp_requests": 42,
+              "mcp_responses": 42,
+              "provider_requests": 6,
+              "disconnects": 1,
+              "native_clean_exits": 2,
+              "semantic_lane_sequence": [
+                "complete",
+                "partial",
+                "complete",
+                "partial",
+                "complete"
+              ],
+              "event_sha256": "a576da0a77a97e9023d38b3e9e55367e18b26084550e0f57b031d9c3da29ea59"
+            }
+          ],
+          "active_MCP_total": 126,
+          "active_HTTP_total": 18,
+          "original_full_seal_evidence_files": 495,
+          "original_archive_members": 499,
+          "source_observer_count": 7,
+          "database_snapshots_verified": 14,
+          "controlled_schema_sequence": [
+            25,
+            1025,
+            25,
+            25
+          ],
+          "actual_historical_schema_sequence": [
+            25,
+            24,
+            25,
+            25
+          ],
+          "actual_historical_source_commit": "277f2490fad3fa30f2812b5547bad033867c9ea5"
+        },
+        "boundaries": [
+          "495-file seal, exact current and 277f249 historical source/build identities, local and active HTTP raw plus 14 read-only DB snapshots accepted by delegated reviewer.",
+          "Earlier partial reports remain literal history; subsequent raw/database reports resolve their declared pending portions.",
+          "No paid-provider, arbitrary power-loss or published-release package rollback claim; task dependencies remain open."
+        ]
+      },
+      {
+        "scope": "P8-012 platform component",
+        "reviewer": "/root/todo_audit",
+        "report": "round4-reviewed-progress/review-platform/platform-eight-cell-collector-audit.json",
+        "accepted_cells": [
+          {
+            "cell": {
+              "package": "default",
+              "platform": "linux",
+              "toolchain": "1.95"
+            },
+            "job_id": 113631480900,
+            "cell_artifact_id": 11591733636,
+            "raw_artifact_id": 11591593757,
+            "original_control_count": 59,
+            "original_controls_status": "OK",
+            "cell_cli_exit_code": 2,
+            "selected_export_exit_code": 0,
+            "profile": "release",
+            "host": "x86_64-unknown-linux-gnu",
+            "rustc_release": "1.95.0",
+            "binary_sha256": "9824f9ec22637c327ff86c1c18bd84f3a47a3485b85236e9508a724edb35663a",
+            "binary_bytes": 27061208,
+            "wall_seconds": 181.76679331900002,
+            "bundle_sha256": "bb19c93b31ec354c22325d6ac526d019c55f891d4e9175675b202059808b5ae4",
+            "receipt_sha256": "3e983c02e19b708d0b8c8b9713d5e0a3e154fca7a03b684674d3c4a32a43905f",
+            "job_log_sha256": "bde6a4b284fd1de6d51107546d6b42a80fe289c6d38fa07ecc3905c894c03f0b"
+          },
+          {
+            "cell": {
+              "package": "semantic",
+              "platform": "linux",
+              "toolchain": "1.95"
+            },
+            "job_id": 113631480999,
+            "cell_artifact_id": 11592442010,
+            "raw_artifact_id": 11592596644,
+            "original_control_count": 59,
+            "original_controls_status": "OK",
+            "cell_cli_exit_code": 2,
+            "selected_export_exit_code": 0,
+            "profile": "release",
+            "host": "x86_64-unknown-linux-gnu",
+            "rustc_release": "1.95.0",
+            "binary_sha256": "1fbdb4ef141259e62202e0335f4f57094122805eb0e9dbe073d9d5a36021992c",
+            "binary_bytes": 27631480,
+            "wall_seconds": 237.44014904699998,
+            "bundle_sha256": "3f885378f4a3b7bbe10e212d05fc2e83d3c3e6dc5e0692305192bf7a513880da",
+            "receipt_sha256": "fbe1adeaf18c926eabe54e2d56b9d73dd948e4f5a9ef7377054f0539d68eb77d",
+            "job_log_sha256": "cabeb0df90a25c2752cfa0cb1fddc6bf880a430cf5d34e2ce043595c727c1939"
+          },
+          {
+            "cell": {
+              "package": "default",
+              "platform": "linux",
+              "toolchain": "stable"
+            },
+            "job_id": 113631481002,
+            "cell_artifact_id": 11592750594,
+            "raw_artifact_id": 11592169160,
+            "original_control_count": 59,
+            "original_controls_status": "OK",
+            "cell_cli_exit_code": 2,
+            "selected_export_exit_code": 0,
+            "profile": "release",
+            "host": "x86_64-unknown-linux-gnu",
+            "rustc_release": "1.99.0",
+            "binary_sha256": "84fc298da7e4118efa541cd20143500490eab0cfaeeab4ee0a0ba09135229404",
+            "binary_bytes": 26946648,
+            "wall_seconds": 224.653002578,
+            "bundle_sha256": "55119f1838b28e2997029aed215e7b404d19e8afa7aa072eb34cbf95eb3510ab",
+            "receipt_sha256": "1036a44ba264327924608e8b9448720a7233994849a87b845f148fb4ba9bc4d4",
+            "job_log_sha256": "3bd726b9df7dcd32a0a8033f61b411f81a7f3afb7143a1211f08223bef1495a3"
+          },
+          {
+            "cell": {
+              "package": "semantic",
+              "platform": "linux",
+              "toolchain": "stable"
+            },
+            "job_id": 113631481011,
+            "cell_artifact_id": 11592990763,
+            "raw_artifact_id": 11592403011,
+            "original_control_count": 59,
+            "original_controls_status": "OK",
+            "cell_cli_exit_code": 2,
+            "selected_export_exit_code": 0,
+            "profile": "release",
+            "host": "x86_64-unknown-linux-gnu",
+            "rustc_release": "1.99.0",
+            "binary_sha256": "0f71bcda874e7fadfa20abe73700df5aecbc40633ef6b8b23719daa744377e66",
+            "binary_bytes": 27509272,
+            "wall_seconds": 161.096919436,
+            "bundle_sha256": "1dba3314ded854913dec5c09719e2b545d84f15c30ce85a09b70d68ad6c4ab24",
+            "receipt_sha256": "ced16f9e902ac69c478c8853b765b1aca68ac7ec267b592079be7a78df8a0245",
+            "job_log_sha256": "02b79147dfbfb97abcd105ff3d3da65864c1357b1182bd3a7fc15dab8c49ae59"
+          },
+          {
+            "cell": {
+              "package": "default",
+              "platform": "macos",
+              "toolchain": "1.95"
+            },
+            "job_id": 113631481350,
+            "cell_artifact_id": 11591229630,
+            "raw_artifact_id": 11591134950,
+            "original_control_count": 59,
+            "original_controls_status": "OK",
+            "cell_cli_exit_code": 2,
+            "selected_export_exit_code": 0,
+            "profile": "release",
+            "host": "aarch64-apple-darwin",
+            "rustc_release": "1.95.0",
+            "binary_sha256": "232f5e9d621f19436adc66b51b39c0326c4d4da95809f24a47653b94b0604c4f",
+            "binary_bytes": 23867360,
+            "wall_seconds": 305.727865542,
+            "bundle_sha256": "1e6ef1ede5e1755b973f6078f477fc3aeea76cf76d35ec7816975d0bf4544a82",
+            "receipt_sha256": "802d124a21ce135a1b545f04654d82c2cfa5dc2b2469d258e4d10315de994704",
+            "job_log_sha256": "a53cbc765508ce3a9aad6d743a2dc905132642e1c2566dcd7b8becb17d1ad467"
+          },
+          {
+            "cell": {
+              "package": "semantic",
+              "platform": "macos",
+              "toolchain": "1.95"
+            },
+            "job_id": 113631481010,
+            "cell_artifact_id": 11591108235,
+            "raw_artifact_id": 11591671795,
+            "original_control_count": 59,
+            "original_controls_status": "OK",
+            "cell_cli_exit_code": 2,
+            "selected_export_exit_code": 0,
+            "profile": "release",
+            "host": "aarch64-apple-darwin",
+            "rustc_release": "1.95.0",
+            "binary_sha256": "4232d1d459dabbdebd1cd13b30e22a4e340f630980090d7192c1e1957b0ecf68",
+            "binary_bytes": 24355872,
+            "wall_seconds": 207.90119804199992,
+            "bundle_sha256": "59a2a9698d718f670b4e7a9efb81c7cefb14dd3a1c45c1fd2b338780eef6cf59",
+            "receipt_sha256": "41de4702aa623a6639abe12971aa9e516802910203b2de24c4347c60a6cae2fd",
+            "job_log_sha256": "c148c6cb5b901b3bde451f986bfaed549c051b5aef131d9bff6a8b7f0854d43d"
+          },
+          {
+            "cell": {
+              "package": "default",
+              "platform": "macos",
+              "toolchain": "stable"
+            },
+            "job_id": 113631480988,
+            "cell_artifact_id": 11591159319,
+            "raw_artifact_id": 11591239060,
+            "original_control_count": 59,
+            "original_controls_status": "OK",
+            "cell_cli_exit_code": 2,
+            "selected_export_exit_code": 0,
+            "profile": "release",
+            "host": "aarch64-apple-darwin",
+            "rustc_release": "1.99.0",
+            "binary_sha256": "dfd79d3b80804f7b8fadbd6ac2dd29789d47d2054a3f3b348925c067a0c10150",
+            "binary_bytes": 26553064,
+            "wall_seconds": 307.48002308400004,
+            "bundle_sha256": "63292f4a865b6384553dfd471cc02525f1da6aa590d8e3ee21f51efea492c7f6",
+            "receipt_sha256": "36656bf1ac70fa86620140ea28d27d478bcf519c66cbbad361bccbc892a82345",
+            "job_log_sha256": "63cf95ad11a92a689bf37eeca80f8bf532ddb371cc0e96cec30c90d9605ff111"
+          },
+          {
+            "cell": {
+              "package": "semantic",
+              "platform": "macos",
+              "toolchain": "stable"
+            },
+            "job_id": 113631481070,
+            "cell_artifact_id": 11592465349,
+            "raw_artifact_id": 11591809454,
+            "original_control_count": 59,
+            "original_controls_status": "OK",
+            "cell_cli_exit_code": 2,
+            "selected_export_exit_code": 0,
+            "profile": "release",
+            "host": "aarch64-apple-darwin",
+            "rustc_release": "1.99.0",
+            "binary_sha256": "ff0106609adf5d0bddb93908ec7a6d07142c90e5a995e36364c91cc026076a9f",
+            "binary_bytes": 27152760,
+            "wall_seconds": 262.38607125000004,
+            "bundle_sha256": "f6bc36deb8878236766ddfdd73509a37bdd83214d715150488ab34c70cc4b84f",
+            "receipt_sha256": "5bda5a038a92330d6e3671ec4c8d2ccb5e178d084d6b2a3a470e10379cd38138",
+            "job_log_sha256": "4c0c5a69256c50a1a02b179162e448f0955886ae70a5421d09d0ad5e96204263"
+          }
+        ],
+        "collector": {
+          "job": 113646688067,
+          "artifact": 11592498371,
+          "bytes": 1504,
+          "sha256": "28a2590190645f2e923926097092d6008e3a8c7014dc78b3b832fb6608712700",
+          "original_cli": "scripts/p8_cold_build.py --collect-cells <owned real directory> --expected-commit a23bb72d3c954f385b99fe81ce9189885c208557 --output-dir <new owned output>",
+          "independent_exit_code": 0,
+          "counts": {
+            "passed": 8,
+            "failed": 0,
+            "not_run": 0
+          },
+          "permitted_comparison_normalizations": [
+            "input_directory",
+            "source.source_root"
+          ]
+        },
+        "boundaries": [
+          "59 controls per original job and real fresh-target native release stdio; observed stable1.99/MSRV1.95.",
+          "The single-cell CLI exit2 means other cells were not run in that invocation; strict export and complete collector receipts are separately accepted.",
+          "Fresh compiler targets do not prove OS-cache coldness or release publication."
+        ]
+      },
+      {
+        "scope": "P8-013 original failure behavior component",
+        "reviewer": "/root/todo_audit",
+        "report": "round4-reviewed-progress/review-platform/gates-retained-cli/replay-report-v2.json",
+        "original_artifact": {
+          "artifact_id": 11592180029,
+          "name": "p8-gates-a23bb72d3c954f385b99fe81ce9189885c208557",
+          "size_in_bytes": 32985345,
+          "sha256": "792a4fa9cfdcc3d9f1bf077a20e3d951958c144142fac1e81183aa132c4dbd25",
+          "workflow_run": {
+            "id": 37871838927,
+            "repository_id": 1249213794,
+            "head_repository_id": 1249213794,
+            "head_branch": "task/p8-scale-cache-a217-20261009",
+            "head_sha": "a23bb72d3c954f385b99fe81ce9189885c208557"
+          },
+          "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11592180029",
+          "archive_download_url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11592180029/zip",
+          "created_at": "2026-10-09T02:17:04Z",
+          "expires_at": "2027-01-07T01:52:14Z",
+          "expired_at_capture": false,
+          "retained_original_native_project_path": "artifacts/benchmarks/p8-bfccb8494ba0/raw/11592180029/original.zip",
+          "metadata_sha256": "4bfbf77a016388d435abd3a453f93c2f9cb535c778e927dc80a7160360503036",
+          "transport_receipt_sha256": "411146e095146eb622a6de6fedaefdca3dcf17a6feac18c791de13638900630a"
+        },
+        "original_test_count": 6,
+        "retained_cli": {
+          "bytes": 77717680,
+          "sha256": "daac7973861d3f7a6a419dfa34a2563af5796a227b016903a5b91c30a793f80a"
+        },
+        "independent_cli_exits": [
+          1,
+          1,
+          1,
+          1,
+          2,
+          2,
+          2
+        ],
+        "cases": [
+          "quality_failed",
+          "latency_failed",
+          "insufficient_samples",
+          "zero_latency_denominator",
+          "raw_lock_drift",
+          "bad_policy",
+          "output_overwrite_refusal"
+        ],
+        "execution_scope": "Exact retained Linux amd64 ELF in pinned Ubuntu image on Mac arm64; deterministic comparison replay, not new platform/performance measurement. Original 337 artifact files and 287 owned fixture copy files unchanged. Zero-plan remains library-only.",
+        "image": "ubuntu@sha256:f610ab94648195aa356059f5b41d6085c9d4d903c072430cdd1af7bdb646106b"
+      },
+      {
+        "scope": "P8-007 four original mixed cells and fake backfill components",
+        "reviewer": "independent pr_triage subagent; no original source/workflow/workload/validator mutation",
+        "review_map": "round4-reviewed-progress/review-runtime/round4-p8-007-009-evidence-map.json",
+        "mixed": [
+          {
+            "artifact": 11592751905,
+            "zip_sha256": "6cfceee02ed7fcd71039b9870e48457ddb3a7607935c7a5e798d549ee33123da",
+            "configured_concurrency": 1,
+            "observed_peak": 1,
+            "offered": 900,
+            "read": 600,
+            "build": 300,
+            "report": "round4-reviewed-progress/review-runtime/runtime-11592751905-review-v2.json",
+            "report_sha256": "0814873a733676556b19e72325f2685319d71a5d4eb810c7b1a765af2b7c8322"
+          },
+          {
+            "artifact": 11591493782,
+            "zip_sha256": "727ab17068655b9ee5cd5677fb3f1a9fb4460c87266dfb0e6628d9a75678502c",
+            "configured_concurrency": 4,
+            "observed_peak": 4,
+            "offered": 900,
+            "read": 600,
+            "build": 300,
+            "report": "round4-reviewed-progress/review-runtime/runtime-11591493782-review-v2.json",
+            "report_sha256": "9d2422f94315cc538501b76121727f50d113b0198fcd2a346d21e8dc9f7f3868"
+          },
+          {
+            "artifact": 11593165899,
+            "zip_sha256": "427906a25d21afae8085328c8fc92d6997763b1ad0f52247118052ec788118b8",
+            "configured_concurrency": 8,
+            "observed_peak": 7,
+            "offered": 900,
+            "read": 600,
+            "build": 300,
+            "report": "round4-reviewed-progress/review-runtime/runtime-11593165899-review-v2.json",
+            "report_sha256": "c6438df2f6b5d7e00bbb90fd7404e9692fe8b144e21f8b1ad35dc0a5d1be85cb"
+          },
+          {
+            "artifact": 11592154271,
+            "zip_sha256": "9ca7ff34acba74969feb840837d48ad89952efe06a9d02733c7c29d92efdf487",
+            "configured_concurrency": 16,
+            "observed_peak": 12,
+            "offered": 900,
+            "read": 600,
+            "build": 300,
+            "report": "round4-reviewed-progress/review-runtime/runtime-11592154271-review-v2.json",
+            "report_sha256": "6d4a6cc164b14046e546f59d249987715f5af99f344fee685d4eefdff56daaf7"
+          }
+        ],
+        "backfill": {
+          "artifact_id": 11591821446,
+          "concurrency_cells": [
+            1,
+            4,
+            8,
+            16
+          ],
+          "external_provider_scope": "fake provider in same process; no live-provider acceptance or new tail SLA",
+          "job_url": "https://github.com/jyqj/codecortex/actions/runs/37871838957/job/113631480994",
+          "maximum_provider_active_per_seed": 4,
+          "old_space_publications_per_seed": 0,
+          "original_progress_watchdog_ms": 5000,
+          "original_query_watchdog_ms": 2000,
+          "original_writer_timeout_ms": 100,
+          "pending_claimed_uncovered_final_per_seed": 0,
+          "phases": [
+            "quiet",
+            "held"
+          ],
+          "requests": 768,
+          "review_file": "backfill-11591821446-review.json",
+          "review_sha256": "70d933ec9844f519a164f89564e7688ad456274fbe3df5eec49826e1e8074f75",
+          "samples_per_cell": 32,
+          "seeds": [
+            7,
+            19,
+            43
+          ],
+          "zip_sha256": "24fa1251fa006d23df2f801a7d5ba7eb420223c4a7dbd0cce7ab8fdcf6b36e15"
+        },
+        "boundaries": [
+          "600 reads +300 builds per mixed cell, all900 outcomes, original no-repair 15-table oracle and native statistics double replay bound; actual peaks1/4/7/12 are not relabeled configured peaks1/4/8/16.",
+          "Mac reviewer reran original Python source/observer/seal/latency/RSS/coverage verifiers and reconstructed stdio/timing/CI; did not run Linux ELF oracle/statistics anew.",
+          "Backfill768 retains 3seeds×2phases×4C×32, original2s/5s/100ms watchdogs, no new tail-SLA or paid/live-provider claim."
+        ]
+      },
+      {
+        "scope": "P8-008/P8-009 lifecycle and resource components",
+        "reviewer": "independent pr_triage subagent; no original source/workflow/workload/validator mutation",
+        "report": "round4-reviewed-progress/review-runtime/lifecycle-11591607348-review-v2.json",
+        "report_sha256": "bb20469aeab82aa875bbe6ffd6870b167b8e52f2be64b39204baec91644f298a",
+        "artifact": 11591607348,
+        "zip_sha256": "63aadf94879ea86782e9759828e853c1a030d70014fdc3fbdc127a18ca2eb055",
+        "samples": {
+          "cold": 30,
+          "reopen": 400,
+          "warm_uncached": 400,
+          "cache_hit": 400,
+          "total": 1230,
+          "separate_warmup": 1
+        },
+        "sessions": 431,
+        "query_witnesses": 1200,
+        "resource_snapshots": 1261,
+        "final_storage_objects": 90,
+        "physical_bytes": 128901120,
+        "boundaries": [
+          "Original Linux evaluator double replay bound; Mac did not execute Linux ELF or independently rerun its BLAKE3 normalizer.",
+          "Source spans, cache phases, timing/sample denominators and native ownership reconstructed. Native process/tree/runner roles remain separate; no peak summation.",
+          "Unavailable/disabled-provider costs remain null, FTS logical bytes not added to physical SQLite bytes, OS page cache unknown; N30 cold tail inconclusive preserved."
+        ]
+      },
+      {
+        "scope": "Original CI and source admission",
+        "prior_independent_report_blob": "cdbf0c67d851f12d3fb8b96e7fb02b81430773a2",
+        "archive_reports": [
+          "round4-reviewed-progress/review-ci/ci-original-check-audit-v2.json",
+          "round4-reviewed-progress/review-ci/actual-ci-p7-checkout-tree-equivalence.json"
+        ],
+        "scope_note": "Existing independently reviewed exact merge checkout/source bridge and 409P8/181source proof are reusable only for their fixed a23/merge tree. No raw-log replay repeated here."
+      }
+    ],
+    "reviewer_namespace": "Peer report labels such as /root/todo_audit or pr_triage are external session reviewers, not this session's agents. This report reviews and reuses those fixed qualified records; it does not claim to have rerun their native programs.",
+    "last_original_jobs_observed_at_utc": "2026-10-09 04:49:06 UTC",
+    "original_scale_run": 37872522779,
+    "last_scale_status": {
+      "initial_shards_success": [
+        1000,
+        5000,
+        10000,
+        50000
+      ],
+      "initial_100k_job": 113638100879,
+      "initial_100k_started": "2026-10-09T02:24:01Z",
+      "initial_100k_status": "in_progress",
+      "remaining145_expansion": "not created until all five initial index0 cells succeed; original workflow maxparallel10"
+    }
+  },
+  "completion_sequence": [
+    "Receive full original150 and run unchanged original build/shard/aggregate gates; retain all failures/missing/strata without replacement, success selection or identity relabeling.",
+    "Complete source-specific pure offline9600-wire supplement for the original hour; no new product/hour workload.",
+    "Bind all existing component receipts to the same original a23 source and original regression/CI coverage; unresolved real regressions remain blockers.",
+    "If and only if all required evidence passes, update005→006→007→008→009→010→011→012→013→016 with accurate scope and direct durable evidence references. Joint topological ledger closure does not require re-running already qualified measurements.",
+    "Run applicable original integrity/roadmap/facts/CI checks on any later ledger/evidence integration commit; do not rewrite old measurement receipts or claim those CI runs occurred at measurement time."
+  ],
+  "not_new_prerequisites": [
+    "P3/G3 leaf-batch candidate or any of our own optional optimization branches",
+    "P8-020 or whole-phase G8 release approval added as an extra hard dependency",
+    "Live/paid-provider semantic certification when original engineering/fake profile is the enabled scope",
+    "A second or third N150 study for transitive dependent tasks",
+    "Unmeasured configured-concurrency peaks, stable small-N tails, zero-valued unavailable resources, or whole-tree-memory conclusions"
+  ],
+  "failure_rule": "If any original registered scale cell or required original component remains missing/failed/invalid, preserve that outcome and do not mark the ten-task chain complete. No post-start replacement/retry policy is authorized by this report."
+}

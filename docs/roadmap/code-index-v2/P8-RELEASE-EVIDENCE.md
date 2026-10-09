@@ -176,6 +176,24 @@ archive 验证完全离线，不要求原工作树、原 binary 或原 evidence 
 checksums 覆盖全部 payload 和 `archive.json`；checksum 文件本身按规范清单重算。
 可以从 archive 取回精确 binary/config 供独立回滚流程核验。
 
+## 在副本上复算原生报告
+
+`verify --archive` 只核对归档完整性；数值复算继续使用该报告所属 runner 的原协议。
+对完整保留了 `cc-eval` 原生 run 的 `evidence/`，先验证归档，再将 `evidence/` 复制到一个
+独立、尚不存在的可写目录，并使用来源、版本和摘要已记录的 `cc-eval` 执行
+`replay --run <副本目录>`。用于复算的 `cc-eval` 不一定是候选中保存的 server binary，
+不能仅凭文件名相同认定工具身份。
+若 `evidence/` 是包含 `suite.json` 的多 suite 输出父目录，先复制完整父目录，再逐个对副本中
+直接包含 `manifest.json`、`queries.jsonl`、`normalized.jsonl` 和 `raw/` 的实际 run 子目录
+传入 `--run`（可使用绝对路径）；不要把只有 `suite.json` 的父目录当作单个 run 根目录。
+
+原生 replay 会验证 query、normalized 和 raw 摘要，并重新写入 metrics、scores、costs、
+latency、resource ledger、gate 和 report；因此不得直接对保留的原始归档执行 replay。
+按原报告格式比较副本中的派生结果，将命令、复算工具身份、真实退出码及差异结果另行保存。
+若归档 gate 是带 candidate 绑定的外层封套，应保留封套，并分别核对原生 gate 的状态、退出码和理由，
+不要要求不同格式字节相同，也不要将失败、取消或 inconclusive 改名为通过。
+此步骤不重新运行工作负载；其它报告类型使用各自的原始重算入口，不假定均兼容 `cc-eval replay`。
+
 ## 文件边界与资源上限
 
 - 只接受普通文件和目录。所有输入/输出路径的 symlink、特殊文件、目录冒充文件、

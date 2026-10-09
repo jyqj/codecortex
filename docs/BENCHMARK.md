@@ -35,7 +35,7 @@
 
 ## P2-D：连续变更、独立真值与成本
 
-`cc-eval mutation-case --case <case.json> --output <新目录> --shrink-attempts 32` 可独立重放十四表增量/全量对照，并以手写关系谓词检查两条路径共同出错的盲区；有效失败保留原件并自动缩减阶段，错误输入不冒充产品反例。动态接口 Unknown、未闭合阶段和 reducer 自测分别报告。SQL 工作量、名称桶/墓碑增长、1k/5k release 机制成本与公开 MCP 回归口径见 [INCREMENTAL_VERIFICATION.md](internals/INCREMENTAL_VERIFICATION.md)；不据此认证 100k、尾延迟或语义 holdout。
+`cc-eval mutation-case --case <case.json> --output <新目录> --shrink-attempts 32` 可独立重放当前 [15 表清单](../crates/cc-eval/src/benchmark/oracle.rs)的增量/全量对照，并以手写关系谓词检查两条路径共同出错的盲区；有效失败保留原件并自动缩减阶段，错误输入不冒充产品反例。动态接口 Unknown、未闭合阶段和 reducer 自测分别报告。SQL 工作量、名称桶/墓碑增长、1k/5k release 机制成本与公开 MCP 回归口径见 [INCREMENTAL_VERIFICATION.md](internals/INCREMENTAL_VERIFICATION.md)；不据此认证 100k、尾延迟或语义 holdout。
 
 ## Code Index V2：P0 实现入口
 

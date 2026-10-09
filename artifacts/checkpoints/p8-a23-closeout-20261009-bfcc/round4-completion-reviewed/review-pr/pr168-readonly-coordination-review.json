@@ -1,0 +1,1303 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/todo_audit",
+  "review_kind": "independent read-only PR coordination and source/validation delta review",
+  "prepared_at_utc": "2026-10-09 03:34:17 UTC",
+  "repository": "https://github.com/jyqj/codecortex",
+  "task_scope": "PR168 G1 and subsequent P2, extended at parent request to PR169 G2. No source edits, branch/ref mutation, comments, label writes, workflow dispatch, rerun, cancellation, Cargo build/test or measurement performed by this subagent.",
+  "outcome": {
+    "a23_acceptance": "No new substantive correctness defect requiring an a23 source change was identified. Continue evaluating its original terminal results and dependencies under its original source. This review itself closes no TODO and cannot preaccept remaining original full-scale/soak requirements.",
+    "g1": "Not merge-ready: actual Rust helper/ordinary CI compilation failures, plus three concrete validation protections present in a23 and absent in G1.",
+    "p2": "The product-input delta is exactly one type annotation in a new test helper; its compilation effect is statically well targeted. P2 is not PR168 head and has zero direct Actions runs at the observed cut. Its scripts remain exactly G1, including the three gaps.",
+    "g2": "Actual PR169 source includes the P2 test annotation and correct registry/guard rebinding. The three validation protection gaps are still present in exact G2 source. G2 Actions are a separate fixed-source execution and must be reviewed under their own identity.",
+    "source_credit_policy": "Never relabel a23 evidence as G1/P2/G2, G1 Python50 as P2/G2, or merge checkout logs as direct head checkout. A success of an independent controls workflow cannot erase a failed Rust/CI workflow."
+  },
+  "todo_ledger": {
+    "total": 192,
+    "done": 163,
+    "in_progress": 16,
+    "todo": 12,
+    "blocked": 1,
+    "remaining": 29,
+    "new_done_by_this_review": 0,
+    "state_or_acceptance_modified": false,
+    "original_targets": [
+      "P8-005",
+      "P8-006",
+      "P8-007",
+      "P8-008",
+      "P8-009",
+      "P8-010",
+      "P8-011",
+      "P8-012",
+      "P8-013",
+      "P8-016"
+    ]
+  },
+  "remote_state": {
+    "pr168_observed_at_utc": "2026-10-09 03:27:54 UTC",
+    "pr168": {
+      "url": "https://github.com/jyqj/codecortex/pull/168",
+      "number": 168,
+      "state": "open",
+      "merged": false,
+      "mergeable": true,
+      "draft": true,
+      "title": "perf(p8): 整合有界快照批量写入与运行证据控制",
+      "base": "main",
+      "base_sha": "4775bf44dc09c11cea88211e06ccec97c4de44aa",
+      "head": "task/p8-snapshot-leaf-engineering-20261009",
+      "head_sha": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+      "merge_commit_sha": "4b79e13c94c564a9a3b1b46c96216c5e68177c2c",
+      "created_at": "2026-10-09T02:27:47Z",
+      "updated_at": "2026-10-09T03:27:52Z",
+      "commits": 3,
+      "changed_files": 44,
+      "additions": 7950,
+      "deletions": 843
+    },
+    "pr168_labels": [
+      "needs-ci-fix"
+    ],
+    "pr168_g1_workflow_observation": {
+      "total_count": 10,
+      "runs": [
+        {
+          "id": 37879300984,
+          "url": "https://github.com/jyqj/codecortex/actions/runs/37879300984",
+          "name": "P8 complete scale measurements",
+          "status": "completed",
+          "conclusion": "skipped",
+          "run_attempt": 1,
+          "head_sha": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+          "created_at": "2026-10-09T03:26:42Z",
+          "updated_at": "2026-10-09T03:26:43Z"
+        },
+        {
+          "id": 37874688788,
+          "url": "https://github.com/jyqj/codecortex/actions/runs/37874688788",
+          "name": "P8 original failure gates",
+          "status": "completed",
+          "conclusion": "success",
+          "run_attempt": 1,
+          "head_sha": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+          "created_at": "2026-10-09T02:27:50Z",
+          "updated_at": "2026-10-09T02:36:53Z"
+        },
+        {
+          "id": 37874688838,
+          "url": "https://github.com/jyqj/codecortex/actions/runs/37874688838",
+          "name": "P7 engineering regressions",
+          "status": "completed",
+          "conclusion": "success",
+          "run_attempt": 1,
+          "head_sha": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+          "created_at": "2026-10-09T02:27:50Z",
+          "updated_at": "2026-10-09T02:43:08Z"
+        },
+        {
+          "id": 37874688824,
+          "url": "https://github.com/jyqj/codecortex/actions/runs/37874688824",
+          "name": "P8 lifecycle and resource observations",
+          "status": "completed",
+          "conclusion": "success",
+          "run_attempt": 1,
+          "head_sha": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+          "created_at": "2026-10-09T02:27:50Z",
+          "updated_at": "2026-10-09T02:35:59Z"
+        },
+        {
+          "id": 37874688782,
+          "url": "https://github.com/jyqj/codecortex/actions/runs/37874688782",
+          "name": "CI",
+          "status": "completed",
+          "conclusion": "failure",
+          "run_attempt": 1,
+          "head_sha": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+          "created_at": "2026-10-09T02:27:50Z",
+          "updated_at": "2026-10-09T02:57:08Z"
+        },
+        {
+          "id": 37874688862,
+          "url": "https://github.com/jyqj/codecortex/actions/runs/37874688862",
+          "name": "P8 runtime observations",
+          "status": "in_progress",
+          "conclusion": null,
+          "run_attempt": 1,
+          "head_sha": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+          "created_at": "2026-10-09T02:27:50Z",
+          "updated_at": "2026-10-09T03:00:26Z"
+        },
+        {
+          "id": 37874688943,
+          "url": "https://github.com/jyqj/codecortex/actions/runs/37874688943",
+          "name": "P7 closeout evidence",
+          "status": "completed",
+          "conclusion": "success",
+          "run_attempt": 1,
+          "head_sha": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+          "created_at": "2026-10-09T02:27:50Z",
+          "updated_at": "2026-10-09T03:03:27Z"
+        },
+        {
+          "id": 37874688920,
+          "url": "https://github.com/jyqj/codecortex/actions/runs/37874688920",
+          "name": "P8 platform cold builds",
+          "status": "completed",
+          "conclusion": "success",
+          "run_attempt": 1,
+          "head_sha": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+          "created_at": "2026-10-09T02:27:50Z",
+          "updated_at": "2026-10-09T03:12:13Z"
+        },
+        {
+          "id": 37874665202,
+          "url": "https://github.com/jyqj/codecortex/actions/runs/37874665202",
+          "name": "P8 snapshot leaf batch engineering",
+          "status": "completed",
+          "conclusion": "failure",
+          "run_attempt": 1,
+          "head_sha": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+          "created_at": "2026-10-09T02:27:31Z",
+          "updated_at": "2026-10-09T02:29:24Z"
+        },
+        {
+          "id": 37874665224,
+          "url": "https://github.com/jyqj/codecortex/actions/runs/37874665224",
+          "name": "P8 integrated runtime Python controls",
+          "status": "completed",
+          "conclusion": "success",
+          "run_attempt": 1,
+          "head_sha": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+          "created_at": "2026-10-09T02:27:31Z",
+          "updated_at": "2026-10-09T02:28:08Z"
+        }
+      ]
+    },
+    "p2_direct_workflow_observation": {
+      "total_count": 0,
+      "runs": []
+    },
+    "pr169_observed_at_utc": "2026-10-09 03:31:04 UTC",
+    "pr169": {
+      "url": "https://github.com/jyqj/codecortex/pull/169",
+      "number": 169,
+      "state": "open",
+      "merged": false,
+      "mergeable": true,
+      "draft": true,
+      "title": "fix(p8): 修复快照批写测试类型并验证整合候选",
+      "base": "main",
+      "base_sha": "4775bf44dc09c11cea88211e06ccec97c4de44aa",
+      "head": "task/p8-snapshot-leaf-engineering-fix-20261009",
+      "head_sha": "0272a1fb152fd76a7cfb22386a580629d4038a64",
+      "merge_commit_sha": "fa6c6c69ae3dd459a78b60c9d5ca369f9eb9824b",
+      "created_at": "2026-10-09T03:04:52Z",
+      "updated_at": "2026-10-09T03:04:52Z",
+      "commits": 6,
+      "changed_files": 60,
+      "additions": 10534,
+      "deletions": 843
+    },
+    "pr169_labels": [],
+    "pr169_g2_workflow_observation": {
+      "total_count": 9,
+      "runs": [
+        {
+          "id": 37877611359,
+          "url": "https://github.com/jyqj/codecortex/actions/runs/37877611359",
+          "name": "P8 original failure gates",
+          "status": "completed",
+          "conclusion": "success",
+          "run_attempt": 1,
+          "head_sha": "0272a1fb152fd76a7cfb22386a580629d4038a64",
+          "created_at": "2026-10-09T03:04:55Z",
+          "updated_at": "2026-10-09T03:06:57Z"
+        },
+        {
+          "id": 37877611353,
+          "url": "https://github.com/jyqj/codecortex/actions/runs/37877611353",
+          "name": "CI",
+          "status": "in_progress",
+          "conclusion": null,
+          "run_attempt": 1,
+          "head_sha": "0272a1fb152fd76a7cfb22386a580629d4038a64",
+          "created_at": "2026-10-09T03:04:55Z",
+          "updated_at": "2026-10-09T03:13:36Z"
+        },
+        {
+          "id": 37877611328,
+          "url": "https://github.com/jyqj/codecortex/actions/runs/37877611328",
+          "name": "P7 engineering regressions",
+          "status": "completed",
+          "conclusion": "success",
+          "run_attempt": 1,
+          "head_sha": "0272a1fb152fd76a7cfb22386a580629d4038a64",
+          "created_at": "2026-10-09T03:04:55Z",
+          "updated_at": "2026-10-09T03:13:39Z"
+        },
+        {
+          "id": 37877611368,
+          "url": "https://github.com/jyqj/codecortex/actions/runs/37877611368",
+          "name": "P8 lifecycle and resource observations",
+          "status": "completed",
+          "conclusion": "success",
+          "run_attempt": 1,
+          "head_sha": "0272a1fb152fd76a7cfb22386a580629d4038a64",
+          "created_at": "2026-10-09T03:04:55Z",
+          "updated_at": "2026-10-09T03:19:38Z"
+        },
+        {
+          "id": 37877611398,
+          "url": "https://github.com/jyqj/codecortex/actions/runs/37877611398",
+          "name": "P7 closeout evidence",
+          "status": "completed",
+          "conclusion": "success",
+          "run_attempt": 1,
+          "head_sha": "0272a1fb152fd76a7cfb22386a580629d4038a64",
+          "created_at": "2026-10-09T03:04:55Z",
+          "updated_at": "2026-10-09T03:24:51Z"
+        },
+        {
+          "id": 37877611432,
+          "url": "https://github.com/jyqj/codecortex/actions/runs/37877611432",
+          "name": "P8 runtime observations",
+          "status": "in_progress",
+          "conclusion": null,
+          "run_attempt": 1,
+          "head_sha": "0272a1fb152fd76a7cfb22386a580629d4038a64",
+          "created_at": "2026-10-09T03:04:55Z",
+          "updated_at": "2026-10-09T03:29:25Z"
+        },
+        {
+          "id": 37877611405,
+          "url": "https://github.com/jyqj/codecortex/actions/runs/37877611405",
+          "name": "P8 platform cold builds",
+          "status": "in_progress",
+          "conclusion": null,
+          "run_attempt": 1,
+          "head_sha": "0272a1fb152fd76a7cfb22386a580629d4038a64",
+          "created_at": "2026-10-09T03:04:55Z",
+          "updated_at": "2026-10-09T03:31:16Z"
+        },
+        {
+          "id": 37877604240,
+          "url": "https://github.com/jyqj/codecortex/actions/runs/37877604240",
+          "name": "P8 integrated runtime Python controls",
+          "status": "completed",
+          "conclusion": "success",
+          "run_attempt": 1,
+          "head_sha": "0272a1fb152fd76a7cfb22386a580629d4038a64",
+          "created_at": "2026-10-09T03:04:50Z",
+          "updated_at": "2026-10-09T03:11:15Z"
+        },
+        {
+          "id": 37877604259,
+          "url": "https://github.com/jyqj/codecortex/actions/runs/37877604259",
+          "name": "P8 snapshot leaf batch engineering",
+          "status": "in_progress",
+          "conclusion": null,
+          "run_attempt": 1,
+          "head_sha": "0272a1fb152fd76a7cfb22386a580629d4038a64",
+          "created_at": "2026-10-09T03:04:50Z",
+          "updated_at": "2026-10-09T03:28:30Z"
+        }
+      ]
+    },
+    "status_boundary": "Workflow states are snapshots at the listed observation times. in_progress is not success. G1 scale run 37879300984 is skipped and receives zero measurement credit. G2 Python helper run 37877604240 reports workflow success, but its method-level original logs/ZIP were not independently accepted in this coordination review.",
+    "parent_action_verified": {
+      "comment_url": "https://github.com/jyqj/codecortex/pull/168#issuecomment-6073667411",
+      "comment_id": 6073667411,
+      "comment_created_at": "2026-10-09T03:27:52Z",
+      "needs_ci_fix_label_present": true,
+      "performed_by_this_subagent": false
+    }
+  },
+  "exact_sources": {
+    "a23": {
+      "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "source_tree": "58147c952505c44da1f41eb4b9c31643f2303b96",
+      "input_count": 1087,
+      "manifest_sha256": "4e0aa6bbfd4d5bea00416bca2cd99318d865ffc526fdcb45897c4d300de3ac00"
+    },
+    "chain": [
+      {
+        "role": "P1 product",
+        "sha": "6cc0f5d56e4ffa37f7b0a19a14e4fb7a4b5695f1",
+        "tree": "69f97fa0ceeacdc16f89341eab4b2ffb13d12525",
+        "parents": [
+          "4775bf44dc09c11cea88211e06ccec97c4de44aa"
+        ],
+        "url": "https://github.com/jyqj/codecortex/commit/6cc0f5d56e4ffa37f7b0a19a14e4fb7a4b5695f1",
+        "api_url": "https://api.github.com/repos/jyqj/codecortex/git/commits/6cc0f5d56e4ffa37f7b0a19a14e4fb7a4b5695f1"
+      },
+      {
+        "role": "R1 source review",
+        "sha": "e2cb7b3633c94d5564a5c6d94225573217e0fded",
+        "tree": "d807382f9419f00363fd37fdc131639921c8da29",
+        "parents": [
+          "6cc0f5d56e4ffa37f7b0a19a14e4fb7a4b5695f1"
+        ],
+        "url": "https://github.com/jyqj/codecortex/commit/e2cb7b3633c94d5564a5c6d94225573217e0fded",
+        "api_url": "https://api.github.com/repos/jyqj/codecortex/git/commits/e2cb7b3633c94d5564a5c6d94225573217e0fded"
+      },
+      {
+        "role": "G1 execution source",
+        "sha": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+        "tree": "afbe52cce1019c36f2a80dc1c44769fca95ae959",
+        "parents": [
+          "e2cb7b3633c94d5564a5c6d94225573217e0fded"
+        ],
+        "url": "https://github.com/jyqj/codecortex/commit/f3c71a6bbafbc639413c4737c469c3b873a8888f",
+        "api_url": "https://api.github.com/repos/jyqj/codecortex/git/commits/f3c71a6bbafbc639413c4737c469c3b873a8888f"
+      },
+      {
+        "role": "P2 single test repair and rebinding artifacts",
+        "sha": "29281cbca0004ae1228f2599ca8f4a704507f60d",
+        "tree": "43b4d9ef34a4dbfd741af29a8d636570d2847b75",
+        "parents": [
+          "f3c71a6bbafbc639413c4737c469c3b873a8888f"
+        ],
+        "url": "https://github.com/jyqj/codecortex/commit/29281cbca0004ae1228f2599ca8f4a704507f60d",
+        "api_url": "https://api.github.com/repos/jyqj/codecortex/git/commits/29281cbca0004ae1228f2599ca8f4a704507f60d"
+      },
+      {
+        "role": "R2 source review",
+        "sha": "366f0e435ee880f79904de979dc4b2b307e7a456",
+        "tree": "a38c6a74dd020198ef78fa312087c6fcbb10c1ec",
+        "parents": [
+          "29281cbca0004ae1228f2599ca8f4a704507f60d"
+        ],
+        "url": "https://github.com/jyqj/codecortex/commit/366f0e435ee880f79904de979dc4b2b307e7a456",
+        "api_url": "https://api.github.com/repos/jyqj/codecortex/git/commits/366f0e435ee880f79904de979dc4b2b307e7a456"
+      },
+      {
+        "role": "G2 execution source",
+        "sha": "0272a1fb152fd76a7cfb22386a580629d4038a64",
+        "tree": "85e9f6fb68d7b4ef79e52e23f1ade2e70abca383",
+        "parents": [
+          "366f0e435ee880f79904de979dc4b2b307e7a456"
+        ],
+        "url": "https://github.com/jyqj/codecortex/commit/0272a1fb152fd76a7cfb22386a580629d4038a64",
+        "api_url": "https://api.github.com/repos/jyqj/codecortex/git/commits/0272a1fb152fd76a7cfb22386a580629d4038a64"
+      }
+    ],
+    "g1_ci_actual_merge": {
+      "role": "G1 actual ordinary CI merge checkout",
+      "sha": "4b79e13c94c564a9a3b1b46c96216c5e68177c2c",
+      "tree": "afbe52cce1019c36f2a80dc1c44769fca95ae959",
+      "parents": [
+        "4775bf44dc09c11cea88211e06ccec97c4de44aa",
+        "f3c71a6bbafbc639413c4737c469c3b873a8888f"
+      ],
+      "url": "https://github.com/jyqj/codecortex/commit/4b79e13c94c564a9a3b1b46c96216c5e68177c2c",
+      "api_url": "https://api.github.com/repos/jyqj/codecortex/git/commits/4b79e13c94c564a9a3b1b46c96216c5e68177c2c"
+    },
+    "g1_ci_merge_full_tree_equals_g1": true,
+    "g2_merge": {
+      "role": "G2 merge ref identity independently fetched; actual job checkout must still be read from its own logs",
+      "sha": "fa6c6c69ae3dd459a78b60c9d5ca369f9eb9824b",
+      "tree": "85e9f6fb68d7b4ef79e52e23f1ade2e70abca383",
+      "parents": [
+        "4775bf44dc09c11cea88211e06ccec97c4de44aa",
+        "0272a1fb152fd76a7cfb22386a580629d4038a64"
+      ],
+      "url": "https://github.com/jyqj/codecortex/commit/fa6c6c69ae3dd459a78b60c9d5ca369f9eb9824b",
+      "api_url": "https://api.github.com/repos/jyqj/codecortex/git/commits/fa6c6c69ae3dd459a78b60c9d5ca369f9eb9824b"
+    },
+    "g2_merge_full_tree_equals_g2": true,
+    "g1_registry": {
+      "path": "scripts/reviewed-source-registry-v15.json",
+      "source": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+      "git_blob": "d9b09c0894bb6df7ed62613a362f3436dfe36daf",
+      "sha256": "c07732b4a87df281d5e74579b8ca6418d3fde6481e71db6eaeaa1ed29294046b",
+      "complete_input_count": 1089,
+      "validation_input_count": 140,
+      "product_manifest_sha256": "d006974afc0fa4752f3ebcc5ac441c651bf18870ca6af8ae1217e135bed2730d"
+    },
+    "g2_registry": {
+      "path": "scripts/reviewed-source-registry-v15.json",
+      "source": "0272a1fb152fd76a7cfb22386a580629d4038a64",
+      "git_blob": "4447fa96fe42f06d36bf2a1e36a29ab0fc089a9a",
+      "sha256": "9a2d048e807ba2c4ca44d07703ad71761b2f69b5698c701a4ae2816c01d3e3f0",
+      "complete_input_count": 1089,
+      "validation_input_count": 140,
+      "product_manifest_sha256": "691ae804ec606969e70180298407fcacc60b0408ea025eece02c7639b50b94ac"
+    },
+    "static_source_proof": {
+      "path": "review-pr/pr169-successor-static-source-proof.json",
+      "bytes": 1868,
+      "sha256": "a98262369f19e9289d38dced6d4f70ea21ac6712865b5270600fb58b4b9957d4",
+      "verification": {
+        "schema_version": 1,
+        "scope": "static_byte_and_manifest_verification_no_tests",
+        "g1": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+        "p2": "29281cbca0004ae1228f2599ca8f4a704507f60d",
+        "g2": "0272a1fb152fd76a7cfb22386a580629d4038a64",
+        "product_inputs": 1089,
+        "g1_manifest_sha256": "d006974afc0fa4752f3ebcc5ac441c651bf18870ca6af8ae1217e135bed2730d",
+        "p2_and_g2_manifest_sha256": "691ae804ec606969e70180298407fcacc60b0408ea025eece02c7639b50b94ac",
+        "product_delta_count": 1,
+        "product_delta": [
+          {
+            "path": "crates/cc-index/tests/snapshot_leaf_batching.rs",
+            "old": "be727577fe517b5234d766d44b55889485e9fc08785e76b77cb97d43f89cbf29",
+            "new": "6b9081e76a71b5dc10f31bf22844b9e201b07e167a34e983759706a97e953b26"
+          }
+        ],
+        "validation_delta": [
+          {
+            "path": ".github/workflows/p8-integrated-runtime-controls.yml",
+            "old": "d706586edfd79713358b03a39a78ca1a0bc468bd3de9c3fd7470e22e45835991",
+            "new": "eccc4505dc46afae67f1196fd676b8da63d8fa1f98f471f35b8312f937b69b94"
+          },
+          {
+            "path": ".github/workflows/p8-snapshot-leaf-engineering.yml",
+            "old": "b11451b5a8045202862995374b895b6798b02bb0a44a2952ba8f2db7588628ad",
+            "new": "db9a4775d7ed519be78be4190486ff880efe7665ac7494039c4865678598f079"
+          }
+        ],
+        "single_test_line_change": {
+          "line": 149,
+          "before": "collect::<rusqlite::Result<_>>()",
+          "after": "collect::<rusqlite::Result<Vec<String>>>()",
+          "bytes": 13586,
+          "sha256": "6b9081e76a71b5dc10f31bf22844b9e201b07e167a34e983759706a97e953b26",
+          "git_blob": "307e4636016bd55edb8560bb131d63e5cfcfb844",
+          "exact_one_line_substitution": true
+        },
+        "guard": {
+          "only_PRODUCT_REVIEW_REGISTRY_SHA256_pins_changed": true,
+          "g1_git_blob": "3ea80c8605a32d8689f12c3ee11be6ac3acf4b01",
+          "g2_git_blob": "8899dedc2e1f7440ceb330a1a0cc6d3aa6cbc111"
+        },
+        "no_cargo_or_tests_run": true
+      }
+    },
+    "actual_g2_tree_binding": {
+      "root_tree": "85e9f6fb68d7b4ef79e52e23f1ade2e70abca383",
+      "crates_tree": "c3ff36be7754af663fc575b71c283b9113e1607d",
+      "crates_equals_actual_p2": true,
+      "github_tree": "1a92a3e0252b6c74f1ba3d813e6addee7b430ac9",
+      "github_equals_actual_p2": true,
+      "scripts_tree": "aad42dede53001d4b035fe7d572cbc119a7a52f7",
+      "scripts_entries": 126,
+      "scripts_truncated": false,
+      "only_script_changes_from_g1_p2": [
+        "scripts/reviewed-source-registry-v15.json",
+        "scripts/verify_reviewed_source_v15.py"
+      ],
+      "tests_tree": "b3e8744962f9e4b25ff9104001a3e57d3168735d",
+      "tests_equals_actual_g1_p2": true
+    }
+  },
+  "source_and_engineering_delta": {
+    "actual_comparison": {
+      "source_a23": {
+        "source_commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+        "source_tree": "58147c952505c44da1f41eb4b9c31643f2303b96",
+        "input_count": 1087,
+        "manifest_sha256": "4e0aa6bbfd4d5bea00416bca2cd99318d865ffc526fdcb45897c4d300de3ac00"
+      },
+      "source_g1": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+      "a23_product_count": 1087,
+      "g1_product_count": 1089,
+      "product_delta": [
+        {
+          "path": "crates/cc-db/src/index_db_multi_insert.rs",
+          "a23": {
+            "mode": "100644",
+            "blob": "e04b8652f15fe6c09761c575646c9c3028f7fc05"
+          },
+          "g1": {
+            "mode": "100644",
+            "blob": "539b9d19f1034a8cfd918090b1b48dacc177494c",
+            "bytes": null
+          },
+          "a23_sha256": "9bcc38670163280c0b475474ac02d198b940ab2c621c29e9525e2968a12a3261",
+          "g1_registry_sha256": "b621f633f231a98af42b6ead8c300956ad96ff1544bbbc392c3743b2e3038101"
+        },
+        {
+          "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+          "a23": null,
+          "g1": {
+            "mode": "100644",
+            "blob": "2188f67d83d44b49c3015598c7001d231fd22428",
+            "bytes": null
+          },
+          "a23_sha256": null,
+          "g1_registry_sha256": "e159376159f0f6f250ba4a6d328bde503c4e272ccd11f75a326bb24f85a89a0f"
+        },
+        {
+          "path": "crates/cc-db/src/index_db_write_batch.rs",
+          "a23": {
+            "mode": "100644",
+            "blob": "1595240371f2d8833a14a63e9db43c62f2e6be95"
+          },
+          "g1": {
+            "mode": "100644",
+            "blob": "2758481da50748be45f9c35a35832d2f2bc9b851",
+            "bytes": null
+          },
+          "a23_sha256": "05a9f58d6433eee1be35a66fd08d8f6ac8c3ba9bf434faf99cdee41000ecb617",
+          "g1_registry_sha256": "8968b406f5c8f513489ace72bfc0077233484db687c97a92dbc13704d2e6fb7a"
+        },
+        {
+          "path": "crates/cc-db/src/lib.rs",
+          "a23": {
+            "mode": "100644",
+            "blob": "0d166ab95cd6442c6f8bf38012804c769c2f1ab3"
+          },
+          "g1": {
+            "mode": "100644",
+            "blob": "f41c91b18b8b6120da4b2ab813a408bf37f16dbd",
+            "bytes": null
+          },
+          "a23_sha256": "640dc126385015e2418f0776e0e68e882075d5548761cde7918bfc44e4df7d9f",
+          "g1_registry_sha256": "2ee1fd4600ce4625725c5c673b9ce96be5eab6d74ce7a8c407de4f92a3ee983f"
+        },
+        {
+          "path": "crates/cc-db/src/snapshot_write_txn.rs",
+          "a23": {
+            "mode": "100644",
+            "blob": "4406abf21a7cc044c2c11f0c18aacf42c92b614d"
+          },
+          "g1": {
+            "mode": "100644",
+            "blob": "20dc6ffc60d2a63320b56d1bd8e010e2937ffe26",
+            "bytes": null
+          },
+          "a23_sha256": "dfa574afde308fb5c80b7af31d759e63bbc7376e6e5e01b05dd2657fc4e96856",
+          "g1_registry_sha256": "408fdf68044a2e37d493df71aff7be6140464368fd86e980107f370573c004c7"
+        },
+        {
+          "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+          "a23": {
+            "mode": "100644",
+            "blob": "3f217d116e5fab8a1035cb643f0d74ea3c122568"
+          },
+          "g1": {
+            "mode": "100644",
+            "blob": "1281d5340096699663308c92ce27978ae96ac84e",
+            "bytes": null
+          },
+          "a23_sha256": "fede948c535ca8b91a6b30d3752cd28204abc310423debfd169ff53541f3afbc",
+          "g1_registry_sha256": "18e6fbe38bc0484ff32050c749186671a7e4c3b15c0894b5fb205c9948fb7530"
+        },
+        {
+          "path": "crates/cc-index/tests/snapshot_leaf_batching.rs",
+          "a23": null,
+          "g1": {
+            "mode": "100644",
+            "blob": "636a9c45d6b2e0fe2dd6ded58948f40fcee7a134",
+            "bytes": null
+          },
+          "a23_sha256": null,
+          "g1_registry_sha256": "be727577fe517b5234d766d44b55889485e9fc08785e76b77cb97d43f89cbf29"
+        }
+      ],
+      "g1_to_p2_product_delta": [
+        {
+          "path": "crates/cc-index/tests/snapshot_leaf_batching.rs",
+          "g1": {
+            "mode": "100644",
+            "blob": "636a9c45d6b2e0fe2dd6ded58948f40fcee7a134"
+          },
+          "p2": {
+            "mode": "100644",
+            "blob": "307e4636016bd55edb8560bb131d63e5cfcfb844"
+          }
+        }
+      ],
+      "validation_changed": [
+        {
+          "path": ".github/workflows/p8-integrated-runtime-controls.yml",
+          "a23": null,
+          "g1": {
+            "mode": "100644",
+            "blob": "22a006c1023bfb9254e3cfe238818cdf13259cef",
+            "bytes": null
+          },
+          "g1_registry_sha256": "d706586edfd79713358b03a39a78ca1a0bc468bd3de9c3fd7470e22e45835991"
+        },
+        {
+          "path": ".github/workflows/p8-snapshot-leaf-engineering.yml",
+          "a23": null,
+          "g1": {
+            "mode": "100644",
+            "blob": "0b6195674eb3844b53af7f0ff9d046e3db3e1e2a",
+            "bytes": null
+          },
+          "g1_registry_sha256": "b11451b5a8045202862995374b895b6798b02bb0a44a2952ba8f2db7588628ad"
+        },
+        {
+          "path": "scripts/p8_cold_build.py",
+          "a23": {
+            "mode": "100644",
+            "blob": "ed454b6d29e727c87b0b26e4a975a840d0dec310"
+          },
+          "g1": {
+            "mode": "100644",
+            "blob": "c911f2c94df8c759a8c5f957e4bc92f868a8d4ef",
+            "bytes": null
+          },
+          "g1_registry_sha256": "ee0bd478e0a151dba79c4588282ea4ea10dd2530769018d189cd6d1a0285d974"
+        },
+        {
+          "path": "scripts/p8_rollback.py",
+          "a23": {
+            "mode": "100644",
+            "blob": "61ff1d61c0fc9f14b92daf522faa0d9d5e04be56"
+          },
+          "g1": {
+            "mode": "100644",
+            "blob": "c561d61443467c2737babf498e213f13ed094e93",
+            "bytes": null
+          },
+          "g1_registry_sha256": "a54b40f950aa73cffeaefb064b5ae3b0757ed68edc774b5ca41a7b5642c3a734"
+        },
+        {
+          "path": "scripts/p8_runtime.py",
+          "a23": {
+            "mode": "100644",
+            "blob": "3fe09616768cf35ecc3b76f348ef9eca88d98cd8"
+          },
+          "g1": {
+            "mode": "100644",
+            "blob": "0b8587c755698af9fe87987298a6578764e87c25",
+            "bytes": null
+          },
+          "g1_registry_sha256": "44e0a1166466e9e8ea870cccaa9faeea24d1ce8b9c56d70ec4eae040ccd094f3"
+        },
+        {
+          "path": "scripts/tests/test_p8_platform.py",
+          "a23": {
+            "mode": "100644",
+            "blob": "aa8066379b4acf2c2581c85199e4d29fc1d1cb53"
+          },
+          "g1": {
+            "mode": "100644",
+            "blob": "7c1c638bd5964b035c9a738df53522c649896b86",
+            "bytes": null
+          },
+          "g1_registry_sha256": "543f604cb9cbcfe1600aa1a5711f27d3eb2ee3e64126d9c95c1ad5612418aae8"
+        },
+        {
+          "path": "scripts/tests/test_p8_recovery.py",
+          "a23": {
+            "mode": "100644",
+            "blob": "2df6ce3f08fc65780c47ab23a58ad62c43821eb8"
+          },
+          "g1": {
+            "mode": "100644",
+            "blob": "f7a45890870323518de919f8ddedf8eda4816a58",
+            "bytes": null
+          },
+          "g1_registry_sha256": "ec768399c4828395da7d973b433356c8444c3acd386d01ddb665e58ffe38b050"
+        },
+        {
+          "path": "scripts/tests/test_p8_runtime.py",
+          "a23": {
+            "mode": "100644",
+            "blob": "38cf6a820391854a2fab6ba8d6daf8d7076ff4a1"
+          },
+          "g1": {
+            "mode": "100644",
+            "blob": "4cef5c6ebfcaef942c9771f62f3f78c3701427ba",
+            "bytes": null
+          },
+          "g1_registry_sha256": "9bdfd77ee40a314c955db9a70472923bda0ebca218c2612c25caba9c88f815a0"
+        },
+        {
+          "path": "scripts/tests/test_p8_runtime_cache.py",
+          "a23": {
+            "mode": "100644",
+            "blob": "f4286b62d81f27ca0e54942d0d7a07d2dbbb1b5f"
+          },
+          "g1": {
+            "mode": "100644",
+            "blob": "7c00bcdd8024c7159c8e00a088a52ba5813272cf",
+            "bytes": null
+          },
+          "g1_registry_sha256": "c43b0b74d2a7dc5afcc64c3956e08319bdceb9c9270ca2774b5565a0e79f3ad7"
+        },
+        {
+          "path": "scripts/tests/test_p8_runtime_finalization.py",
+          "a23": {
+            "mode": "100644",
+            "blob": "67e3a732ca18e89550e2004fabfa7d137a451648"
+          },
+          "g1": {
+            "mode": "100644",
+            "blob": "96b24425e75677708029a382f67e012810eed01a",
+            "bytes": null
+          },
+          "g1_registry_sha256": "aeed33692d86551db32b010c39f14bebe51d899196c6018a488d9feef3c15145"
+        }
+      ],
+      "actual_git_tree_comparison": true,
+      "registry_agrees_with_all_actual_unchanged_product_blobs": true
+    },
+    "comparison_boundary": "The 7 product and 10 validation-input differences are a23 versus G1, not an assertion that all absent protections were newly removed in PR168 relative to its main base.",
+    "unchanged_common_product_inputs": 1082,
+    "actual_git_blob_and_mode_compared": true,
+    "registry_hashes_confirmed_against_all_actual_unchanged_product_blobs": true,
+    "product_interpretation": [
+      "Five existing product inputs are modified and two are added. Snapshot leaf batching is a separate performance-oriented source change; six leaf groups use the original SQL binders with per-file/per-table MAX_ROWS=64 and MAX_BOUND_BYTES=64KiB, while a legal oversized single row remains allowed.",
+      "Only full SnapshotWriteTxn opts into snapshot_leaf_batches; existing public/config/incremental paths retain false. Shared parent writes, FTS, transaction boundaries, parameter ordering and conflict intent were reviewed in exact diffs. This review found no demonstrated a23 correctness defect from its existing per-row leaf inserts.",
+      "Statement caches, the existing complete streaming oracle, dependency_window_pending/reconcile and identity/transaction regressions are already byte-identical in a23 and G1; they are not new requirements that justify invalidating the original a23 execution.",
+      "The p8_scale boolean expression !shard.is_some_and(count == repetitions) becomes shard.is_none_or(count != repetitions); None/equal/unequal cases are equivalent. No scale repetition, budget or denominator changes follow from this expression.",
+      "The Rust control run failed before tests/release/engineering scale; no G1 speedup or scale-gate satisfaction is established here. Whether original a23 timing passes is resolved by its actual original terminal evidence."
+    ],
+    "p2_scope": {
+      "total_commit_changed_files": 19,
+      "product_changed_files": 1,
+      "product_change": "Exactly test helper line 149 .collect::<rusqlite::Result<_>>() -> .collect::<rusqlite::Result<Vec<String>>>()",
+      "auxiliary_workflow_changes": 2,
+      "added_archival_plan_controller_files": 16,
+      "assertions_or_method_population_changed": false,
+      "production_implementation_changed": false,
+      "workflow_changes": "Branch checks and manifest/product-digest bindings only; original command arrays, 53 Rust methods, 50 Python methods, 24 subcases and budgets remain unchanged."
+    }
+  },
+  "original_g1_failure": {
+    "run_id": 37874665202,
+    "job_id": 113640379348,
+    "source": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+    "actual_checkout": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+    "run_attempt": 1,
+    "conclusion": "failure",
+    "actual_results": [
+      {
+        "accepted": true,
+        "argv": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "elapsed_ns": 1625279388,
+        "exit_code": 0,
+        "started_utc": "2026-10-09T02:28:44.265078+00:00",
+        "stderr": "00.stderr",
+        "stdout": "00.stdout"
+      },
+      {
+        "accepted": false,
+        "argv": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--offline",
+          "-p",
+          "cc-index",
+          "-p",
+          "cc-db",
+          "-p",
+          "cc-eval",
+          "--all-targets",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "elapsed_ns": 34290725207,
+        "exit_code": 101,
+        "started_utc": "2026-10-09T02:28:45.890711+00:00",
+        "stderr": "01.stderr",
+        "stdout": "01.stdout"
+      }
+    ],
+    "control_summary": {
+      "status": "command_or_population_failed",
+      "exit_code": 1,
+      "attempted_commands": 2,
+      "planned_commands": 18,
+      "remaining_commands_not_run": 16,
+      "planned_rust_methods": 53,
+      "credited_executed_rust_methods": 0
+    },
+    "diagnostic": {
+      "code": "E0282",
+      "path": "crates/cc-index/tests/snapshot_leaf_batching.rs",
+      "line": 149,
+      "stderr_bytes": 6645,
+      "stderr_sha256": "3ae0fda871990c1c0b4222540533daa3d1f638d6aa92604e71c36e4bb81396cd",
+      "stderr_git_blob": "896eba09276fff035ea383a6fe74795f0b0a2568",
+      "explanation": "Intermediate Result collection type was unconstrained before into_iter; outer/final Vec<String> did not establish it."
+    },
+    "release_and_scale": "Release build skipped after failed controls; no engineering 1k/10k/100k diagnosis from this run. The failed release upload reflects absent build output after the earlier compile failure.",
+    "artifact_metadata": [
+      {
+        "id": 11591493572,
+        "name": "p8-snapshot-leaf-controls-37874665202",
+        "size_in_bytes": 112812,
+        "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11591493572",
+        "archive_download_url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11591493572/zip",
+        "expired": false,
+        "created_at": "2026-10-09T02:29:21Z",
+        "expires_at": "2027-01-07T02:27:32Z",
+        "updated_at": "2026-10-09T02:29:21Z",
+        "digest": "sha256:2aba459165f49a6825447cdd476b8d4c579c8685711f2e32fd165c848ecf2c54",
+        "workflow_run": {
+          "id": 37874665202,
+          "repository_id": 1249213794,
+          "head_repository_id": 1249213794,
+          "head_branch": "task/p8-snapshot-leaf-engineering-20261009",
+          "head_sha": "f3c71a6bbafbc639413c4737c469c3b873a8888f"
+        }
+      }
+    ],
+    "source_of_failure_detail": "Independent original official job text plus exact published P2 original stderr bytes; the receiver audit is retained verbatim.",
+    "original_zip_reception_boundary": "Official artifact metadata agrees with the preserved original receiver audit. The GitHub UTF-8 plugin rejects the binary Git blob, so this review did not independently download/re-CRC/re-seal the full original controls.zip. That prior receiver conclusion is attributed, not reasserted as newly performed verification.",
+    "ordinary_ci_confirmation": {
+      "run_id": 37874688782,
+      "actual_checkout": "4b79e13c94c564a9a3b1b46c96216c5e68177c2c",
+      "equivalent_full_tree": "afbe52cce1019c36f2a80dc1c44769fca95ae959",
+      "conclusion": "failure",
+      "jobs": [
+        {
+          "id": 113640456453,
+          "name": "security",
+          "conclusion": "success"
+        },
+        {
+          "id": 113640456594,
+          "name": "msrv",
+          "conclusion": "failure",
+          "diagnostic": "E0282 at snapshot_leaf_batching.rs:149:10",
+          "actual_exit": 101
+        },
+        {
+          "id": 113640456619,
+          "name": "check",
+          "conclusion": "failure",
+          "diagnostic": "E0282 at snapshot_leaf_batching.rs:149:20",
+          "fmt": "passed",
+          "clippy": "failed",
+          "actual_exit": 101
+        }
+      ],
+      "boundary": "Security success does not imply original CI success. Failed compile gates leave downstream required checks skipped."
+    }
+  },
+  "independent_g1_python_success": {
+    "run_id": 37874665224,
+    "job_id": 113640379294,
+    "source": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+    "actual_checkout": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+    "run_attempt": 1,
+    "conclusion": "success",
+    "controller_result": {
+      "status": "commands_completed",
+      "exit_code": 0,
+      "actual_methods": 50,
+      "receipt_sha256": "cce65cbb9b55b4574dc3f5bf504e5c00033575ab47a38c6c0dd4bfeabad2d501",
+      "new_TODO_done": 0,
+      "TODO_remaining": 29
+    },
+    "registered_population": {
+      "test_p8_runtime": 14,
+      "test_p8_runtime_evidence": 15,
+      "test_p8_runtime_cache": 13,
+      "test_p8_runtime_finalization": 8,
+      "total_methods": 50,
+      "exact_subtests": 24,
+      "observers": 9
+    },
+    "examined_controller_contract": "Before commands_completed, the original controller requires each complete expected method-ID set, matching starts/stops, success and no skips, four zero command exits, and all 24 exact subtest cases.",
+    "artifact_metadata": [
+      {
+        "id": 11591747962,
+        "name": "p8-integrated-runtime-controls-37874665224",
+        "size_in_bytes": 1241560,
+        "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11591747962",
+        "archive_download_url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11591747962/zip",
+        "expired": false,
+        "created_at": "2026-10-09T02:28:06Z",
+        "expires_at": "2027-01-07T02:27:32Z",
+        "updated_at": "2026-10-09T02:28:06Z",
+        "digest": "sha256:b9aebbb62ccd5b815876d12968fc9bb251235a185c777071edd8eca91398d05f",
+        "workflow_run": {
+          "id": 37874665224,
+          "repository_id": 1249213794,
+          "head_repository_id": 1249213794,
+          "head_branch": "task/p8-snapshot-leaf-engineering-20261009",
+          "head_sha": "f3c71a6bbafbc639413c4737c469c3b873a8888f"
+        }
+      }
+    ],
+    "boundary": "Actual G1 Python50 success is independently corroborated by its original job/controller output and artifact/source metadata. This coordination review did not perform a second 1659-member ZIP/seal reception; complete receiver claims in the archived source review remain explicitly attributed. These successful G1 controls do not fix G1 Rust E0282, prove P2/G2 execution or close original TODOs."
+  },
+  "required_candidate_validation_repairs": [
+    {
+      "id": "candidate-runtime-construction-ownership",
+      "severity": "required candidate validation repair",
+      "path": "scripts/p8_runtime.py",
+      "function": "run / product_stopped",
+      "g1_p2_g2_lines": [
+        533,
+        708,
+        784,
+        785,
+        786,
+        787,
+        788,
+        789,
+        790,
+        791,
+        792,
+        794,
+        802
+      ],
+      "a23_blob": "3fe09616768cf35ecc3b76f348ef9eca88d98cd8",
+      "g1_p2_g2_blob": "0b8587c755698af9fe87987298a6578764e87c25",
+      "g1_p2_g2_sha256": "44e0a1166466e9e8ea870cccaa9faeea24d1ce8b9c56d70ec4eae040ccd094f3",
+      "evidence_url": "https://github.com/jyqj/codecortex/blob/0272a1fb152fd76a7cfb22386a580629d4038a64/scripts/p8_runtime.py#L784-L802",
+      "related_constructor": {
+        "path": "scripts/p8_rollback.py",
+        "function": "Product.__init__",
+        "popen_lines": [
+          205,
+          206,
+          207
+        ],
+        "post_spawn_fallible_lines": [
+          213,
+          214
+        ]
+      },
+      "observation": "Both main and comparison Product assignments can fail after Popen creates the process but before the caller receives the Product. product_stopped(None) is true and there is no construction-pending flag. With workers/sampler stopped, the finalizer can treat unknown process ownership as fully stopped and seal the failed artifact despite an unconfirmed child/transport writer.",
+      "limits": "This is a static failure-path correctness finding, not evidence that an observed successful G1/P2/G2 workload actually experienced partial construction. The enclosing report remains failed; the defect concerns cleanup ownership and the truth of the immutable artifact seal, not a demonstrated false workload pass. Normal Product.close does check process/reader/watcher termination.",
+      "a23_protection": {
+        "lines": [
+          548,
+          575,
+          576,
+          577,
+          766,
+          767,
+          768,
+          856,
+          857,
+          858,
+          859,
+          860
+        ],
+        "description": "a23 tracks main/comparison construction pending and prevents sealing while ownership is unknown."
+      },
+      "minimal_fix": "Retain unknown ownership from immediately before each Product construction until successful return, include both flags in writers_stopped, and preserve the failed/unsealed outcome when a constructor raises after spawning. Restore a23's corresponding negative controls.",
+      "required_controls": [
+        {
+          "path": "scripts/tests/test_p8_runtime.py",
+          "line": 719,
+          "name": "test_main_construction_failure_seal_contract"
+        },
+        {
+          "path": "scripts/tests/test_p8_runtime.py",
+          "line": 722,
+          "name": "test_comparison_construction_failure_seal_contract"
+        }
+      ],
+      "applicability": {
+        "a23": "protection present; no new blocker for its current acceptance",
+        "g1": "present",
+        "p2": "identical scripts subtree; present",
+        "g2": "exact three file bodies and official subtree independently checked; present"
+      }
+    },
+    {
+      "id": "candidate-schema-same-byte-binding",
+      "severity": "required candidate validation repair",
+      "path": "scripts/p8_rollback.py",
+      "function": "product_schema_version",
+      "g1_p2_g2_lines": [
+        312,
+        319,
+        320,
+        321,
+        322,
+        323,
+        324,
+        325
+      ],
+      "a23_blob": "61ff1d61c0fc9f14b92daf522faa0d9d5e04be56",
+      "g1_p2_g2_blob": "c561d61443467c2737babf498e213f13ed094e93",
+      "g1_p2_g2_sha256": "a54b40f950aa73cffeaefb064b5ae3b0757ed68edc774b5ca41a7b5642c3a734",
+      "evidence_url": "https://github.com/jyqj/codecortex/blob/0272a1fb152fd76a7cfb22386a580629d4038a64/scripts/p8_rollback.py#L312-L325",
+      "observation": "The source file is hashed by digest(path), then independently reread by path.read_text() for CURRENT_SCHEMA_VERSION. The parsed bytes are not the bytes whose hash was checked. A replacement between reads can change the parsed schema while satisfying the earlier digest comparison.",
+      "limits": "Static time-of-check/time-of-use gap; this review does not claim a replacement actually occurred in any retained candidate artifact.",
+      "a23_protection": {
+        "line": 319,
+        "description": "a23 reads one raw byte buffer and derives both the checked digest and parsed declaration from that buffer; it also preserves stricter ancestor/path/NUL/counter handling."
+      },
+      "minimal_fix": "Restore one read_bytes buffer and compute the SHA256 plus decoding/parsing from exactly that buffer, together with a23's original path and manifest validation. Keep the same-byte negative control.",
+      "required_controls": [
+        {
+          "path": "scripts/tests/test_p8_recovery.py",
+          "line": 366,
+          "name": "test_schema_version_is_parsed_from_the_same_bytes_as_its_digest"
+        }
+      ],
+      "applicability": {
+        "a23": "same-byte guard present; no new blocker for its current acceptance",
+        "g1": "present",
+        "p2": "identical scripts subtree; present",
+        "g2": "same exact blob/body; present"
+      }
+    },
+    {
+      "id": "candidate-platform-original-selection-binding",
+      "severity": "required candidate validation repair",
+      "path": "scripts/p8_cold_build.py",
+      "function": "collect_cells",
+      "g1_p2_g2_lines": [
+        646,
+        667,
+        668,
+        669,
+        670,
+        671,
+        672,
+        673,
+        674,
+        675,
+        676,
+        677,
+        678,
+        679,
+        680,
+        681,
+        682,
+        689,
+        690,
+        691,
+        692,
+        693
+      ],
+      "a23_blob": "ed454b6d29e727c87b0b26e4a975a840d0dec310",
+      "g1_p2_g2_blob": "c911f2c94df8c759a8c5f957e4bc92f868a8d4ef",
+      "g1_p2_g2_sha256": "ee0bd478e0a151dba79c4588282ea4ea10dd2530769018d189cd6d1a0285d974",
+      "evidence_url": "https://github.com/jyqj/codecortex/blob/0272a1fb152fd76a7cfb22386a580629d4038a64/scripts/p8_cold_build.py#L646-L693",
+      "observation": "collect_cells omits a23's selected_inventory and original strict-export checks: live_strict_receipt_and_stdio_replay must be true; selection must represent the original full eight-cell matrix; the selected receipt SHA/source and original receipt name/parent/target must agree. verify_portable_cell does not consume the omitted selection contract. Thus a false strict-export flag or consistently resealed altered selection inventory can be ignored by the collector.",
+      "limits": "The candidate still validates the complete bundle file/hash inventory, before/after source, portable compiler/binary/raw stdio evidence, and eight unique platform keys. This finding does not assert all platform checks are absent or that a retained candidate artifact was actually altered.",
+      "a23_protection": {
+        "selected_inventory_line": 593,
+        "collect_binding_lines": [
+          678,
+          679,
+          680,
+          681,
+          682,
+          683,
+          684,
+          685,
+          686,
+          687,
+          688,
+          689,
+          690
+        ],
+        "description": "a23 binds each collected cell to the exact original selected receipt and live strict export."
+      },
+      "minimal_fix": "Restore a23's strict selected-inventory/export/receipt/source/target binding and its negative control. Preserve a23's collect CLI finalization that persists the original v2 invalid result for ordinary exceptions and cancellation; the candidate falls back to a narrower exception list and v1 invalid receipt.",
+      "required_controls": [
+        {
+          "path": "scripts/tests/test_p8_platform.py",
+          "line": 278,
+          "name": "test_collector_requires_original_selected_cell_and_source"
+        }
+      ],
+      "applicability": {
+        "a23": "original selected-source collector independently replayed/accepted already; no new blocker",
+        "g1": "present",
+        "p2": "identical scripts subtree; present",
+        "g2": "same exact blob/body; present"
+      }
+    }
+  ],
+  "existing_non_author_g2_source_review": {
+    "path": "artifacts/checkpoints/p8-completion-20261009/independent-source-review.json",
+    "source": "0272a1fb152fd76a7cfb22386a580629d4038a64",
+    "url": "https://github.com/jyqj/codecortex/blob/0272a1fb152fd76a7cfb22386a580629d4038a64/artifacts/checkpoints/p8-completion-20261009/independent-source-review.json",
+    "git_blob": "ea7efe92d28734f76ce5d00d1824db01f186fba9",
+    "bytes": 293440,
+    "sha256": "31f5773c9288c5d8c58e39c47a0fe0d2b3144b774819d87bce4fbd547345d0d7",
+    "declared_scope": "independently_reviewed_source_and_validation_inputs",
+    "declared_verdict": "accepted_scoped",
+    "declared_unresolved_blockers": [],
+    "read_entire_json_and_examined_fields": [
+      "complete_inputs",
+      "validation_inputs",
+      "source_modes",
+      "validation_modes",
+      "actual_commit_verification",
+      "validation_delta",
+      "key_semantic_findings",
+      "review_evidence",
+      "acceptance_boundary",
+      "assembly_notes"
+    ],
+    "actual_independent_comparison": "Its exact-byte P2 inheritance and binding claims were independently checked against official trees, maps and fetched changed bodies. Actual G2 registry review_sha256 matches this raw review. The source admission does not contain the a23 protections identified above; exact inheritance of weaker candidate files does not close those gaps.",
+    "acceptance_boundary": [
+      "This is complete non-author source and validation-input approval for exact P2 and tree above, using explicit byte/mode/blob inheritance for unchanged inputs.",
+      "No successful new Rust53 compilation, Python50 execution, original CI, source-integrity proof after future pins, platform/runtime/soak/recovery, N150 scale study, quality evaluation, release or original TODO closure is certified by this review.",
+      "The actual G1 Rust Clippy failure and G1 Python50 success remain distinct source-bound observations. The future new branch is a fresh fixed-source validation attempt, not a rerun or replacement of the old failed primary sample.",
+      "All historical sources, workloads and evidence keep their original identity and limitations. Current G4 or D0 measurements are not relabelled as P2.",
+      "No original acceptance threshold, sample denominator, capacity budget, dependency, heldout boundary, frozen v14 proof, CI assertion or task definition was lowered.",
+      "No Cargo, product workload, repository tests or statistics binary was run locally for this review. Read-only GitHub API/blob access and pure-memory content/AST verification only; no local file writes.",
+      "No heldout corpus was semantically inspected or executed; unchanged opaque complete-input hashes were inherited only after exact actual Git identities matched.",
+      "Actual subsequent source-integrity proofs and required CI must pass for the final pinned G2. This review does not grant merge or release readiness."
+    ],
+    "inherited_reviewers_do_not_substitute_for_specific_gap_resolution": true
+  },
+  "coordination_recommendations": [
+    "Keep G1 failed and source-bound; retain its original CI/Rust failure and independent Python50 success.",
+    "Track P2/G2 as separate sources. Do not mark the static annotation as an executed compile pass; observe the existing actual G2 terminal jobs under their own checkout/tree/artifact identities.",
+    "Before expanding candidate measurements or claiming original-protocol completeness, restore the three a23 validation protections in a reviewable new candidate, preserve negative controls, and rerun only the genuinely changed-source required verification according to the original approval/workload rules. No such action was performed by this subagent.",
+    "Leave the original a23 task acceptance and archived source evidence unchanged. Original scale/runtime/dependency closure remains owned by root and the assigned acceptance agents."
+  ],
+  "saved_evidence_manifest": {
+    "manifest_path": "review-pr/pr168-github-evidence-manifest.json",
+    "bytes": 3097,
+    "sha256": "a81fef9a4e1b68d63d0af1704f8b54fdc23b8716264e6850eeb81b84043d1ddd",
+    "records": [
+      {
+        "path": "review-pr/github-job-logs/g1-rust-controls-113640379348.log",
+        "run_id": 37874665202,
+        "job_id": 113640379348,
+        "actual_checkout": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+        "url": "https://github.com/jyqj/codecortex/actions/runs/37874665202/job/113640379348",
+        "bytes": 81526,
+        "sha256": "e300175353c7507d148eb478bd3e1e7f896845b2b02793aa60f33691b0600481"
+      },
+      {
+        "path": "review-pr/github-job-logs/g1-python-controls-113640379294.log",
+        "run_id": 37874665224,
+        "job_id": 113640379294,
+        "actual_checkout": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+        "url": "https://github.com/jyqj/codecortex/actions/runs/37874665224/job/113640379294",
+        "bytes": 42293,
+        "sha256": "2e3462fbd7fefaa1708a21d73f995d2c27e35a807e1cccbe4dc2795aa9e36aca"
+      },
+      {
+        "path": "review-pr/github-job-logs/g1-ci-msrv-113640456594.log",
+        "run_id": 37874688782,
+        "job_id": 113640456594,
+        "actual_checkout": "4b79e13c94c564a9a3b1b46c96216c5e68177c2c",
+        "url": "https://github.com/jyqj/codecortex/actions/runs/37874688782/job/113640456594",
+        "bytes": 37786,
+        "sha256": "933a85e7053c1e71466fd699ce68fb93409ae4e5b06230c0791cb7cf82ebe4b9"
+      },
+      {
+        "path": "review-pr/github-job-logs/g1-ci-check-113640456619.log",
+        "run_id": 37874688782,
+        "job_id": 113640456619,
+        "actual_checkout": "4b79e13c94c564a9a3b1b46c96216c5e68177c2c",
+        "url": "https://github.com/jyqj/codecortex/actions/runs/37874688782/job/113640456619",
+        "bytes": 39301,
+        "sha256": "20f63f1110ad04b6c8e6f988b8593ac14e0524542c045e3faa873b8c12d312af"
+      },
+      {
+        "path": "review-pr/g1-original-failure-01.stderr",
+        "source": "29281cbca0004ae1228f2599ca8f4a704507f60d",
+        "github_path": "artifacts/checkpoints/p8-completion-20261009/snapshot-leaf-fix-20261009/original-failure/01.stderr",
+        "sha": "896eba09276fff035ea383a6fe74795f0b0a2568",
+        "bytes": 6645,
+        "sha256": "3ae0fda871990c1c0b4222540533daa3d1f638d6aa92604e71c36e4bb81396cd",
+        "git_blob": "896eba09276fff035ea383a6fe74795f0b0a2568"
+      },
+      {
+        "path": "review-pr/g1-original-failure-reception-audit.json",
+        "source": "29281cbca0004ae1228f2599ca8f4a704507f60d",
+        "github_path": "artifacts/checkpoints/p8-completion-20261009/snapshot-leaf-fix-20261009/original-failure/reception-audit.json",
+        "sha": "927293993aebf47d88129c6c1363a2fdbfb79254",
+        "bytes": 5091,
+        "sha256": "f1a09fdcb7234747053d9cd0292dae3549ba0a2218aa5f054ad2f4e021b860d7",
+        "git_blob": "927293993aebf47d88129c6c1363a2fdbfb79254"
+      }
+    ]
+  },
+  "external_evidence_urls": [
+    "https://github.com/jyqj/codecortex/pull/168",
+    "https://github.com/jyqj/codecortex/pull/169",
+    "https://github.com/jyqj/codecortex/pull/168#issuecomment-6073667411",
+    "https://github.com/jyqj/codecortex/actions/runs/37874665202",
+    "https://github.com/jyqj/codecortex/actions/runs/37874665224",
+    "https://github.com/jyqj/codecortex/actions/runs/37874688782",
+    "https://api.github.com/repos/jyqj/codecortex/git/commits/f3c71a6bbafbc639413c4737c469c3b873a8888f",
+    "https://api.github.com/repos/jyqj/codecortex/git/commits/29281cbca0004ae1228f2599ca8f4a704507f60d",
+    "https://api.github.com/repos/jyqj/codecortex/git/commits/0272a1fb152fd76a7cfb22386a580629d4038a64"
+  ],
+  "no_tests_builds_or_measurements_started": true,
+  "no_remote_writes_by_this_subagent": true,
+  "frozen_platform_archive_invariance": {
+    "checked": true,
+    "selected_files": 85,
+    "manifest_files": 1,
+    "total_files_checked": 86,
+    "selected_bytes": 1140647,
+    "total_bytes_including_manifest": 1174309,
+    "manifest_path": "review-platform/archive-selection.json",
+    "manifest_sha256": "8bbf2105ff2d3c6df19c5013b715602e1e7a6836c17d8afacd0b75441eb41db1",
+    "all_86_original_bytes_unchanged": true,
+    "no_write_to_platform_directory": true
+  },
+  "local_review_evidence_files": [
+    {
+      "path": "review-pr/pr168-source-delta-preparation.json",
+      "bytes": 7849,
+      "sha256": "77460f5167fe4731da7d0e18607ec06a4efc0acea7d232ce9f7d67c1785ec841"
+    },
+    {
+      "path": "review-pr/pr168-product-diffs.json",
+      "bytes": 45902,
+      "sha256": "af63a2beeac059568a3f26796253082cdae07b9e7c41862abd26ea35f97ca02e"
+    },
+    {
+      "path": "review-pr/pr168-validation-diffs.json",
+      "bytes": 114761,
+      "sha256": "e999d6137781a5ca8cfd3d62e93ebde7471a9b346d7c6f60de9a2e46f8597775"
+    },
+    {
+      "path": "review-pr/pr169-successor-static-source-proof.json",
+      "bytes": 1868,
+      "sha256": "a98262369f19e9289d38dced6d4f70ea21ac6712865b5270600fb58b4b9957d4"
+    },
+    {
+      "path": "review-pr/pr168-github-evidence-manifest.json",
+      "bytes": 3097,
+      "sha256": "a81fef9a4e1b68d63d0af1704f8b54fdc23b8716264e6850eeb81b84043d1ddd"
+    },
+    {
+      "path": "review-pr/github-job-logs/g1-rust-controls-113640379348.log",
+      "bytes": 81526,
+      "sha256": "e300175353c7507d148eb478bd3e1e7f896845b2b02793aa60f33691b0600481"
+    },
+    {
+      "path": "review-pr/github-job-logs/g1-python-controls-113640379294.log",
+      "bytes": 42293,
+      "sha256": "2e3462fbd7fefaa1708a21d73f995d2c27e35a807e1cccbe4dc2795aa9e36aca"
+    },
+    {
+      "path": "review-pr/github-job-logs/g1-ci-msrv-113640456594.log",
+      "bytes": 37786,
+      "sha256": "933a85e7053c1e71466fd699ce68fb93409ae4e5b06230c0791cb7cf82ebe4b9"
+    },
+    {
+      "path": "review-pr/github-job-logs/g1-ci-check-113640456619.log",
+      "bytes": 39301,
+      "sha256": "20f63f1110ad04b6c8e6f988b8593ac14e0524542c045e3faa873b8c12d312af"
+    },
+    {
+      "path": "review-pr/g1-original-failure-01.stderr",
+      "bytes": 6645,
+      "sha256": "3ae0fda871990c1c0b4222540533daa3d1f638d6aa92604e71c36e4bb81396cd"
+    },
+    {
+      "path": "review-pr/g1-original-failure-reception-audit.json",
+      "bytes": 5091,
+      "sha256": "f1a09fdcb7234747053d9cd0292dae3549ba0a2218aa5f054ad2f4e021b860d7"
+    }
+  ]
+}

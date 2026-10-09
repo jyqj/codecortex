@@ -1,0 +1,165 @@
+[
+  {
+    "added": [],
+    "changed": [
+      "artifact",
+      "execute"
+    ],
+    "path": "scripts/p8_backfill.py",
+    "removed": [],
+    "unchanged_functions": 0
+  },
+  {
+    "added": [
+      "selected_inventory"
+    ],
+    "changed": [
+      "selected_cell",
+      "collect_cells",
+      "main"
+    ],
+    "path": "scripts/p8_cold_build.py",
+    "removed": [],
+    "unchanged_functions": 27
+  },
+  {
+    "added": [
+      "product_manifest_hashes"
+    ],
+    "changed": [
+      "binary_identity",
+      "product_schema_version"
+    ],
+    "path": "scripts/p8_rollback.py",
+    "removed": [
+      "manifest_hashes"
+    ],
+    "unchanged_functions": 18
+  },
+  {
+    "added": [
+      "terminal_operation_metadata",
+      "finalize_artifacts"
+    ],
+    "changed": [
+      "run"
+    ],
+    "path": "scripts/p8_runtime.py",
+    "removed": [],
+    "unchanged_functions": 24
+  },
+  {
+    "added": [
+      "private_build_environment",
+      "verify_toolchain"
+    ],
+    "changed": [
+      "observer_snapshot",
+      "checked_artifact",
+      "verify_receipt",
+      "build"
+    ],
+    "path": "scripts/p8_runtime_build.py",
+    "removed": [],
+    "unchanged_functions": 6
+  },
+  {
+    "added": [
+      "PlatformControls.seal_bundle_inventory",
+      "PlatformControls.reseal_exported_receipt",
+      "PlatformControls.test_collector_replays_same_build_contract_after_consistent_resealing",
+      "PlatformControls.test_collector_does_not_require_original_target_or_compiler_paths",
+      "PlatformControls.test_collector_requires_original_selected_cell_and_source",
+      "PlatformControls.test_failed_collection_retains_machine_readable_failure_and_input_bytes"
+    ],
+    "changed": [
+      "PlatformControls.test_all_eight_synthetic_cells_replay_and_duplicate_is_rejected",
+      "PlatformControls.schema_identity",
+      "PlatformControls.test_version_schema_accepts_bound_list_and_rejects_duplicate_or_missing_paths"
+    ],
+    "path": "scripts/tests/test_p8_platform.py",
+    "removed": [
+      "PlatformControls.test_empty_collector_preserves_invalid_matrix_without_passing_cells",
+      "PlatformControls.test_bad_bundle_collector_preserves_refusal_and_input_bytes",
+      "PlatformControls.test_collector_existing_directory_and_symlink_are_never_written"
+    ],
+    "unchanged_functions": 49
+  },
+  {
+    "added": [
+      "RollbackManifestControls.product",
+      "RollbackManifestControls.rewrite_manifest",
+      "RollbackManifestControls.test_both_original_manifest_formats_expose_the_bound_schema",
+      "RollbackManifestControls.test_duplicate_paths_or_invalid_manifest_shapes_are_rejected",
+      "RollbackManifestControls.test_schema_read_rechecks_manifest_and_source_after_identity",
+      "RollbackManifestControls.test_schema_version_is_parsed_from_the_same_bytes_as_its_digest",
+      "RollbackManifestControls.test_duplicate_map_keys_and_wrong_counts_are_rejected"
+    ],
+    "changed": [],
+    "path": "scripts/tests/test_p8_recovery.py",
+    "removed": [],
+    "unchanged_functions": 30
+  },
+  {
+    "added": [
+      "RuntimeDriverControls.prepare_control",
+      "RuntimeDriverControls.run_control",
+      "RuntimeDriverControls.interrupted_control",
+      "RuntimeDriverControls.test_completed_unequal_oracle_preserves_gate_failure_and_all_statistics",
+      "RuntimeDriverControls.test_oracle_execution_error_remains_driver_failure",
+      "RuntimeDriverControls.test_equal_oracle_retains_successful_observation",
+      "RuntimeDriverControls.test_raw_budget_failure_cancels_and_joins_before_sealing",
+      "RuntimeDriverControls.test_existing_drain_deadline_preserves_canceled_outcomes_and_bounds",
+      "RuntimeDriverControls.test_submit_failure_retains_offered_attempt_and_releases_slot",
+      "RuntimeDriverControls.test_keyboard_interrupt_records_failure_before_and_after_drain",
+      "_owned_digest",
+      "_owned_write",
+      "_owned_writer_control",
+      "OwnedWriterSealControls.check_owned_writer_case",
+      "OwnedWriterSealControls.test_all_stopped_seal_contract",
+      "OwnedWriterSealControls.test_sampler_alive_seal_contract",
+      "OwnedWriterSealControls.test_main_reader_alive_seal_contract",
+      "OwnedWriterSealControls.test_comparison_reader_alive_seal_contract",
+      "OwnedWriterSealControls.test_main_watcher_alive_seal_contract",
+      "OwnedWriterSealControls.test_comparison_watcher_alive_seal_contract",
+      "OwnedWriterSealControls.test_stopped_close_error_seal_contract",
+      "OwnedWriterSealControls.test_main_construction_failure_seal_contract",
+      "OwnedWriterSealControls.test_comparison_construction_failure_seal_contract",
+      "OwnedWriterSealControls.test_worker_unfinished_seal_contract"
+    ],
+    "changed": [],
+    "path": "scripts/tests/test_p8_runtime.py",
+    "removed": [],
+    "unchanged_functions": 15
+  },
+  {
+    "added": [
+      "CacheTerminalRetentionTests.test_exhausted_raw_sidecar_keeps_metadata_without_nested_response_bodies",
+      "CacheTerminalRetentionTests.test_failed_request_prefix_and_non_cache_terminal_metadata_are_preserved"
+    ],
+    "changed": [],
+    "path": "scripts/tests/test_p8_runtime_cache.py",
+    "removed": [],
+    "unchanged_functions": 21
+  },
+  {
+    "added": [
+      "RuntimeBuildBindingTests.test_shared_target_or_fresh_workspace_artifact_cannot_pass",
+      "RuntimeBuildBindingTests.test_different_compiler_or_rewritten_compiler_bytes_are_rejected",
+      "RuntimeBuildBindingTests.test_private_environment_rejects_existing_target_and_overrides_build_configuration"
+    ],
+    "changed": [
+      "ReceiptFixture.__init__"
+    ],
+    "path": "scripts/tests/test_p8_runtime_evidence.py",
+    "removed": [],
+    "unchanged_functions": 16
+  },
+  {
+    "added": [],
+    "changed": [],
+    "path": "scripts/verify_reviewed_source_v15.py",
+    "removed": [],
+    "unchanged_functions": 15
+  }
+]

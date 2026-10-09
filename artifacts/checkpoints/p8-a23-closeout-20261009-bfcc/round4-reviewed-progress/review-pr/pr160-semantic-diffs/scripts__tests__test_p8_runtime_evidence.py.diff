@@ -1,0 +1,79 @@
+--- G4/scripts/tests/test_p8_runtime_evidence.py
++++ a23/scripts/tests/test_p8_runtime_evidence.py
+@@ -54,7 +54,19 @@
+         self.receipt = dict(schema_version=2, status="passed", build_exit_code=0,
+                             source_before=source, source_after=source,
+                             observer_before=observer, observer_after=observer,
+-                            target_dir=str(self.target), build_command=evidence.command_for(self.target), artifacts={})
++                            target_dir=str(self.target), build_dir=str(self.target), target_initially_absent=True,
++                            build_command=evidence.command_for(self.target), artifacts={})
++        tools = {}
++        for name in ("cargo", "rustc"):
++            invocation = directory / name
++            invocation.write_text("#!/bin/sh\nexit 19 # no compiler executed in this control fixture\n")
++            invocation.chmod(0o555)
++            tools[name] = dict(invocation=str(invocation), executable=str(invocation),
++                               command=[str(invocation), "--version", "--verbose"],
++                               executable_sha256=evidence.digest(invocation), version="control fixture only")
++        self.receipt.update(toolchain_before=tools, toolchain_after=tools,
++                            compiler_environment={"RUSTC": tools["rustc"]["invocation"],
++                                                  "RUSTC_WRAPPER": "", "RUSTC_WORKSPACE_WRAPPER": ""})
+         for when in ("before", "after"):
+             evidence.write_json(self.out / f"source-{when}.json", source)
+         for relative in evidence.OBSERVER_FILES:
+@@ -70,7 +82,7 @@
+             artifact = dict(reason="compiler-artifact", manifest_path=str(self.root / "crates" / package / "Cargo.toml"),
+                             target=dict(name=name, kind=["bin"], src_path=str(self.root / "crates" / package / source_file)),
+                             profile=dict(opt_level="3", test=False, debug_assertions=False), features=[],
+-                            executable=str(original))
++                            executable=str(original), fresh=False)
+             self.messages.append(artifact)
+             self.receipt["artifacts"][name] = dict(cargo_artifact=artifact, binary_path=str(retained),
+                                                   binary_sha256=evidence.digest(retained), binary_bytes=retained.stat().st_size,
+@@ -195,6 +207,46 @@
+         (fixture.out / "product-build.jsonl").write_text("{}\n")
+         with self.assertRaisesRegex(ValueError, "inventory changed"):
+             fixture.verify()
++
++    def test_shared_target_or_fresh_workspace_artifact_cannot_pass(self):
++        fixture = self.fixture
++        fixture.receipt["target_initially_absent"] = False
++        fixture.resign_control()
++        with self.assertRaisesRegex(ValueError, "not new and private"):
++            fixture.verify()
++        fixture.receipt["target_initially_absent"] = True
++        fixture.receipt["artifacts"]["codecortex"]["cargo_artifact"]["fresh"] = True
++        fixture.resign_control()
++        with self.assertRaisesRegex(ValueError, "was reused"):
++            fixture.verify()
++
++    def test_different_compiler_or_rewritten_compiler_bytes_are_rejected(self):
++        fixture = self.fixture
++        fixture.receipt["compiler_environment"]["RUSTC"] = "/unobserved/compiler"
++        fixture.resign_control()
++        with self.assertRaisesRegex(ValueError, "compiler selection"):
++            fixture.verify()
++        fixture.receipt["compiler_environment"]["RUSTC"] = fixture.receipt["toolchain_before"]["rustc"]["invocation"]
++        fixture.resign_control()
++        fixture.verify()
++        compiler = Path(fixture.receipt["compiler_environment"]["RUSTC"])
++        compiler.chmod(0o755)
++        compiler.write_text("#!/bin/sh\nexit 23 # changed compiler control\n")
++        with self.assertRaisesRegex(ValueError, "compiler invocation or bytes changed"):
++            fixture.verify()
++
++    def test_private_environment_rejects_existing_target_and_overrides_build_configuration(self):
++        fixture = self.fixture
++        target = Path(self.temporary.name) / "new-private-target"
++        with mock.patch.object(evidence, "compiler_environment", return_value=(
++                {"CARGO_TARGET_DIR": "/shared/target", "CARGO_BUILD_BUILD_DIR": "/shared/build", "RUSTC": "/fixed/rustc"},
++                {"RUSTC": "/fixed/rustc", "RUSTC_WRAPPER": "", "RUSTC_WORKSPACE_WRAPPER": ""})):
++            environment, overrides = evidence.private_build_environment(fixture.root, target)
++            self.assertEqual(environment["CARGO_TARGET_DIR"], str(target))
++            self.assertEqual(environment["CARGO_BUILD_BUILD_DIR"], str(target))
++            self.assertEqual(environment["RUSTC"], overrides["RUSTC"])
++            with self.assertRaises(FileExistsError):
++                evidence.private_build_environment(fixture.root, target)
+ 
+ 
+ class RuntimeArtifactSealTests(unittest.TestCase):

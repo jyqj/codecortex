@@ -1,0 +1,1156 @@
+diff --git a/crates/cc-eval/src/bench.rs b/crates/cc-eval/src/bench.rs
+index 67b5b31d9..72aa02d69 100644
+--- a/crates/cc-eval/src/bench.rs
++++ b/crates/cc-eval/src/bench.rs
+@@ -14,7 +14,6 @@
+ //! Corpus-case results are aggregated per-tool; named scale scenarios keep
+ //! full p50/p95/max for both columns.
+ 
+-use crate::benchmark::statistics::nearest_rank;
+ use crate::runner::CodeIndexBackend;
+ use crate::types::EvalCase;
+ use serde::Serialize;
+@@ -109,6 +108,17 @@ fn measure_case(
+     }
+ }
+ 
++// ── Percentile helper ──────────────────────────────────────────────
++
++fn percentile(sorted: &[u64], pct: f64) -> u64 {
++    if sorted.is_empty() {
++        return 0;
++    }
++    let idx = ((sorted.len() as f64) * pct).ceil() as usize;
++    let idx = idx.min(sorted.len()).saturating_sub(1);
++    sorted[idx]
++}
++
+ // ── Run benchmark ──────────────────────────────────────────────────
+ 
+ /// Run benchmarks for all cases and aggregate results per tool.
+@@ -162,10 +172,10 @@ pub fn run_benchmark_named(
+             ToolBenchmark {
+                 tool,
+                 cases: cases_count,
+-                cold_p50_us: nearest_rank(&cold, 0.50).unwrap_or(0),
++                cold_p50_us: percentile(&cold, 0.50),
+                 cold_max_us: cold.last().copied().unwrap_or(0),
+-                warm_p50_us: nearest_rank(&warm, 0.50).unwrap_or(0),
+-                warm_p95_us: nearest_rank(&warm, 0.95).unwrap_or(0),
++                warm_p50_us: percentile(&warm, 0.50),
++                warm_p95_us: percentile(&warm, 0.95),
+                 warm_max_us: warm.last().copied().unwrap_or(0),
+                 avg_output_bytes: avg_output,
+             }
+@@ -198,8 +208,8 @@ impl LatencyStats {
+         let mut sorted = durations.to_vec();
+         sorted.sort_unstable();
+         Self {
+-            p50_ms: nearest_rank(&sorted, 0.50).unwrap_or(0),
+-            p95_ms: nearest_rank(&sorted, 0.95).unwrap_or(0),
++            p50_ms: percentile(&sorted, 0.50),
++            p95_ms: percentile(&sorted, 0.95),
+             max_ms: sorted.last().copied().unwrap_or(0),
+         }
+     }
+@@ -327,8 +337,8 @@ impl LatencyStatsUs {
+         let mut sorted = durations.to_vec();
+         sorted.sort_unstable();
+         Self {
+-            p50_us: nearest_rank(&sorted, 0.50).unwrap_or(0),
+-            p95_us: nearest_rank(&sorted, 0.95).unwrap_or(0),
++            p50_us: percentile(&sorted, 0.50),
++            p95_us: percentile(&sorted, 0.95),
+             max_us: sorted.last().copied().unwrap_or(0),
+         }
+     }
+diff --git a/crates/cc-eval/src/benchmark/oracle/streaming.rs b/crates/cc-eval/src/benchmark/oracle/streaming.rs
+index be174b61a..3c05342f9 100644
+--- a/crates/cc-eval/src/benchmark/oracle/streaming.rs
++++ b/crates/cc-eval/src/benchmark/oracle/streaming.rs
+@@ -61,6 +61,105 @@ fn check_row_size(row: &rusqlite::Row<'_>, cols: &[String], limit: usize) -> Res
+     Ok(())
+ }
+ 
++const INSERT_TIERS: [usize; 3] = [64, 8, 1];
++const PENDING_BYTES: usize = 64 * 1024;
++
++/// Bounded insertion batching only: preserve the original canonical bytes and
++/// side-local ordinal order. The SQLite primary tree still does all sorting.
++struct CanonicalInsert<'a> {
++    statements: [rusqlite::Statement<'a>; 3],
++    side: u8,
++    pending: Vec<(String, i64)>,
++    pending_bytes: usize,
++    #[cfg(test)]
++    executed_tiers: Vec<usize>,
++}
++
++impl<'a> CanonicalInsert<'a> {
++    fn new(transaction: &'a rusqlite::Transaction<'_>, side: u8) -> Result<Self> {
++        let prepare = |rows: usize| {
++            let values = vec!["(?, ?, ?)"; rows].join(", ");
++            transaction
++                .prepare(&format!(
++                    "INSERT INTO canonical_rows(side, value, ordinal) VALUES {values}"
++                ))
++                .map_err(db_error)
++        };
++        Ok(Self {
++            statements: [
++                prepare(64)?,
++                prepare(8)?,
++                transaction
++                    .prepare("INSERT INTO canonical_rows(side, value, ordinal) VALUES (?1, ?2, ?3)")
++                    .map_err(db_error)?,
++            ],
++            side,
++            pending: Vec::with_capacity(INSERT_TIERS[0]),
++            pending_bytes: 0,
++            #[cfg(test)]
++            executed_tiers: Vec::new(),
++        })
++    }
++
++    fn execute(
++        statement: &mut rusqlite::Statement<'_>,
++        side: u8,
++        rows: &[(String, i64)],
++    ) -> Result<()> {
++        for (index, (value, ordinal)) in rows.iter().enumerate() {
++            let base = index * 3;
++            statement
++                .raw_bind_parameter(base + 1, side)
++                .map_err(db_error)?;
++            statement
++                .raw_bind_parameter(base + 2, value)
++                .map_err(db_error)?;
++            statement
++                .raw_bind_parameter(base + 3, ordinal)
++                .map_err(db_error)?;
++        }
++        statement.raw_execute().map_err(db_error)?;
++        Ok(())
++    }
++
++    fn flush(&mut self) -> Result<()> {
++        let mut rest = self.pending.as_slice();
++        for (tier, statement) in INSERT_TIERS.into_iter().zip(&mut self.statements) {
++            while rest.len() >= tier {
++                let (rows, tail) = rest.split_at(tier);
++                Self::execute(statement, self.side, rows)?;
++                #[cfg(test)]
++                self.executed_tiers.push(tier);
++                rest = tail;
++            }
++        }
++        self.pending.clear();
++        self.pending_bytes = 0;
++        Ok(())
++    }
++
++    fn push(&mut self, value: String, ordinal: i64) -> Result<()> {
++        // A legal row larger than the batch allowance retains the original
++        // single-row path. It is never rejected by this new buffer bound.
++        if value.len() > PENDING_BYTES {
++            self.flush()?;
++            self.statements[2]
++                .execute((self.side, value, ordinal))
++                .map_err(db_error)?;
++            #[cfg(test)]
++            self.executed_tiers.push(1);
++            return Ok(());
++        }
++        if self.pending.len() == INSERT_TIERS[0] || self.pending_bytes + value.len() > PENDING_BYTES
++        {
++            self.flush()?;
++        }
++        self.pending_bytes += value.len();
++        self.pending.push((value, ordinal));
++        Ok(())
++    }
++}
++
+ fn spool(
+     source: &Connection,
+     scratch: &mut Connection,
+@@ -78,9 +177,7 @@ fn spool(
+         .map_err(db_error)?;
+     let mut cursor = statement.query([]).map_err(db_error)?;
+     let transaction = scratch.transaction().map_err(db_error)?;
+-    let mut insert = transaction
+-        .prepare("INSERT INTO canonical_rows(side, value, ordinal) VALUES (?1, ?2, ?3)")
+-        .map_err(db_error)?;
++    let mut insert = CanonicalInsert::new(&transaction, side)?;
+     let mut count = 0;
+     while let Some(row) = cursor.next().map_err(db_error)? {
+         if count >= limits.max_rows_per_table {
+@@ -103,11 +200,10 @@ fn spool(
+         }
+         let ordinal = i64::try_from(count)
+             .map_err(|_| invalid("streaming oracle ordinal exceeds SQLite integer range"))?;
+-        insert
+-            .execute((side, serialized, ordinal))
+-            .map_err(db_error)?;
++        insert.push(serialized, ordinal)?;
+         count += 1;
+     }
++    insert.flush()?;
+     drop(insert);
+     transaction.commit().map_err(db_error)?;
+     Ok(count)
+@@ -301,6 +397,307 @@ fn compare_with_validated_limits(
+ mod tests {
+     use super::*;
+ 
++    // Original single-row implementation, retained independently of batching.
++    fn reference_spool(
++        source: &Connection,
++        scratch: &mut Connection,
++        table: &str,
++        side: u8,
++        limits: StreamingLimits,
++        canonical_bytes: &mut u64,
++    ) -> Result<u64> {
++        let cols = columns(source, table)?;
++        let mut statement = source
++            .prepare(&format!(
++                "SELECT {} FROM \"{table}\"",
++                select_columns(&cols)
++            ))
++            .map_err(db_error)?;
++        let mut cursor = statement.query([]).map_err(db_error)?;
++        let transaction = scratch.transaction().map_err(db_error)?;
++        let mut insert = transaction
++            .prepare("INSERT INTO canonical_rows(side, value, ordinal) VALUES (?1, ?2, ?3)")
++            .map_err(db_error)?;
++        let mut count = 0;
++        while let Some(row) = cursor.next().map_err(db_error)? {
++            if count >= limits.max_rows_per_table {
++                return Err(invalid(format!(
++                    "streaming oracle row budget exceeded: {table} side {side}"
++                )));
++            }
++            check_row_size(row, &cols, limits.max_row_bytes)?;
++            let serialized = serde_json::to_string(&project_row(row, &cols)?)?;
++            if serialized.len() > limits.max_row_bytes {
++                return Err(invalid(
++                    "streaming oracle serialized row byte budget exceeded",
++                ));
++            }
++            *canonical_bytes = canonical_bytes
++                .checked_add(serialized.len() as u64)
++                .ok_or_else(|| invalid("streaming oracle byte count overflow"))?;
++            if *canonical_bytes > limits.max_canonical_bytes {
++                return Err(invalid("streaming oracle canonical byte budget exceeded"));
++            }
++            let ordinal = i64::try_from(count)
++                .map_err(|_| invalid("streaming oracle ordinal exceeds SQLite integer range"))?;
++            insert
++                .execute((side, serialized, ordinal))
++                .map_err(db_error)?;
++            count += 1;
++        }
++        drop(insert);
++        transaction.commit().map_err(db_error)?;
++        Ok(count)
++    }
++
++    fn source_rows(values: &[rusqlite::types::Value]) -> Connection {
++        let source = Connection::open_in_memory().unwrap();
++        source
++            .execute_batch("CREATE TABLE symbols(name TEXT, value);")
++            .unwrap();
++        for value in values {
++            source
++                .execute("INSERT INTO symbols VALUES('same',?1)", [value])
++                .unwrap();
++        }
++        source
++    }
++
++    fn ordered_rows(scratch: &Connection, side: u8) -> Vec<String> {
++        scratch
++            .prepare(SORTED_ROWS_SQL)
++            .unwrap()
++            .query_map([side], |row| row.get(0))
++            .unwrap()
++            .collect::<rusqlite::Result<_>>()
++            .unwrap()
++    }
++
++    #[test]
++    fn batched_spool_matches_original_at_tier_and_byte_boundaries() {
++        use rusqlite::types::Value as SqlValue;
++        let seed = [
++            SqlValue::Null,
++            SqlValue::Integer(1),
++            SqlValue::Real(1.0),
++            SqlValue::Real(-0.0),
++            SqlValue::Real(0.0),
++            SqlValue::Text("é/中文\0\n\"".into()),
++            SqlValue::Blob(vec![0, 255, 128]),
++            SqlValue::Text("duplicate".into()),
++            SqlValue::Text("duplicate".into()),
++        ];
++        for count in [0, 1, 7, 8, 9, 63, 64, 65, 127, 128, 129] {
++            let values: Vec<_> = (0..count).map(|n| seed[n % seed.len()].clone()).collect();
++            assert_spool_matches_reference(&values);
++        }
++        // The first two serialized rows cross the byte bound without reaching
++        // 64 rows; the third is legal under the original row limit but cannot
++        // fit in a batch. A trailing short row still has to be flushed.
++        assert_spool_matches_reference(&[
++            SqlValue::Text("x".repeat(PENDING_BYTES / 2)),
++            SqlValue::Text("y".repeat(PENDING_BYTES / 2)),
++            SqlValue::Text("z".repeat(PENDING_BYTES + 1)),
++            SqlValue::Integer(17),
++        ]);
++    }
++
++    fn assert_spool_matches_reference(values: &[rusqlite::types::Value]) {
++        let directory = tempfile::tempdir().unwrap();
++        let limits = StreamingLimits::default();
++        let mut batch = open_scratch(&directory.path().join("batch.sqlite3"), limits).unwrap();
++        let mut reference =
++            open_scratch(&directory.path().join("reference.sqlite3"), limits).unwrap();
++        let mut actual_bytes = 0;
++        let mut expected_bytes = 0;
++        for side in 0..2 {
++            let mut input = values.to_vec();
++            if side == 1 {
++                input.reverse();
++            }
++            let source = source_rows(&input);
++            assert_eq!(
++                spool(
++                    &source,
++                    &mut batch,
++                    "symbols",
++                    side,
++                    limits,
++                    &mut actual_bytes
++                )
++                .unwrap(),
++                reference_spool(
++                    &source,
++                    &mut reference,
++                    "symbols",
++                    side,
++                    limits,
++                    &mut expected_bytes
++                )
++                .unwrap()
++            );
++            assert_eq!(actual_bytes, expected_bytes);
++            let actual = ordered_rows(&batch, side);
++            let expected = ordered_rows(&reference, side);
++            assert_eq!(actual, expected);
++            assert_eq!(
++                manifest::digest(&serde_json::to_vec(&actual).unwrap()),
++                manifest::digest(&serde_json::to_vec(&expected).unwrap())
++            );
++            let ordinals: Vec<i64> = batch
++                .prepare("SELECT ordinal FROM canonical_rows WHERE side=?1 ORDER BY ordinal")
++                .unwrap()
++                .query_map([side], |row| row.get(0))
++                .unwrap()
++                .collect::<rusqlite::Result<_>>()
++                .unwrap();
++            assert_eq!(
++                ordinals,
++                (0..i64::try_from(input.len()).unwrap()).collect::<Vec<_>>()
++            );
++        }
++        assert_eq!(ordered_rows(&batch, 0), ordered_rows(&batch, 1));
++    }
++
++    #[test]
++    fn batch_inserts_reduce_actual_statements_with_bounded_pending_bytes() {
++        let directory = tempfile::tempdir().unwrap();
++        let mut scratch = open_scratch(
++            &directory.path().join("scratch.sqlite3"),
++            StreamingLimits::default(),
++        )
++        .unwrap();
++        let tx = scratch.transaction().unwrap();
++        let mut insert = CanonicalInsert::new(&tx, 0).unwrap();
++        for ordinal in 0..73 {
++            insert.push(ordinal.to_string(), ordinal).unwrap();
++            assert!(insert.pending.len() <= 64);
++            assert!(insert.pending_bytes <= PENDING_BYTES);
++        }
++        insert.flush().unwrap();
++        assert_eq!(insert.executed_tiers, [64, 8, 1]);
++        assert_eq!(insert.pending_bytes, 0);
++        assert!(insert.pending.is_empty());
++        drop(insert);
++        let mut insert = CanonicalInsert::new(&tx, 1).unwrap();
++        insert
++            .push(format!("\"{}\"", "x".repeat(PENDING_BYTES - 2)), 0)
++            .unwrap();
++        assert_eq!(insert.pending_bytes, PENDING_BYTES);
++        insert.push("1".into(), 1).unwrap();
++        assert_eq!(insert.pending_bytes, 1);
++        insert
++            .push(format!("\"{}\"", "y".repeat(PENDING_BYTES - 1)), 2)
++            .unwrap();
++        assert_eq!(insert.pending_bytes, 0);
++        insert.push("2".into(), 3).unwrap();
++        insert.flush().unwrap();
++        assert_eq!(insert.executed_tiers, [1, 1, 1, 1]);
++        drop(insert);
++        tx.commit().unwrap();
++        assert_eq!(ordered_rows(&scratch, 0).len(), 73);
++        assert_eq!(ordered_rows(&scratch, 1).len(), 4);
++    }
++
++    #[test]
++    fn batched_spool_budget_errors_match_original_and_never_commit_pending_rows() {
++        use rusqlite::types::Value as SqlValue;
++        let mut cases = Vec::new();
++        let short = vec![SqlValue::Integer(1); 67];
++        cases.push((
++            short.clone(),
++            StreamingLimits {
++                max_rows_per_table: 65,
++                ..StreamingLimits::default()
++            },
++            "row budget",
++        ));
++        let serialized_bytes = serde_json::to_string(&json!({"name":"same", "value":1}))
++            .unwrap()
++            .len() as u64;
++        cases.push((
++            short.clone(),
++            StreamingLimits {
++                max_canonical_bytes: serialized_bytes * 65,
++                ..StreamingLimits::default()
++            },
++            "canonical byte budget",
++        ));
++        let mut long_tail = short[..65].to_vec();
++        long_tail.push(SqlValue::Text("x".repeat(1024)));
++        cases.push((
++            long_tail,
++            StreamingLimits {
++                max_row_bytes: 128,
++                ..StreamingLimits::default()
++            },
++            "input row byte budget",
++        ));
++        // Escaping expands a valid input row beyond its serialized byte cap.
++        let mut escaped_tail = short[..65].to_vec();
++        escaped_tail.push(SqlValue::Text("\n".repeat(70)));
++        cases.push((
++            escaped_tail,
++            StreamingLimits {
++                max_row_bytes: 128,
++                ..StreamingLimits::default()
++            },
++            "serialized row byte budget",
++        ));
++        for (case, (values, limits, error_kind)) in cases.into_iter().enumerate() {
++            let directory = tempfile::tempdir().unwrap();
++            let source = source_rows(&values);
++            let mut batch = open_scratch(&directory.path().join("batch.sqlite3"), limits).unwrap();
++            let mut reference =
++                open_scratch(&directory.path().join("reference.sqlite3"), limits).unwrap();
++            let mut actual_bytes = 0;
++            let mut expected_bytes = 0;
++            let actual =
++                spool(&source, &mut batch, "symbols", 0, limits, &mut actual_bytes).unwrap_err();
++            let expected = reference_spool(
++                &source,
++                &mut reference,
++                "symbols",
++                0,
++                limits,
++                &mut expected_bytes,
++            )
++            .unwrap_err();
++            assert_eq!(actual.to_string(), expected.to_string(), "case {case}");
++            assert!(actual.to_string().contains(error_kind));
++            assert_eq!(actual_bytes, expected_bytes);
++            assert!(batch.is_autocommit() && reference.is_autocommit());
++            // These bounded fixtures fit in the existing cache. On actual
++            // disk/page failures the journal-OFF scratch is discarded, never
++            // reused or interpreted as a successfully compared partial table.
++            assert!(ordered_rows(&batch, 0).is_empty());
++            assert!(ordered_rows(&reference, 0).is_empty());
++        }
++    }
++
++    #[test]
++    fn batched_spool_scratch_exhaustion_remains_an_error() {
++        let directory = tempfile::tempdir().unwrap();
++        let values = vec![rusqlite::types::Value::Text("x".repeat(4096)); 100];
++        let source = source_rows(&values);
++        let limits = StreamingLimits {
++            max_scratch_bytes: 64 * 1024,
++            ..StreamingLimits::default()
++        };
++        let mut batch = open_scratch(&directory.path().join("batch.sqlite3"), limits).unwrap();
++        let mut reference =
++            open_scratch(&directory.path().join("reference.sqlite3"), limits).unwrap();
++        let actual = spool(&source, &mut batch, "symbols", 0, limits, &mut 0).unwrap_err();
++        let expected =
++            reference_spool(&source, &mut reference, "symbols", 0, limits, &mut 0).unwrap_err();
++        assert_eq!(actual.to_string(), expected.to_string());
++        assert!(actual.to_string().contains("full"));
++        assert!(batch.is_autocommit() && reference.is_autocommit());
++        drop(batch);
++        drop(reference);
++        directory.close().unwrap();
++    }
++
+     #[test]
+     fn sole_primary_tree_preserves_duplicate_order_without_external_sorting() {
+         let directory = tempfile::tempdir().unwrap();
+diff --git a/crates/cc-eval/src/benchmark/p8_scale.rs b/crates/cc-eval/src/benchmark/p8_scale.rs
+index 3f217d116..1281d5340 100644
+--- a/crates/cc-eval/src/benchmark/p8_scale.rs
++++ b/crates/cc-eval/src/benchmark/p8_scale.rs
+@@ -128,7 +128,7 @@ impl ScalePlan {
+                 || self.files.len() != 1
+                 || self.dirty_budget != 200
+                 || self.max_resume_builds != 1024
+-                || !self.shard.is_some_and(|s| s.count == self.repetitions))
++                || self.shard.is_none_or(|s| s.count != self.repetitions))
+         {
+             return Err(invalid(
+                 "scale_capacity_v1 requires release, one scale, one repetition per shard, dirty budget 200 and resume budget 1024; fanout keeps 8/128",
+diff --git a/crates/cc-eval/src/benchmark/statistics.rs b/crates/cc-eval/src/benchmark/statistics.rs
+index 869d8494d..ccd40630a 100644
+--- a/crates/cc-eval/src/benchmark/statistics.rs
++++ b/crates/cc-eval/src/benchmark/statistics.rs
+@@ -9,10 +9,9 @@ pub struct Distribution {
+     pub tail_claim: &'static str,
+ }
+ 
+-/// Canonical nearest-rank estimate for an already sorted sample, in its input unit.
+-/// Distribution, interval, benchmark and evaluation reports share this owner.
+-/// Empty samples stay absent here; legacy wire adapters retain their own zero defaults.
+-pub(crate) fn nearest_rank(sorted: &[u64], quantile: f64) -> Option<u64> {
++/// Canonical nearest-rank estimate for an already sorted nonempty sample.
++/// Distribution summaries and quantile intervals must use the same convention.
++fn nearest_rank(sorted: &[u64], quantile: f64) -> Option<u64> {
+     if sorted.is_empty() {
+         return None;
+     }
+diff --git a/crates/cc-eval/src/report.rs b/crates/cc-eval/src/report.rs
+index efe65553a..4d3b23417 100644
+--- a/crates/cc-eval/src/report.rs
++++ b/crates/cc-eval/src/report.rs
+@@ -1,4 +1,3 @@
+-use crate::benchmark::statistics::nearest_rank;
+ use crate::types::{EvalCaseResult, EvalReport, EvalSummary, ToolSummary};
+ use std::collections::HashMap;
+ 
+@@ -29,7 +28,13 @@ pub fn compute_summary(results: &[EvalCaseResult]) -> EvalSummary {
+     let mut all_durations: Vec<u64> = results.iter().map(|r| r.duration_ms).collect();
+     all_durations.sort_unstable();
+     let max_duration_ms = all_durations.last().copied().unwrap_or(0);
+-    let p95_duration_ms = nearest_rank(&all_durations, 0.95).unwrap_or(0);
++    let p95_duration_ms = if all_durations.is_empty() {
++        0
++    } else {
++        let idx = ((all_durations.len() as f64) * 0.95).ceil() as usize;
++        let idx = idx.min(all_durations.len()).saturating_sub(1);
++        all_durations[idx]
++    };
+ 
+     let mut per_tool: HashMap<String, Vec<&EvalCaseResult>> = HashMap::new();
+     for result in results {
+@@ -55,7 +60,13 @@ pub fn compute_summary(results: &[EvalCaseResult]) -> EvalSummary {
+             let mut tool_durations: Vec<u64> = group.iter().map(|r| r.duration_ms).collect();
+             tool_durations.sort_unstable();
+             let tool_max = tool_durations.last().copied().unwrap_or(0);
+-            let tool_p95 = nearest_rank(&tool_durations, 0.95).unwrap_or(0);
++            let tool_p95 = if tool_durations.is_empty() {
++                0
++            } else {
++                let idx = ((tool_durations.len() as f64) * 0.95).ceil() as usize;
++                let idx = idx.min(tool_durations.len()).saturating_sub(1);
++                tool_durations[idx]
++            };
+ 
+             (
+                 tool,
+diff --git a/crates/cc-eval/tests/p8_measurements.rs b/crates/cc-eval/tests/p8_measurements.rs
+index 5c3927b40..edc8c2fa3 100644
+--- a/crates/cc-eval/tests/p8_measurements.rs
++++ b/crates/cc-eval/tests/p8_measurements.rs
+@@ -24,12 +24,6 @@ fn distribution_and_interval_keep_one_nearest_rank_convention() {
+         let expected_p95 = (((n * 95).div_ceil(100) - 1) / 3) as u64;
+         assert_eq!(summary.p50_us, Some(expected_p50));
+         assert_eq!(summary.p95_us, Some(expected_p95));
+-        let legacy_ms = cc_eval::bench::LatencyStats::from_durations(&samples);
+-        let legacy_us = cc_eval::bench::LatencyStatsUs::from_durations(&samples);
+-        assert_eq!(legacy_ms.p50_ms, expected_p50);
+-        assert_eq!(legacy_ms.p95_ms, expected_p95);
+-        assert_eq!(legacy_us.p50_us, expected_p50);
+-        assert_eq!(legacy_us.p95_us, expected_p95);
+         assert_eq!(
+             statistics::quantile_interval(&samples, 0.5)
+                 .unwrap()
+@@ -50,57 +44,6 @@ fn distribution_and_interval_keep_one_nearest_rank_convention() {
+     assert!(statistics::quantile_interval(&[], 0.5).is_none());
+ }
+ 
+-#[test]
+-fn legacy_report_percentiles_preserve_group_denominators_and_empty_wire_values() {
+-    assert_eq!(
+-        serde_json::to_value(cc_eval::bench::LatencyStats::from_durations(&[])).unwrap(),
+-        json!({"p50_ms": 0, "p95_ms": 0, "max_ms": 0})
+-    );
+-    assert_eq!(
+-        serde_json::to_value(cc_eval::bench::LatencyStatsUs::from_durations(&[])).unwrap(),
+-        json!({"p50_us": 0, "p95_us": 0, "max_us": 0})
+-    );
+-    assert_eq!(
+-        serde_json::to_value(cc_eval::report::compute_summary(&[])).unwrap(),
+-        json!({"total_cases": 0, "passed": 0, "failed": 0, "total_duration_ms": 0,
+-               "p95_duration_ms": 0, "max_duration_ms": 0, "total_output_bytes": 0,
+-               "per_tool": {}, "avg_recall_at_5": null, "avg_mrr": null})
+-    );
+-    // The formal distribution keeps absent measurements distinct from the
+-    // numeric defaults in the existing benchmark and evaluation wire schemas.
+-    assert_eq!(statistics::distribution(&[]).p50_us, None);
+-    assert_eq!(statistics::distribution(&[]).p95_us, None);
+-
+-    let mut cases: Vec<_> = (0..20)
+-        .rev()
+-        .map(|i| cc_eval::types::EvalCaseResult {
+-            case_name: format!("search-{i}"),
+-            tool: "search".into(),
+-            passed: true,
+-            duration_ms: i * 10,
+-            output_size_bytes: 0,
+-            assertions_passed: 1,
+-            assertions_failed: vec![],
+-            error: None,
+-            recall_at_5: None,
+-            mrr: None,
+-        })
+-        .collect();
+-    let mut outlier = cases[0].clone();
+-    outlier.case_name = "index-outlier".into();
+-    outlier.tool = "index".into();
+-    outlier.duration_ms = 10_000;
+-    cases.push(outlier);
+-    let report = cc_eval::report::compute_summary(&cases);
+-    // Fixed order-statistic witnesses: rank 20/21 globally, rank 19/20 for
+-    // search, and the sole observation for index. Units remain milliseconds.
+-    assert_eq!(report.p95_duration_ms, 190);
+-    assert_eq!(report.max_duration_ms, 10_000);
+-    assert_eq!(report.total_duration_ms, 11_900);
+-    assert_eq!(report.per_tool["search"].p95_duration_ms, 180);
+-    assert_eq!(report.per_tool["index"].p95_duration_ms, 10_000);
+-}
+-
+ fn warm(cache: ResultCacheObservation) -> LatencyEvidence {
+     LatencyEvidence {
+         operation: MeasurementOperation::Query,
+diff --git a/crates/cc-index/src/indexer_phases/reconcile.rs b/crates/cc-index/src/indexer_phases/reconcile.rs
+index 1771f09e5..9617e0f24 100644
+--- a/crates/cc-index/src/indexer_phases/reconcile.rs
++++ b/crates/cc-index/src/indexer_phases/reconcile.rs
+@@ -8,6 +8,27 @@ use cc_db::index_db::FileWriteUnit;
+ use cc_model::{freshness::*, resolution::ResolutionDependency, CcResult};
+ use std::collections::{BTreeSet, HashMap, HashSet};
+ 
++/// The initial lookup materializes the first budget+1 distinct paths after
++/// excluding the old completed set. Before commit, this prepare only adds at
++/// most `budget` promoted paths to that set. Thus a larger dependency set keeps
++/// a witness in the window; an exhausted window covered the entire smaller set.
++/// This owns no read lease and is never reused by a later prepare. Concurrent
++/// writes remain subject to the existing prepared-index-epoch commit fence;
++/// this is not a SQLite transaction snapshot spanning the separate reads.
++fn dependency_window_pending(
++    window: &[String],
++    completed: &BTreeSet<String>,
++    admitted: usize,
++    budget: usize,
++) -> Option<bool> {
++    if admitted > budget {
++        // Keep the original query as a conservative fallback if the closure's
++        // admission contract changes in the future.
++        return None;
++    }
++    Some(window.iter().any(|path| !completed.contains(path)))
++}
++
+ impl Indexer {
+     #[allow(clippy::too_many_arguments)]
+     pub(super) fn plan_dirty_reconciliation(
+@@ -69,12 +90,13 @@ impl Indexer {
+         let seed_set: HashSet<_> = seeds.iter().cloned().collect();
+         let fresh: HashSet<_> = state.completed.iter().cloned().collect();
+         let excluded: Vec<_> = state.completed.iter().cloned().collect();
+-        let (mut additional, initial_work) = self.db.reads().resolution_dependents_with_work(
++        let (dependency_window, initial_work) = self.db.reads().resolution_dependents_with_work(
+             &state.events,
+             self.dirty_propagation_max_files,
+             &excluded,
+         )?;
+         explanation.dependency_sql.merge(initial_work);
++        let mut additional = dependency_window.clone();
+         // A prior root may itself depend on a newly changed provider.
+         additional.extend(state.roots.iter().filter(|p| !fresh.contains(*p)).cloned());
+         let mut target_cache = HashMap::new();
+@@ -120,12 +142,21 @@ impl Indexer {
+         state.completed.extend(closure.promoted.iter().cloned());
+         let seeds: Vec<_> = state.roots.union(&state.propagated).cloned().collect();
+         let excluded: Vec<_> = state.completed.iter().cloned().collect();
+-        let (pending, work) =
+-            self.db
+-                .reads()
+-                .resolution_dependents_with_work(&state.events, 0, &excluded)?;
+-        explanation.dependency_sql.merge(work);
+-        let pending_dependency = !pending.is_empty();
++        let pending_dependency = if let Some(pending) = dependency_window_pending(
++            &dependency_window,
++            &state.completed,
++            closure.promoted.len(),
++            self.dirty_propagation_max_files,
++        ) {
++            pending
++        } else {
++            let (pending, work) =
++                self.db
++                    .reads()
++                    .resolution_dependents_with_work(&state.events, 0, &excluded)?;
++            explanation.dependency_sql.merge(work);
++            !pending.is_empty()
++        };
+         let (pending, work) = self
+             .db
+             .reads()
+@@ -180,3 +211,159 @@ impl Indexer {
+         })
+     }
+ }
++
++#[cfg(test)]
++mod dependency_window_tests {
++    use super::dependency_window_pending;
++    use cc_db::index_db::{FileWriteUnit, IndexDb};
++    use cc_model::{
++        resolution::{DependencyKind, ResolutionDependency, ResolutionManifest},
++        Language, ParseOutcome,
++    };
++    use std::collections::BTreeSet;
++
++    fn unit(path: &str, key: &str) -> FileWriteUnit {
++        let mut outcome = ParseOutcome {
++            resolution: ResolutionManifest::new(),
++            ..Default::default()
++        };
++        outcome
++            .resolution
++            .dependency(DependencyKind::NameBucket, key);
++        outcome
++            .resolution
++            .dependency(DependencyKind::SymbolInventory, "*");
++        FileWriteUnit {
++            rel_path: path.into(),
++            language: Language::Python,
++            content_hash: key.into(),
++            mtime: 1.0,
++            size: 1,
++            outcome,
++        }
++    }
++
++    #[test]
++    fn materialized_dependency_window_matches_original_pending_sql() {
++        let directory = tempfile::tempdir().unwrap();
++        let db = IndexDb::open_with_read_pool_size(&directory.path().join("index.db"), 1)
++            .unwrap()
++            .0;
++        let units: Vec<_> = (0..40)
++            .map(|index| unit(&format!("f{index:03}.py"), &format!("key-{}", index % 7)))
++            .collect();
++        db.writes().replace_files_batch(&units).unwrap();
++        // More than one IN batch, two kinds and overlapping consumers exercise
++        // the original global sorted/distinct cap, not just one SQL statement.
++        let mut events: BTreeSet<_> = (0..401)
++            .map(|index| {
++                ResolutionDependency::new(DependencyKind::NameBucket, format!("key-{index}"))
++            })
++            .collect();
++        events.insert(ResolutionDependency::new(
++            DependencyKind::SymbolInventory,
++            "*",
++        ));
++        let mut observations = Vec::new();
++        for budget in [0, 1, 2, 8, 40, usize::MAX] {
++            for excluded in [
++                Vec::new(),
++                vec!["f000.py".into(), "f003.py".into(), "absent.py".into()],
++                (0..39).map(|index| format!("f{index:03}.py")).collect(),
++            ] {
++                let (window, initial_work) = db
++                    .reads()
++                    .resolution_dependents_with_work(&events, budget, &excluded)
++                    .unwrap();
++                for alternating in [false, true] {
++                    let promoted: Vec<_> = window
++                        .iter()
++                        .enumerate()
++                        .filter(|(index, _)| !alternating || index.is_multiple_of(2))
++                        .map(|(_, path)| path.clone())
++                        .take(budget)
++                        .collect();
++                    let completed: BTreeSet<_> =
++                        excluded.iter().chain(&promoted).cloned().collect();
++                    let (original, tail_work) = db
++                        .reads()
++                        .resolution_dependents_with_work(
++                            &events,
++                            0,
++                            &completed.iter().cloned().collect::<Vec<_>>(),
++                        )
++                        .unwrap();
++                    assert_eq!(
++                        dependency_window_pending(&window, &completed, promoted.len(), budget),
++                        Some(!original.is_empty()),
++                        "budget={budget}, excluded={excluded:?}, promoted={promoted:?}"
++                    );
++                    let mut previous_work = initial_work;
++                    previous_work.merge(tail_work);
++                    assert!(tail_work.statements > 0);
++                    observations.push(serde_json::json!({
++                        "budget":budget,"excluded":excluded.len(),"admitted":promoted.len(),
++                        "pending":!original.is_empty(),"original_two_lookup_work":previous_work,
++                        "retained_single_lookup_work":initial_work,
++                        "scope":"actual SQL statement counters; no whole-build latency claim"
++                    }));
++                }
++            }
++        }
++        if let Ok(output) = std::env::var("CODECORTEX_BENCH_OBSERVATIONS") {
++            std::fs::create_dir_all(&output).unwrap();
++            std::fs::write(
++                std::path::Path::new(&output).join("p8-prepare-dependency-window-work.json"),
++                serde_json::to_vec_pretty(&observations).unwrap(),
++            )
++            .unwrap();
++        }
++    }
++
++    #[test]
++    fn dependency_window_reloads_after_replacement_removal_and_reopen() {
++        let directory = tempfile::tempdir().unwrap();
++        let path = directory.path().join("index.db");
++        let db = IndexDb::open_with_read_pool_size(&path, 1).unwrap().0;
++        let events = BTreeSet::from([ResolutionDependency::new(DependencyKind::NameBucket, "hot")]);
++        db.writes()
++            .replace_files_batch(&[unit("b.py", "hot"), unit("c.py", "hot")])
++            .unwrap();
++        let first = db.reads().resolution_dependents(&events, 1, &[]).unwrap();
++        assert_eq!(first, ["b.py", "c.py"]);
++        // Read-pool size one: each materialized window has released its lease
++        // before another read or write. No object survives the prepare scope.
++        db.writes()
++            .replace_files_batch(&[unit("a.py", "hot"), unit("b.py", "different")])
++            .unwrap();
++        db.writes().remove_files_batch(&["c.py".into()]).unwrap();
++        let next = db.reads().resolution_dependents(&events, 1, &[]).unwrap();
++        assert_eq!(next, ["a.py"]);
++        assert_eq!(
++            dependency_window_pending(&next, &BTreeSet::from(["a.py".into()]), 1, 1),
++            Some(false)
++        );
++        drop(db);
++        let reopened = IndexDb::open_with_read_pool_size(&path, 1).unwrap().0;
++        assert_eq!(
++            reopened
++                .reads()
++                .resolution_dependents(&events, 1, &[])
++                .unwrap(),
++            next
++        );
++    }
++
++    #[test]
++    fn consuming_more_than_the_registered_window_budget_requires_fresh_sql() {
++        let window = vec!["a.py".into(), "b.py".into()];
++        let completed = BTreeSet::from(["a.py".into(), "b.py".into()]);
++        // There could be another dependent after these two rows. An admission
++        // contract violation must request the original SQL, not report ready.
++        assert_eq!(dependency_window_pending(&window, &completed, 2, 1), None);
++        assert_eq!(
++            dependency_window_pending(&window, &BTreeSet::from(["a.py".into()]), 1, 1),
++            Some(true)
++        );
++    }
++}
+diff --git a/crates/cc-server/src/project_session.rs b/crates/cc-server/src/project_session.rs
+index c10c9e458..6e3f85433 100644
+--- a/crates/cc-server/src/project_session.rs
++++ b/crates/cc-server/src/project_session.rs
+@@ -58,8 +58,6 @@ pub struct ProjectSession {
+     last_activity: Arc<Mutex<Instant>>,
+     auto_indexing: Arc<AtomicBool>,
+     tasks: Arc<crate::session_tasks::SessionTasks>,
+-    #[cfg(test)]
+-    initializer_started: Arc<Mutex<Option<tokio::sync::oneshot::Sender<()>>>>,
+ }
+ 
+ impl ProjectSession {
+@@ -85,8 +83,6 @@ impl ProjectSession {
+             last_activity: Arc::new(Mutex::new(Instant::now())),
+             auto_indexing: Arc::new(AtomicBool::new(false)),
+             tasks: Arc::default(),
+-            #[cfg(test)]
+-            initializer_started: Arc::default(),
+         })
+     }
+ 
+@@ -135,15 +131,7 @@ impl ProjectSession {
+         // worker publishes one cached runtime before releasing the guard.
+         let mut live = self.live_projects.clone().lock_owned().await;
+         let cache = self.project_cache.clone();
+-        #[cfg(test)]
+-        let initializer_started = self.initializer_started.clone();
+         tokio::task::spawn_blocking(move || {
+-            // The signal comes from the worker after ownership has crossed the
+-            // task boundary. A reserved async mutex permit is not that proof.
+-            #[cfg(test)]
+-            if let Some(started) = initializer_started.lock().unwrap().take() {
+-                let _ = started.send(());
+-            }
+             live.retain(|_, weak| weak.strong_count() != 0);
+             let cached = cache.blocking_lock().get(&path).cloned();
+             let services = match cached.or_else(|| {
+@@ -617,15 +605,16 @@ mod tests {
+         let session = ProjectSession::new(None).unwrap();
+         // Block the initializer's cache lookup without stalling the scheduler.
+         let cache = session.project_cache.clone().lock_owned().await;
+-        let (started_tx, started_rx) = tokio::sync::oneshot::channel();
+-        *session.initializer_started.lock().unwrap() = Some(started_tx);
+         let caller = session.clone();
+         let requested = path.clone();
+         let job = tokio::spawn(async move { caller.services_for_path(requested).await });
+-        tokio::time::timeout(Duration::from_secs(5), started_rx)
+-            .await
+-            .expect("initializer must start while its cache lookup is blocked")
+-            .expect("initializer must confirm ownership of the cold guard");
++        tokio::time::timeout(Duration::from_secs(2), async {
++            while session.live_projects.try_lock().is_ok() {
++                tokio::task::yield_now().await;
++            }
++        })
++        .await
++        .unwrap();
+         job.abort();
+         assert!(matches!(job.await, Err(e) if e.is_cancelled()));
+         assert!(
+@@ -655,31 +644,6 @@ mod tests {
+         session.shutdown().await;
+     }
+ 
+-    #[tokio::test]
+-    async fn p5d_cancellation_before_cold_handoff_does_not_start_initializer() {
+-        use std::future::Future;
+-        use std::task::{Context, Poll, Waker};
+-
+-        let dir = TempDir::new().unwrap();
+-        let path = normalize_path(dir.path());
+-        let session = ProjectSession::new(None).unwrap();
+-        let (started_tx, mut started_rx) = tokio::sync::oneshot::channel();
+-        *session.initializer_started.lock().unwrap() = Some(started_tx);
+-        let cold = session.live_projects.clone().lock_owned().await;
+-        let mut request = Box::pin(session.services_for_path(path.clone()));
+-        let mut context = Context::from_waker(Waker::noop());
+-        assert!(matches!(request.as_mut().poll(&mut context), Poll::Pending));
+-        drop(request);
+-        assert!(matches!(
+-            started_rx.try_recv(),
+-            Err(tokio::sync::oneshot::error::TryRecvError::Empty)
+-        ));
+-        drop(cold);
+-        assert!(session.live_projects.try_lock().is_ok());
+-        assert!(session.project_cache.lock().await.get(&path).is_none());
+-        session.shutdown().await;
+-    }
+-
+     #[tokio::test(flavor = "current_thread")]
+     async fn p5d_active_reopen_lock_wait_does_not_block_async_scheduler() {
+         let dir = TempDir::new().unwrap();
+diff --git a/scripts/reviewed-source-registry-v15.json b/scripts/reviewed-source-registry-v15.json
+index dddbba9cc..795807a66 100644
+--- a/scripts/reviewed-source-registry-v15.json
++++ b/scripts/reviewed-source-registry-v15.json
+@@ -538,7 +538,7 @@
+     "crates/cc-eval/fixtures/sample-project/server.py": "cd40a484fdfeeb18e1ce91dcb1891998d992af7b7d9578e7483320a8f745d29b",
+     "crates/cc-eval/fixtures/sample-project/types.ts": "b874934a6844e736af5d861d7794ab41f2e57087dd8b435fcfff2cd1203ac70a",
+     "crates/cc-eval/fixtures/sample-project/utils.js": "5f86c331876d3c8f698ededd9340b3bcd7eae92b6b9dd107f5930f004c4786db",
+-    "crates/cc-eval/src/bench.rs": "26b82c6a6a21934374e59c23fbfc3583b8e21db0373bd8d7a2905213eda24756",
++    "crates/cc-eval/src/bench.rs": "7a34a5147723baa63243485221d045261925fa329f8f9fae689abdce1deaa60f",
+     "crates/cc-eval/src/benchmark/ablation.rs": "cc57dff94bb4f826f01aff6b29fa2287e367f7d47b5696c8a495dc6320587fab",
+     "crates/cc-eval/src/benchmark/ablation/mechanism.rs": "0ce2429913df6223fd060098e184319f653c2ba4f2d250ec208607df4312c42c",
+     "crates/cc-eval/src/benchmark/ablation/mechanism_controls.json": "f24ae9777ce7c4c042624bb7144eb5ed3d100ca5f342184095ba54f76228b94b",
+@@ -561,16 +561,16 @@
+     "crates/cc-eval/src/benchmark/mutations.rs": "c01a05b198bd96165e59bca597f3a10e96d3c7ac38f8f2bb8a04a5590da5936d",
+     "crates/cc-eval/src/benchmark/normalizer.rs": "ce9708b670da3291daf731a4bbc4934a4762c872d35f74c43389826a3ab48092",
+     "crates/cc-eval/src/benchmark/oracle.rs": "adccf4f437e637aaee6bd368109d0b41af1855f3e50c84c48f7cc8b5cf3dc711",
+-    "crates/cc-eval/src/benchmark/oracle/streaming.rs": "e6810a021a2a92c2dc44ced9c38013e5195dea105d0894d83661aa47bf4970f2",
++    "crates/cc-eval/src/benchmark/oracle/streaming.rs": "5a51a72e8cb49c033754f860a3f5dc6366748ffe45a440da55cf7776cde7da0c",
+     "crates/cc-eval/src/benchmark/p8_load.rs": "79058e65744a0e953d84c95ba58287feae0491c5fda8d3441fa65b1d9bb6ce31",
+-    "crates/cc-eval/src/benchmark/p8_scale.rs": "fede948c535ca8b91a6b30d3752cd28204abc310423debfd169ff53541f3afbc",
++    "crates/cc-eval/src/benchmark/p8_scale.rs": "18e6fbe38bc0484ff32050c749186671a7e4c3b15c0894b5fb205c9948fb7530",
+     "crates/cc-eval/src/benchmark/readiness.rs": "3c2f327a99f5798d5ee57410fadb381b3fb056b1b98213ffb885e0f4851a3871",
+     "crates/cc-eval/src/benchmark/report.rs": "8836e4b7112390628b3441ef94f3e660a58bf79f5dacfa748615c570480d995d",
+     "crates/cc-eval/src/benchmark/runner.rs": "c5ee07890319d0e6ab31cd74fe0578cf0201e6cbd3b668cff89ded9846c5895a",
+     "crates/cc-eval/src/benchmark/sampler.rs": "1460c2cc3e866ca951d4da2b84e9084f2e3b47dd4db61475413b36c8d9a67317",
+     "crates/cc-eval/src/benchmark/schema.rs": "a17c78b23f507c732f0a0c4454cf0443ed182554988474cdc527a965bfbf5765",
+     "crates/cc-eval/src/benchmark/span_metrics.rs": "b6b4d8ee613087641c5845ca6c27f35df96cc4a6e3b90d10aab5578a4381d459",
+-    "crates/cc-eval/src/benchmark/statistics.rs": "3eb2da83662bab96dbb3625a0a6998a7586ce300df4766b4ab7f22409143d4e2",
++    "crates/cc-eval/src/benchmark/statistics.rs": "e6691ff90ab844ec8384575cc10b33b672a8bca3abcdb21ce78b785e52358bf6",
+     "crates/cc-eval/src/benchmark/validation.rs": "ed3eda61174c98a56c314fcf9e9b6b8f7f2776f1703eea75dc122d68ed6658af",
+     "crates/cc-eval/src/bin/cc-eval-p8-load.rs": "ee04f5a67c28ba54a97bb307fe9f20927c290cbf68a9d114d2740cb620437f73",
+     "crates/cc-eval/src/bin/cc-eval.rs": "99de08c18fa7b0172693763c9e14c3be2778cb2109f15ed5e474b20238350578",
+@@ -580,7 +580,7 @@
+     "crates/cc-eval/src/bin/p8-scale.rs": "fa4773bd400d1c0fe143926264517b6bdd77a819bc456629fa7d873233cd7d90",
+     "crates/cc-eval/src/corpus.rs": "6be7ebdc33fee95cbae3f08cfb5ba337c375d79b6329cca9e77b1d2da6b5e8b2",
+     "crates/cc-eval/src/lib.rs": "3c83ddc270a7199908333801ce6f5de68048df128310143d63e74e0e6984896b",
+-    "crates/cc-eval/src/report.rs": "dfa0351549941afe25c38f503e3d00e6cdf5945edb1341cbdbd3f89b62280aa0",
++    "crates/cc-eval/src/report.rs": "b09049469974625bad2016c2eb54a0ade425b42e0256275283c17d5bf390e4a3",
+     "crates/cc-eval/src/runner.rs": "ea7cc22064dcc1b5b7f27c7544791ec7d0e5000b45a2b61458f85b3c5aea5b8f",
+     "crates/cc-eval/src/synth.rs": "7af80327ba392c3e067300b4ae090d2dbb779e98e581309b0048103727a4ed86",
+     "crates/cc-eval/src/types.rs": "193759cd04ab0e2b91bd865e4264c7ad19e0bbef6772da026e42a28bd09d63d9",
+@@ -656,7 +656,7 @@
+     "crates/cc-eval/tests/p8_lifecycle_replay.rs": "f191a19df4900650ed62f4f43ceab059ee18bb3ebc4e72b8857f992122f72fd8",
+     "crates/cc-eval/tests/p8_load.rs": "dddc44d752f5209776112a33665280416a52dd1d7145f31da7258b25b160598c",
+     "crates/cc-eval/tests/p8_mcp_readiness.rs": "26617d1e771007c0e2a040b29d34604e755b9b25bb334d6d225fa054528c6ce8",
+-    "crates/cc-eval/tests/p8_measurements.rs": "5e3fe0b9f3dcd7fc94755ef7e4f8ec51d8af747a8d8a6797dbddd771ab5408e0",
++    "crates/cc-eval/tests/p8_measurements.rs": "eff243635af5948115d4aac70614703ddc826cd3fcba43bdb48edf261e4e8dc7",
+     "crates/cc-eval/tests/p8_route_reload.rs": "a9aad4f5ee073f6aab3a263789c9268bb9524bca9e0a8af60eb5d9a80e38e007",
+     "crates/cc-eval/tests/p8_scale.rs": "e178777707b978b04918b8de38ce1beaca76f2bf0fb342928fca0f97657e0c6d",
+     "crates/cc-eval/tests/packing_scope_v1.rs": "0bd6b374d91c8f8d97090fc8b383337c0761daf756d06498e85f50734c58fade",
+@@ -722,7 +722,7 @@
+     "crates/cc-index/src/indexer_phases/forwarding_budget_tests.rs": "7f1dc101374924f563f80a281b33c440927ea23ec1ab698acc373c4051b6616c",
+     "crates/cc-index/src/indexer_phases/mod.rs": "5cc7765d277afdb23e1f40c2e44e6d6ae621c1bbd9ba96f8a1ef88b248133a33",
+     "crates/cc-index/src/indexer_phases/postprocess.rs": "f634dad99a1330276e4096867b5101c725e79f45e6471896d8c6c8deac5fb097",
+-    "crates/cc-index/src/indexer_phases/reconcile.rs": "8828e842a56691ed7fe4f2ae01cd116a0a0472a132cbb03559a58c9dac1103da",
++    "crates/cc-index/src/indexer_phases/reconcile.rs": "0027e96cc8bc1a782644f585a94891feb8f73198a537ed14089148d84d708818",
+     "crates/cc-index/src/indexer_phases/resolve.rs": "862c042a7e1066bff4ccf9ae3766b2dca7109690eaa0ef67dc71bd200acd98dd",
+     "crates/cc-index/src/indexer_phases/snapshot.rs": "d52e1fd86dfcb3234944fc9ed1bc72b6d2b39da3255805db945fc7ef1af0a847",
+     "crates/cc-index/src/indexer_phases/write.rs": "caa2ba07dd907158299a0cbf00f3264dd370f23c9900fb57750bfd5de42a685b",
+@@ -1040,7 +1040,7 @@
+     "crates/cc-server/src/mcp.rs": "555e9ec55d433566ef7388bf1c0eac413550fe5cf4cc579a8a49367308034e4c",
+     "crates/cc-server/src/mcp_query_tests.rs": "721253dad5d7ae7f46ed7e8d78d8467875fb01afe8addbdecbedd08717f20826",
+     "crates/cc-server/src/path_guard.rs": "880abe15db5e11f8f4660802162889ab43bb336b531a8bf2659fe530038afc4f",
+-    "crates/cc-server/src/project_session.rs": "9d185cddc82b5f16dc6f6e3d9c4b8aef7ed244d1868a3f096a8efc63682b1314",
++    "crates/cc-server/src/project_session.rs": "a6776bf1ad63990ad4049d045e5fe34e5ef6af3917e72b7670554cc56c1c24cc",
+     "crates/cc-server/src/project_startup_tests.rs": "56824a3425bff561bd0b1859ca1e7e6f3b6ea9dad491f7c201704f816c15a65a",
+     "crates/cc-server/src/query_handle.rs": "7b331043093f243e8ad23516098d008216cda0cecb3c3fa63a7947a5f226b420",
+     "crates/cc-server/src/semantic_http_transport.rs": "9f6e18a0ed03d49be22681eb7a2662465d2b225679fa18abddce958d81c86d67",
+@@ -1102,30 +1102,22 @@
+       "before_sha256": "94ce67ed025afb484fb630411859697fa87e9dd91e3d118725a08c336d218694",
+       "sha256": "24850989991ef584c559fd0a5b73382ba0434181c6abd69cba80ede6acbe7e42"
+     },
+-    "crates/cc-eval/src/bench.rs": {
+-      "before_sha256": "7a34a5147723baa63243485221d045261925fa329f8f9fae689abdce1deaa60f",
+-      "sha256": "26b82c6a6a21934374e59c23fbfc3583b8e21db0373bd8d7a2905213eda24756"
+-    },
+     "crates/cc-eval/src/benchmark/oracle.rs": {
+       "before_sha256": "4a0c1b61eaecae6091ef3ea889615e3bd418f54a6b813532c00107cdbde384a1",
+       "sha256": "adccf4f437e637aaee6bd368109d0b41af1855f3e50c84c48f7cc8b5cf3dc711"
+     },
+     "crates/cc-eval/src/benchmark/oracle/streaming.rs": {
+       "before_sha256": "dd8fd87c5518375536fea3003dc8ba45c199a595bb64ddbfbb7e74c116fe280c",
+-      "sha256": "e6810a021a2a92c2dc44ced9c38013e5195dea105d0894d83661aa47bf4970f2"
++      "sha256": "5a51a72e8cb49c033754f860a3f5dc6366748ffe45a440da55cf7776cde7da0c"
+     },
+     "crates/cc-eval/src/benchmark/p8_scale.rs": {
+       "before_sha256": "f475d81683f7f253f855691ea8d5cbb5136428f0e43ec9e64fecebd892704336",
+-      "sha256": "fede948c535ca8b91a6b30d3752cd28204abc310423debfd169ff53541f3afbc"
++      "sha256": "18e6fbe38bc0484ff32050c749186671a7e4c3b15c0894b5fb205c9948fb7530"
+     },
+     "crates/cc-eval/src/benchmark/sampler.rs": {
+       "before_sha256": "ba8e501949868fdb422ba389f9e15a9d1f833266c3e52788ba5fc33368ac9280",
+       "sha256": "1460c2cc3e866ca951d4da2b84e9084f2e3b47dd4db61475413b36c8d9a67317"
+     },
+-    "crates/cc-eval/src/benchmark/statistics.rs": {
+-      "before_sha256": "e6691ff90ab844ec8384575cc10b33b672a8bca3abcdb21ce78b785e52358bf6",
+-      "sha256": "3eb2da83662bab96dbb3625a0a6998a7586ce300df4766b4ab7f22409143d4e2"
+-    },
+     "crates/cc-eval/src/bin/p8-measurements.rs": {
+       "before_sha256": null,
+       "sha256": "b2d937ee0d3e88febe0c497422d073e3f9a42a9640faa31bed265d4ac5787882"
+@@ -1142,10 +1134,6 @@
+       "before_sha256": "56492a16a847bbd85f199df2352f05f0ba9b183855151b91ef7ca4ac8727dfe9",
+       "sha256": "fa4773bd400d1c0fe143926264517b6bdd77a819bc456629fa7d873233cd7d90"
+     },
+-    "crates/cc-eval/src/report.rs": {
+-      "before_sha256": "b09049469974625bad2016c2eb54a0ade425b42e0256275283c17d5bf390e4a3",
+-      "sha256": "dfa0351549941afe25c38f503e3d00e6cdf5945edb1341cbdbd3f89b62280aa0"
+-    },
+     "crates/cc-eval/tests/benchmark_cli.rs": {
+       "before_sha256": "8a1f256e22369c67285119412c78342e5f4ef442ba32f9278eb2c6a72830a430",
+       "sha256": "ac7dcd8e7024735414779e76b2b15613ff885e4c99ddabb2e3846f7065e2f9be"
+@@ -1162,10 +1150,6 @@
+       "before_sha256": null,
+       "sha256": "f191a19df4900650ed62f4f43ceab059ee18bb3ebc4e72b8857f992122f72fd8"
+     },
+-    "crates/cc-eval/tests/p8_measurements.rs": {
+-      "before_sha256": "eff243635af5948115d4aac70614703ddc826cd3fcba43bdb48edf261e4e8dc7",
+-      "sha256": "5e3fe0b9f3dcd7fc94755ef7e4f8ec51d8af747a8d8a6797dbddd771ab5408e0"
+-    },
+     "crates/cc-eval/tests/p8_scale.rs": {
+       "before_sha256": "c14830f8ea4c1d89773982b3689a0c0e953ce5698b6faa2ce412729eebdf9613",
+       "sha256": "e178777707b978b04918b8de38ce1beaca76f2bf0fb342928fca0f97657e0c6d"
+@@ -1182,6 +1166,10 @@
+       "before_sha256": "9a6b4dbda93067c86ed11c630fa24ebb7cf720879cb9a42430596c6310f781db",
+       "sha256": "7f1dc101374924f563f80a281b33c440927ea23ec1ab698acc373c4051b6616c"
+     },
++    "crates/cc-index/src/indexer_phases/reconcile.rs": {
++      "before_sha256": "8828e842a56691ed7fe4f2ae01cd116a0a0472a132cbb03559a58c9dac1103da",
++      "sha256": "0027e96cc8bc1a782644f585a94891feb8f73198a537ed14089148d84d708818"
++    },
+     "crates/cc-index/src/indexer_phases/resolve.rs": {
+       "before_sha256": "e92f32066360764873c97ef0c40d764f43a06855a673986bb92c5c66282a21e7",
+       "sha256": "862c042a7e1066bff4ccf9ae3766b2dca7109690eaa0ef67dc71bd200acd98dd"
+@@ -1205,16 +1193,12 @@
+     "crates/cc-server/src/engine.rs": {
+       "before_sha256": "10a4fc22e7a3acec7f396f100cb0b20dbefd417bf2cbdb26597ee48dab64e557",
+       "sha256": "b323ee1c6c469cb0f0abe42d6f23ff4a7045df124735af09dcafbc8f4e2ac8b1"
+-    },
+-    "crates/cc-server/src/project_session.rs": {
+-      "before_sha256": "a6776bf1ad63990ad4049d045e5fe34e5ef6af3917e72b7670554cc56c1c24cc",
+-      "sha256": "9d185cddc82b5f16dc6f6e3d9c4b8aef7ed244d1868a3f096a8efc63682b1314"
+     }
+   },
+   "previous_source_version": "p8-oracle-compat-source-20261008-v14",
+-  "product_source": "b6513a991630c1d1a4e6b51e262c8c5556631987",
+-  "review_sha256": "7e311402cd41bb9075f5a2cc5b9b75f43b80b231dc1a6826453b9dd6e18c327c",
+-  "review_source": "a703349fa20dd212c0a60696ca45d9d584a95630",
++  "product_source": "04b34ec76fd33d21fd897fb992d87514f6a2013d",
++  "review_sha256": "3976a9204868b572443099bc265e34026a6afcd75a00149bea98bc7752c41380",
++  "review_source": "3c4e89269f5d2a129c15318ecaefd95864b39efb",
+   "runtime_and_quality_claims": "require_separate_execution_evidence",
+   "schema_version": 10,
+   "scope": "independently_reviewed_source_and_validation_inputs",
+diff --git a/scripts/verify_reviewed_source_v15.py b/scripts/verify_reviewed_source_v15.py
+index 82ff86977..308d7e096 100644
+--- a/scripts/verify_reviewed_source_v15.py
++++ b/scripts/verify_reviewed_source_v15.py
+@@ -17,11 +17,11 @@ import v15_historical_context as history
+ ROOT = Path(__file__).resolve().parents[1]
+ VERSION = "p8-completion-source-20261009-v15"
+ BASE = "7354db236c9d9850a75f31672697ae9eab44565e"
+-PRODUCT = "b6513a991630c1d1a4e6b51e262c8c5556631987"
+-REVIEW = "a703349fa20dd212c0a60696ca45d9d584a95630"
++PRODUCT = "04b34ec76fd33d21fd897fb992d87514f6a2013d"
++REVIEW = "3c4e89269f5d2a129c15318ecaefd95864b39efb"
+ REVIEW_PATH = "artifacts/checkpoints/p8-completion-20261009/independent-source-review.json"
+ REGISTRY = ROOT / "scripts/reviewed-source-registry-v15.json"
+-REGISTRY_SHA256 = "e4c6748ce87e27d25dbc63686ed1c52550a4cea68ca22faaee0def01d44e8d60"
++REGISTRY_SHA256 = "0f313303d599ea6ddfe6976cf7b544ef2de4f0f516ed2f9b575487e9ddd3dc53"
+ FROZEN = (
+     "scripts/verify_reviewed_source_v14.py",
+     "scripts/reviewed-source-registry-v14.json",

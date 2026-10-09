@@ -17,11 +17,11 @@ import v15_historical_context as history
 ROOT = Path(__file__).resolve().parents[1]
 VERSION = "p8-completion-source-20261009-v15"
 BASE = "7354db236c9d9850a75f31672697ae9eab44565e"
-PRODUCT = "98173d7bf3a4709d0309907ec85ff5674c23c921"
-REVIEW = "13610caf2904f7656fa45ccbf20f61a313b708b8"
-REVIEW_PATH = "artifacts/checkpoints/p8-runtime-statistics-owner-20261009/formatting-followup/independent-source-review.json"
+PRODUCT = "4d4f423bda9e6b53bb163c790103681719a80769"
+REVIEW = "56182295129f57b11641a08d8c2360d607b10b17"
+REVIEW_PATH = "artifacts/checkpoints/p8-resolver-allocations-20261009/independent-source-review.json"
 REGISTRY = ROOT / "scripts/reviewed-source-registry-v15.json"
-REGISTRY_SHA256 = "8ce8af4c7e3e3e475ae5961850882f04b782607caa7c0f80d40e9afc8948cf81"
+REGISTRY_SHA256 = "6f8af1ca45764ef0f6e50d7f519b8756051519fdc15dffa084f3b405fd8bf477"
 FROZEN = (
     "scripts/verify_reviewed_source_v14.py",
     "scripts/reviewed-source-registry-v14.json",

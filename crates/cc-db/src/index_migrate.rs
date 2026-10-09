@@ -57,13 +57,14 @@ pub fn migrate_index_db(conn: &Connection) -> CcResult<SchemaStatus> {
         .map_err(db_err)?;
 
     if stored == CURRENT_SCHEMA_VERSION {
-        // Performance-only access path, also installed on current-schema
-        // databases missing this physical index. v24 follows the rebuild guard.
+        // Performance-only access paths, also installed on current-schema
+        // databases missing these physical indexes. v24 follows the rebuild guard.
         // Keep this separate from semantic migrations: no reparse, version bump,
         // row rewrite, incarnation replacement or epoch movement. Errors propagate
         // through the normal writable open seam; never bypass read-only refusal.
         conn.execute_batch(
-            "CREATE INDEX IF NOT EXISTS semantic_outbox_fifo_pending ON semantic_outbox(space_id,task_id,available_at) WHERE state='pending'",
+            "CREATE INDEX IF NOT EXISTS semantic_outbox_fifo_pending ON semantic_outbox(space_id,task_id,available_at) WHERE state='pending';
+             CREATE INDEX IF NOT EXISTS chunk_symbol_identity_doc_key ON chunk_symbol_identity(doc_key);",
         ).map_err(db_err)?;
         crate::read_generation::ensure(conn)?;
         return Ok(SchemaStatus::UpToDate);

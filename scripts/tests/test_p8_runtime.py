@@ -1,0 +1,273 @@
+import json
+from contextlib import ExitStack
+import os
+from pathlib import Path
+import sys
+import tempfile
+import threading
+from types import SimpleNamespace
+import unittest
+from unittest import mock
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+import p8_runtime as runtime
+from test_p8_runtime_evidence import ReceiptFixture
+
+
+class RuntimeEvidenceTests(unittest.TestCase):
+    def test_exact_public_hit_rejects_query_echo_and_wrong_path(self):
+        runtime.require_stable_symbol([{"name": runtime.QUERY, "file_path": "stable.py"}])
+        for response in ({"query": runtime.QUERY}, [{"query": runtime.QUERY}],
+                         [{"name": runtime.QUERY, "file_path": "wrong.py"}],
+                         [{"name": "wrong", "file_path": "stable.py"}]):
+            with self.assertRaises((AssertionError, RuntimeError, ValueError)):
+                runtime.require_stable_symbol(response)
+
+    def test_clustered_rss_cannot_certify_an_hour(self):
+        second = 1_000_000_000
+        complete = [{"at_ns": i * second} for i in range(3601)]
+        self.assertTrue(runtime.sample_coverage(complete, 0, 3600 * second)["passed"])
+        self.assertFalse(runtime.sample_coverage(complete[:10], 0, 3600 * second)["passed"])
+        self.assertFalse(runtime.sample_coverage(complete[10:], 0, 3600 * second)["passed"])
+        self.assertFalse(runtime.sample_coverage(complete[:10] + complete[20:], 0, 3600 * second)["passed"])
+        self.assertFalse(runtime.sample_coverage(complete[::-1], 0, 3600 * second)["passed"])
+
+    def test_zero_or_missing_rss_cannot_pass(self):
+        for value in (None, 0, -1, True):
+            result = runtime.rss_trend([{"server": {"resident_bytes": value}}] * 12)
+            self.assertFalse(result["passed"])
+            self.assertEqual(result["status"], "unavailable")
+
+    def test_existing_memory_threshold_is_preserved(self):
+        mib = 1024 * 1024
+        samples = [{"server": {"resident_bytes": 100 * mib}}] * 12
+        self.assertTrue(runtime.rss_trend(samples)["passed"])
+        samples[-3:] = [{"server": {"resident_bytes": 158 * mib}}] * 3
+        result = runtime.rss_trend(samples)
+        self.assertFalse(result["passed"])
+        self.assertEqual(result["allowed_bytes"], 157 * mib)
+
+    def test_failed_outcomes_still_enter_latency_denominator(self):
+        rows = [{"offered_ns": 0, "finished_ns": value, "status": status}
+                for value, status in ((10, "success"), (100, "error"), (1000, "queue_rejected"))]
+        result = runtime.latency_summary(rows)
+        self.assertEqual(result["n"], 3)
+        self.assertEqual(result["maximum_ns"], 1000)
+        self.assertFalse(result["tail_stability_claim"])
+
+    def test_mutations_use_real_git_and_do_not_grow_source(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "project"
+            runtime.make_fixture(root, 8)
+            head_before = runtime.git(root, "rev-parse", "HEAD")["stdout"]
+            sizes = []
+            for number in range(24):
+                event = runtime.mutate(root, number)
+                sizes.append(sum(p.stat().st_size for p in root.glob("*.py")))
+                if number == 4:
+                    self.assertEqual(event["action"], "real_git_branch_switch")
+                    self.assertNotEqual(runtime.git(root, "rev-parse", "HEAD")["stdout"], head_before)
+            self.assertLess(max(sizes) - min(sizes), 100)
+            self.assertFalse((root / "temporary.py").exists())
+            self.assertFalse((root / "renamed.py").exists())
+
+    def test_unowned_git_mutation_is_refused(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises((FileNotFoundError, AssertionError, RuntimeError, ValueError)):
+                runtime.git(Path(tmp), "init")
+
+    def test_raw_is_exclusive_and_preserves_every_row(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "raw.jsonl"
+            raw = runtime.Raw(path)
+            raw.emit("operation", id=1, status="error")
+            raw.close()
+            with self.assertRaises(FileExistsError): runtime.Raw(path)
+            self.assertEqual(json.loads(path.read_text())["status"], "error")
+
+
+class RuntimeFailureLifecycleTests(unittest.TestCase):
+    """Explicit protocol fakes with real executor threads; never product evidence."""
+    def control(self, *, oracle_code=0, raw_failure=False, refuse_drain=False, drain_timeout=False):
+        retained = os.environ.get("P8_RUNTIME_CONTROL_EVIDENCE_DIR")
+        if retained:
+            Path(retained).mkdir(parents=True, exist_ok=True)
+            root = Path(tempfile.mkdtemp(prefix="runtime-protocol-", dir=retained))
+        else:
+            temporary = tempfile.TemporaryDirectory(prefix="runtime-protocol-")
+            self.addCleanup(temporary.cleanup)
+            root = Path(temporary.name)
+        fixture = ReceiptFixture(root)
+        out = root / "observation"
+        args = SimpleNamespace(binary=fixture.binaries["codecortex"], oracle=fixture.binaries["p8-oracle"],
+                               statistics=fixture.binaries["p8-runtime-statistics"],
+                               build_receipt=fixture.out / "build-receipt.json", output=out,
+                               concurrency=1, operations=180 if raw_failure else 60, files=8,
+                               interval_ms=.001, profile="mixed")
+        started, release, finished = threading.Event(), threading.Event(), threading.Event()
+        submitted, raw_streams = [], []
+        state = dict(seal_while_worker_live=False, statistics_calls=0, drain_timeouts=[])
+        self.addCleanup(release.set)
+
+        class FakeProcess:
+            def __init__(self): self.returncode = None
+            def poll(self): return self.returncode
+            def kill(self): self.returncode = -9
+
+        class FakeProduct:
+            def __init__(self, identity, project, output, _cache):
+                self.project, self.process = project, FakeProcess()
+                self.transport = SimpleNamespace(reader=SimpleNamespace(is_alive=lambda: False),
+                                                 exit_watcher=SimpleNamespace(is_alive=lambda: False))
+                output.mkdir()
+                (output / "product-stderr.log").write_text("protocol fake; no product execution\n")
+            def initialize(self): pass
+            def tool(self, name, arguments, timeout=45):
+                if name == "index":
+                    if (raw_failure or drain_timeout) and arguments.get("full") is False:
+                        started.set()
+                        assert release.wait(5), "protocol worker was not released by control cleanup"
+                        (self.project / "worker-finished.txt").write_text("real thread finished its owned write\n")
+                        finished.set()
+                    return dict(parse_errors=[], resolution_freshness=dict(complete=True))
+                return [dict(name=runtime.QUERY, file_path="stable.py")]
+            def close(self, **_kwargs): self.process.returncode = 0
+
+        original_wait, original_seal, original_raw = runtime.wait, runtime.seal_output, runtime.Raw
+
+        class ObservedPool(runtime.ThreadPoolExecutor):
+            def submit(self, *args, **kwargs):
+                future = super().submit(*args, **kwargs)
+                submitted.append(future)
+                return future
+
+        class BudgetRaw(original_raw):
+            def __init__(self, path):
+                super().__init__(path)
+                raw_streams.append(self)
+            def emit(self, kind, **data):
+                if raw_failure and kind == "operation" and data.get("status") == "queue_rejected":
+                    assert started.wait(2), "the actual executor worker must be active before offering failure"
+                    runtime.MAX_RAW_BYTES = self.size  # Exercise the real Raw budget rejection.
+                return super().emit(kind, **data)
+
+        def wait(futures, timeout=None):
+            state["drain_timeouts"].append(timeout)
+            if drain_timeout and timeout == 180:
+                assert started.wait(2)
+                return set(), set(futures)  # The original drain boundary, without sleeping 180s.
+            if (raw_failure or drain_timeout) and timeout == 70:
+                if refuse_drain:
+                    return set(), set(futures)  # Explicitly simulate a cleanup deadline expiration.
+                release.set()
+            return original_wait(futures, timeout=timeout)
+
+        def seal(path):
+            state["seal_while_worker_live"] = started.is_set() and not finished.is_set()
+            result = original_seal(path)
+            if raw_failure:
+                release.set()
+                assert finished.wait(2)
+            return result
+
+        def oracle(command, **_kwargs):
+            Path(command[command.index("--output") + 1]).write_text(json.dumps(
+                dict(exit_code=oracle_code, comparison=dict(equal=oracle_code == 0),
+                     error="protocol infrastructure failure" if oracle_code == 2 else None)))
+            return SimpleNamespace(returncode=oracle_code, stdout="protocol oracle only", stderr="")
+
+        def statistics(_binary, output):
+            state["statistics_calls"] += 1
+            rows = [json.loads(line) for line in (output / "raw.jsonl").read_text().splitlines()]
+            attempts = [row for row in rows if row["kind"] == "operation"]
+            value = dict(exit_code=0, status="passed_observation", offered=len(attempts))
+            (output / "statistics.json").write_text(json.dumps(value))
+            return value
+
+        identity = dict(build_identity={"protocol_control": True})
+        with ExitStack() as stack:
+            for name, value in (("Product", FakeProduct), ("Raw", BudgetRaw), ("wait", wait),
+                                ("ThreadPoolExecutor", ObservedPool),
+                                ("seal_output", seal), ("MAX_RAW_BYTES", 512 * 1024 * 1024),
+                                ("diagnostics", lambda _product: {}),
+                                ("mutate", lambda _project, number: dict(action="protocol_only", ordinal=number)),
+                                ("verify_build", lambda *_args: identity),
+                                ("verify_receipt", lambda *_args: identity["build_identity"]),
+                                ("replay_statistics", statistics)):
+                stack.enter_context(mock.patch.object(runtime, name, value))
+            # Protocol source files only; no product index or Git mutation is executed.
+            def make_fixture(project, files):
+                project.mkdir()
+                (project / "stable.py").write_text("# explicit protocol fixture only\n")
+            stack.enter_context(mock.patch.object(runtime, "make_fixture", make_fixture))
+            stack.enter_context(mock.patch.object(runtime.subprocess, "run", side_effect=oracle))
+            try:
+                state["report"] = runtime.run(args)
+            except Exception as error:
+                state["raised"] = f"{type(error).__name__}: {error}"
+            finally:
+                release.set()
+                if started.is_set():
+                    assert finished.wait(2)
+                _, pending = original_wait([future for future in submitted if not future.cancelled()], timeout=2)
+                assert not pending, "all real control workers must stop before fixture cleanup"
+                for raw in raw_streams:
+                    raw.close()
+        state["seal_exists"] = (out / "seal.json").exists()
+        state["root"] = str(root)
+        (root / "control-observation.json").write_text(json.dumps(state, indent=2, sort_keys=True) + "\n")
+        return state, out
+
+    def test_oracle_difference_keeps_statistics_and_failure_exit_one(self):
+        state, out = self.control(oracle_code=1)
+        self.assertNotIn("raised", state)
+        self.assertEqual(state["report"]["exit_code"], 1, state)
+        self.assertEqual(state["report"]["outcomes"], {"success": 60})
+        self.assertEqual(state["statistics_calls"], 1)
+        self.assertEqual(json.loads((out / "statistics.json").read_text())["offered"], 60)
+        self.assertIn("complete no-repair endpoint oracle failed", state["report"]["failures"])
+        runtime.verify_output(out)
+
+    def test_equal_oracle_still_keeps_passing_statistics(self):
+        state, out = self.control()
+        self.assertEqual(state["report"]["exit_code"], 0, state)
+        self.assertEqual(state["statistics_calls"], 1)
+        self.assertEqual(state["report"]["outcomes"], {"success": 60})
+        runtime.verify_output(out)
+
+    def test_oracle_infrastructure_failure_stays_exit_two(self):
+        state, out = self.control(oracle_code=2)
+        self.assertEqual(state["report"]["exit_code"], 2, state)
+        self.assertEqual(state["statistics_calls"], 0)
+        runtime.verify_output(out)
+
+    def test_raw_budget_abort_drains_actual_worker_before_sealing(self):
+        state, out = self.control(raw_failure=True)
+        self.assertFalse(state["seal_while_worker_live"], state)
+        self.assertNotIn("raised", state)
+        self.assertEqual(state["report"]["exit_code"], 2)
+        self.assertIn(70, state["drain_timeouts"])
+        runtime.verify_output(out)
+
+    def test_original_drain_deadline_has_one_cleanup_wait_and_all_terminal_rows(self):
+        state, out = self.control(drain_timeout=True)
+        self.assertNotIn("raised", state)
+        self.assertEqual(state["report"]["exit_code"], 2)
+        self.assertEqual(state["drain_timeouts"], [180, 70])
+        rows = [json.loads(line) for line in (out / "raw.jsonl").read_text().splitlines()]
+        attempts = [row for row in rows if row["kind"] == "operation"]
+        self.assertEqual(sorted(row["id"] for row in attempts), list(range(60)))
+        self.assertEqual(sum(row["status"] == "canceled" for row in attempts), 59)
+        runtime.verify_output(out)
+
+    def test_unconfirmed_worker_shutdown_cannot_create_a_seal(self):
+        state, out = self.control(raw_failure=True, refuse_drain=True)
+        self.assertFalse(state["seal_exists"], state)
+        self.assertEqual(state["report"]["exit_code"], 2)
+        self.assertEqual(state["report"]["artifact_seal_status"], "unsealed_owned_writers")
+        self.assertIsNone(state["report"]["artifact_seal"])
+        with self.assertRaises(FileNotFoundError): runtime.verify_output(out)
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -1,0 +1,169 @@
+diff --git a/scripts/p8_runtime.py b/scripts/p8_runtime.py
+--- a/scripts/p8_runtime.py
++++ b/scripts/p8_runtime.py
+@@ -285,7 +285,8 @@ def run(args):
+     mutation_sequence = [0]
+     stop = threading.Event()
+     cancel_work = threading.Event()
+-    product, sampler = None, None
++    product, comparison_product, sampler = None, None, None
++    worker_cleanup = dict(status="not_started", cleanup_bound_seconds=70, still_running=0)
+     begun = time.monotonic_ns()
+     report = dict(schema_version=1, status="running", exit_code=2, task_complete=False)
+     def elapsed(): return time.monotonic_ns() - begun
+@@ -365,10 +366,46 @@ def operation(number, scheduled, offered):
+                 row["finished_ns"] = elapsed()
+                 if held_write: write_lock.release()
+                 with row_lock: rows.append(row)
+-                raw.emit("operation", **row)
+-                slots.release()
++                try:
++                    raw.emit("operation", **row)
++                finally:
++                    slots.release()
+         futures = {}
+         pool = ThreadPoolExecutor(max_workers=args.concurrency)
++
++        def cleanup_workers(reason):
++            # Every exceptional offering path shares the original bounded
++            # cancellation/kill/drain policy. Raw retention failure must not
++            # interrupt cleanup or allow a worker to write after sealing.
++            cancel_work.set()
++            stop.set()
++            pending = [future for future in futures if not future.done()]
++            worker_cleanup.update(status="stopping", reason=reason, pending_at_cleanup=len(pending),
++                                  canceled=0, retention_errors=[])
++            for future in pending:
++                if future.cancel():
++                    number, scheduled, offered = futures[future]
++                    row = dict(id=number, operation="build" if number % 3 == 0 else "read",
++                               scheduled_ns=scheduled, offered_ns=offered, finished_ns=elapsed(),
++                               status="canceled", reason=reason + "_before_start")
++                    with row_lock: rows.append(row)
++                    worker_cleanup["canceled"] += 1
++                    try:
++                        raw.emit("operation", **row)
++                    except Exception as error:
++                        worker_cleanup["retention_errors"].append(dict(id=number, error=str(error)))
++                    finally:
++                        slots.release()
++            if pending and product.process.poll() is None:
++                try:
++                    product.process.kill()
++                except ProcessLookupError:
++                    pass  # The owned process may have exited between poll and kill.
++            wait([future for future in pending if not future.cancelled()], timeout=70)
++            still_running = sum(not future.done() for future in futures)
++            worker_cleanup.update(status="unconfirmed" if still_running else "completed",
++                                  still_running=still_running)
++
+         try:
+             for number in range(args.operations):
+                 tick = number if args.profile == "soak" else number // args.concurrency * args.concurrency
+@@ -387,28 +424,29 @@ def operation(number, scheduled, offered):
+                 futures[future] = (number, scheduled, offered)
+             done, pending = wait(futures, timeout=180)
+             if pending:
+-                cancel_work.set()
+-                for future in pending:
+-                    if future.cancel():
+-                        number, scheduled, offered = futures[future]
+-                        row = dict(id=number, operation="build" if number % 3 == 0 else "read",
+-                                   scheduled_ns=scheduled, offered_ns=offered, finished_ns=elapsed(),
+-                                   status="canceled", reason="drain_deadline_before_start")
+-                        with row_lock: rows.append(row)
+-                        raw.emit("operation", **row)
+-                        slots.release()
+-                if product.process.poll() is None: product.process.kill()
+                 # A live request has a 60-second RPC deadline. Canceling queued
+                 # futures prevents a second unbounded queue drain in __exit__.
+-                _, still_running = wait([f for f in pending if not f.cancelled()], timeout=70)
++                cleanup_workers("drain_deadline")
+                 raw.emit("drain_deadline", pending_at_deadline=len(pending),
+-                         canceled=sum(f.cancelled() for f in pending),
+-                         still_running=len(still_running), cleanup_bound_seconds=70)
+-                require(not still_running, "owned requests did not stop after kill and RPC deadline")
++                         canceled=worker_cleanup["canceled"],
++                         still_running=worker_cleanup["still_running"], cleanup_bound_seconds=70)
++                require(not worker_cleanup["still_running"], "owned requests did not stop after kill and RPC deadline")
+                 raise RuntimeError("owned work failed to drain in 180 seconds; queued work canceled")
+             for future in done: future.result()
+         finally:
+-            pool.shutdown(wait=False, cancel_futures=True)
++            try:
++                if worker_cleanup["status"] == "not_started":
++                    if any(not future.done() for future in futures):
++                        cleanup_workers("offering_or_worker_failure")
++                    else:
++                        worker_cleanup.update(status="completed", still_running=0)
++            finally:
++                # Never join unconfirmed user work without a deadline. Its
++                # artifacts stay explicitly unsealed below if it cannot stop.
++                worker_cleanup["still_running"] = sum(not future.done() for future in futures)
++                if worker_cleanup["still_running"]:
++                    worker_cleanup["status"] = "unconfirmed"
++                pool.shutdown(wait=not worker_cleanup["still_running"], cancel_futures=True)
+         observed_span = time.monotonic_ns() - offer_start
+         observed_end = elapsed()
+         stop.set()
+@@ -438,7 +476,9 @@ def operation(number, scheduled, offered):
+             raw.emit("oracle_process", argv=command, exit_code=result.returncode, stdout=result.stdout, stderr=result.stderr)
+             require(digest(oracle) == plan["oracle_sha256"] == build_receipt["oracle_sha256"],
+                     "oracle executable changed during observation")
+-            require(result.returncode == 0, "complete no-repair endpoint oracle failed")
++            require(result.returncode in (0, 1), "complete no-repair endpoint oracle could not execute")
++            if result.returncode == 1:
++                failures.append("complete no-repair endpoint oracle failed")
+         finally:
+             comparison_product.close()
+         product.close()
+@@ -475,6 +515,7 @@ def operation(number, scheduled, offered):
+                       latency_by_operation={kind: latency_summary([r for r in rows if r["operation"] == kind])
+                                             for kind in ("read", "build")}, failures=failures,
+                       statistics=statistics_result,
++                      parity_exit_code=result.returncode,
+                       parity_sha256=digest(out / "parity.json"), product_sha256=digest(binary),
+                       oracle_sha256=digest(oracle), semantic_backfill="not_run_in_default_product_profile",
+                       release_approval=False)
+@@ -490,7 +531,20 @@ def operation(number, scheduled, offered):
+             try: product.close()
+             except Exception as error:
+                 report.update(status="failed", exit_code=2, cleanup_error=str(error))
+-        raw.close()
++        def product_stopped(value):
++            return value is None or (value.process.poll() is not None
++                                    and not value.transport.reader.is_alive()
++                                    and not value.transport.exit_watcher.is_alive())
++        cleanup = dict(worker=worker_cleanup, sampler_stopped=sampler is None or not sampler.is_alive(),
++                       product_stopped=product_stopped(product),
++                       comparison_product_stopped=product_stopped(comparison_product))
++        writers_stopped = (worker_cleanup["still_running"] == 0 and cleanup["sampler_stopped"]
++                           and cleanup["product_stopped"] and cleanup["comparison_product_stopped"])
++        report["owned_cleanup"] = cleanup
++        if writers_stopped:
++            raw.close()
++        else:
++            report.update(status="failed", exit_code=2, artifact_seal_status="unsealed_owned_writers")
+         try:
+             final_identity = verify_receipt(root, receipt_path, binaries)
+             require(final_identity == identity["build_identity"],
+@@ -501,13 +555,15 @@ def operation(number, scheduled, offered):
+         except Exception as error:
+             report.update(status="failed", exit_code=2,
+                           final_build_verification_error=f"{type(error).__name__}: {error}")
+-        report["raw_sha256"] = digest(out / "raw.jsonl")
++        report["raw_sha256"] = digest(out / "raw.jsonl") if writers_stopped else None
+         report["plan_sha256"] = digest(out / "plan.json")
+-        report["artifact_seal"] = "seal.json"
++        report["artifact_seal"] = "seal.json" if writers_stopped else None
++        if writers_stopped: report["artifact_seal_status"] = "sealed"
+         report["elapsed_ns"] = elapsed()
+         write_json(out / "report.json", report)
+-        seal_output(out)
+-        verify_output(out)
++        if writers_stopped:
++            seal_output(out)
++            verify_output(out)
+     return report
+ 
+ 

@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "reviewer": "pr_audit",
+  "review_kind": "independent_test_only_delta_source_review",
+  "assessment": "accepted_scoped",
+  "reviewed_at_utc": "2026-10-08T18:33:34.090644+00:00",
+  "old_source_commit": "6e3eb4fd97edcf238774e74b88d397e059337bac",
+  "new_source_commit": "8dfbcaf02fd96ea8038464a831ab976b0d017c6d",
+  "reviewed_paths": [
+    "crates/cc-eval/src/bin/p8-runtime-statistics.rs"
+  ],
+  "delta": {
+    "before": "let build = id % 3 == 0;",
+    "after": "let build = id.is_multiple_of(3);",
+    "enclosing_scope": "#[cfg(test)] mod tests::row(id: usize)",
+    "only_changed_path": true,
+    "only_changed_source_line": true,
+    "old_file_sha256": "a52146e82481aa9155e8eaa476f73e0fb9befd6df593489221a4d0aacaa32b2c",
+    "new_file_sha256": "c32527a5d64dd9580fa642ac546d3536202291c5900967b1876b7283c1d364f5"
+  },
+  "reasoning": [
+    "For every usize id, including zero, remainder modulo the fixed nonzero divisor 3 equals zero exactly when id.is_multiple_of(3) is true. The replacement adds no overflow or division-by-zero path.",
+    "The changed function is inside cfg(test). Byte comparison of the entire source prefix before that test module is equal, and exact whole-file substitution accounts for the complete commit delta.",
+    "Production/replay source logic, statistics rules, fixtures, registered workload plans, thresholds and original test assertions are unchanged. This resolves the existing manual_is_multiple_of lint without adding an allow/whitelist."
+  ],
+  "source_byte_boundary": {
+    "non_test_production_source_bytes_unchanged": true,
+    "source_files_outside_reviewed_path_unchanged": true,
+    "compiled_product_binary_byte_equivalence_tested": false,
+    "note": "Source-byte equivalence outside cfg(test) is verified. Rebuilt binaries and embedded commit identities remain tied to their actual new build; no binary-byte identity is inferred."
+  },
+  "validation": {
+    "rustc_version_command": [
+      "/workspace/scratch/2eaa00d0f93a/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc",
+      "--version"
+    ],
+    "rustc_version_stdout": "rustc 1.95.0 (59807616e 2026-04-14)\n",
+    "command": [
+      "/workspace/scratch/2eaa00d0f93a/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc",
+      "--crate-name",
+      "p8_msrv_multiple_of",
+      "--crate-type",
+      "lib",
+      "--edition",
+      "2021",
+      "--emit=metadata",
+      "-o",
+      "/workspace/scratch/a217aaae3bde/platform-review-159/multiple-of-msrv.rmeta",
+      "-"
+    ],
+    "stdin_source": "pub fn row_partition(id: usize) -> bool { id.is_multiple_of(3) }\n",
+    "stdin_sha256": "c102b014b356b25bd57397753f30e0d77eb98095d6de1337d1330548c6b9b9d4",
+    "execution": "actually executed using the installed Rust 1.95.0 compiler; metadata-only compilation",
+    "exit_code": 0,
+    "compile_stdout": "",
+    "compile_stderr": "",
+    "metadata_artifact": {
+      "path": "/workspace/scratch/a217aaae3bde/platform-review-159/multiple-of-msrv.rmeta",
+      "bytes": 2060,
+      "sha256": "6790eabf5d1aba6fe876f0381be3398113447ef4aba5423f898fed2df7ed1f68"
+    },
+    "scope": "Directly proves the usize method call compiles on the declared MSRV; not a full cc-eval/Cargo/Clippy rerun."
+  },
+  "unresolved_source_blockers": [],
+  "measurement_boundary": {
+    "old_measurements_remain_bound_to": "6e3eb4fd97edcf238774e74b88d397e059337bac",
+    "new_measurements_must_use_actual_new_build_identity": true,
+    "old_measurements_recertified_as_new_head": false,
+    "todo_completion_certified": false,
+    "required_followup": "Retain the original Clippy failure and require applicable CI at the new integration head; preserve every existing run/source identity."
+  }
+}

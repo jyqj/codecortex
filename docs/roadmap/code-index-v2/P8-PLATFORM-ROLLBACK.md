@@ -1,5 +1,24 @@
 # P8-012 / P8-016｜平台构建入口与有限回滚演练
 
+## 当前执行入口（2026-10-09）
+
+本文下方的“本轮”指 2026-10-08 的固定执行记录，保留当时的源码、包摘要、
+30 项控制测试及 `not_run` 边界。它不表示后续工具仍缺少同一能力，也不证明
+当前候选已经执行通过。
+
+当前入口见 [P8 platform and recovery execution](../../P8_PLATFORM_RECOVERY.md)
+和 [平台 workflow](../../../.github/workflows/p8-platform.yml)：
+
+| 范围 | 当前实现与验收入口 |
+|---|---|
+| 八格冷构建 | Linux/macOS × Rust 1.95.0/stable × default/semantic 的独立 release 构建；每格实际 stdio smoke 后 `--export-selected`，再由 `--collect-cells` 要求同一源码的全部八格。 |
+| 主动 cache reader | `p8_recovery.py --full-matrix` 对启用的真实 HTTP 产品注入 payload 损坏和未知格式，并运行原生产 cache-format/namespace 隔离测试。 |
+| 实际新旧 schema 回滚 | 同一 recovery job 编译未修改的 schema 24 历史源码 `277f2490fad3fa30f2812b5547bad033867c9ea5`，与当前 schema 25 产品执行真实数据库打开、受控重建和备份恢复。两者仍按源码版本解释，不冒充已发布版本对。 |
+| 当前状态与原始工件 | [权威任务台账](tasks.json) 记录任务验收；每次 workflow 的新 artifact 保存精确源码、binary 和 raw。只有当前候选的实际执行与完整依赖验收支持完成状态。 |
+
+旧八格 `not_run`、一次 Linux 冷构建和有限回滚回执保持原样；新执行不得覆盖、
+改写或追认这些历史结果。下文从“本轮结论”开始均为原始记录。
+
 ## 本轮结论
 
 本轮为两个原始 TODO 提交可执行入口、负对照和真实产品回执，不据此完成

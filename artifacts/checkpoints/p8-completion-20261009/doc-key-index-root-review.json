@@ -1,0 +1,56 @@
+{
+  "author": "/root/scale_closeout",
+  "base": "f8ca8070592a1bc03cedc2df4e27e1382a3077a7",
+  "findings": [
+    "The original FK child path was confirmed by the real SQLite query plan to scan chunk_symbol_identity for each parent document deletion.",
+    "The new non-unique secondary index preserves semantic schema version 25 and all existing constraints/serialization. Both fresh DDL and normal current-schema writable open install it.",
+    "Migration DDL failures propagate through the existing writable open path; query_only is not disabled, errors are not converted to rebuild mismatches.",
+    "The real Rust test target passed all five tests, including original v21/v24 rebuild controls, new indexed parent delete plan, dropped-index negative control, read-only rejection, two idempotent opens with every table/epoch/incarnation snapshot unchanged, and actual referential cascade."
+  ],
+  "limitations": [
+    "Engineering correctness and access-path verification only. Full-scale, latency, runtime and task completion need separate new execution.",
+    "One-time index construction may cost time/space and contend on the writable connection; normal busy/disk failures remain visible."
+  ],
+  "paths": {
+    "crates/cc-db/src/index_migrate.rs": {
+      "before_sha256": "fcfa9073ffb82abb024380d5996836ff51b4ccc89caca4e99149de748c440b0d",
+      "sha256": "db6c7377fa47f27c7c163a40bdf8d93ea4db90c72e5ea78e587186e5eb39dcd2"
+    },
+    "crates/cc-db/src/sql/index_v1.sql": {
+      "before_sha256": "a609300b7ba56b8cc8739a1d12b5803c6b5cb57d4c3e7e1fd568679ba21be81f",
+      "sha256": "6d7ee2193f388281aeef3dc98b914f0fa6f9478dda90833bf41f6bc12350cd06"
+    },
+    "crates/cc-db/tests/ci_schema_guard_contract.rs": {
+      "before_sha256": "94ce67ed025afb484fb630411859697fa87e9dd91e3d118725a08c336d218694",
+      "sha256": "24850989991ef584c559fd0a5b73382ba0434181c6abd69cba80ede6acbe7e42"
+    }
+  },
+  "preserved_requirements": [
+    "existing 500 ms HTTP benchmark threshold",
+    "150 complete scale shards and 1500 registered samples",
+    "original phase budgets, full closure and 15-table parity",
+    "all original failed/partial execution records and immutable identities"
+  ],
+  "product_source": "1b9e846db340cf9a5297ef44ab548a0816712029",
+  "reviewed_at_utc": "2026-10-08T19:29:28.121688+00:00",
+  "reviewer": "/root",
+  "schema_version": 1,
+  "scope": "Three-path index addition and actual schema-guard regression",
+  "subsequent_observation": {
+    "causal_limit": "This source does not yet contain the new doc_key index. The earlier 528.02 ms >500 ms failure is preserved, but its resolution cannot be attributed to this index patch. The index fix instead has independently verified parent-delete child-table SCAN evidence.",
+    "job_id": 113491127163,
+    "observed_at_utc": "2026-10-08T19:30:08.869298+00:00",
+    "run_id": 37829580014,
+    "source": "f8ca8070592a1bc03cedc2df4e27e1382a3077a7",
+    "step": "P0 benchmark optional HTTP contract tests",
+    "step_conclusion": "success"
+  },
+  "unresolved_blockers": [],
+  "validation": {
+    "facts_check": "passed; documented schema25/30 base tables/5 FTS/14 MCP tools unchanged",
+    "failed": 0,
+    "passed": 5,
+    "rust_validation_record": "doc-key-index-rust-validation.json"
+  },
+  "verdict": "accepted_scoped"
+}

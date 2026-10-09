@@ -33,14 +33,37 @@ pub enum Profile {
     Release,
 }
 
+/// An additive, explicitly selected capacity contract. Existing smoke/release
+/// plans retain their original work budgets and default oracle capacity.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum CapacityProfile {
+    #[serde(rename = "scale_capacity_v1")]
+    ScaleCapacityV1,
+}
+
+/// A disjoint slice of the registered repetition population. A successful
+/// slice is never evidence that the omitted repetitions or scales ran.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ScaleShard {
+    pub index: usize,
+    pub count: usize,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct ScalePlan {
     pub schema_version: u32,
     pub profile: Profile,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub capacity_profile: Option<CapacityProfile>,
     pub files: Vec<usize>,
     pub seed: u64,
     pub repetitions: usize,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub shard: Option<ScaleShard>,
+    #[serde(default)]
+    pub skip_fanout: bool,
     pub dirty_budget: usize,
     pub max_resume_builds: usize,
     pub batch_sizes: Vec<usize>,
@@ -54,9 +77,12 @@ impl Default for ScalePlan {
         Self {
             schema_version: 1,
             profile: Profile::Smoke,
+            capacity_profile: None,
             files: vec![60],
             seed: 0x00c0_ffee,
             repetitions: 1,
+            shard: None,
+            skip_fanout: false,
             dirty_budget: 2,
             max_resume_builds: 64,
             batch_sizes: vec![1, 10],
@@ -76,6 +102,10 @@ impl ScalePlan {
             || !unique(&self.files)
             || self.files.iter().any(|n| !(60..=100_000).contains(n))
             || !(1..=200).contains(&self.repetitions)
+            || self
+                .shard
+                .is_some_and(|s| s.count == 0 || s.count > self.repetitions || s.index >= s.count)
+            || (self.skip_fanout && self.shard.is_none())
             || !(1..=10_000).contains(&self.dirty_budget)
             || !(1..=1024).contains(&self.max_resume_builds)
             || self.batch_sizes.is_empty()
@@ -93,6 +123,17 @@ impl ScalePlan {
                 "invalid/duplicate scale, repetition, fanout, deadline or output bound",
             ));
         }
+        if self.capacity_profile.is_some()
+            && (self.profile != Profile::Release
+                || self.files.len() != 1
+                || self.dirty_budget != 200
+                || self.max_resume_builds != 1024
+                || !self.shard.is_some_and(|s| s.count == self.repetitions))
+        {
+            return Err(invalid(
+                "scale_capacity_v1 requires release, one scale, one repetition per shard, dirty budget 200 and resume budget 1024; fanout keeps 8/128",
+            ));
+        }
         if self.profile == Profile::Release
             && (cfg!(debug_assertions)
                 || self.repetitions < 30
@@ -103,6 +144,24 @@ impl ScalePlan {
             ));
         }
         Ok(())
+    }
+
+    pub fn repetition_range(&self) -> Result<std::ops::Range<usize>> {
+        self.validate()?;
+        Ok(match self.shard {
+            Some(shard) => {
+                self.repetitions * shard.index / shard.count
+                    ..self.repetitions * (shard.index + 1) / shard.count
+            }
+            None => 0..self.repetitions,
+        })
+    }
+
+    pub fn fanout_budgets(&self) -> (usize, usize) {
+        match self.capacity_profile {
+            Some(CapacityProfile::ScaleCapacityV1) => (8, 128),
+            None => (self.dirty_budget, self.max_resume_builds),
+        }
     }
 }
 
@@ -335,6 +394,8 @@ pub fn run_supervised(plan: &ScalePlan, out: &Path, binary: &Path) -> Result<Val
         "raw_digest":out.join("raw.jsonl").is_file().then(|| manifest::file_digest(&out.join("raw.jsonl"))).transpose()?,
         "release_certification":"not_run","release_prerequisites":"P7-020/P8-001/P8-004 and source/binary release lock are separate gates",
         "full_100k_certification":"not_run","max_output_bytes":plan.max_output_bytes,
+        "shard_only":plan.shard.is_some(),
+        "registered_repetitions":plan.repetitions,"executed_repetition_range":plan.repetition_range()?,
         "deadline_scope":"entire child lifetime and stderr drain, including generation, indexing, parity and evidence; parent polling interval 10ms"
     });
     control_json(&out.join("report.json"), &result)?;
@@ -517,7 +578,7 @@ fn manifest_difference_examples(a: &[Value], b: &[Value]) -> Result<(usize, Vec<
     Ok((changed.len(), examples))
 }
 
-fn parity(a: &Path, b: &Path, complete: bool) -> Result<Value> {
+fn parity(a: &Path, b: &Path, complete: bool, plan: &ScalePlan) -> Result<Value> {
     let ac = counts(a)?;
     let bc = counts(b)?;
     let over = [&ac, &bc].iter().any(|c| {
@@ -527,7 +588,12 @@ fn parity(a: &Path, b: &Path, complete: bool) -> Result<Value> {
         })
     });
     if over {
-        let mut comparison = oracle::compare_streaming(a, b, oracle::StreamingLimits::default())?;
+        let mut comparison = match plan.capacity_profile {
+            Some(CapacityProfile::ScaleCapacityV1) => {
+                oracle::compare_streaming_scale_capacity_v1(a, b)?
+            }
+            None => oracle::compare_streaming(a, b, oracle::StreamingLimits::default())?,
+        };
         if !complete {
             comparison["status"] = json!("incomplete_not_certified");
             comparison["equal"] = json!(false);
@@ -567,7 +633,7 @@ fn parity(a: &Path, b: &Path, complete: bool) -> Result<Value> {
         json!({"status":if !complete{"incomplete_not_certified"}else if different.is_empty(){"equal"}else{"different"},
         "equal":complete&&different.is_empty(),"different_tables":different,"tables":table_evidence,
         "comparison":"complete unchanged oracle rows compared before hashing; only exported differing examples are bounded",
-        "incremental_counts":ac,"full_counts":bc}),
+        "incremental_counts":ac,"full_counts":bc,"capacity_profile":plan.capacity_profile}),
     )
 }
 
@@ -684,12 +750,30 @@ fn scale_sample(
     if files != input_files(b.path())? {
         return Err(invalid("independent synthetic trees differ"));
     }
+    // Preserve the existing ordinary-code order for small batches. The
+    // original benchmark requires changed files, not exclusively ordinary
+    // code slots: the 1k corpus also contains route TS and YAML inputs. Add
+    // those existing generated inputs only when the requested batch needs
+    // them; never create filler files or silently shrink a 1000-file batch.
+    let code_files: BTreeSet<_> = generated
+        .code_file_paths
+        .iter()
+        .map(String::as_str)
+        .collect();
+    let mut batch_files = generated.code_file_paths.clone();
+    batch_files.extend(
+        files
+            .iter()
+            .filter(|f| f.path != "tsconfig.json" && !code_files.contains(f.path.as_str()))
+            .map(|f| f.path.clone()),
+    );
     let prefix = format!("scale-{n}/repetition-{repetition}");
     raw.emit(
         json!({"event":"input","sample":prefix,"seed":plan.seed,"synthetic_files_requested":n,
         "synthetic_files_written":generated.files_written,"auxiliary_visible_config_files":1,
         "generated_named_functions":generated.functions_planned,"runtime_config":runtime_config,
-        "fixture_version":"p8-synth-config-fixture-v1","config_fixture_augmented_code_files":config_files,"config_fixture_added_functions":3,
+        "fixture_version":"p8-synth-config-fixture-v1","batch_target_policy":"generated_code_then_existing_route_and_yaml_v2",
+        "config_fixture_augmented_code_files":config_files,"config_fixture_added_functions":3,
         "input_digest":manifest::digest(&serde_json::to_vec(&files)?),"files":files,
         "cold_definition":"fresh generated projects and empty indexes; OS page cache is retained"}),
     )?;
@@ -699,14 +783,17 @@ fn scale_sample(
         CodeIndexBackend::new_unindexed(b.path()).map_err(|e| BenchError::Tool(e.to_string()))?;
     let first = build(&aa, true, &format!("{prefix}/cold_incremental"), raw)?;
     let full = build(&bb, true, &format!("{prefix}/cold_full_control"), raw)?;
+    let parity_started = Instant::now();
     let initial = parity(
         a.path(),
         b.path(),
         first["resolution_freshness"]["complete"] == true
             && full["resolution_freshness"]["complete"] == true,
+        plan,
     )?;
+    let parity_wall_us = parity_started.elapsed().as_micros();
     let initial_fact = config_fact(a.path(), &config_files[2], &config_files[0])?;
-    raw.emit(json!({"event":"cold_parity","sample":prefix,"parity":initial,"independent_config_fact":initial_fact}))?;
+    raw.emit(json!({"event":"cold_parity","sample":prefix,"parity":initial,"parity_wall_us":parity_wall_us,"independent_config_fact":initial_fact}))?;
     let mut summaries = vec![
         json!({"sample":prefix,"stage":"cold","passed":initial["equal"]==true&&initial_fact["passed"]==true&&has_no_parse_error(&first)&&has_no_parse_error(&full),"parity_status":initial["status"]}),
     ];
@@ -763,14 +850,18 @@ fn scale_sample(
                 content: config_source(&config_files[1]),
             }),
             _ => {
-                if requested > generated.code_file_paths.len() {
-                    let item = json!({"sample":prefix,"stage":stage,"passed":false,"status":"not_run_batch_exceeds_code_files","requested":requested,"available":generated.code_file_paths.len()});
+                if requested > batch_files.len() {
+                    let item = json!({"sample":prefix,"stage":stage,"passed":false,"status":"not_run_batch_exceeds_generated_files","requested":requested,"available":batch_files.len()});
                     raw.emit(json!({"event":"stage_not_run","detail":item}))?;
                     summaries.push(item);
                     continue;
                 }
-                for p in generated.code_file_paths.iter().take(requested) {
-                    let comment = if p.ends_with(".py") { "#" } else { "//" };
+                for p in batch_files.iter().take(requested) {
+                    let comment = if p.ends_with(".py") || p.ends_with(".yaml") {
+                        "#"
+                    } else {
+                        "//"
+                    };
                     let old = fs::read_to_string(a.path().join(p))?;
                     ops.push(Mutation::Write {
                         path: p.clone(),
@@ -808,7 +899,9 @@ fn scale_sample(
             .last()
             .is_some_and(|r| r["resolution_freshness"]["complete"] == true);
         let full_complete = full["resolution_freshness"]["complete"] == true;
-        let comparison = parity(a.path(), b.path(), complete && full_complete)?;
+        let parity_started = Instant::now();
+        let comparison = parity(a.path(), b.path(), complete && full_complete, plan)?;
+        let parity_wall_us = parity_started.elapsed().as_micros();
         let fact = config_fact(
             a.path(),
             &config_files[2],
@@ -828,7 +921,7 @@ fn scale_sample(
             && reports.iter().all(has_no_parse_error)
             && has_no_parse_error(&full);
         raw.emit(json!({"event":"stage_finished","label":label,"incremental_wall_us":incremental_wall_us,
-            "incremental_builds":reports.len(),"complete":complete,"full_complete":full_complete,"parity":comparison,"passed":passed,"independent_config_fact":fact,"no_op_unchanged":no_op_unchanged,
+            "incremental_builds":reports.len(),"complete":complete,"full_complete":full_complete,"parity":comparison,"parity_wall_us":parity_wall_us,"passed":passed,"independent_config_fact":fact,"no_op_unchanged":no_op_unchanged,
             "phase_count_definition":"raw IndexReport files_*, dirty_plan, document_changes and project_model are preserved for every actual build"}))?;
         summaries.push(json!({"sample":prefix,"stage":stage,"passed":passed,"parity_status":comparison["status"],"incremental_builds":reports.len(),"incremental_wall_us":incremental_wall_us,
             "incremental_engine_elapsed_ms":summed_elapsed_ms(&reports)}));
@@ -885,16 +978,18 @@ fn worker_measure(plan: &ScalePlan, raw: &mut Raw) -> Result<Value> {
     raw.emit(json!({"event":"run_started","plan":plan,"engine":runner::engine_provenance(Some(&std::env::current_exe()?))?,
         "evidence_layer":"actual native parser/SQLite; synthetic builds use existing in-process MCP; fanout uses existing mutation_case",
         "semantic":"disabled","release_certification":"not_run","tail_latency_estimate":Value::Null,
+        "shard_only":plan.shard.is_some(),"registered_repetitions":plan.repetitions,"executed_repetition_range":plan.repetition_range()?,
         "statistics":"all repetitions retained; no best-of selection, speedup, stable p95/p99 or independent-sample quality inference"}))?;
     let mut summaries = Vec::new();
     for &files in &plan.files {
-        for repetition in 0..plan.repetitions {
+        for repetition in plan.repetition_range()? {
             summaries.extend(scale_sample(plan, files, repetition, raw)?);
         }
     }
-    for &fanout in &plan.fanouts {
-        for repetition in 0..plan.repetitions {
-            let case = fanout_case(fanout, plan.seed, plan.dirty_budget, plan.max_resume_builds)?;
+    for &fanout in plan.fanouts.iter().filter(|_| !plan.skip_fanout) {
+        for repetition in plan.repetition_range()? {
+            let (dirty_budget, max_resume_builds) = plan.fanout_budgets();
+            let case = fanout_case(fanout, plan.seed, dirty_budget, max_resume_builds)?;
             raw.emit(json!({"event":"fanout_started","fanout":fanout,"repetition":repetition,"case":case}))?;
             let started = Instant::now();
             let result = mutation_case::evaluate(&case)?;
@@ -950,6 +1045,7 @@ fn worker_measure(plan: &ScalePlan, raw: &mut Raw) -> Result<Value> {
     Ok(
         json!({"schema_version":1,"passed":passed,"sample_count":summaries.len(),"groups":groups,"raw_bytes":raw.written,
         "release_certification":"not_run","full_100k_certification":"not_run","prerequisite_gates":"not_evaluated",
+        "shard_only":plan.shard.is_some(),"registered_repetitions":plan.repetitions,"executed_repetition_range":plan.repetition_range()?,
         "not_selected_scales":RELEASE_SCALES.iter().filter(|n|!plan.files.contains(n)).collect::<Vec<_>>(),
         "oracle_row_limit_unchanged":ORACLE_ROWS,"stable_tail_latency":"not_established"}),
     )

@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "at": "2026-10-09T07:18:29.479766+00:00",
+  "verdict": "real_CI_failure_preserved_requires_fix_or_explicit_followup",
+  "PR": 178,
+  "source": "9f7b16f0758eb79f306cf44605b84550f02de441",
+  "tree": "9003d1383b4dbf148ac3aca30d00b5e8c06aaf48",
+  "run_id": 37896539239,
+  "run_attempt": 1,
+  "job_id": 113709066322,
+  "original_checkout": "exact G head from original log lines111/185/188 and source-before/source-after",
+  "source_snapshots_before_after_equal": true,
+  "product_input_count": 1090,
+  "failed_step": {
+    "number": 5,
+    "name": "Actual cache races, process faults and WAL recovery",
+    "actual_exit_code": 101,
+    "failed_test": "independently_observed_sigkill_boundaries",
+    "source_path": "crates/cc-semantic/tests/crash_independent_review.rs",
+    "line": 229,
+    "panic": "called Result::unwrap() on Err: ParseIntError { kind: Empty }",
+    "summary": "0 passed; 1 failed; 1 ignored; 0 measured; 0 filtered out; finished in 15.36s",
+    "job_started_at": "2026-10-09T07:01:52Z",
+    "failed_step_completed_at": "2026-10-09T07:04:13Z",
+    "job_completed_at": "2026-10-09T07:08:55Z"
+  },
+  "related_steps": {
+    "wiring_contracts": "skipped",
+    "thirteen_checkpoint_stdio": "success",
+    "three_seed_fault_lifecycle": "success",
+    "resources_and_contention": "success",
+    "artifact_upload": "success",
+    "job_overall": "failure"
+  },
+  "source_mechanism": {
+    "existing_unchanged_since_a23": true,
+    "git_blob": "47a9abd36f8a4348b4c3c8731565da94833f69cb",
+    "source_sha256": "fdc5291977db6bc05e1d380e9b24a4b1da92ce3afd5c9a042fabc38fc79d8aeb",
+    "writer": [
+      "L92-96 File::create publishes an empty inode before write_all(pid), then sync_all.",
+      "L98-102 signal_and_wait publishes ready using durable."
+    ],
+    "reader": [
+      "L216 retains a 15-second deadline.",
+      "L217 exits wait on path existence, which is not complete-content publication.",
+      "L226-229 reads and immediately parses PID; exact Empty error proves original parse saw an empty string."
+    ],
+    "causal_assessment": "The source permits a child-create/parent-read-before-write readiness race, consistent with the exact observed failure. The precise syscall interleaving and failing seed/point were not retained, so those details remain unobserved.",
+    "product_scope": "Test readiness fixture unchanged in G9f versus a23; not a demonstrated new FTS/product regression."
+  },
+  "raw_limits": {
+    "artifact_contains_crash_child_directory": false,
+    "ready_file_available": false,
+    "specific_failing_seed_or_PID_available": false,
+    "reason": "Original uploaded90 members include step fault logs but no independently_observed_sigkill child roots or ready files."
+  },
+  "minimal_fix_design": [
+    "Only publish ready after writing and syncing complete PID to a same-directory temporary file, then atomic rename to final ready.",
+    "Keep the 15-second deadline, exact PID equality, five boundaries across three seeds, live lease negative controls, SIGKILL behavior and original recovery assertions.",
+    "Do not add retries, skip, ignore, deadline enlargement or fresh primary sample replacement.",
+    "Preserve failed G9f execution; any source change requires a separately fixed source identity and relevant engineering checks."
+  ],
+  "actions": {
+    "original_test_rerun": false,
+    "source_modified": false,
+    "workflow_modified": false,
+    "remote_mutation": false,
+    "archive_download_attempts": 1
+  },
+  "artifact": {
+    "id": 11601205855,
+    "bytes": 20319656,
+    "sha256": "b7f7437b71491d8ab3aa83fa6d2688d6910aacc724df3c69e7ab7e5d56590606",
+    "url": "https://github.com/jyqj/codecortex/actions/runs/37896539239/artifacts/11601205855",
+    "local_path": "raw-pr178-9f7b16f/11601205855",
+    "transport_status": "verified",
+    "execution_acceptance": "failed original job remains failed"
+  },
+  "todo": {
+    "done": 163,
+    "remaining": 29,
+    "new_completed": 0
+  }
+}

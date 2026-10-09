@@ -1,0 +1,2017 @@
+{
+  "schema_version": 1,
+  "status": "read_only_scope_coordination_review_not_semantic_or_task_acceptance",
+  "observed_at": "2026-10-09T07:03:08Z",
+  "our_PR": 178,
+  "our_G": "9f7b16f0758eb79f306cf44605b84550f02de441",
+  "our_P": "9d13cb30dd618bc5d106186711c1d98e01b47995",
+  "common_main": "60e5ce3ccc86f5cccb40f6f9c32bbc7b77bf1e9d",
+  "scope": "Public PR metadata, changed filenames/blob identities and current-head workflow/jobs only; no holdout/gold contents or raw artifact contents read; no remote mutations.",
+  "prs": [
+    {
+      "number": 175,
+      "title": "fix: use Rust for legacy runtime latency quantiles",
+      "url": "https://github.com/jyqj/codecortex/pull/175",
+      "state": "open",
+      "draft": false,
+      "head": "840fa2e0a26ab60c138747a4309aba5df506edc1",
+      "head_ref": "task/p8-runtime-statistics-owner-a217-20261009",
+      "base": "60e5ce3ccc86f5cccb40f6f9c32bbc7b77bf1e9d",
+      "author": "jyqj",
+      "created_at": "2026-10-09T06:32:02Z",
+      "updated_at": "2026-10-09T06:49:02Z",
+      "changed_files": 12,
+      "body_claims": "## Why\n\nThe active runtime report still calculated legacy latency quantiles in Python after running the Rust statistics replay. That left two live owners of the same nearest-rank calculation and made the P8-017 cleanup incomplete.\n\n## What changes\n\n- Add a Rust nanosecond wire adapter that calls the existing `nearest_rank` implementation and preserves the original all-terminal-outcome populations, nulls, field names and nanosecond precision.\n- Have the Rust replay produce the legacy all/read/build summaries directly from validated `finished_ns - offered_ns` values.\n- Remove Python's duplicate quantile function and copy the same verified `statistics.json` bytes after checking their SHA-256 against the replay receipt.\n- Add Rust precision, boundary, empty-group and terminal-outcome controls, plus Python active-copy and post-verification tamper controls.\n- Update the runtime evidence guide and bind the fixed source review using only the existing v15 pin mechanism.\n\nThe candidate starts from main `60e5ce3ccc86f5cccb40f6f9c32bbc7b77bf1e9d` and retains #170's batching changes. The actual product commit is `bbe7a9e77f332448b610c54460b355c5936e8c2a`, with exactly five changed implementation/test/document paths. The complete domain remains 1,089 product inputs and 138 validation inputs.\n\n## Validation\n\nThe final five blobs have been independently read and reviewed by multiple agents, including the actual Git diff and source ancestry. Static review caught an intermediate misplaced test assertion; the final test restores the original successful-observation method exactly.\n\nCompilation and the new controls have not yet run at PR creation. The existing CI and path-triggered runtime workflows must validate this exact candidate with their original workloads and limits. Results will be recorded as they become available.\n\n## Task boundary\n\nThis addresses one concrete P8-017 implementation gap. The original 192 task definitions, statuses, dependency graph and P8-005 acceptance subgates are unchanged: **163 done / 29 remaining / 0 newly completed TODOs**. P8-017 remains in progress pending its dependencies and full acceptance.\n\nThe original E scale study failed before completing all 150 shards and 1,500 samples, and the original Mac regression remains under separate fixed-source diagnosis. Neither older executions nor the isolated Mac diagnostic are relabelled as evidence for this candidate. This PR grants no live-provider, quality-gate or release certification.\n\nInitial execution head: `9a52cd24337294e70281badc861bda7bdf0a9f0a`. Initial independent review commit: `4e4671482333c1762efa9c5ab9aeceadc0f3e295`.\n\n## Formatter follow-up\n\nThe first CI run [37894025756](https://github.com/jyqj/codecortex/actions/runs/37894025756) stopped at `cargo fmt --all --check`: its original check log identified two formatting changes in the newly added Rust tests. That failure remains recorded. The MSRV job for the initial head passed; later check steps were skipped after the formatter failure.\n\nApply exactly those two formatter outputs, with the complete production prefix and all test values/assertions unchanged. The original failure log and an independent before/after review are retained under `artifacts/checkpoints/p8-runtime-statistics-owner-20261009/formatting-followup/`. No formatter, source-integrity or test gate is weakened.\n\nCurrent product commit: `98173d7bf3a4709d0309907ec85ff5674c23c921`. Current review commit: `13610caf2904f7656fa45ccbf20f61a313b708b8`. Current execution head: `840fa2e0a26ab60c138747a4309aba5df506edc1`.\n\nSeven original pull-request workflows have been observed starting on the current execution head. Their results are pending; no CI pass or additional completed TODO is claimed by this update.\n",
+      "files": [
+        {
+          "filename": "artifacts/checkpoints/p8-runtime-statistics-owner-20261009/formatting-followup/first-check-failure.log",
+          "status": "added",
+          "sha": "8c4f6da82dbe7703c3f53fd4a9f9ecf7836c8ad2",
+          "additions": 566,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-runtime-statistics-owner-20261009/formatting-followup/independent-source-review.json",
+          "status": "added",
+          "sha": "42c6240930f139e3bd736de68012f004cf780474",
+          "additions": 1482,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-runtime-statistics-owner-20261009/independent-source-review.json",
+          "status": "added",
+          "sha": "96be40b4dc2dd7faca2bc10c07d23f2b85e7e300",
+          "additions": 1540,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-runtime-statistics-owner-20261009/pr-five-path-and-assembly-review.json",
+          "status": "added",
+          "sha": "532e86c436038e118051a3ad33e02d7e876aa289",
+          "additions": 157,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-runtime-statistics-owner-20261009/scale-five-path-static-review.json",
+          "status": "added",
+          "sha": "bbf6b5909df08ad2e3d47c8a6389f01f40444cec",
+          "additions": 73,
+          "deletions": 0
+        },
+        {
+          "filename": "crates/cc-eval/src/benchmark/statistics.rs",
+          "status": "modified",
+          "sha": "415fbdc0a254729e4b7fa5f2fe040b3019d90aa9",
+          "additions": 77,
+          "deletions": 0
+        },
+        {
+          "filename": "crates/cc-eval/src/bin/p8-runtime-statistics.rs",
+          "status": "modified",
+          "sha": "6273b16ebc403602b5aaf3eb0a9699b5cdfdca70",
+          "additions": 100,
+          "deletions": 0
+        },
+        {
+          "filename": "docs/P8_RUNTIME_EVIDENCE.md",
+          "status": "modified",
+          "sha": "46027ad45782e6ad6919ed8c4fa1ce94fb8d06a8",
+          "additions": 1,
+          "deletions": 1
+        },
+        {
+          "filename": "scripts/p8_runtime.py",
+          "status": "modified",
+          "sha": "031ebdc4c604fd39ab2d647b652ca533180bf818",
+          "additions": 6,
+          "deletions": 15
+        },
+        {
+          "filename": "scripts/reviewed-source-registry-v15.json",
+          "status": "modified",
+          "sha": "668ab05c479457b08a482c50241ccd21dff644e3",
+          "additions": 9,
+          "deletions": 9
+        },
+        {
+          "filename": "scripts/tests/test_p8_runtime.py",
+          "status": "modified",
+          "sha": "797dda75c3d23f4bca92996a8e316c279d82b6e4",
+          "additions": 57,
+          "deletions": 10
+        },
+        {
+          "filename": "scripts/verify_reviewed_source_v15.py",
+          "status": "modified",
+          "sha": "3cca26982bbc8232d55aea2ad8934be33f93aedc",
+          "additions": 4,
+          "deletions": 4
+        }
+      ],
+      "current_head_runs": [
+        {
+          "id": 37895459427,
+          "name": "P7 engineering regressions",
+          "event": "pull_request",
+          "status": "completed",
+          "conclusion": "success",
+          "head_sha": "840fa2e0a26ab60c138747a4309aba5df506edc1",
+          "run_attempt": 1,
+          "created_at": "2026-10-09T06:48:18Z",
+          "updated_at": "2026-10-09T06:52:38Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37895459427"
+        },
+        {
+          "id": 37895459498,
+          "name": "P8 original failure gates",
+          "event": "pull_request",
+          "status": "completed",
+          "conclusion": "success",
+          "head_sha": "840fa2e0a26ab60c138747a4309aba5df506edc1",
+          "run_attempt": 1,
+          "created_at": "2026-10-09T06:48:18Z",
+          "updated_at": "2026-10-09T06:52:41Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37895459498"
+        },
+        {
+          "id": 37895459475,
+          "name": "P8 platform cold builds",
+          "event": "pull_request",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "840fa2e0a26ab60c138747a4309aba5df506edc1",
+          "run_attempt": 1,
+          "created_at": "2026-10-09T06:48:18Z",
+          "updated_at": "2026-10-09T06:48:18Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37895459475"
+        },
+        {
+          "id": 37895459543,
+          "name": "P8 runtime observations",
+          "event": "pull_request",
+          "status": "in_progress",
+          "conclusion": null,
+          "head_sha": "840fa2e0a26ab60c138747a4309aba5df506edc1",
+          "run_attempt": 1,
+          "created_at": "2026-10-09T06:48:18Z",
+          "updated_at": "2026-10-09T06:48:23Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37895459543"
+        },
+        {
+          "id": 37895459464,
+          "name": "CI",
+          "event": "pull_request",
+          "status": "in_progress",
+          "conclusion": null,
+          "head_sha": "840fa2e0a26ab60c138747a4309aba5df506edc1",
+          "run_attempt": 1,
+          "created_at": "2026-10-09T06:48:18Z",
+          "updated_at": "2026-10-09T06:57:52Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37895459464"
+        },
+        {
+          "id": 37895459412,
+          "name": "P7 closeout evidence",
+          "event": "pull_request",
+          "status": "completed",
+          "conclusion": "success",
+          "head_sha": "840fa2e0a26ab60c138747a4309aba5df506edc1",
+          "run_attempt": 1,
+          "created_at": "2026-10-09T06:48:18Z",
+          "updated_at": "2026-10-09T06:57:58Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37895459412"
+        },
+        {
+          "id": 37895459466,
+          "name": "P8 lifecycle and resource observations",
+          "event": "pull_request",
+          "status": "completed",
+          "conclusion": "success",
+          "head_sha": "840fa2e0a26ab60c138747a4309aba5df506edc1",
+          "run_attempt": 1,
+          "created_at": "2026-10-09T06:48:18Z",
+          "updated_at": "2026-10-09T07:00:09Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37895459466"
+        }
+      ]
+    },
+    {
+      "number": 176,
+      "title": "Integrate reviewed surface-window and macOS engineering fixes",
+      "url": "https://github.com/jyqj/codecortex/pull/176",
+      "state": "open",
+      "draft": true,
+      "head": "7b1fc54485bfda1b00f5e316617052900b99fb63",
+      "head_ref": "integrate/p8-surface-mac-28fe-20261009",
+      "base": "60e5ce3ccc86f5cccb40f6f9c32bbc7b77bf1e9d",
+      "author": "jyqj",
+      "created_at": "2026-10-09T06:51:28Z",
+      "updated_at": "2026-10-09T06:51:28Z",
+      "changed_files": 78,
+      "body_claims": "## Why\n\n#173 and #174 make disjoint engineering changes, but each binds a complete v15 source registry. Combining either old registry with the other PR's source would leave the admitted inputs inconsistent. This PR combines their exact reviewed source changes over fixed main `60e5ce3ccc86f5cccb40f6f9c32bbc7b77bf1e9d` and installs a new complete source binding.\n\n## Changes\n\n- Reuse the bounded public-surface query window only within one prepare call when the final seeds and admission bounds remain valid; preserve the original SQL fallback and epoch fencing.\n- Prepare the macOS subprocess test helper before the original 250 ms assertion, and match test-only platform cfg boundaries to their existing callers.\n- Preserve all 65 original archive additions from #173/#174 and the original source-specific controls workflow.\n- Add an independent review of the actual combined product, then install only the standard schema-10 registry and four immutable v15 pins. Verifier logic, exclusions, historical protections, CI commands, original scale budgets and task definitions are unchanged.\n\nThe exact main-to-product scope is five Rust files, 65 new archive files and one retained workflow. PR #175 is outside this fixed candidate.\n\n## Fixed source and review\n\n- Product P: `59c2197ebbada4e8cb2091d2fc7a852aa28c9205`\n- Independent review R: `c6c8030d359107c82f0f738d8ef270778b5f887d`\n- Execution candidate G: `7b1fc54485bfda1b00f5e316617052900b99fb63`\n- Complete product inputs: 1,089; historical delta paths: 44; validation inputs: 139.\n- Registry SHA-256: `754442a8ff237eedaebac63aeeb1ae03f4baeb462b2ee1f8d84bada3cb56ee73`.\n\nThe [canonical review](https://github.com/jyqj/codecortex/blob/7b1fc54485bfda1b00f5e316617052900b99fb63/artifacts/checkpoints/p8-combined-surface-mac-28fe-20261009/independent-source-review.json) and [detailed review](https://github.com/jyqj/codecortex/blob/7b1fc54485bfda1b00f5e316617052900b99fb63/artifacts/checkpoints/p8-combined-surface-mac-28fe-20261009/independent-review-details.json) bind actual Git contents. Root separately verified that R adds only five review artifacts and G modifies only the two identity files, with unchanged verifier logic.\n\n## Validation and evidence boundary\n\nBoth original PRs have passed their own three-job CI. Those results support review of their respective inputs; the combined candidate's original CI has not yet executed at PR creation and must supply its own result. This draft grants no combined runtime, full-scale, platform, quality or release certification.\n\nThe old #173 controls workflow keeps its original source guard and branch trigger. It is retained as a validation input and is not reused as a run plan for this combined product.\n\nThe A23 scale run `37872522779` ended in failure: its original aggregate reports 146 missing shards after the 100k runner lost communication. All four valid original shards, that failure and the old Mac failure remain historical evidence; none is relabelled for G. A new full study must keep the original five sizes × 30 repetitions, 150 shards and 1,500 composite measurements on its fixed complete source.\n\n## TODO accounting\n\n192 original tasks / 163 done / 29 remaining / 0 newly completed in this round. This integration enables further work and does not close a task by itself.",
+      "files": [
+        {
+          "filename": ".github/workflows/p8-surface-window-controls.yml",
+          "status": "added",
+          "sha": "34a96f91e550313659cd598ce3466b82bfc310d8",
+          "additions": 196,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-combined-surface-mac-28fe-20261009/combination-map.json",
+          "status": "added",
+          "sha": "2c957f172d845afa816a4728e0d59753b5225aef",
+          "additions": 690,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-combined-surface-mac-28fe-20261009/independent-review-details.json",
+          "status": "added",
+          "sha": "ec3e883886d386db9ef4a2bfe9b99a6b9137365a",
+          "additions": 11783,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-combined-surface-mac-28fe-20261009/independent-source-review.json",
+          "status": "added",
+          "sha": "b9bbc0df4e654d2b1bea4dcaefdf2d1f740e56a3",
+          "additions": 2839,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-combined-surface-mac-28fe-20261009/pr173-independent-engineering-review.json",
+          "status": "added",
+          "sha": "4ac30eb335e2493e36a62c78e5288e408e1534f7",
+          "additions": 379,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-combined-surface-mac-28fe-20261009/pr174-independent-engineering-review.json",
+          "status": "added",
+          "sha": "893dc06179d2fe915eba01161920da3b7aa3e29e",
+          "additions": 377,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/canonical-copy-receipt.json",
+          "status": "added",
+          "sha": "147eb898ff9832bf5e9c29368e7dadb4ccad6e86",
+          "additions": 194,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/creation.json",
+          "status": "added",
+          "sha": "1e35a71ff054a50532076835f6e4cc86a11991ce",
+          "additions": 17,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/creation.stderr",
+          "status": "added",
+          "sha": "e662054e75dfbaf3547e411fd4b2b3f229ba09b5",
+          "additions": 2,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/creation.stdout",
+          "status": "added",
+          "sha": "07755f822a1c4ac35a3bfea2a7e93cc144f18cf1",
+          "additions": 1,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/custody/R-supporting-files-manifest.json",
+          "status": "added",
+          "sha": "fee30ae01d35b8717f8874a8fe2cbb816ecb99b1",
+          "additions": 53,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/custody/product-commit-archive-selection.json",
+          "status": "added",
+          "sha": "f792230405c29d2d7a6dfa3ce99f4ae6f929966b",
+          "additions": 69,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/custody/round8-complete-archive-selection.json",
+          "status": "added",
+          "sha": "0cd6172e9e028bb6ba6679d480af08f25d7e5577",
+          "additions": 314,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/engineering/terminal-review.json",
+          "status": "added",
+          "sha": "00ce5b61a9b380a392dcf01e4fad644e685062e1",
+          "additions": 269,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/exact-P-source-validation-bridge.json",
+          "status": "added",
+          "sha": "66fd1e1fccd0ae36552457b834c05a535163f618",
+          "additions": 99,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/executed-source-comparison.py",
+          "status": "added",
+          "sha": "47bbd8855f2f845df3f5a792176f1bb4b3d265ae",
+          "additions": 29,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/full-product-validation-snapshots.json",
+          "status": "added",
+          "sha": "6c6f9b396af9975631a5d24e8d5ffb4bb85764a6",
+          "additions": 3413,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/independent-source-review.json",
+          "status": "added",
+          "sha": "c63b799179634f0cde1979fc6433fd9a2f78cf7e",
+          "additions": 1484,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/installed-review-manifest.json",
+          "status": "added",
+          "sha": "3aafee76e579fa5c966ea75d49a0faf945ba94b9",
+          "additions": 417,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/integrated-source.patch",
+          "status": "added",
+          "sha": "2f690f8a38308c77b6c7c35626bc54efc7c0da69",
+          "additions": 154,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/product-commit-bridge.json",
+          "status": "added",
+          "sha": "21624e5260e0317d8a240a99259b9b1529bc2592",
+          "additions": 89,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/product-commit-command1.stderr",
+          "status": "added",
+          "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/product-commit-command1.stdout",
+          "status": "added",
+          "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/product-commit-command2.stderr",
+          "status": "added",
+          "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/product-commit-command2.stdout",
+          "status": "added",
+          "sha": "e443c70e9da57b61d2562f473b700f718c45e323",
+          "additions": 14,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/product-commit-full-input-bridge.json",
+          "status": "added",
+          "sha": "53a803561e8bb7622e500d967fbd1e1fa627abe6",
+          "additions": 8591,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/product-commit-preflight.json",
+          "status": "added",
+          "sha": "b139f3b48081e126d165ea960d625c75e2e859fe",
+          "additions": 19,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/reviews/five-file-independent-source-review.json",
+          "status": "added",
+          "sha": "2efbc0420cfba57b4a4d75037419a8ca51e4acb3",
+          "additions": 91,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/reviews/two-file-independent-source-review.json",
+          "status": "added",
+          "sha": "5f435b8afb0edb666dbc19d6d58c856ff5e83e1b",
+          "additions": 92,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/source-integration-review.json",
+          "status": "added",
+          "sha": "055b6f7d06790c4ffb222a3361df722b5aae77a6",
+          "additions": 89,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/validation-attempt01/01-fmt.json",
+          "status": "added",
+          "sha": "2089ddd200d04469dc0e6b4abd82cb0bf323f67d",
+          "additions": 105,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/validation-attempt01/01-fmt.stderr",
+          "status": "added",
+          "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/validation-attempt01/01-fmt.stdout",
+          "status": "added",
+          "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/validation-attempt01/02-clippy.json",
+          "status": "added",
+          "sha": "5b9d5d50fd6e86b190177d77880604facfee3dcc",
+          "additions": 109,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/validation-attempt01/02-clippy.stderr",
+          "status": "added",
+          "sha": "394b0448af3d78ad3b9c50e0be4a95db81ba0fc8",
+          "additions": 180,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/validation-attempt01/02-clippy.stdout",
+          "status": "added",
+          "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/validation-attempt01/03-workspace-test.json",
+          "status": "added",
+          "sha": "e49cb359ca912321386a5d66c06ea7e98281541b",
+          "additions": 101,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/validation-attempt01/03-workspace-test.stderr",
+          "status": "added",
+          "sha": "d7f625f1ca5a858437e57d506a619e9e6210da12",
+          "additions": 845,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/validation-attempt01/03-workspace-test.stdout",
+          "status": "added",
+          "sha": "e83e617042b941836583360d82523cc91c4da97d",
+          "additions": 3877,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/validation-attempt01/04-integration-fixtures.json",
+          "status": "added",
+          "sha": "8e66965c5fe1283a4b830a29723a289e8eacb44e",
+          "additions": 107,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/validation-attempt01/04-integration-fixtures.stderr",
+          "status": "added",
+          "sha": "b3d2ecf4ab321495972ad4c4b99e8afc8648db07",
+          "additions": 90,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/validation-attempt01/04-integration-fixtures.stdout",
+          "status": "added",
+          "sha": "49ef037bf82d7b5ce022de315bc2c8432e23beea",
+          "additions": 446,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/validation-attempt01/archive-selection.json",
+          "status": "added",
+          "sha": "04ad76507ee3978689075d0c08c9a6b604882ff4",
+          "additions": 265,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/validation-attempt01/executed-analysis.py",
+          "status": "added",
+          "sha": "95ba655f20d203f7f4036cb73cec736865edeb4f",
+          "additions": 53,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/validation-attempt01/executed-wrapper.py",
+          "status": "added",
+          "sha": "554b6c44cdc65b815b178384721b7acfe422696c",
+          "additions": 75,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/validation-attempt01/final.json",
+          "status": "added",
+          "sha": "7cba698d192d7fdd3c46c13f83526ed77ff492e9",
+          "additions": 62,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/validation-attempt01/native-job-terminal.json",
+          "status": "added",
+          "sha": "b3c4dfac7da7cf27a1fb2acbf9a93ea8deb0b07e",
+          "additions": 37,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/validation-attempt01/plan.json",
+          "status": "added",
+          "sha": "5c9ac62beeed3698c704a706e5488ab3183b91fd",
+          "additions": 106,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/validation-attempt01/preflight-cargo.stderr",
+          "status": "added",
+          "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/validation-attempt01/preflight-cargo.stdout",
+          "status": "added",
+          "sha": "dc18f5600fbdc3dcfe552ad276860e3ba38b212a",
+          "additions": 9,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/validation-attempt01/preflight-rustc.stderr",
+          "status": "added",
+          "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/validation-attempt01/preflight-rustc.stdout",
+          "status": "added",
+          "sha": "6f2f0fabb8af3e561af09a82013dfcb3e022d03a",
+          "additions": 7,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/validation-attempt01/preflight-sdk.stderr",
+          "status": "added",
+          "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/validation-attempt01/preflight-sdk.stdout",
+          "status": "added",
+          "sha": "d57fa9ffd701a91f0e2d80da31477a7d9a5b808d",
+          "additions": 1,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/validation-attempt01/preflight.json",
+          "status": "added",
+          "sha": "6fbd3c21c69c07530722048df4cd7acc077c2641",
+          "additions": 34,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/validation-attempt01/progress.json",
+          "status": "added",
+          "sha": "6c86f1c31fa01f03d6fa4baa962dcde52504d2db",
+          "additions": 66,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/validation-attempt01/source-files/crates/cc-eval/tests/benchmark_adapters.rs",
+          "status": "added",
+          "sha": "9feb4fe9659c3cd84bc86684d3f73412f9caec17",
+          "additions": 991,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/validation-attempt01/source-files/crates/cc-eval/tests/p8_scale.rs",
+          "status": "added",
+          "sha": "31b34057ff76e0b07e9242ef179951577ed22187",
+          "additions": 579,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/validation-attempt01/source-files/crates/cc-index/src/project_model/python_inventory.rs",
+          "status": "added",
+          "sha": "e8f3ccd2d5d24ac222186f6954d983d859b4ee18",
+          "additions": 365,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/validation-attempt01/source-files/crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs",
+          "status": "added",
+          "sha": "4d3b82904f0b9415f1f901a4192f66525492cd02",
+          "additions": 454,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/validation-attempt01/source.diff",
+          "status": "added",
+          "sha": "2f690f8a38308c77b6c7c35626bc54efc7c0da69",
+          "additions": 154,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/validation-attempt01/terminal-review.json",
+          "status": "added",
+          "sha": "00ce5b61a9b380a392dcf01e4fad644e685062e1",
+          "additions": 269,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009/validation-attempt01/test-summary-index.json",
+          "status": "added",
+          "sha": "efac0a3cbd12e3d454da163a96e28433466c5149",
+          "additions": 7196,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-surface-window-controls-20261009/actual-product-source-bridge.json",
+          "status": "added",
+          "sha": "9f9712b3ebf765b5324432ebce44d10e3414bd4d",
+          "additions": 11249,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-surface-window-controls-20261009/controls-workflow-static-review.json",
+          "status": "added",
+          "sha": "e27b174a0716cecb334a722a86618f7362f9f575",
+          "additions": 193,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-surface-window-controls-20261009/independent-source-review.json",
+          "status": "added",
+          "sha": "21b3ad05383d93ddef35d2575645585eb0592ae1",
+          "additions": 3869,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-surface-window-controls-20261009/native-format-preparation.json",
+          "status": "added",
+          "sha": "8812ba254a7be48c75cc89f631f143e3028f2019",
+          "additions": 64,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-surface-window-controls-20261009/original-execution-plan.json",
+          "status": "added",
+          "sha": "fcb40a1a48a5143d816f74124da7d7ed7e14a2dc",
+          "additions": 328,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-surface-window-controls-20261009/root-product-composition.json",
+          "status": "added",
+          "sha": "3d318f72f089d61c57c74b4887bb7bbe8d2123a1",
+          "additions": 126,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-surface-window-controls-20261009/source-draft-static-review.json",
+          "status": "added",
+          "sha": "ff7198b9a05230e98cc201af385cb427a4a8d370",
+          "additions": 236,
+          "deletions": 0
+        },
+        {
+          "filename": "artifacts/checkpoints/p8-surface-window-controls-20261009/source-original-author-design.json",
+          "status": "added",
+          "sha": "78bdd0c14b673e7806d0454b8550b57db500896c",
+          "additions": 80,
+          "deletions": 0
+        },
+        {
+          "filename": "crates/cc-eval/tests/benchmark_adapters.rs",
+          "status": "modified",
+          "sha": "9feb4fe9659c3cd84bc86684d3f73412f9caec17",
+          "additions": 7,
+          "deletions": 0
+        },
+        {
+          "filename": "crates/cc-eval/tests/p8_scale.rs",
+          "status": "modified",
+          "sha": "31b34057ff76e0b07e9242ef179951577ed22187",
+          "additions": 27,
+          "deletions": 0
+        },
+        {
+          "filename": "crates/cc-index/src/indexer_phases/reconcile.rs",
+          "status": "modified",
+          "sha": "c8aed85c88cf2fbbbf691592fd1837ce6356818e",
+          "additions": 456,
+          "deletions": 9
+        },
+        {
+          "filename": "crates/cc-index/src/project_model/python_inventory.rs",
+          "status": "modified",
+          "sha": "e8f3ccd2d5d24ac222186f6954d983d859b4ee18",
+          "additions": 6,
+          "deletions": 0
+        },
+        {
+          "filename": "crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs",
+          "status": "modified",
+          "sha": "4d3b82904f0b9415f1f901a4192f66525492cd02",
+          "additions": 5,
+          "deletions": 1
+        },
+        {
+          "filename": "scripts/reviewed-source-registry-v15.json",
+          "status": "modified",
+          "sha": "7eb53896011c10c9b0b4763e86d4c087ae93b133",
+          "additions": 23,
+          "deletions": 10
+        },
+        {
+          "filename": "scripts/verify_reviewed_source_v15.py",
+          "status": "modified",
+          "sha": "43f2b01324023c0ded2b5ef3cca941a79f67d383",
+          "additions": 4,
+          "deletions": 4
+        }
+      ],
+      "current_head_runs": [
+        {
+          "id": 37895748308,
+          "name": "P7 closeout evidence",
+          "event": "pull_request",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "7b1fc54485bfda1b00f5e316617052900b99fb63",
+          "run_attempt": 1,
+          "created_at": "2026-10-09T06:51:32Z",
+          "updated_at": "2026-10-09T06:51:32Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37895748308"
+        },
+        {
+          "id": 37895748085,
+          "name": "P8 runtime observations",
+          "event": "pull_request",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "7b1fc54485bfda1b00f5e316617052900b99fb63",
+          "run_attempt": 1,
+          "created_at": "2026-10-09T06:51:31Z",
+          "updated_at": "2026-10-09T06:51:31Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37895748085"
+        },
+        {
+          "id": 37895748112,
+          "name": "P8 platform cold builds",
+          "event": "pull_request",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "7b1fc54485bfda1b00f5e316617052900b99fb63",
+          "run_attempt": 1,
+          "created_at": "2026-10-09T06:51:31Z",
+          "updated_at": "2026-10-09T06:51:31Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37895748112"
+        },
+        {
+          "id": 37895748066,
+          "name": "P7 engineering regressions",
+          "event": "pull_request",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "7b1fc54485bfda1b00f5e316617052900b99fb63",
+          "run_attempt": 1,
+          "created_at": "2026-10-09T06:51:31Z",
+          "updated_at": "2026-10-09T06:51:31Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37895748066"
+        },
+        {
+          "id": 37895748084,
+          "name": "CI",
+          "event": "pull_request",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "7b1fc54485bfda1b00f5e316617052900b99fb63",
+          "run_attempt": 1,
+          "created_at": "2026-10-09T06:51:31Z",
+          "updated_at": "2026-10-09T06:51:31Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37895748084"
+        },
+        {
+          "id": 37895748113,
+          "name": "P8 lifecycle and resource observations",
+          "event": "pull_request",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "7b1fc54485bfda1b00f5e316617052900b99fb63",
+          "run_attempt": 1,
+          "created_at": "2026-10-09T06:51:31Z",
+          "updated_at": "2026-10-09T06:51:31Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37895748113"
+        },
+        {
+          "id": 37895748072,
+          "name": "P8 original failure gates",
+          "event": "pull_request",
+          "status": "completed",
+          "conclusion": "success",
+          "head_sha": "7b1fc54485bfda1b00f5e316617052900b99fb63",
+          "run_attempt": 1,
+          "created_at": "2026-10-09T06:51:31Z",
+          "updated_at": "2026-10-09T06:54:25Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37895748072"
+        }
+      ]
+    },
+    {
+      "number": 177,
+      "title": "docs: clarify platform evidence and regression scope",
+      "url": "https://github.com/jyqj/codecortex/pull/177",
+      "state": "open",
+      "draft": false,
+      "head": "60e635877fdb4cb97f7372e04b6685cf5d50e43e",
+      "head_ref": "task/p8-platform-evidence-docs-a217-20261009",
+      "base": "60e5ce3ccc86f5cccb40f6f9c32bbc7b77bf1e9d",
+      "author": "jyqj",
+      "created_at": "2026-10-09T06:56:16Z",
+      "updated_at": "2026-10-09T06:56:16Z",
+      "changed_files": 2,
+      "body_claims": "## Why\n\nPlatform results cover different commands and preconditions. The current guide needs to state that scope explicitly so a cold product build or one successful diagnostic is not read as a complete workspace regression result.\n\n## What changes\n\n- Add a dated platform evidence section to `docs/BENCHMARK.md`, linking the fixed E eight-cell build matrix, original macOS 26.6.2 / Rust 1.95.0 / SDK 15.4 workspace failure, and later hosted macOS 15 diagnostic.\n- Record the original unknown SDK field and distinguish fresh-target product builds, workspace regressions, isolated tests, and fresh versus pre-executed helper conditions.\n- Add the corresponding source/OS/architecture/toolchain/SDK reporting guidance to `CONTRIBUTING.md`.\n\n## Review and validation\n\nThe author and primary reviewer independently read the original documents and exact two resulting Git blobs. The actual commit `60e635877fdb4cb97f7372e04b6685cf5d50e43e` has only these two documentation changes relative to main `60e5ce3ccc86f5cccb40f6f9c32bbc7b77bf1e9d`. Its product and validation source bytes, workflows, guards and task ledger are identical to that base.\n\nThe full original logs of the isolated diagnostic were read and hashed. Its workflow succeeded, while the original diagnostic ZIP still awaits independent intake; this limited result does not resolve the earlier Mac workspace failure. This PR does not claim a fresh formatter/test execution; existing CI must report its own result for this head.\n\n## Task boundary\n\nThis addresses a documentation gap for P8-018. Original task definitions and dependencies remain unchanged: **163 / 192 done, 29 remaining, 0 newly completed TODOs**. P8-012 and P8-018 remain open with their original acceptance conditions. No live-provider, G8 or release approval is granted.\n",
+      "files": [
+        {
+          "filename": "CONTRIBUTING.md",
+          "status": "modified",
+          "sha": "e70d34871f78f394578a6e4273df75dd92afa35f",
+          "additions": 6,
+          "deletions": 0
+        },
+        {
+          "filename": "docs/BENCHMARK.md",
+          "status": "modified",
+          "sha": "03b976a8e4ae4849c347afdb2826e8abb9db2df5",
+          "additions": 20,
+          "deletions": 0
+        }
+      ],
+      "current_head_runs": [
+        {
+          "id": 37896189238,
+          "name": "P8 lifecycle and resource observations",
+          "event": "pull_request",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "60e635877fdb4cb97f7372e04b6685cf5d50e43e",
+          "run_attempt": 1,
+          "created_at": "2026-10-09T06:56:19Z",
+          "updated_at": "2026-10-09T06:56:19Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37896189238"
+        },
+        {
+          "id": 37896189205,
+          "name": "P8 platform cold builds",
+          "event": "pull_request",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "60e635877fdb4cb97f7372e04b6685cf5d50e43e",
+          "run_attempt": 1,
+          "created_at": "2026-10-09T06:56:19Z",
+          "updated_at": "2026-10-09T06:56:19Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37896189205"
+        },
+        {
+          "id": 37896189209,
+          "name": "CI",
+          "event": "pull_request",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "60e635877fdb4cb97f7372e04b6685cf5d50e43e",
+          "run_attempt": 1,
+          "created_at": "2026-10-09T06:56:19Z",
+          "updated_at": "2026-10-09T06:56:19Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37896189209"
+        },
+        {
+          "id": 37896189134,
+          "name": "P7 engineering regressions",
+          "event": "pull_request",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "60e635877fdb4cb97f7372e04b6685cf5d50e43e",
+          "run_attempt": 1,
+          "created_at": "2026-10-09T06:56:19Z",
+          "updated_at": "2026-10-09T06:56:19Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37896189134"
+        },
+        {
+          "id": 37896189170,
+          "name": "P7 closeout evidence",
+          "event": "pull_request",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "60e635877fdb4cb97f7372e04b6685cf5d50e43e",
+          "run_attempt": 1,
+          "created_at": "2026-10-09T06:56:19Z",
+          "updated_at": "2026-10-09T06:56:19Z",
+          "html_url": "https://github.com/jyqj/codecortex/actions/runs/37896189170"
+        }
+      ]
+    }
+  ],
+  "current_jobs": [
+    {
+      "n": 175,
+      "id": 37895459427,
+      "name": "P7 engineering regressions",
+      "total": 1,
+      "jobs": [
+        {
+          "id": 113705684288,
+          "name": "engineering",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T06:48:21Z",
+          "completed_at": "2026-10-09T06:52:37Z",
+          "active_steps": []
+        }
+      ]
+    },
+    {
+      "n": 175,
+      "id": 37895459498,
+      "name": "P8 original failure gates",
+      "total": 1,
+      "jobs": [
+        {
+          "id": 113705684818,
+          "name": "gate_controls",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T06:50:46Z",
+          "completed_at": "2026-10-09T06:52:40Z",
+          "active_steps": []
+        }
+      ]
+    },
+    {
+      "n": 175,
+      "id": 37895459475,
+      "name": "P8 platform cold builds",
+      "total": 9,
+      "jobs": [
+        {
+          "id": 113705696329,
+          "name": "actual recovery and rollback matrix",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T06:52:56Z",
+          "completed_at": "2026-10-09T06:59:05Z",
+          "active_steps": []
+        },
+        {
+          "id": 113705696670,
+          "name": "cold macos / 1.95 / semantic",
+          "status": "queued",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:48:21Z",
+          "completed_at": null,
+          "active_steps": []
+        },
+        {
+          "id": 113705696714,
+          "name": "cold linux / stable / default",
+          "status": "queued",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:48:21Z",
+          "completed_at": null,
+          "active_steps": []
+        },
+        {
+          "id": 113705696747,
+          "name": "cold linux / stable / semantic",
+          "status": "queued",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:48:21Z",
+          "completed_at": null,
+          "active_steps": []
+        },
+        {
+          "id": 113705696761,
+          "name": "cold macos / stable / semantic",
+          "status": "in_progress",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:59:29Z",
+          "completed_at": null,
+          "active_steps": [
+            {
+              "name": "Fetch locked dependencies before the cold interval",
+              "number": 4,
+              "started_at": "2026-10-09T07:00:50Z"
+            }
+          ]
+        },
+        {
+          "id": 113705696835,
+          "name": "cold linux / 1.95 / default",
+          "status": "queued",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:48:21Z",
+          "completed_at": null,
+          "active_steps": []
+        },
+        {
+          "id": 113705696840,
+          "name": "cold macos / stable / default",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T06:52:46Z",
+          "completed_at": "2026-10-09T06:58:53Z",
+          "active_steps": []
+        },
+        {
+          "id": 113705696895,
+          "name": "cold linux / 1.95 / semantic",
+          "status": "queued",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:48:21Z",
+          "completed_at": null,
+          "active_steps": []
+        },
+        {
+          "id": 113705696965,
+          "name": "cold macos / 1.95 / default",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T06:53:05Z",
+          "completed_at": "2026-10-09T07:01:32Z",
+          "active_steps": []
+        }
+      ]
+    },
+    {
+      "n": 175,
+      "id": 37895459543,
+      "name": "P8 runtime observations",
+      "total": 6,
+      "jobs": [
+        {
+          "id": 113705684989,
+          "name": "fake_backfill",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T06:48:21Z",
+          "completed_at": "2026-10-09T06:57:49Z",
+          "active_steps": []
+        },
+        {
+          "id": 113705685275,
+          "name": "mixed (16)",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T06:48:21Z",
+          "completed_at": "2026-10-09T07:01:43Z",
+          "active_steps": []
+        },
+        {
+          "id": 113705685305,
+          "name": "mixed (1)",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T06:48:22Z",
+          "completed_at": "2026-10-09T07:01:49Z",
+          "active_steps": []
+        },
+        {
+          "id": 113705685316,
+          "name": "soak",
+          "status": "in_progress",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:48:22Z",
+          "completed_at": null,
+          "active_steps": [
+            {
+              "name": "One-hour actual stdio session with Git switches and catalog churn",
+              "number": 7,
+              "started_at": "2026-10-09T06:53:36Z"
+            }
+          ]
+        },
+        {
+          "id": 113705685325,
+          "name": "mixed (4)",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T06:48:22Z",
+          "completed_at": "2026-10-09T07:01:21Z",
+          "active_steps": []
+        },
+        {
+          "id": 113705685326,
+          "name": "mixed (8)",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T06:48:23Z",
+          "completed_at": "2026-10-09T07:01:55Z",
+          "active_steps": []
+        }
+      ]
+    },
+    {
+      "n": 175,
+      "id": 37895459464,
+      "name": "CI",
+      "total": 3,
+      "jobs": [
+        {
+          "id": 113705685045,
+          "name": "msrv",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T06:51:23Z",
+          "completed_at": "2026-10-09T06:52:55Z",
+          "active_steps": []
+        },
+        {
+          "id": 113705685283,
+          "name": "security",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T06:57:51Z",
+          "completed_at": "2026-10-09T07:01:25Z",
+          "active_steps": []
+        },
+        {
+          "id": 113705685289,
+          "name": "check",
+          "status": "in_progress",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:53:57Z",
+          "completed_at": null,
+          "active_steps": [
+            {
+              "name": "Fixed resource driver harmless fixtures and TODO consistency",
+              "number": 9,
+              "started_at": "2026-10-09T07:01:39Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "n": 175,
+      "id": 37895459412,
+      "name": "P7 closeout evidence",
+      "total": 4,
+      "jobs": [
+        {
+          "id": 113705684135,
+          "name": "closeout",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T06:48:21Z",
+          "completed_at": "2026-10-09T06:57:57Z",
+          "active_steps": []
+        },
+        {
+          "id": 113705684399,
+          "name": "offline (default)",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T06:48:21Z",
+          "completed_at": "2026-10-09T06:52:54Z",
+          "active_steps": []
+        },
+        {
+          "id": 113705684420,
+          "name": "mechanism",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T06:48:21Z",
+          "completed_at": "2026-10-09T06:53:55Z",
+          "active_steps": []
+        },
+        {
+          "id": 113705684424,
+          "name": "offline (semantic)",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T06:48:22Z",
+          "completed_at": "2026-10-09T06:52:25Z",
+          "active_steps": []
+        }
+      ]
+    },
+    {
+      "n": 175,
+      "id": 37895459466,
+      "name": "P8 lifecycle and resource observations",
+      "total": 1,
+      "jobs": [
+        {
+          "id": 113705685055,
+          "name": "lifecycle",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T06:51:01Z",
+          "completed_at": "2026-10-09T07:00:09Z",
+          "active_steps": []
+        }
+      ]
+    },
+    {
+      "n": 176,
+      "id": 37895748308,
+      "name": "P7 closeout evidence",
+      "total": 4,
+      "jobs": [
+        {
+          "id": 113706591838,
+          "name": "offline (semantic)",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T06:54:28Z",
+          "completed_at": "2026-10-09T06:58:20Z",
+          "active_steps": []
+        },
+        {
+          "id": 113706591972,
+          "name": "mechanism",
+          "status": "in_progress",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:58:56Z",
+          "completed_at": null,
+          "active_steps": [
+            {
+              "name": "Build four independent complete source snapshots",
+              "number": 4,
+              "started_at": "2026-10-09T06:59:43Z"
+            }
+          ]
+        },
+        {
+          "id": 113706591999,
+          "name": "closeout",
+          "status": "queued",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:51:32Z",
+          "completed_at": null,
+          "active_steps": []
+        },
+        {
+          "id": 113706592000,
+          "name": "offline (default)",
+          "status": "queued",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:51:32Z",
+          "completed_at": null,
+          "active_steps": []
+        }
+      ]
+    },
+    {
+      "n": 176,
+      "id": 37895748085,
+      "name": "P8 runtime observations",
+      "total": 6,
+      "jobs": [
+        {
+          "id": 113706590134,
+          "name": "fake_backfill",
+          "status": "in_progress",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:58:23Z",
+          "completed_at": null,
+          "active_steps": [
+            {
+              "name": "Current original worker with C1/4/8/16 and three fixed seeds",
+              "number": 6,
+              "started_at": "2026-10-09T06:59:30Z"
+            }
+          ]
+        },
+        {
+          "id": 113706590351,
+          "name": "soak",
+          "status": "queued",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:51:32Z",
+          "completed_at": null,
+          "active_steps": []
+        },
+        {
+          "id": 113706590395,
+          "name": "mixed (1)",
+          "status": "queued",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:51:32Z",
+          "completed_at": null,
+          "active_steps": []
+        },
+        {
+          "id": 113706590445,
+          "name": "mixed (8)",
+          "status": "queued",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:51:32Z",
+          "completed_at": null,
+          "active_steps": []
+        },
+        {
+          "id": 113706590448,
+          "name": "mixed (4)",
+          "status": "queued",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:51:32Z",
+          "completed_at": null,
+          "active_steps": []
+        },
+        {
+          "id": 113706590462,
+          "name": "mixed (16)",
+          "status": "in_progress",
+          "conclusion": null,
+          "started_at": "2026-10-09T07:00:32Z",
+          "completed_at": null,
+          "active_steps": [
+            {
+              "name": "Build an exact release product and complete oracle",
+              "number": 6,
+              "started_at": "2026-10-09T07:01:53Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "n": 176,
+      "id": 37895748112,
+      "name": "P8 platform cold builds",
+      "total": 9,
+      "jobs": [
+        {
+          "id": 113706590370,
+          "name": "actual recovery and rollback matrix",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T06:52:27Z",
+          "completed_at": "2026-10-09T06:57:07Z",
+          "active_steps": []
+        },
+        {
+          "id": 113706590558,
+          "name": "cold linux / 1.95 / default",
+          "status": "queued",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:51:32Z",
+          "completed_at": null,
+          "active_steps": []
+        },
+        {
+          "id": 113706590639,
+          "name": "cold linux / 1.95 / semantic",
+          "status": "queued",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:51:32Z",
+          "completed_at": null,
+          "active_steps": []
+        },
+        {
+          "id": 113706590658,
+          "name": "cold macos / 1.95 / semantic",
+          "status": "in_progress",
+          "conclusion": null,
+          "started_at": "2026-10-09T07:00:14Z",
+          "completed_at": null,
+          "active_steps": [
+            {
+              "name": "Fetch locked dependencies before the cold interval",
+              "number": 4,
+              "started_at": "2026-10-09T07:01:05Z"
+            }
+          ]
+        },
+        {
+          "id": 113706590659,
+          "name": "cold linux / stable / semantic",
+          "status": "in_progress",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:57:10Z",
+          "completed_at": null,
+          "active_steps": [
+            {
+              "name": "Fresh target build and real product stdio smoke",
+              "number": 5,
+              "started_at": "2026-10-09T06:58:16Z"
+            }
+          ]
+        },
+        {
+          "id": 113706590715,
+          "name": "cold linux / stable / default",
+          "status": "queued",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:51:32Z",
+          "completed_at": null,
+          "active_steps": []
+        },
+        {
+          "id": 113706590717,
+          "name": "cold macos / 1.95 / default",
+          "status": "queued",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:51:32Z",
+          "completed_at": null,
+          "active_steps": []
+        },
+        {
+          "id": 113706590732,
+          "name": "cold macos / stable / semantic",
+          "status": "queued",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:51:32Z",
+          "completed_at": null,
+          "active_steps": []
+        },
+        {
+          "id": 113706590840,
+          "name": "cold macos / stable / default",
+          "status": "queued",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:51:32Z",
+          "completed_at": null,
+          "active_steps": []
+        }
+      ]
+    },
+    {
+      "n": 176,
+      "id": 37895748066,
+      "name": "P7 engineering regressions",
+      "total": 1,
+      "jobs": [
+        {
+          "id": 113706590024,
+          "name": "engineering",
+          "status": "queued",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:51:32Z",
+          "completed_at": null,
+          "active_steps": []
+        }
+      ]
+    },
+    {
+      "n": 176,
+      "id": 37895748084,
+      "name": "CI",
+      "total": 3,
+      "jobs": [
+        {
+          "id": 113706590000,
+          "name": "msrv",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T06:55:58Z",
+          "completed_at": "2026-10-09T06:57:27Z",
+          "active_steps": []
+        },
+        {
+          "id": 113706590169,
+          "name": "security",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T06:57:29Z",
+          "completed_at": "2026-10-09T07:00:29Z",
+          "active_steps": []
+        },
+        {
+          "id": 113706590223,
+          "name": "check",
+          "status": "in_progress",
+          "conclusion": null,
+          "started_at": "2026-10-09T07:01:23Z",
+          "completed_at": null,
+          "active_steps": [
+            {
+              "name": "Run actions/checkout@v4",
+              "number": 2,
+              "started_at": "2026-10-09T07:01:25Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "n": 176,
+      "id": 37895748113,
+      "name": "P8 lifecycle and resource observations",
+      "total": 1,
+      "jobs": [
+        {
+          "id": 113706590591,
+          "name": "lifecycle",
+          "status": "queued",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:51:32Z",
+          "completed_at": null,
+          "active_steps": []
+        }
+      ]
+    },
+    {
+      "n": 176,
+      "id": 37895748072,
+      "name": "P8 original failure gates",
+      "total": 1,
+      "jobs": [
+        {
+          "id": 113706590108,
+          "name": "gate_controls",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-09T06:52:12Z",
+          "completed_at": "2026-10-09T06:54:24Z",
+          "active_steps": []
+        }
+      ]
+    },
+    {
+      "n": 177,
+      "id": 37896189238,
+      "name": "P8 lifecycle and resource observations",
+      "total": 1,
+      "jobs": [
+        {
+          "id": 113707955627,
+          "name": "lifecycle",
+          "status": "queued",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:56:20Z",
+          "completed_at": null,
+          "active_steps": []
+        }
+      ]
+    },
+    {
+      "n": 177,
+      "id": 37896189205,
+      "name": "P8 platform cold builds",
+      "total": 9,
+      "jobs": [
+        {
+          "id": 113707954971,
+          "name": "actual recovery and rollback matrix",
+          "status": "in_progress",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:58:00Z",
+          "completed_at": null,
+          "active_steps": [
+            {
+              "name": "Execute exact product faults and original persistence tests",
+              "number": 6,
+              "started_at": "2026-10-09T06:58:56Z"
+            }
+          ]
+        },
+        {
+          "id": 113707955275,
+          "name": "cold linux / stable / semantic",
+          "status": "queued",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:56:20Z",
+          "completed_at": null,
+          "active_steps": []
+        },
+        {
+          "id": 113707955303,
+          "name": "cold macos / stable / default",
+          "status": "queued",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:56:20Z",
+          "completed_at": null,
+          "active_steps": []
+        },
+        {
+          "id": 113707955313,
+          "name": "cold macos / stable / semantic",
+          "status": "in_progress",
+          "conclusion": null,
+          "started_at": "2026-10-09T07:01:52Z",
+          "completed_at": null,
+          "active_steps": [
+            {
+              "name": "Run actions/checkout@v4",
+              "number": 2,
+              "started_at": "2026-10-09T07:01:53Z"
+            }
+          ]
+        },
+        {
+          "id": 113707955350,
+          "name": "cold linux / 1.95 / semantic",
+          "status": "queued",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:56:20Z",
+          "completed_at": null,
+          "active_steps": []
+        },
+        {
+          "id": 113707955359,
+          "name": "cold macos / 1.95 / default",
+          "status": "queued",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:56:20Z",
+          "completed_at": null,
+          "active_steps": []
+        },
+        {
+          "id": 113707955384,
+          "name": "cold linux / 1.95 / default",
+          "status": "queued",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:56:20Z",
+          "completed_at": null,
+          "active_steps": []
+        },
+        {
+          "id": 113707955576,
+          "name": "cold macos / 1.95 / semantic",
+          "status": "queued",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:56:20Z",
+          "completed_at": null,
+          "active_steps": []
+        },
+        {
+          "id": 113707955640,
+          "name": "cold linux / stable / default",
+          "status": "queued",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:56:20Z",
+          "completed_at": null,
+          "active_steps": []
+        }
+      ]
+    },
+    {
+      "n": 177,
+      "id": 37896189209,
+      "name": "CI",
+      "total": 3,
+      "jobs": [
+        {
+          "id": 113707954982,
+          "name": "security",
+          "status": "queued",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:56:20Z",
+          "completed_at": null,
+          "active_steps": []
+        },
+        {
+          "id": 113707955228,
+          "name": "msrv",
+          "status": "queued",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:56:20Z",
+          "completed_at": null,
+          "active_steps": []
+        },
+        {
+          "id": 113707955284,
+          "name": "check",
+          "status": "queued",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:56:20Z",
+          "completed_at": null,
+          "active_steps": []
+        }
+      ]
+    },
+    {
+      "n": 177,
+      "id": 37896189134,
+      "name": "P7 engineering regressions",
+      "total": 1,
+      "jobs": [
+        {
+          "id": 113707954884,
+          "name": "engineering",
+          "status": "queued",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:56:20Z",
+          "completed_at": null,
+          "active_steps": []
+        }
+      ]
+    },
+    {
+      "n": 177,
+      "id": 37896189170,
+      "name": "P7 closeout evidence",
+      "total": 4,
+      "jobs": [
+        {
+          "id": 113707954904,
+          "name": "mechanism",
+          "status": "queued",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:56:20Z",
+          "completed_at": null,
+          "active_steps": []
+        },
+        {
+          "id": 113707955134,
+          "name": "offline (default)",
+          "status": "queued",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:56:20Z",
+          "completed_at": null,
+          "active_steps": []
+        },
+        {
+          "id": 113707955209,
+          "name": "closeout",
+          "status": "queued",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:56:20Z",
+          "completed_at": null,
+          "active_steps": []
+        },
+        {
+          "id": 113707955246,
+          "name": "offline (semantic)",
+          "status": "queued",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:56:20Z",
+          "completed_at": null,
+          "active_steps": []
+        }
+      ]
+    }
+  ],
+  "blob_comparison_to_actual_combined_P": {
+    "175": [
+      {
+        "filename": "crates/cc-eval/src/benchmark/statistics.rs",
+        "status": "modified",
+        "sha": "415fbdc0a254729e4b7fa5f2fe040b3019d90aa9",
+        "additions": 77,
+        "deletions": 0,
+        "our_combined_P_blob": "869d8494d8b22fff029b5203a9ce73736e2ee368",
+        "same_blob_as_combined_P": false
+      },
+      {
+        "filename": "crates/cc-eval/src/bin/p8-runtime-statistics.rs",
+        "status": "modified",
+        "sha": "6273b16ebc403602b5aaf3eb0a9699b5cdfdca70",
+        "additions": 100,
+        "deletions": 0,
+        "our_combined_P_blob": "34f5cf8a67962edd94c277cf0e9dd299aa004235",
+        "same_blob_as_combined_P": false
+      },
+      {
+        "filename": "docs/P8_RUNTIME_EVIDENCE.md",
+        "status": "modified",
+        "sha": "46027ad45782e6ad6919ed8c4fa1ce94fb8d06a8",
+        "additions": 1,
+        "deletions": 1,
+        "our_combined_P_blob": "fc03daf57dfe36a7b61a9e960b3fbc46f73c4be9",
+        "same_blob_as_combined_P": false
+      },
+      {
+        "filename": "scripts/p8_runtime.py",
+        "status": "modified",
+        "sha": "031ebdc4c604fd39ab2d647b652ca533180bf818",
+        "additions": 6,
+        "deletions": 15,
+        "our_combined_P_blob": "3fe09616768cf35ecc3b76f348ef9eca88d98cd8",
+        "same_blob_as_combined_P": false
+      },
+      {
+        "filename": "scripts/reviewed-source-registry-v15.json",
+        "status": "modified",
+        "sha": "668ab05c479457b08a482c50241ccd21dff644e3",
+        "additions": 9,
+        "deletions": 9,
+        "our_combined_P_blob": "0ef221bf6580c5031773d0d23abfe51ac1e05ec3",
+        "same_blob_as_combined_P": false
+      },
+      {
+        "filename": "scripts/tests/test_p8_runtime.py",
+        "status": "modified",
+        "sha": "797dda75c3d23f4bca92996a8e316c279d82b6e4",
+        "additions": 57,
+        "deletions": 10,
+        "our_combined_P_blob": "38cf6a820391854a2fab6ba8d6daf8d7076ff4a1",
+        "same_blob_as_combined_P": false
+      },
+      {
+        "filename": "scripts/verify_reviewed_source_v15.py",
+        "status": "modified",
+        "sha": "3cca26982bbc8232d55aea2ad8934be33f93aedc",
+        "additions": 4,
+        "deletions": 4,
+        "our_combined_P_blob": "053d9838c12d79ecc5d3552c3cca2df5db7a9a74",
+        "same_blob_as_combined_P": false
+      }
+    ],
+    "176": [
+      {
+        "filename": ".github/workflows/p8-surface-window-controls.yml",
+        "status": "added",
+        "sha": "34a96f91e550313659cd598ce3466b82bfc310d8",
+        "additions": 196,
+        "deletions": 0,
+        "our_combined_P_blob": "34a96f91e550313659cd598ce3466b82bfc310d8",
+        "same_blob_as_combined_P": true
+      },
+      {
+        "filename": "crates/cc-eval/tests/benchmark_adapters.rs",
+        "status": "modified",
+        "sha": "9feb4fe9659c3cd84bc86684d3f73412f9caec17",
+        "additions": 7,
+        "deletions": 0,
+        "our_combined_P_blob": "9feb4fe9659c3cd84bc86684d3f73412f9caec17",
+        "same_blob_as_combined_P": true
+      },
+      {
+        "filename": "crates/cc-eval/tests/p8_scale.rs",
+        "status": "modified",
+        "sha": "31b34057ff76e0b07e9242ef179951577ed22187",
+        "additions": 27,
+        "deletions": 0,
+        "our_combined_P_blob": "31b34057ff76e0b07e9242ef179951577ed22187",
+        "same_blob_as_combined_P": true
+      },
+      {
+        "filename": "crates/cc-index/src/indexer_phases/reconcile.rs",
+        "status": "modified",
+        "sha": "c8aed85c88cf2fbbbf691592fd1837ce6356818e",
+        "additions": 456,
+        "deletions": 9,
+        "our_combined_P_blob": "c8aed85c88cf2fbbbf691592fd1837ce6356818e",
+        "same_blob_as_combined_P": true
+      },
+      {
+        "filename": "crates/cc-index/src/project_model/python_inventory.rs",
+        "status": "modified",
+        "sha": "e8f3ccd2d5d24ac222186f6954d983d859b4ee18",
+        "additions": 6,
+        "deletions": 0,
+        "our_combined_P_blob": "e8f3ccd2d5d24ac222186f6954d983d859b4ee18",
+        "same_blob_as_combined_P": true
+      },
+      {
+        "filename": "crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs",
+        "status": "modified",
+        "sha": "4d3b82904f0b9415f1f901a4192f66525492cd02",
+        "additions": 5,
+        "deletions": 1,
+        "our_combined_P_blob": "4d3b82904f0b9415f1f901a4192f66525492cd02",
+        "same_blob_as_combined_P": true
+      },
+      {
+        "filename": "scripts/reviewed-source-registry-v15.json",
+        "status": "modified",
+        "sha": "7eb53896011c10c9b0b4763e86d4c087ae93b133",
+        "additions": 23,
+        "deletions": 10,
+        "our_combined_P_blob": "0ef221bf6580c5031773d0d23abfe51ac1e05ec3",
+        "same_blob_as_combined_P": false
+      },
+      {
+        "filename": "scripts/verify_reviewed_source_v15.py",
+        "status": "modified",
+        "sha": "43f2b01324023c0ded2b5ef3cca941a79f67d383",
+        "additions": 4,
+        "deletions": 4,
+        "our_combined_P_blob": "053d9838c12d79ecc5d3552c3cca2df5db7a9a74",
+        "same_blob_as_combined_P": false
+      }
+    ],
+    "177": [
+      {
+        "filename": "CONTRIBUTING.md",
+        "status": "modified",
+        "sha": "e70d34871f78f394578a6e4273df75dd92afa35f",
+        "additions": 6,
+        "deletions": 0,
+        "our_combined_P_blob": "3fa01470513c15935a32488ca83bbddcc48f32d3",
+        "same_blob_as_combined_P": false
+      },
+      {
+        "filename": "docs/BENCHMARK.md",
+        "status": "modified",
+        "sha": "03b976a8e4ae4849c347afdb2826e8abb9db2df5",
+        "additions": 20,
+        "deletions": 0,
+        "our_combined_P_blob": "f381aa0b03f4a7e30858e2a4507f9149387caa04",
+        "same_blob_as_combined_P": false
+      }
+    ]
+  },
+  "findings": [
+    {
+      "pr": 175,
+      "scope": "Five implementation/test/doc paths plus two v15 bindings plus five archive paths",
+      "paths": [
+        "crates/cc-eval/src/benchmark/statistics.rs",
+        "crates/cc-eval/src/bin/p8-runtime-statistics.rs",
+        "scripts/p8_runtime.py",
+        "scripts/tests/test_p8_runtime.py",
+        "docs/P8_RUNTIME_EVIDENCE.md"
+      ],
+      "relation": "Separate P8-017 implementation work absent from current178; no direct overlap with the ten main-to-combined product paths, but changes shared Rust statistics and the actual runtime observer/validation bytes. Its complete R/G cannot be overlaid onto178's registry.",
+      "acceptance_claim": "Body explicitly claims0 original TODO completions,retains first formatter failure37894025756;current840fa2e is formatter-followup candidate,not initial9a52cd2.",
+      "current_ci": "37895459464:msrv/security success,check active at original TODO/source consistency step;not terminal full CI. Runtime mixed4+backfill success;soak actual work started06:53:36. Platform recovery and2mac cells succeeded,othercells active/queued;no fullmatrix conclusion.",
+      "coordination": "Keep it distinct during frozen178 studies. Any later combined integration needs actual product+changed validation inventory,independent R/G,own affected source-specific execution. This review does not accept the quantile adapter semantics or transfer its runtime samples."
+    },
+    {
+      "pr": 176,
+      "scope": "Five Rust paths,one retained original surface-controls workflow,two v15 binding files,70 archive additions(65 reused originals+5 new review files)",
+      "relation": "All five changed Rust blobs and the surface-controls workflow blob are identical to actual our combinedP. Actual P diff versus same main60e has precisely those five Rust paths plus four FTS production files and added snapshot_fts_tests.rs. Thus176 carries the already-adopted surface+Mac engineering subset and lacks178'sFTS changes.",
+      "same_blob_paths": [
+        "crates/cc-eval/tests/benchmark_adapters.rs",
+        "crates/cc-eval/tests/p8_scale.rs",
+        "crates/cc-index/src/indexer_phases/reconcile.rs",
+        "crates/cc-index/src/project_model/python_inventory.rs",
+        "crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs",
+        ".github/workflows/p8-surface-window-controls.yml"
+      ],
+      "binding": "Own P59c2197/Rc6c8030/G7b1fc544 complete1089/139/44delta;not178's1090/139/46. Preserve separate archived reviews and execution identities;neither registry can be blindly reused.",
+      "acceptance_claim": "Explicit0newTODO,combined CI pending,old source results not reassigned. No added hidden acceptance gate detected from body.",
+      "current_ci": "37895748084:msrv/security success,check actually in_progress despite stale workflow queued label. Runtime/backfill,mixed16,platform and P7 mechanism have active jobs;soak queued. Only gates workflow terminalsuccess at snapshot.",
+      "coordination": "Prioritize author/root coordination on one final integration direction and avoid duplicate full studies. No automaticclose/merge/cancel implied:archive/history custody and exact final-headCI/task bounds must remain reviewable."
+    },
+    {
+      "pr": 177,
+      "scope": "Only CONTRIBUTING.md+docs/BENCHMARK.md,26insertions",
+      "relation": "Outside product/ordinary validation/task ledger paths;no direct source overlap with178'snine transplants or173reconcile. New documentation about evidence scope and fresh/reused helper distinction.",
+      "acceptance_claim": "Body explicitly says originalMac workspace failure remains,isolated diagnosticZIP intake pending,no freshformatter/test assertion,noP8-012/P8-018completion,163done29remaining.",
+      "current_ci": "37896189209 all3jobsqueued. However platformworkflowhas actualrecovery andmacstable-semantic active jobs despite workflowqueued label;do notinfer0resourceuse.",
+      "coordination": "Document-only review can proceed separately;this metadata review did not read or semantically approve the26added lines or linked diagnostic evidence. Ordinary product-evidence identity must remain source-bound after any eventual integration."
+    }
+  ],
+  "extra_scale_observation": {
+    "run": {
+      "id": 37896198208,
+      "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+      "event": "pull_request",
+      "status": "in_progress",
+      "conclusion": null,
+      "created_at": "2026-10-09T06:56:25Z",
+      "run_attempt": 1
+    },
+    "jobs": {
+      "total": 1,
+      "jobs": [
+        {
+          "id": 113707984715,
+          "name": "build",
+          "status": "in_progress",
+          "conclusion": null,
+          "started_at": "2026-10-09T06:59:44Z",
+          "completed_at": null,
+          "active_steps": [
+            {
+              "name": "Compile and bind one immutable release executable",
+              "status": "in_progress",
+              "conclusion": null,
+              "number": 4,
+              "started_at": "2026-10-09T06:59:56Z",
+              "completed_at": null
+            }
+          ]
+        }
+      ]
+    },
+    "meaning": "Externally triggered173 original full150 study belongs to275e8799,not178;actualbuild began06:59:56,notjustqueued. No result/credit/automaticcancellation conclusion."
+  },
+  "limits": [
+    "Only current-head runs were surveyed,not everyhistoricalattempt;175originalformatterfailure is body-linked but not reread here.",
+    "Public run-level queued fields may coexist with active jobs;job/step states retained explicitly.",
+    "No PR source edits,comments,labels,merges,closes,cancels,reruns,dispatches,holdout inspection or new measurements.",
+    "OriginalTODOremaining29/newlycomplete0."
+  ]
+}

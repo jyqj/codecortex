@@ -1,0 +1,246 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-10-09T07:07:02.668462+00:00",
+  "pr": 178,
+  "exact_source": "9f7b16f0758eb79f306cf44605b84550f02de441",
+  "product": "9d13cb30dd618bc5d106186711c1d98e01b47995",
+  "review": "6f11ae6904fd8d08fec4b4abd83f510cedcba6c8",
+  "state": "pending_actual_job_and_raw_terminal_evidence",
+  "baseline_checks_expected": 26,
+  "initial_checks_materialized": 25,
+  "delayed_check": "all eight platform cells is created after cold-build matrix",
+  "official_workflow_sources": [
+    {
+      "run_id": 37896539277,
+      "path": ".github/workflows/p7-engineering.yml",
+      "bytes": 5428,
+      "sha256": "4e71be09a1090bd3e74eae46b9b0c78bb88a0ed245e5db453e45293c2be345f3",
+      "retained_path": "review-pr/pr178-ci-observation/workflow-source/p7-engineering.yml"
+    },
+    {
+      "run_id": 37896539239,
+      "path": ".github/workflows/p7-closeout.yml",
+      "bytes": 21396,
+      "sha256": "4b9c1056ac229627075e9187f8b823abde451c2ce6cd2ae68933ff73d55e5cc8",
+      "retained_path": "review-pr/pr178-ci-observation/workflow-source/p7-closeout.yml"
+    },
+    {
+      "run_id": 37896539353,
+      "path": ".github/workflows/p8-gates.yml",
+      "bytes": 1255,
+      "sha256": "4cdea43584221217acc7b33b2489b91b7dc4e6f02cfb5e42330b0d64c9cc65ca",
+      "retained_path": "review-pr/pr178-ci-observation/workflow-source/p8-gates.yml"
+    },
+    {
+      "run_id": 37896539450,
+      "path": ".github/workflows/p8-platform.yml",
+      "bytes": 6812,
+      "sha256": "9f1bc4bd1cf715836987332906d4c72f85bd835652bfe196de56a9f1945a0ff4",
+      "retained_path": "review-pr/pr178-ci-observation/workflow-source/p8-platform.yml"
+    },
+    {
+      "run_id": 37896539291,
+      "path": ".github/workflows/p8-runtime.yml",
+      "bytes": 5782,
+      "sha256": "82e39dadd5557d800450ead6cf1d861e382283447af2fd35eb4c952d7897c09f",
+      "retained_path": "review-pr/pr178-ci-observation/workflow-source/p8-runtime.yml"
+    },
+    {
+      "run_id": 37896539337,
+      "path": ".github/workflows/p8-lifecycle.yml",
+      "bytes": 5387,
+      "sha256": "1c29a376003afd380c09f75e3ab17569449aa3b83cb45a637866e14aebb083ec",
+      "retained_path": "review-pr/pr178-ci-observation/workflow-source/p8-lifecycle.yml"
+    },
+    {
+      "run_id": 37896539769,
+      "path": ".github/workflows/ci.yml",
+      "bytes": 11046,
+      "sha256": "7e659bc2f8cf1565238b2903864639a2e4bfc0887721d9482f128f6e83b81914",
+      "retained_path": "review-pr/pr178-ci-observation/workflow-source/ci.yml"
+    }
+  ],
+  "non_scale_jobs": [
+    {
+      "workflow": "runtime",
+      "run_id": 37896539291,
+      "jobs": [
+        {
+          "job_id": 113709066578,
+          "name": "mixed (1)",
+          "artifact_name": "p8-mixed-c1-9f7b16f0758eb79f306cf44605b84550f02de441",
+          "parameters": {
+            "concurrency": 1,
+            "operations": 900,
+            "files": 1000,
+            "interval_ms": 500
+          }
+        },
+        {
+          "job_id": 113709066663,
+          "name": "mixed (4)",
+          "artifact_name": "p8-mixed-c4-9f7b16f0758eb79f306cf44605b84550f02de441",
+          "parameters": {
+            "concurrency": 4,
+            "operations": 900,
+            "files": 1000,
+            "interval_ms": 500
+          }
+        },
+        {
+          "job_id": 113709066512,
+          "name": "mixed (8)",
+          "artifact_name": "p8-mixed-c8-9f7b16f0758eb79f306cf44605b84550f02de441",
+          "parameters": {
+            "concurrency": 8,
+            "operations": 900,
+            "files": 1000,
+            "interval_ms": 500
+          }
+        },
+        {
+          "job_id": 113709066507,
+          "name": "mixed (16)",
+          "artifact_name": "p8-mixed-c16-9f7b16f0758eb79f306cf44605b84550f02de441",
+          "parameters": {
+            "concurrency": 16,
+            "operations": 900,
+            "files": 1000,
+            "interval_ms": 500
+          }
+        },
+        {
+          "job_id": 113709066624,
+          "name": "soak",
+          "artifact_name": "p8-soak-9f7b16f0758eb79f306cf44605b84550f02de441",
+          "parameters": {
+            "profile": "soak",
+            "concurrency": 4,
+            "operations": 3601,
+            "files": 1000,
+            "interval_ms": 1000
+          }
+        },
+        {
+          "job_id": 113709066596,
+          "name": "fake_backfill",
+          "artifact_name": "p8-backfill-9f7b16f0758eb79f306cf44605b84550f02de441",
+          "parameters": {
+            "original_test": "real_slow_backfill_preserves_local_progress_and_records_every_request"
+          }
+        }
+      ],
+      "original_collectors": [
+        "scripts/p8_runtime.py verify",
+        "scripts/p8_backfill.py verify"
+      ],
+      "acceptance": [
+        "Actual process and raw operation denominators, planned versus observed concurrency distinguished.",
+        "Build source1090 and observer snapshots before/after bind exact G, retained binary/build log/receipt hashes.",
+        "All raw JSONL and retained stdio request/response/cache/RSS/resource records bind receipts, original budgets and outcomes.",
+        "Soak actual duration and original trend/cache gates from terminal raw; sealing alone does not pass workloads."
+      ]
+    },
+    {
+      "workflow": "lifecycle",
+      "run_id": 37896539337,
+      "jobs": [
+        {
+          "job_id": 113709066742,
+          "name": "lifecycle",
+          "artifact_name": "p8-lifecycle-9f7b16f0758eb79f306cf44605b84550f02de441",
+          "parameters": {
+            "cold_samples": 30,
+            "query_samples": 400,
+            "files": 32,
+            "run_timeout_seconds": 3600,
+            "artifact_budget_bytes": 536870912
+          }
+        }
+      ],
+      "original_collectors": [
+        "scripts/p8_lifecycle.py verify"
+      ],
+      "acceptance": [
+        "Both product and replay evaluator builds, exact source before/after, executable and output inventory.",
+        "Original cold/reopen/uncached/cache-hit strata denominators and native RPC outcomes.",
+        "Client/server/process-tree resource ownership and unavailable values preserved; no extra performance certification gate."
+      ]
+    },
+    {
+      "workflow": "platform",
+      "run_id": 37896539450,
+      "matrix": {
+        "platform": [
+          "linux",
+          "macos"
+        ],
+        "toolchain": [
+          "1.95",
+          "stable"
+        ],
+        "package": [
+          "default",
+          "semantic"
+        ]
+      },
+      "jobs_expected": 10,
+      "artifacts_expected": {
+        "p8-platform-cell-<platform>-<toolchain>-<package>-<G>": 8,
+        "p8-platform-raw-<platform>-<toolchain>-<package>-<G>": 8,
+        "p8-full-recovery-<G>": 1,
+        "p8-platform-complete-<G>": 1
+      },
+      "original_collectors": [
+        "scripts/p8_cold_build.py --export-selected",
+        "scripts/p8_cold_build.py --collect-cells --expected-commit 9f7b16f0758eb79f306cf44605b84550f02de441"
+      ],
+      "acceptance": [
+        "Exactly eight actual selected cells with strict selected inventory/export, actual compiler/source/binary/RPC/EOF receipts.",
+        "Single-cell original execute exit2 only passed through original strict export; seven not_run are not seven successful builds.",
+        "Collector must pass exact source for all8 actual cells.",
+        "Recovery original full fault matrix and schema24 previous source277f2490fad3fa30f2812b5547bad033867c9ea5, rollback both original byte readings."
+      ]
+    },
+    {
+      "workflow": "gates",
+      "run_id": 37896539353,
+      "jobs": [
+        {
+          "job_id": 113709066475,
+          "name": "gate_controls",
+          "artifact_name": "p8-gates-9f7b16f0758eb79f306cf44605b84550f02de441"
+        }
+      ],
+      "original_collector": "scripts/p8_gate_controls.py",
+      "acceptance": [
+        "Original quality/latency/lock/policy/inconclusive positive and negative fixtures including retained invalid evidence.",
+        "Original worker/supervisor native results, evaluator build and exact source, retained CLI invocations; no replacement controls."
+      ]
+    }
+  ],
+  "central_artifact_custody": [
+    "List official artifact id/name/size/digest/run provenance before download.",
+    "One original ZIP per artifact under central raw/<id>, preserve official metadata, transport receipt and ZIP members.",
+    "Hash original archive and unpacked bytes; no old a23/G173 ZIP receives G9f identity.",
+    "If upload or raw is missing, preserve missing/failed state; never synthesize successful samples."
+  ],
+  "engineering_observation": [
+    "CI 37896539769 actual check checkout may be GitHub merge ref; derive actual checkout and product/validation identity from original log.",
+    "P7 engineering and closeout runs observed separately; original four Mac commands already passed pre-P exact frozen source and are not rerun.",
+    "New actual-G Linux v15 is owned by todo_audit/root; its source/CLI stdout/exit is a separate original execution."
+  ],
+  "limits": [
+    "No new workflow dispatch or performance execution by this plan.",
+    "G173 scale37896198208 is external distinct source and cannot count for G9f.",
+    "All listed non-scale measurements currently pending.",
+    "No inherited workload success from a23, G173, Mac old M+5 or e963 checkpoint.",
+    "The 10 original TODOs retain actual dependency structure; no independent forced scale exemption and no extra holdout/cold/whole-peak gates."
+  ],
+  "todo": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "new_completed": 0
+  }
+}

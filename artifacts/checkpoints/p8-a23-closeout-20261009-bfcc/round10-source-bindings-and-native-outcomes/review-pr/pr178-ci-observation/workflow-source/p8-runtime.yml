@@ -1,0 +1,143 @@
+name: P8 runtime observations
+
+on:
+  pull_request:
+    paths:
+      - 'crates/**'
+      - 'Cargo.*'
+      - 'scripts/p8_runtime*.py'
+      - 'scripts/tests/test_p8_runtime*.py'
+      - 'scripts/p8_backfill.py'
+      - 'scripts/p8_resources.py'
+      - 'scripts/p7_build_identity.py'
+      - 'scripts/p7_stdio_build_receipt.py'
+      - 'scripts/tests/test_p8_backfill.py'
+      - 'scripts/p8_cold_build.py'
+      - 'scripts/p8_rollback.py'
+      - 'scripts/resource_harness/**'
+      - '.github/workflows/p8-runtime.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: never
+  CARGO_INCREMENTAL: '0'
+  CARGO_BUILD_JOBS: '2'
+  PYTHONDONTWRITEBYTECODE: '1'
+
+jobs:
+  mixed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        concurrency: [1, 4, 8, 16]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: dtolnay/rust-toolchain@1.95.0
+      - name: Fetch locked dependencies before measurement
+        run: cargo fetch --locked
+      - name: Runtime receipt and retained-evidence negative controls
+        run: python3 -m unittest discover -s scripts/tests -p 'test_p8_runtime*.py' -v
+      - name: Build an exact release product and complete oracle
+        env:
+          CARGO_TARGET_DIR: ${{ runner.temp }}/p8-runtime-target
+        run: python3 scripts/p8_runtime_build.py --output "$RUNNER_TEMP/p8-build"
+      - name: Fixed offered read/build schedule and no-repair parity
+        run: |
+          python3 scripts/p8_runtime.py \
+            --binary "$RUNNER_TEMP/p8-build/codecortex" \
+            --oracle "$RUNNER_TEMP/p8-build/p8-oracle" \
+            --statistics "$RUNNER_TEMP/p8-build/p8-runtime-statistics" \
+            --build-receipt "$RUNNER_TEMP/p8-build/build-receipt.json" \
+            --concurrency '${{ matrix.concurrency }}' --operations 900 \
+            --files 1000 --interval-ms 500 --output "$RUNNER_TEMP/p8-runtime"
+      - name: Verify every retained runtime and build artifact
+        if: always()
+        run: |
+          python3 scripts/p8_runtime.py verify --output "$RUNNER_TEMP/p8-runtime" \
+            --build-output "$RUNNER_TEMP/p8-build"
+      - name: Preserve every execution including failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-mixed-c${{ matrix.concurrency }}-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            ${{ runner.temp }}/p8-build
+            ${{ runner.temp }}/p8-runtime
+          include-hidden-files: true
+          if-no-files-found: error
+
+  soak:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: dtolnay/rust-toolchain@1.95.0
+      - name: Fetch locked dependencies before measurement
+        run: cargo fetch --locked
+      - name: Runtime receipt and retained-evidence negative controls
+        run: python3 -m unittest discover -s scripts/tests -p 'test_p8_runtime*.py' -v
+      - name: Build an exact release product and complete oracle
+        env:
+          CARGO_TARGET_DIR: ${{ runner.temp }}/p8-runtime-target
+        run: python3 scripts/p8_runtime_build.py --output "$RUNNER_TEMP/p8-build"
+      - name: One-hour actual stdio session with Git switches and catalog churn
+        run: |
+          python3 scripts/p8_runtime.py \
+            --binary "$RUNNER_TEMP/p8-build/codecortex" \
+            --oracle "$RUNNER_TEMP/p8-build/p8-oracle" \
+            --statistics "$RUNNER_TEMP/p8-build/p8-runtime-statistics" \
+            --build-receipt "$RUNNER_TEMP/p8-build/build-receipt.json" \
+            --profile soak --concurrency 4 --operations 3601 \
+            --files 1000 --interval-ms 1000 --output "$RUNNER_TEMP/p8-runtime"
+      - name: Verify every retained runtime and build artifact
+        if: always()
+        run: |
+          python3 scripts/p8_runtime.py verify --output "$RUNNER_TEMP/p8-runtime" \
+            --build-output "$RUNNER_TEMP/p8-build"
+      - name: Preserve every execution including failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-soak-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            ${{ runner.temp }}/p8-build
+            ${{ runner.temp }}/p8-runtime
+          include-hidden-files: true
+          if-no-files-found: error
+
+  fake_backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: dtolnay/rust-toolchain@1.95.0
+      - name: Fetch locked dependencies before observed execution
+        run: cargo fetch --locked
+      - name: Backfill fixed-build and retained-failure controls
+        run: python3 -m unittest discover -s scripts/tests -p 'test_p8_backfill.py' -v
+      - name: Current original worker with C1/4/8/16 and three fixed seeds
+        env:
+          CARGO_TARGET_DIR: ${{ runner.temp }}/p8-backfill-target
+        run: python3 scripts/p8_backfill.py --output "$RUNNER_TEMP/p8-backfill"
+      - name: Verify every retained backfill artifact
+        if: always()
+        run: python3 scripts/p8_backfill.py verify --output "$RUNNER_TEMP/p8-backfill"
+      - name: Preserve fixed fake-provider scope and every raw sample
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-backfill-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/p8-backfill
+          include-hidden-files: true
+          if-no-files-found: error

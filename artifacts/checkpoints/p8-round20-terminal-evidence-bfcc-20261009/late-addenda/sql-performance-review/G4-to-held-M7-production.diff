@@ -1,0 +1,11 @@
+--- exact-G4-production
++++ held-M7-production
+@@ -151,7 +151,7 @@
+                     .collect::<Vec<_>>()
+                     .join(",");
+                 let sql = if excluded_json.is_some() {
+-                    format!("SELECT DISTINCT file_path FROM resolution_dependencies WHERE kind=?1 AND key IN ({placeholders}) AND file_path NOT IN (SELECT value FROM json_each(?{})) ORDER BY file_path LIMIT ?{}", batch.len() + 2, batch.len() + 3)
++                    format!("SELECT DISTINCT file_path FROM resolution_dependencies WHERE kind=?1 AND key IN ({placeholders}) AND (file_path IS NULL OR file_path COLLATE BINARY NOT IN (SELECT value FROM json_each(?{}))) ORDER BY file_path LIMIT ?{}", batch.len() + 2, batch.len() + 3)
+                 } else {
+                     format!("SELECT DISTINCT file_path FROM resolution_dependencies WHERE kind=?1 AND key IN ({placeholders}) ORDER BY file_path LIMIT ?{}", batch.len() + 2)
+                 };

@@ -1,0 +1,186 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_triage",
+  "review_scope": "Read only fixed external checkpoint and retained probe/source bytes; no query, Rust, native or original-workload execution.",
+  "external_checkpoint": {
+    "commit": "80d7979da10ae242ed4706cd04be74c62194261a",
+    "prefix": "artifacts/checkpoints/p8-SQL-exclusion-hold-a217-20261009",
+    "bundle": {
+      "bytes": 75301,
+      "sha256": "76b67c33e590c8d4b0ad1ea6d3c2900586e3ddc491c24f74ccebced51434cbcb",
+      "git_blob": "ed9926ae31c28ed892b6e10640783941d4f60149"
+    },
+    "members": 14,
+    "all_member_hash_size_git_blob_and_tar_mode_verified": true
+  },
+  "source_identity": {
+    "G4": "cc177ddc9e6b8180b8d847539787672e7b689a1a",
+    "G4_production": {
+      "path": "crates/cc-db/src/resolution_dependency_store.rs",
+      "bytes": 12040,
+      "sha256": "e2dc1d0a90190ddc7ea942fa5310956ffe8b2f0636d7b644c21b6b0a6043003e",
+      "git_blob": "6a875ce6ef7b82aa4bdc3183a59e7887c227825f"
+    },
+    "held_M7_production": {
+      "bytes": 12078,
+      "sha256": "3121f9e5681b209eb4fdf01ec412f60f844f8d3bdbbc706488a14e28f4d4fcb3",
+      "git_blob": "c195a0993845c03bba5100003d83c9f6170122d6"
+    },
+    "exact_difference": "One SQL predicate replacement only: G4 `AND file_path NOT IN (SELECT value FROM json_each(?{}))`; M7 `AND (file_path IS NULL OR file_path COLLATE BINARY NOT IN (SELECT value FROM json_each(?{})))`. All other production-file bytes equal.",
+    "separate_composition": "Held M7 is an uncommitted five-file candidate based on b2 plus reused G3 work, not the G4 product commit. It also modifies public_surface_store.rs, adds reverse_query_exclusion.rs, and includes preselect formatter repair. Its p2b_resolution_store.rs exactly equals the G4 test blob9c2aa567.",
+    "G4_source_domain_not_rereviewed": "Only necessary exact file identities and retained schema compared; no new complete 1095-input traversal."
+  },
+  "methodology": {
+    "python": "3.12.14",
+    "sqlite": "3.53.1",
+    "data": "Four constructed in-memory scenarios using canonical queried table/index DDL; foreign keys off because parent files not materialized. No SQL writes inside timed pairs.",
+    "repetitions": "20 observations per variant per case, alternating paired order: 160 timed variant invocations total across four cases; warmup and separate VM-count pass also retained. Prose 'twenty observations' is shorthand, not total count.",
+    "timed_boundary": "execute + full fetch only; excludes Rust JSON serialization, allocations, BTreeSet filtering and native storage/lock cost. The separately reported outer Python boundary is also not Rust.",
+    "reviewer_recomputation": "Recomputed all medians and ratios from retained observations, checked 160 output lists identical per case, source_before==source_after, and published report summary equal original result. Actual readback exit0; probe.py not imported or run.",
+    "limits": "No N30 full study, confidence interval, whole-build20% gate, original failure attribution or current G4 speed estimate."
+  },
+  "cases": [
+    {
+      "name": "dense prefix",
+      "family": "resolution",
+      "keys": 1,
+      "excluded": 580,
+      "rows": 600,
+      "cap": 10,
+      "statements_old_new": [
+        1,
+        1
+      ],
+      "returned_rows_old_new": [
+        590,
+        10
+      ],
+      "query_fetch_median_us_old_new": [
+        183.0265,
+        268.655
+      ],
+      "candidate_ratio": 1.4678475521304293,
+      "vm_callbacks_old_new": [
+        11838,
+        11404
+      ],
+      "output_parity": true
+    },
+    {
+      "name": "sparse two keys",
+      "family": "resolution",
+      "keys": 2,
+      "excluded": 10000,
+      "excluded_relation": "unrelated distinct paths",
+      "cap": 2,
+      "statements_old_new": [
+        1,
+        1
+      ],
+      "returned_rows_old_new": [
+        2,
+        2
+      ],
+      "query_fetch_median_us_old_new": [
+        24.744,
+        2314.72
+      ],
+      "candidate_ratio": 93.54671839637892,
+      "vm_callbacks_old_new": [
+        107,
+        50146
+      ],
+      "output_parity": true
+    },
+    {
+      "name": "sparse 400 keys",
+      "family": "resolution",
+      "keys": 400,
+      "excluded": 10000,
+      "cap": 2,
+      "statements_old_new": [
+        3,
+        3
+      ],
+      "returned_rows_old_new": [
+        400,
+        6
+      ],
+      "query_fetch_median_us_old_new": [
+        769.662,
+        8609.7705
+      ],
+      "candidate_ratio": 11.186430537040934,
+      "vm_callbacks_old_new": [
+        14507,
+        161487
+      ],
+      "output_parity": true
+    },
+    {
+      "name": "400 roots / three tables",
+      "family": "surface",
+      "keys": 400,
+      "excluded": 10000,
+      "cap": 2,
+      "statements_old_new": [
+        9,
+        9
+      ],
+      "returned_rows_old_new": [
+        1200,
+        18
+      ],
+      "query_fetch_median_us_old_new": [
+        1668.7535,
+        21210.2135
+      ],
+      "candidate_ratio": 12.710213641499479,
+      "vm_callbacks_old_new": [
+        42703,
+        483637
+      ],
+      "output_parity": true,
+      "G4_scope": "outside G4 production change"
+    }
+  ],
+  "applicable_mechanisms": [
+    "G4 also serializes a deduplicated nonempty completed set once per call, borrows that string and binds it for every per-kind 197-key statement. Borrowing avoids a Rust String copy but is not a persisted SQLite exclusion-set cache.",
+    "Retained M7 EXPLAIN has Once/OpenEphemeral/VFilter/IdxInsert/VNext for matching nonempty queries. It supports the risk of repeating JSON membership construction per statement reset, even when only few database rows match. This exact opcode sequence was observed on M7/Python SQLite, not replayed on G4/Rust.",
+    "At the source level G4 has the same uncorrelated json_each NOT IN membership mechanism and no explicit cross-statement materialization cache; thus sparse/large-E and multi-batch risks directly concern its design. Exact elapsed ratios and opcodes are not transferred across the NULL/BINARY predicate or engine/runtime.",
+    "Both 400-key variants execute three statements, so that retained case's slowdown is not explained by an added statement at the197/198 boundary. Other boundary cases can add statements.",
+    "Dense returned-row and VM reductions coexist with worse query wall in the retained case. Existing dense VmStep assertion and nine functional tests cannot establish performance adoption.",
+    "Completely unmatched statements may avoid lazy membership construction; no unconditional B*E execution claim is made."
+  ],
+  "correctness": {
+    "valid_canonical_schema": "resolution_dependencies.file_path is TEXT NOT NULL with no custom collation; default comparison is BINARY. G4 serializes strings only and its existing exclusion tests include NUL/Unicode. Four new constructed probes all preserve outputs. No new valid-canonical-schema correctness defect is demonstrated by this checkpoint.",
+    "NULL_compatibility_boundary": "M7's extra control deliberately drops/recreates nullable queried tables and inserts NULL, preserving the old r.get<String> error. G4's predicate can filter NULL instead. This is a concrete defensive/error-compatibility difference for altered/noncanonical schemas; it is not established as an allowed current schema or an original P8 closure gate.",
+    "BINARY_boundary": "Explicit M7 COLLATE BINARY protects membership semantics if a database column is given a noncanonical collation. It does not by itself prove full DISTINCT/ORDER equivalence on arbitrary custom schemas. No such arbitrary-collation support is newly assumed.",
+    "Rust_M7_status": "M7 Rust compile/tests/rustfmt not_run as recorded; do not transfer G4 CI results to M7."
+  },
+  "decision": {
+    "scope": "Retain G4 as a separately reviewed source change; hold an unconditional speedup/adoption conclusion.",
+    "rationale": "The checkpoint supplies new concrete query-wall counterevidence for a closely related JSON exclusion strategy. It materially strengthens the previously retained +22.57% sparse VM risk. It is not a measured G4 Rust regression or a new failed original task gate.",
+    "bounded_next_step": "Before adopting this as a performance improvement, resolve the sparse/multi-batch membership cost on the exact intended implementation, accounting for the complete Rust API boundary. Do not require a new broad matrix or arbitrary threshold solely because this review exists. No experiment is launched here.",
+    "no_new_scale_claim": true,
+    "no_task_status_change": true,
+    "newly_done": 0,
+    "remaining": 29
+  },
+  "evidence": {
+    "original_result": "extracted/sql-cost/probe-result.json",
+    "probe_source": "extracted/sql-cost/probe.py",
+    "original_review": "extracted/sql-cost/scoped-performance-risk-review.json",
+    "exact_diff": "G4-to-held-M7-production.diff",
+    "readback": "retained-probe-readback-facts.json",
+    "execution_receipt": "readback-execution-receipt.json"
+  },
+  "transport": {
+    "generic_UTF8_fetch_rejected": true,
+    "blob_UTF8_fetch_rejected": true,
+    "supported_fetch_file_encoding_base64_succeeded": true,
+    "errors_preserved": true,
+    "not_measurement_failures": true
+  },
+  "historical_state": "External README/body state is retained at its original timestamp; it is not used to override root's later ready-for-review transition. No remote mutation performed."
+}

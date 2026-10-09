@@ -9,6 +9,10 @@
 //! Phase 7: Git co-change analysis
 
 use std::collections::{HashMap, HashSet};
+
+#[cfg(test)]
+#[path = "sparse_actions_tests.rs"]
+mod sparse_actions_tests;
 use std::path::Path;
 use std::sync::Arc;
 
@@ -544,7 +548,7 @@ impl Indexer {
     /// Correctness notes: `existing` is still the FULL file-state snapshot,
     /// so the dirty closure can promote any importer in the repo, and
     /// `scanned_paths` covers every surviving DB file so promoted importers
-    /// exist in the actions map as `Skip`. Removals are derived strictly from
+    /// have an implicit `Skip` action. Removals are derived strictly from
     /// the event set: an event path (or an indexed file under an event
     /// directory prefix) that the scoped scan did not re-admit.
     fn scoped_scan_and_diff(
@@ -1020,7 +1024,29 @@ impl Indexer {
         })
     }
 
-    /// Build the actions map from write_units and scanned paths for dirty propagation.
+    /// Store only real parsed-file actions. The dirty planner borrows the
+    /// already captured scanned-path set for the implicit `Skip` entries;
+    /// unmodified files need no second owned path or action-map entry.
+    pub(crate) fn build_write_actions(
+        &self,
+        write_units: &[FileWriteUnit],
+        existing: &HashMap<String, FileState>,
+    ) -> HashMap<String, FileAction> {
+        write_units
+            .iter()
+            .map(|unit| {
+                let action = if existing.contains_key(&unit.rel_path) {
+                    FileAction::Update
+                } else {
+                    FileAction::Add
+                };
+                (unit.rel_path.clone(), action)
+            })
+            .collect()
+    }
+
+    /// Original dense construction, retained as an independent test reference.
+    #[cfg(test)]
     pub(crate) fn build_actions_map(
         &self,
         write_units: &[FileWriteUnit],

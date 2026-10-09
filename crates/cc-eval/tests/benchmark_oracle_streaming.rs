@@ -73,6 +73,15 @@ fn agrees_with_legacy_for_all_types_duplicates_and_physical_columns() {
     let legacy_b = oracle::canonical(b.path()).unwrap();
     assert_eq!(legacy_a, legacy_b);
     let report = compare(a.path(), b.path());
+    let same_source = compare(a.path(), a.path());
+    let expected_bytes: u64 = legacy_a
+        .values()
+        .chain(legacy_b.values())
+        .flatten()
+        .map(|row| serde_json::to_string(row).unwrap().len() as u64)
+        .sum();
+    assert_eq!(report["canonical_bytes"], expected_bytes);
+    assert_eq!(same_source["canonical_bytes"], expected_bytes);
     let capacity = oracle::compare_streaming_scale_capacity_v1(a.path(), b.path()).unwrap();
     assert_eq!(capacity["tables"], report["tables"]);
     assert_eq!(capacity["equal"], report["equal"]);
@@ -90,6 +99,13 @@ fn agrees_with_legacy_for_all_types_duplicates_and_physical_columns() {
     assert_eq!(report["equal"], true);
     for name in oracle::tables() {
         let row = table(&report, name);
+        let witnessed = table(&same_source, name);
+        assert_eq!(row["equal_input_order_witness"], false);
+        assert_eq!(witnessed["equal_input_order_witness"], true);
+        assert_eq!(witnessed["incremental_rows"], row["incremental_rows"]);
+        assert_eq!(witnessed["full_rows"], row["incremental_rows"]);
+        assert_eq!(witnessed["incremental_digest"], row["incremental_digest"]);
+        assert_eq!(witnessed["full_digest"], row["incremental_digest"]);
         assert_eq!(row["incremental_rows"], legacy_a[*name].len());
         assert_eq!(row["full_rows"], legacy_b[*name].len());
         assert_eq!(
@@ -171,6 +187,7 @@ fn preserves_legacy_signed_zero_equality_without_rewriting_order_or_digests() {
     );
     let report = compare(a.path(), b.path());
     assert_eq!(report["equal"], true);
+    assert_eq!(table(&report, "symbols")["equal_input_order_witness"], false);
     assert_eq!(table(&report, "symbols")["incremental_digest"], ad);
     assert_eq!(table(&report, "symbols")["full_digest"], bd);
 }
@@ -251,12 +268,101 @@ fn compares_more_than_the_legacy_row_budget_and_detects_the_last_row_change() {
     let report = compare(a.path(), b.path());
     assert_eq!(report["equal"], true);
     assert_eq!(table(&report, "symbols")["incremental_rows"], 100_002);
+    assert_eq!(table(&report, "symbols")["equal_input_order_witness"], true);
     open(b.path())
         .execute("UPDATE symbols SET value=-1 WHERE name='symbol-100001'", [])
         .unwrap();
     let report = compare(a.path(), b.path());
     assert_eq!(report["equal"], false);
     assert_eq!(table(&report, "symbols")["different_row_count"], 1);
+    assert_eq!(table(&report, "symbols")["equal_input_order_witness"], false);
+}
+
+#[test]
+fn equal_sequence_witness_still_checks_the_second_input_budget_and_first_error() {
+    let a = fixture();
+    let b = fixture();
+    for root in [a.path(), b.path()] {
+        open(root)
+            .execute("INSERT INTO symbols(name,value) VALUES ('same',7)", [])
+            .unwrap();
+    }
+    let canonical = oracle::canonical(a.path()).unwrap();
+    let first_side_bytes = serde_json::to_string(&canonical["symbols"][0])
+        .unwrap()
+        .len() as u64;
+    let limits = oracle::StreamingLimits {
+        max_canonical_bytes: first_side_bytes,
+        ..oracle::StreamingLimits::default()
+    };
+    assert!(oracle::compare_streaming(a.path(), b.path(), limits)
+        .unwrap_err()
+        .to_string()
+        .contains("canonical byte budget"));
+
+    open(b.path())
+        .execute("INSERT INTO symbols(name,value) VALUES ('extra',8)", [])
+        .unwrap();
+    let limits = oracle::StreamingLimits {
+        max_rows_per_table: 1,
+        ..oracle::StreamingLimits::default()
+    };
+    assert!(oracle::compare_streaming(a.path(), b.path(), limits)
+        .unwrap_err()
+        .to_string()
+        .contains("row budget exceeded: symbols side 1"));
+
+    // A's original spool must fail before B's different, oversized row is
+    // inspected. An attempted witness must not change this error precedence.
+    open(a.path())
+        .execute_batch("INSERT INTO symbols(name,value) VALUES ('bad',CAST(x'80' AS TEXT));")
+        .unwrap();
+    open(b.path())
+        .execute("UPDATE symbols SET value=?1", ["x".repeat(256)])
+        .unwrap();
+    let limits = oracle::StreamingLimits {
+        max_row_bytes: 128,
+        ..oracle::StreamingLimits::default()
+    };
+    assert!(oracle::compare_streaming(a.path(), b.path(), limits)
+        .unwrap_err()
+        .to_string()
+        .contains("UTF8"));
+}
+
+#[test]
+fn views_and_virtual_tables_keep_the_original_two_spool_comparison() {
+    for virtual_table in [false, true] {
+        let a = fixture();
+        let b = fixture();
+        for root in [a.path(), b.path()] {
+            let db = open(root);
+            db.execute("DROP TABLE symbols", []).unwrap();
+            if virtual_table {
+                db.execute_batch(
+                    "CREATE VIRTUAL TABLE symbols USING fts5(name,value);
+                     INSERT INTO symbols(name,value) VALUES ('same','fact');",
+                )
+                .unwrap();
+            } else {
+                db.execute_batch(
+                    "CREATE VIEW symbols AS SELECT 'same' AS name, 'fact' AS value;",
+                )
+                .unwrap();
+            }
+        }
+        let ca = oracle::canonical(a.path()).unwrap();
+        let cb = oracle::canonical(b.path()).unwrap();
+        assert_eq!(ca, cb);
+        let report = compare(a.path(), b.path());
+        let row = table(&report, "symbols");
+        assert_eq!(report["equal"], true);
+        assert_eq!(row["equal_input_order_witness"], false);
+        assert_eq!(
+            row["full_digest"],
+            manifest::digest(&serde_json::to_vec(&cb["symbols"]).unwrap())
+        );
+    }
 }
 
 #[test]

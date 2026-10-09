@@ -334,7 +334,7 @@ impl IndexDb {
         let tx = conn
             .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
             .map_err(db_err)?;
-        if let Some(update) = reconcile {
+        let prepared_frontier = if let Some(update) = reconcile {
             let current = Self::read_generation_on(&tx)?.index_epoch;
             if current != update.expected_index_epoch {
                 return Err(cc_model::CcError::StalePreparedBuild {
@@ -344,10 +344,10 @@ impl IndexDb {
             }
             // Validate before changing any indexed facts. Any later failure
             // rolls both facts and the acknowledgement back together.
-            if let Some(state) = &update.next {
-                state.payload()?;
-            }
-        }
+            Some(crate::freshness_store::prepare_update(update)?)
+        } else {
+            None
+        };
         // Signature-aggregate maintenance: capture the touched paths' partial
         // aggregates before any delete (the whole batch is file-scoped, so
         // the delta against the post-state below covers every mutated row,
@@ -459,8 +459,8 @@ impl IndexDb {
         if effects.contains(crate::epoch_rules::WriteEffect::Semantic) {
             Self::bump_semantic_epoch_on(&tx)?;
         }
-        if let Some(update) = reconcile {
-            crate::freshness_store::replace_on(&tx, update)?;
+        if let Some(prepared) = prepared_frontier {
+            crate::freshness_store::replace_on(&tx, prepared)?;
         }
         section_ms("db_routes_epoch", route_nodes.len(), section_start);
         let section_start = std::time::Instant::now();

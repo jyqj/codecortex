@@ -61,6 +61,11 @@ struct StoredInputs {
     digest: String,
     inputs: ProjectInputs,
 }
+#[derive(serde::Serialize)]
+struct StoredInputsRef<'a> {
+    digest: &'a str,
+    inputs: &'a ProjectInputs,
+}
 pub fn read_inputs(db: &IndexDb) -> CcResult<ProjectInputs> {
     match db.reads().get_metadata(PROJECT_INPUT_KEY)? {
         Some(text) => {
@@ -113,9 +118,11 @@ impl CapturedProject {
     /// Acknowledgement follows successful facts + durable-frontier publication.
     /// A crash before acknowledgement repeats invalidation, never loses it.
     pub(crate) fn acknowledge(&self, db: &IndexDb) -> CcResult<()> {
-        let value = serde_json::to_string(&StoredInputs {
-            digest: self.inputs.digest()?,
-            inputs: self.inputs.clone(),
+        // Construction validates and hashes these private, immutable inputs.
+        // Borrow the same snapshot instead of hashing and cloning it again.
+        let value = serde_json::to_string(&StoredInputsRef {
+            digest: &self.report.input_digest,
+            inputs: &self.inputs,
         })?;
         if db.reads().get_metadata(PROJECT_INPUT_KEY)?.as_deref() != Some(&value) {
             db.writes().set_metadata(PROJECT_INPUT_KEY, &value)?;
@@ -620,4 +627,69 @@ fn discover_inner(
         inputs,
         report,
     })
+}
+
+#[cfg(test)]
+mod acknowledgement_tests {
+    use super::*;
+
+    fn capture(root: &Path, old: &ProjectInputs) -> CapturedProject {
+        let scanner = crate::Scanner::new(root, &cc_model::config::IndexingConfig::default());
+        let (files, manifest) = scanner.scan_with_manifest();
+        discover(
+            root,
+            files.into_iter().map(|file| file.rel_path).collect(),
+            Some(&manifest),
+            None,
+            old,
+        )
+        .unwrap()
+    }
+
+    fn acknowledge_with_owned_reference(captured: &CapturedProject, db: &IndexDb) -> String {
+        let expected = serde_json::to_string(&StoredInputs {
+            digest: captured.inputs.digest().unwrap(),
+            inputs: captured.inputs.clone(),
+        })
+        .unwrap();
+        captured.acknowledge(db).unwrap();
+        assert_eq!(
+            db.reads().get_metadata(PROJECT_INPUT_KEY).unwrap().as_deref(),
+            Some(expected.as_str())
+        );
+        assert_eq!(read_inputs(db).unwrap(), captured.inputs);
+        expected
+    }
+
+    #[test]
+    fn borrowed_acknowledgement_matches_owned_bytes_and_recaptured_inputs() {
+        let dir = tempfile::tempdir().unwrap();
+        for name in ["a.ts", "b.ts"] {
+            std::fs::write(dir.path().join(name), "export const value = 1;\n").unwrap();
+        }
+        std::fs::write(dir.path().join("café.rs"), "pub fn value() {}\n").unwrap();
+        let config_path = dir.path().join("tsconfig.json");
+        std::fs::write(
+            &config_path,
+            r#"{"compilerOptions":{"paths":{"@api":["./a.ts"]}}}"#,
+        )
+        .unwrap();
+        let first = capture(dir.path(), &ProjectInputs::default());
+        assert_eq!(first.inputs.rust_sources.len(), 1);
+        assert!(first.inputs.configs.contains_key("tsconfig.json"));
+        let db = IndexDb::open(&dir.path().join("index.db")).unwrap().0;
+        let before = acknowledge_with_owned_reference(&first, &db);
+        assert_eq!(acknowledge_with_owned_reference(&first, &db), before);
+
+        std::fs::write(
+            &config_path,
+            r#"{"compilerOptions":{"paths":{"@api":["./b.ts"]}}}"#,
+        )
+        .unwrap();
+        assert!(first.verify(dir.path()).is_err());
+        let second = capture(dir.path(), first.inputs());
+        assert_ne!(first.report.input_digest, second.report.input_digest);
+        let after = acknowledge_with_owned_reference(&second, &db);
+        assert_ne!(before, after);
+    }
 }

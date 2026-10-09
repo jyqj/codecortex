@@ -61,6 +61,32 @@ fn check_row_size(row: &rusqlite::Row<'_>, cols: &[String], limit: usize) -> Res
     Ok(())
 }
 
+fn serialized_row(
+    row: &rusqlite::Row<'_>,
+    cols: &[String],
+    projection: &mut RowProjection<'_>,
+    limits: StreamingLimits,
+) -> Result<String> {
+    check_row_size(row, cols, limits.max_row_bytes)?;
+    let serialized = projection.serialize_row(row)?;
+    if serialized.len() > limits.max_row_bytes {
+        return Err(invalid(
+            "streaming oracle serialized row byte budget exceeded",
+        ));
+    }
+    Ok(serialized)
+}
+
+fn account_bytes(bytes: &mut u64, serialized: &str, limits: StreamingLimits) -> Result<()> {
+    *bytes = bytes
+        .checked_add(serialized.len() as u64)
+        .ok_or_else(|| invalid("streaming oracle byte count overflow"))?;
+    if *bytes > limits.max_canonical_bytes {
+        return Err(invalid("streaming oracle canonical byte budget exceeded"));
+    }
+    Ok(())
+}
+
 const INSERT_TIERS: [usize; 3] = [64, 8, 1];
 const PENDING_BYTES: usize = 64 * 1024;
 
@@ -186,19 +212,8 @@ fn spool(
                 "streaming oracle row budget exceeded: {table} side {side}"
             )));
         }
-        check_row_size(row, &cols, limits.max_row_bytes)?;
-        let serialized = projection.serialize_row(row)?;
-        if serialized.len() > limits.max_row_bytes {
-            return Err(invalid(
-                "streaming oracle serialized row byte budget exceeded",
-            ));
-        }
-        *canonical_bytes = canonical_bytes
-            .checked_add(serialized.len() as u64)
-            .ok_or_else(|| invalid("streaming oracle byte count overflow"))?;
-        if *canonical_bytes > limits.max_canonical_bytes {
-            return Err(invalid("streaming oracle canonical byte budget exceeded"));
-        }
+        let serialized = serialized_row(row, &cols, &mut projection, limits)?;
+        account_bytes(canonical_bytes, &serialized, limits)?;
         let ordinal = i64::try_from(count)
             .map_err(|_| invalid("streaming oracle ordinal exceeds SQLite integer range"))?;
         insert.push(serialized, ordinal)?;
@@ -208,6 +223,86 @@ fn spool(
     drop(insert);
     transaction.commit().map_err(db_error)?;
     Ok(count)
+}
+
+fn stored_table(source: &Connection, table: &str) -> Result<bool> {
+    let mut statement = source
+        .prepare("SELECT rootpage FROM sqlite_schema WHERE type = 'table' AND name = ?1")
+        .map_err(db_error)?;
+    let mut rows = statement.query([table]).map_err(db_error)?;
+    let root_page = rows
+        .next()
+        .map_err(db_error)?
+        .map(|row| row.get::<_, i64>(0))
+        .transpose()
+        .map_err(db_error)?;
+    Ok(root_page.is_some_and(|page| page > 0))
+}
+
+/// A complete byte witness can avoid writing the second identical row set.
+/// The first spool has already succeeded, so its errors keep precedence. Only
+/// ordinary stored tables may be reread: a view or virtual table can evaluate
+/// changing expressions even inside a read transaction. Such inputs retain
+/// the original two-spool path without an attempted witness.
+fn equal_input_order(
+    a: &Connection,
+    b: &Connection,
+    table: &str,
+    limits: StreamingLimits,
+    canonical_bytes: &mut u64,
+    expected_count: u64,
+) -> Result<bool> {
+    if !stored_table(a, table)? || !stored_table(b, table)? {
+        return Ok(false);
+    }
+    let acols = columns(a, table)?;
+    let bcols = columns(b, table)?;
+    let mut aprojection = RowProjection::new(&acols);
+    let mut bprojection = RowProjection::new(&bcols);
+    let mut astmt = a
+        .prepare(&format!(
+            "SELECT {} FROM \"{table}\"",
+            select_columns(&acols)
+        ))
+        .map_err(db_error)?;
+    let mut bstmt = b
+        .prepare(&format!(
+            "SELECT {} FROM \"{table}\"",
+            select_columns(&bcols)
+        ))
+        .map_err(db_error)?;
+    let mut arows = astmt.query([]).map_err(db_error)?;
+    let mut brows = bstmt.query([]).map_err(db_error)?;
+    let mut witness_bytes = *canonical_bytes;
+    let mut count = 0;
+    loop {
+        let Some(brow) = brows.next().map_err(db_error)? else {
+            if arows.next().map_err(db_error)?.is_none() && count == expected_count {
+                *canonical_bytes = witness_bytes;
+                return Ok(true);
+            }
+            return Ok(false);
+        };
+        // Side B remains the authoritative validation stream. Count both
+        // complete inputs even when only one will occupy the scratch tree.
+        if count >= limits.max_rows_per_table {
+            return Err(invalid(format!(
+                "streaming oracle row budget exceeded: {table} side 1"
+            )));
+        }
+        let bv = serialized_row(brow, &bcols, &mut bprojection, limits)?;
+        account_bytes(&mut witness_bytes, &bv, limits)?;
+        let Some(arow) = arows.next().map_err(db_error)? else {
+            return Ok(false);
+        };
+        let av = serialized_row(arow, &acols, &mut aprojection, limits)?;
+        if av != bv {
+            // No witness credit or byte accounting survives a difference.
+            // The unchanged second spool will validate and consume all of B.
+            return Ok(false);
+        }
+        count += 1;
+    }
 }
 
 fn next_row(rows: &mut rusqlite::Rows<'_>) -> Result<Option<String>> {
@@ -327,7 +422,12 @@ fn compare_with_validated_limits(
             .execute("DELETE FROM canonical_rows", [])
             .map_err(db_error)?;
         let ac = spool(&a, &mut scratch, table, 0, limits, &mut canonical_bytes)?;
-        let bc = spool(&b, &mut scratch, table, 1, limits, &mut canonical_bytes)?;
+        let identical_order = equal_input_order(&a, &b, table, limits, &mut canonical_bytes, ac)?;
+        let bc = if identical_order {
+            ac
+        } else {
+            spool(&b, &mut scratch, table, 1, limits, &mut canonical_bytes)?
+        };
         let mut astmt = scratch.prepare(SORTED_ROWS_SQL).map_err(db_error)?;
         let mut bstmt = scratch.prepare(SORTED_ROWS_SQL).map_err(db_error)?;
         let mut arows = astmt.query([0]).map_err(db_error)?;
@@ -341,22 +441,31 @@ fn compare_with_validated_limits(
         let mut examples = Vec::new();
         loop {
             let av = next_row(&mut arows)?;
-            let bv = next_row(&mut brows)?;
+            let bvalue = if identical_order {
+                None
+            } else {
+                next_row(&mut brows)?
+            };
+            let bv = if identical_order {
+                av.as_deref()
+            } else {
+                bvalue.as_deref()
+            };
             if av.is_none() && bv.is_none() {
                 break;
             }
-            if !equal_rows(av.as_deref(), bv.as_deref())? {
+            if !equal_rows(av.as_deref(), bv)? {
                 different_rows += 1;
                 if examples.len() < 3 {
                     examples.push(json!({
                         "sorted_row": position,
                         "incremental": example(av.as_deref())?,
-                        "full": example(bv.as_deref())?,
+                        "full": example(bv)?,
                     }));
                 }
             }
             append_digest(&mut ah, av.as_deref(), position);
-            append_digest(&mut bh, bv.as_deref(), position);
+            append_digest(&mut bh, bv, position);
             position += 1;
         }
         ah.update(b"]");
@@ -369,6 +478,7 @@ fn compare_with_validated_limits(
             "equal": different_rows == 0,
             "incremental_rows": ac,
             "full_rows": bc,
+            "equal_input_order_witness": identical_order,
             "incremental_digest": ah.finalize().to_hex().to_string(),
             "full_digest": bh.finalize().to_hex().to_string(),
             "different_row_count": different_rows,

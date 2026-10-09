@@ -1,0 +1,91 @@
+{
+  "schema": "codecortex.p8.round33.old275e-100k-failure-independent-review.v1",
+  "source_of_truth": {
+    "run_id": 37896198208,
+    "job_id": 113710393672,
+    "artifact_id": 11615980558,
+    "artifact_name": "p8-scale-shard-100000-0-37896198208",
+    "github_uploaded_zip_sha256": "7738402529b8339bbb328fec0b02ba4ad834bb787038f008dbb6d12a17fec94d",
+    "github_uploaded_zip_bytes": 5210430
+  },
+  "independent_readback": {
+    "downloaded_zip_sha256": "7738402529b8339bbb328fec0b02ba4ad834bb787038f008dbb6d12a17fec94d",
+    "zip_digest_matches_github": true,
+    "members": 12,
+    "selected_files_read": [
+      "native/plan.json",
+      "registered-plan.json",
+      "native/report.json",
+      "shard.json",
+      "disk-preflight.json",
+      "disk-after.json",
+      "native/raw.jsonl tail"
+    ]
+  },
+  "fixed_identity": {
+    "source_commit": "275e8799d4947d297329073eaa3ca675d3fd0777",
+    "binary_sha256": "1cee91b943fe0b787e2767112872e93a6991281790c626bb46a23b07d21ba394",
+    "binary_blake3": "667c53bcae6ea302f98b310ee7d98b0b62abf029bbbe980b9dd7eec960a06d81",
+    "binary_unchanged": true,
+    "source_manifest_sha256": "593cf443fc914998dd2cb5a30c3caf180eb8d0d7a398a86e4624e3df2ca65e83",
+    "source_before_sha256": "814d8c8269d9171a46cea4a1664e1294885f53e13c505199180964e5bd3e2be9",
+    "source_after_sha256": "814d8c8269d9171a46cea4a1664e1294885f53e13c505199180964e5bd3e2be9"
+  },
+  "registered_plan": {
+    "files": 100000,
+    "seed": 12648430,
+    "repetitions": 30,
+    "shard_index": 0,
+    "shard_count": 30,
+    "deadline_ms": 18000000,
+    "max_output_bytes": 536870912,
+    "dirty_budget": 200,
+    "max_resume_builds": 1024,
+    "fanouts": [
+      1,
+      4,
+      16,
+      64,
+      128
+    ],
+    "batch_sizes": [
+      1,
+      10,
+      100,
+      1000
+    ],
+    "skip_fanout": true,
+    "capacity_profile": "scale_capacity_v1"
+  },
+  "result": {
+    "status": "deadline_exceeded",
+    "exit_code": 3,
+    "wall_ms": 18022220,
+    "worker_exit_code": null,
+    "stderr_complete": false,
+    "summary": null,
+    "full_100k_certification": "not_run",
+    "release_certification": "not_run",
+    "fixture_cleanup_elapsed_ms": 20653,
+    "fixture_cleanup_error": null
+  },
+  "raw": {
+    "bytes": 20144696,
+    "sha256": "a733872508d0bf6d2093f4baa7eec8daccd651b7a8324efa233267fb9b53cda1",
+    "lines": 2017,
+    "last_event": {
+      "event": "build_started",
+      "full": true,
+      "label": "scale-100000/repetition-0/batch_10/full_control",
+      "start_us": 17693865647
+    }
+  },
+  "disk": {
+    "required_free_bytes": 30509367296,
+    "preflight_available_bytes": 91634618368,
+    "preflight_passed": true,
+    "after_available_bytes": 91613368320,
+    "after_passed": true
+  },
+  "conclusion": "This is a complete identity review of an incomplete failed shard. It contributes no successful measurement and must not be retried, pooled, or rewritten as a current-source result."
+}

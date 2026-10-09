@@ -1,0 +1,176 @@
+{
+  "schema_version": 1,
+  "review_id": "p8-round33-pr-management-review",
+  "observed_at_utc": "2026-10-09T12:44:48Z",
+  "reviewer": "/root/r33_pr_management",
+  "method": {
+    "source": "GitHub official connector read-only PR, commit, compare, workflow-run, workflow-job and file-object reads",
+    "native_execution": false,
+    "refs_mutated": false,
+    "pull_requests_mutated": false,
+    "workflows_mutated": false,
+    "scope": "Only changes after the round-32 snapshot; no repetition of frozen semantic reviews."
+  },
+  "repository": "jyqj/codecortex",
+  "main": {
+    "sha": "4efbc97eb439a56347e7b32d05b7ea1ab6d34c75",
+    "merge": "PR #186",
+    "committed_at_utc": "2026-10-09T11:32:54Z",
+    "newer_main_commit_observed": false
+  },
+  "open_pull_requests": {
+    "count": 8,
+    "numbers": [
+      184,
+      180,
+      178,
+      65,
+      4,
+      3,
+      127,
+      137
+    ]
+  },
+  "pull_requests": {
+    "178": {
+      "state": "open",
+      "draft": true,
+      "mergeable": false,
+      "head": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "declared_base": "60e5ce3ccc86f5cccb40f6f9c32bbc7b77bf1e9d",
+      "relative_to_current_main": {
+        "status": "diverged",
+        "ahead_by": 6,
+        "behind_by": 67,
+        "changed_files": 215,
+        "product_or_test_rust_files": 10
+      },
+      "current_head_ci": {
+        "workflow_runs": 7,
+        "workflow_run_conclusions": {
+          "success": 7
+        },
+        "jobs": 26,
+        "job_conclusions": {
+          "success": 26
+        }
+      },
+      "overlap_with_pr180": {
+        "exact_blob_matches": 7,
+        "exact_paths": [
+          "crates/cc-db/src/snapshot_fts_tests.rs",
+          "crates/cc-db/src/snapshot_write_txn.rs",
+          "crates/cc-eval/tests/benchmark_adapters.rs",
+          "crates/cc-eval/tests/p8_scale.rs",
+          "crates/cc-index/src/project_model/python_inventory.rs",
+          "crates/cc-semantic/tests/crash_independent_review.rs",
+          "crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs"
+        ],
+        "combined_successors_in_pr180": [
+          "crates/cc-db/src/index_db_snapshot_insert.rs",
+          "crates/cc-db/src/index_db_write_batch.rs",
+          "crates/cc-index/src/indexer_phases/snapshot.rs"
+        ]
+      },
+      "decision": "Do not merge this divergent historical head. Keep it open as the fixed c8 study carrier until run 37902429727 is terminal and its evidence is ingested; then close as superseded by PR180 while preserving the branch/source identity."
+    },
+    "180": {
+      "state": "open",
+      "draft": true,
+      "mergeable": true,
+      "head": "832f79b8702c6cdfb567b7cf949508cd4589f286",
+      "base": "4efbc97eb439a56347e7b32d05b7ea1ab6d34c75",
+      "relative_to_current_main": {
+        "status": "ahead",
+        "ahead_by": 25,
+        "behind_by": 0,
+        "changed_files": 213,
+        "artifacts": 195,
+        "rust_files": 16,
+        "guard_files": 2
+      },
+      "current_head_ci": {
+        "workflow_runs": 7,
+        "workflow_run_states": {
+          "queued": 7
+        },
+        "jobs": 25,
+        "job_states": {
+          "queued": 25
+        },
+        "terminal_jobs": 0
+      },
+      "round32_change": "Head advanced from 1d39f382d4e08e702a55693c9c614fa477bf7e0c to 832f79b8702c6cdfb567b7cf949508cd4589f286 and now contains current main/PR186 ancestry.",
+      "still_missing": [
+        "PR184's three unique canonical physical-index DB paths",
+        "default-off DB acquisition observation implementation in this PR head",
+        "terminal C1/C4/C8/C16 acquisition-window artifacts",
+        "terminal current-head ordinary CI"
+      ],
+      "decision": "Keep DRAFT/OPEN; do not close or merge. Current-head main integration is useful, but it is not the final combination requested in round 32. Await exact observation diagnostics and a fresh combined P/R/G, then use fresh expected-head non-force publication."
+    },
+    "181": {
+      "state": "closed",
+      "merged": true,
+      "head": "d7426175ae21a9619cbcb393e41ec535695972d1",
+      "base": "55aa2bcf355441585bcf980e1d6f4fab8eebe59d",
+      "merged_at_utc": "2026-10-09T11:00:55Z",
+      "decision": "No action. Already merged; do not reopen or recount."
+    },
+    "184": {
+      "state": "open",
+      "draft": false,
+      "mergeable": true,
+      "head": "b356043c2c0c970d000e5f5e32f1dff69f88454f",
+      "base": "4efbc97eb439a56347e7b32d05b7ea1ab6d34c75",
+      "relative_to_current_main": {
+        "status": "ahead",
+        "ahead_by": 11,
+        "behind_by": 0,
+        "changed_files": 14,
+        "artifacts": 6,
+        "rust_files": 6,
+        "guard_files": 2
+      },
+      "current_head_ci": {
+        "workflow_runs": 7,
+        "workflow_run_states": {
+          "queued": 6,
+          "pending": 1
+        },
+        "jobs": 25,
+        "job_states": {
+          "queued": 25
+        },
+        "terminal_jobs": 0
+      },
+      "product_intent": {
+        "unique_vs_pr180_exact_blobs": [
+          "crates/cc-db/src/direct_writer.rs",
+          "crates/cc-db/src/index_migrate.rs",
+          "crates/cc-db/tests/ci_schema_guard_contract.rs"
+        ],
+        "already_identical_to_pr180_exact_blobs": [
+          "crates/cc-eval/tests/benchmark_adapters.rs",
+          "crates/cc-index/src/project_model/python_inventory.rs",
+          "crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs"
+        ],
+        "unique_semantics": "Derive the two physical maintenance indexes from canonical SQL while preserving order, readonly behavior, generation/failure boundaries and real-SQLite reopening checks.",
+        "author_reported_local_final_g": "Seven validation commands exited 0; 11 direct-writer + 5 migration + 5 schema-guard tests passed. This review did not rerun them and does not relabel queued GitHub CI."
+      },
+      "decision": "Keep OPEN. Do not close as superseded and do not merge while all 25 current-head jobs are queued. After terminal-success CI, either merge this self-contained main4ef descendant first and refresh PR180 from the new main, or integrate only the three unique DB paths into PR180's final independently reviewed P/R/G; never copy the old guard pins wholesale."
+    }
+  },
+  "management_summary": [
+    "No PR should be merged or closed at this snapshot.",
+    "PR180 remains the integration target.",
+    "PR184 retains three unique product paths and must remain reviewable.",
+    "PR178 is a fixed-source study/archive carrier, not a merge candidate.",
+    "PR181 requires no further action."
+  ],
+  "todo_accounting": {
+    "original_todos_closed_by_this_review": 0,
+    "original_done": 163,
+    "original_remaining": 29
+  }
+}

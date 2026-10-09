@@ -1,0 +1,142 @@
+{
+  "schema": "p8-round33-pr180-observer-independent-review-v1",
+  "reviewer": "/root/r33_pr180_observer",
+  "observed_at_utc": "2026-10-09T12:47:34.154Z",
+  "repository": "jyqj/codecortex",
+  "scope": "Only changes after the archived round-32 snapshot; GitHub official API reads only. No native execution, dispatch, retry, cancel, or ref update.",
+  "current_main": {
+    "sha": "4efbc97eb439a56347e7b32d05b7ea1ab6d34c75"
+  },
+  "pull_request_180": {
+    "state": "open",
+    "draft": true,
+    "mergeable": true,
+    "base_sha": "4efbc97eb439a56347e7b32d05b7ea1ab6d34c75",
+    "head_sha": "832f79b8702c6cdfb567b7cf949508cd4589f286",
+    "head_tree": "c40de30474ae9de97fb938dade9a51e6b028b7c6",
+    "updated_at": "2026-10-09T12:36:25Z",
+    "product": {
+      "sha": "3fd980c724e3272c6d936eb066cecf478667a553",
+      "tree": "2b6b4f6d8962a0fa857608b387975d1b36b22ce2",
+      "parents": [
+        "9c77b1dac4741b61421d2b41ceadde41f4c3e915",
+        "4efbc97eb439a56347e7b32d05b7ea1ab6d34c75"
+      ]
+    },
+    "independent_review": {
+      "sha": "fe09d0ed102e717ebfe1bd4802008053814c7eff",
+      "tree": "693b352e1442bca231c950538072a6871844fb13",
+      "parents": [
+        "3fd980c724e3272c6d936eb066cecf478667a553"
+      ],
+      "delta_from_product": "16 added artifact paths; no non-artifact path"
+    },
+    "binding": {
+      "sha": "832f79b8702c6cdfb567b7cf949508cd4589f286",
+      "tree": "c40de30474ae9de97fb938dade9a51e6b028b7c6",
+      "parents": [
+        "fe09d0ed102e717ebfe1bd4802008053814c7eff"
+      ],
+      "delta_from_review": [
+        "scripts/reviewed-source-registry-v15.json",
+        "scripts/verify_reviewed_source_v15.py"
+      ]
+    },
+    "source_gate": {
+      "v15_exit_code": 0,
+      "started_utc": "2026-10-09T12:28:48.733Z",
+      "finished_utc": "2026-10-09T12:32:45.491Z",
+      "elapsed_seconds": 236.758,
+      "task_plan_exit_code": 0,
+      "boundary": "Source/history binding only; not Rust/runtime/performance acceptance."
+    },
+    "ci": {
+      "workflow_runs": [
+        37930860351,
+        37930860358,
+        37930860359,
+        37930860423,
+        37930860454,
+        37930860456,
+        37930860478
+      ],
+      "check_count": 25,
+      "statuses": {
+        "queued": 25
+      },
+      "boundary": "No current-head CI success at observation time."
+    },
+    "main_integration_assessment": {
+      "exact_current_main_is_parent_of_product": true,
+      "pr186_lane_files_are_present": true,
+      "final_current_pr_P_R_G_exists": true,
+      "observer_is_in_current_pr": false,
+      "observer_absence_evidence": [
+        ".github/workflows/p8-db-lock-observation.yml is 404 at G4",
+        "crates/cc-db/src/lock_observation.rs is 404 at G4",
+        "crates/cc-db/Cargo.toml has no feature section at G4",
+        "crates/cc-db/src/index_db.rs retains std::sync::{Arc, Mutex, RwLock} and default path"
+      ]
+    }
+  },
+  "bfcc_staging": {
+    "branch": "task/p8-public-api-merge-bfcc-20261009",
+    "sha": "d7f21ab52ee2068c45ab5f7781e9e1db57f613de",
+    "change_since_round32": false
+  },
+  "separate_lock_observation_chain": {
+    "branch": "task/p8-db-lock-observation-a217-20261009",
+    "product": {
+      "sha": "b79f7749eb8f0a6c728493adfb073ca7db5563be",
+      "tree": "4140bc1bcdef409817e6edc381411b919dabe14e",
+      "parent": "18255c53b7fa153bb71c96f57f1b97ca139e427f"
+    },
+    "review": {
+      "sha": "87c697343f9d5a465cac7527f2e16933410ccd26",
+      "tree": "ce6a176387fd11d3ce213e9ac70bb71b0ffa2336",
+      "parent": "b79f7749eb8f0a6c728493adfb073ca7db5563be"
+    },
+    "binding": {
+      "sha": "4d18dcdb34b5d7a277566b57801cc882d8b1eb61",
+      "tree": "383716945d2d5f2404578d726afb317e4490c181",
+      "parent": "87c697343f9d5a465cac7527f2e16933410ccd26"
+    },
+    "workflow": {
+      "run_id": 37930392164,
+      "attempt": 1,
+      "head_sha": "4d18dcdb34b5d7a277566b57801cc882d8b1eb61",
+      "event": "push",
+      "status": "queued",
+      "conclusion": null,
+      "created_at": "2026-10-09T12:29:43Z",
+      "jobs": [
+        {
+          "id": 113819400505,
+          "name": "admission_and_controls",
+          "status": "queued",
+          "conclusion": null
+        }
+      ],
+      "materialized_measurement_jobs": 0,
+      "actual_measurements": {
+        "C1": 0,
+        "C4": 0,
+        "C8": 0,
+        "C16": 0
+      }
+    },
+    "boundary": "This repaired observation chain is separate from PR180 G4/current-main integration. No successful observation CI or four-C result exists yet."
+  },
+  "acceptance_decision": {
+    "p8_007_can_advance_to_done": false,
+    "reasons": [
+      "P8-007 hard-depends on P8-006, which remains incomplete behind P8-005.",
+      "The current-main PR180 P/R/G excludes the lock-observation implementation.",
+      "The separate repaired observation run is queued with only admission_and_controls materialized; C1/C4/C8/C16 each have zero actual 900-operation measurements.",
+      "PR180 G4 has 25 queued checks and no current-head CI success."
+    ],
+    "allowed_credit": "A valid current-main/PR186 product-review-binding chain now exists for PR180. This is integration/source evidence only and is not an original TODO closure.",
+    "original_todo_closures": [],
+    "remaining_original_todos": 29
+  }
+}

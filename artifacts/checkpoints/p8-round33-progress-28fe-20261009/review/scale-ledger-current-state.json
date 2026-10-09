@@ -1,0 +1,162 @@
+{
+  "schema_version": 1,
+  "review": "p8-round33-scale-ledger-independent-read",
+  "observed_at_utc": "2026-10-09T12:46:43.257Z",
+  "repository": "jyqj/codecortex",
+  "method": {
+    "source": "GitHub official connector / REST read endpoints",
+    "constraints": [
+      "no workflow dispatch",
+      "no retry",
+      "no cancellation",
+      "no budget change",
+      "no frozen log download"
+    ],
+    "comparison_baseline": {
+      "round": 32,
+      "main_sha": "4efbc97eb439a56347e7b32d05b7ea1ab6d34c75",
+      "tasks_blob_sha": "959a25ba851ff88f286bab0fa14167878129b1dd",
+      "scale_state": "all three sources had build plus five rep0 preflights; four successful measurements; 100k rep0 in progress"
+    }
+  },
+  "main": {
+    "sha": "4efbc97eb439a56347e7b32d05b7ea1ab6d34c75",
+    "changed_since_round32": false,
+    "tasks": {
+      "path": "docs/roadmap/code-index-v2/tasks.json",
+      "blob_sha": "959a25ba851ff88f286bab0fa14167878129b1dd",
+      "byte_equal_to_round32_blob": true,
+      "total": 192,
+      "statuses": {
+        "done": 163,
+        "in_progress": 16,
+        "todo": 12,
+        "blocked": 1
+      },
+      "remaining": 29
+    }
+  },
+  "priority_original_tasks": {
+    "ids": [
+      "P8-005",
+      "P8-006",
+      "P8-007",
+      "P8-008",
+      "P8-009",
+      "P8-010",
+      "P8-011",
+      "P8-012",
+      "P8-013",
+      "P8-016"
+    ],
+    "statuses": {
+      "P8-005": "in_progress",
+      "P8-006": "in_progress",
+      "P8-007": "in_progress",
+      "P8-008": "in_progress",
+      "P8-009": "in_progress",
+      "P8-010": "in_progress",
+      "P8-011": "in_progress",
+      "P8-012": "in_progress",
+      "P8-013": "in_progress",
+      "P8-016": "in_progress"
+    },
+    "newly_complete": [],
+    "conclusion": "No priority original task can be marked done. P8-005 lacks the required complete N30/150-shard study; P8-006 has a hard dependency on P8-005; all downstream priority items retain their existing hard dependency chain."
+  },
+  "fixed_scale_runs": {
+    "G3": {
+      "run_id": 37910924354,
+      "url": "https://github.com/jyqj/codecortex/actions/runs/37910924354",
+      "source_sha": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "run_status": "in_progress",
+      "run_conclusion": null,
+      "jobs_total": 6,
+      "successful_measurement_preflights": [
+        "1000/rep0",
+        "5000/rep0",
+        "10000/rep0",
+        "50000/rep0"
+      ],
+      "successful_measurements": 4,
+      "active_job": {
+        "id": 113760872142,
+        "name": "preflight (100000, 0)",
+        "status": "in_progress"
+      },
+      "later_measurement_jobs_materialized": 0,
+      "change_since_round32": "none"
+    },
+    "C8": {
+      "run_id": 37902429727,
+      "url": "https://github.com/jyqj/codecortex/actions/runs/37902429727",
+      "source_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "run_status": "in_progress",
+      "run_conclusion": null,
+      "jobs_total": 6,
+      "successful_measurement_preflights": [
+        "1000/rep0",
+        "5000/rep0",
+        "10000/rep0",
+        "50000/rep0"
+      ],
+      "successful_measurements": 4,
+      "active_job": {
+        "id": 113731945708,
+        "name": "preflight (100000, 0)",
+        "status": "in_progress"
+      },
+      "later_measurement_jobs_materialized": 0,
+      "change_since_round32": "none"
+    },
+    "old275e": {
+      "run_id": 37896198208,
+      "url": "https://github.com/jyqj/codecortex/actions/runs/37896198208",
+      "source_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+      "run_status": "queued",
+      "run_conclusion": null,
+      "jobs_total": 8,
+      "successful_measurement_preflights": [
+        "1000/rep0",
+        "5000/rep0",
+        "10000/rep0",
+        "50000/rep0"
+      ],
+      "successful_measurements": 4,
+      "new_terminal": {
+        "id": 113710393672,
+        "name": "preflight (100000, 0)",
+        "conclusion": "failure",
+        "failed_step": "Execute all phases for this registered single-repetition capacity slice",
+        "preservation_step_conclusion": "success"
+      },
+      "newly_materialized_jobs": [
+        {
+          "id": 113815379734,
+          "name": "measure",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 113815378305,
+          "name": "aggregate",
+          "status": "queued",
+          "conclusion": null
+        }
+      ],
+      "remaining_measurement_jobs_materialized": 0,
+      "change_since_round32": "100k rep0 became terminal failure; measure was skipped; aggregate materialized and is queued. This does not add a successful shard and must not be pooled with G3 or C8."
+    }
+  },
+  "acceptance_decision": {
+    "P8_005": "not complete",
+    "P8_006": "not complete (hard dependency P8-005 not done)",
+    "any_priority_original_task_newly_complete": false,
+    "ledger_update_authorized": false,
+    "rationale": [
+      "G3 and C8 remain 4/150 with 100k rep0 still running and 145 later measurement jobs unmaterialized.",
+      "old275e remains 4 successful measurements; its 100k rep0 failed and the measurement fan-out was skipped.",
+      "Sources are retained separately and no samples are combined."
+    ]
+  }
+}

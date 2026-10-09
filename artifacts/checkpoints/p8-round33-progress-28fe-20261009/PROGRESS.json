@@ -1,0 +1,191 @@
+{
+  "schema": "codecortex.p8.round33.progress.v1",
+  "round": 33,
+  "recorded_at_utc": "2026-10-09T12:44:00Z",
+  "repository": "jyqj/codecortex",
+  "previous_round_commit": "dee8f0930b033af513b285924b14fb9d6093b00f",
+  "main": {
+    "commit": "4efbc97eb439a56347e7b32d05b7ea1ab6d34c75",
+    "tree": "1e8439b342fa7f1136ee640b17c5f493b2b512ab",
+    "tasks_blob": "959a25ba851ff88f286bab0fa14167878129b1dd",
+    "tasks_unchanged_from_round32": true
+  },
+  "ledger": {
+    "total": 192,
+    "done": 163,
+    "in_progress": 16,
+    "todo": 12,
+    "blocked": 1,
+    "remaining": 29,
+    "newly_completed_this_round": 0,
+    "newly_completed_ids": [],
+    "cumulative_from_163_baseline": 0,
+    "target_minimum": 10
+  },
+  "pr180": {
+    "state": "open draft mergeable",
+    "prior_head": "1d39f382d4e08e702a55693c9c614fa477bf7e0c",
+    "current_head": "832f79b8702c6cdfb567b7cf949508cd4589f286",
+    "current_tree": "c40de30474ae9de97fb938dade9a51e6b028b7c6",
+    "product": "3fd980c724e3272c6d936eb066cecf478667a553",
+    "review": "fe09d0ed102e717ebfe1bd4802008053814c7eff",
+    "guard": "832f79b8702c6cdfb567b7cf949508cd4589f286",
+    "base_main": "4efbc97eb439a56347e7b32d05b7ea1ab6d34c75",
+    "product_scope": "current main/PR186 preservation plus prior snapshot/API/runtime source; 1093 product / 62 BASE delta / 139 validation inputs",
+    "source_gate": "original v15 exit0 in 236.758 seconds; task plan exit0",
+    "current_ci": {
+      "workflow_runs": 7,
+      "checks": 25,
+      "queued": 25,
+      "success": 0,
+      "failure": 0
+    },
+    "observer_present": false,
+    "decision": "keep Draft/Open; do not merge or close until current-head CI terminal and observer plus PR184 unique DB paths are incorporated through fresh P/R/G"
+  },
+  "observer": {
+    "branch": "task/p8-db-lock-observation-a217-20261009",
+    "product": "b79f7749eb8f0a6c728493adfb073ca7db5563be",
+    "review": "87c697343f9d5a465cac7527f2e16933410ccd26",
+    "guard": "4d18dcdb34b5d7a277566b57801cc882d8b1eb61",
+    "run_id": 37930392164,
+    "event": "push",
+    "status": "queued",
+    "materialized_jobs": 1,
+    "measurement_jobs": 0,
+    "actual_four_c_measurements": {
+      "C1": 0,
+      "C4": 0,
+      "C8": 0,
+      "C16": 0
+    },
+    "note": "This fixes the prior rustfmt admission failure and adds the existing branch push trigger; no execution result exists yet."
+  },
+  "pr184": {
+    "state": "open non-draft mergeable",
+    "head": "b356043c2c0c970d000e5f5e32f1dff69f88454f",
+    "product": "e0b56631a395ca34957c79e54a3e8d52b588306c",
+    "review": "4f6e6e5298b62e8e1c3714b4a914e4ea5bd29335",
+    "unique_product_paths": [
+      "crates/cc-db/src/direct_writer.rs",
+      "crates/cc-db/src/index_migrate.rs",
+      "crates/cc-db/tests/ci_schema_guard_contract.rs"
+    ],
+    "shared_platform_fix_paths": [
+      "crates/cc-eval/tests/benchmark_adapters.rs",
+      "crates/cc-index/src/project_model/python_inventory.rs",
+      "crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs"
+    ],
+    "author_native_evidence": "final G seven commands exit0, 21 DB tests passed; independently source-scoped, not remote-CI credit",
+    "current_ci": {
+      "checks": 25,
+      "terminal": 0,
+      "queued_or_pending": 25
+    },
+    "decision": "keep open; do not merge or close as superseded"
+  },
+  "pr178": {
+    "state": "open draft",
+    "head": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+    "ci": "26/26 success",
+    "decision": "do not merge; retain as fixed C8 study carrier until study terminal and evidence intake, then close as superseded while preserving branch"
+  },
+  "scale": [
+    {
+      "name": "G3",
+      "run_id": 37910924354,
+      "source": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "successful_measurements": 4,
+      "required": 150,
+      "preflight_100k": "in_progress",
+      "later_measure_jobs": 0
+    },
+    {
+      "name": "C8",
+      "run_id": 37902429727,
+      "source": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "successful_measurements": 4,
+      "required": 150,
+      "preflight_100k": "in_progress",
+      "later_measure_jobs": 0
+    },
+    {
+      "name": "old275e",
+      "run_id": 37896198208,
+      "source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+      "successful_measurements": 4,
+      "required": 150,
+      "preflight_100k": "failure",
+      "measure_job": "skipped",
+      "aggregate_job": "queued"
+    }
+  ],
+  "old275e_100k_failure": {
+    "job_id": 113710393672,
+    "artifact_id": 11615980558,
+    "artifact_zip_bytes": 5210430,
+    "artifact_zip_sha256": "7738402529b8339bbb328fec0b02ba4ad834bb787038f008dbb6d12a17fec94d",
+    "archive_members": 12,
+    "source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+    "result": {
+      "status": "deadline_exceeded",
+      "exit_code": 3,
+      "worker_exit_code": null,
+      "stderr_complete": false,
+      "wall_ms": 18022220,
+      "deadline_ms": 18000000,
+      "full_100k_certification": "not_run",
+      "release_certification": "not_run",
+      "summary": null
+    },
+    "raw": {
+      "bytes": 20144696,
+      "sha256": "a733872508d0bf6d2093f4baa7eec8daccd651b7a8324efa233267fb9b53cda1",
+      "lines": 2017,
+      "last_event": "build_started scale-100000/repetition-0/batch_10/full_control"
+    },
+    "identities": {
+      "binary_sha256": "1cee91b943fe0b787e2767112872e93a6991281790c626bb46a23b07d21ba394",
+      "binary_blake3": "667c53bcae6ea302f98b310ee7d98b0b62abf029bbbe980b9dd7eec960a06d81",
+      "binary_unchanged": true,
+      "source_manifest_sha256": "593cf443fc914998dd2cb5a30c3caf180eb8d0d7a398a86e4624e3df2ca65e83",
+      "source_before_after_equal": true
+    },
+    "environment": {
+      "system": "Linux",
+      "machine": "x86_64",
+      "cpu_count": 4,
+      "cpu_model": "AMD EPYC 7763 64-Core Processor",
+      "kernel": "6.17.0-1022-azure",
+      "rust": "1.95.0",
+      "runner_image": "ubuntu-24.04 20261004.327.1"
+    },
+    "disk": {
+      "preflight_available_bytes": 91634618368,
+      "after_available_bytes": 91613368320,
+      "required_free_bytes": 30509367296,
+      "preflight_passed": true,
+      "after_passed": true
+    },
+    "interpretation": "A real fixed-source 100k deadline failure and incomplete shard. It is not a successful sample, cannot be retried or pooled, and does not alter G3/C8 identities."
+  },
+  "task_effect": {
+    "P8_005": "in_progress: current fixed G3 still 4/150; old275e failure is historical negative evidence",
+    "P8_006": "in_progress due to P8-005 hard dependency",
+    "P8_007": "in_progress due to P8-006 plus zero actual observer four-C measurements",
+    "downstream": "P8-008..013 and P8-016 remain blocked by original dependency chain"
+  },
+  "agent_review_blobs": {
+    "pr180_observer": "74ad613f9d27a2793b002482ee846a60392f7329",
+    "scale_ledger": "f762d83b5525a238960265a229f0f5bd388f5241",
+    "pr_management": "b4f3ebb3bd0cc298798d03ec17be8c44bb1b06db"
+  },
+  "mutations": {
+    "pr180_owner_move": "observed external owner fast-forward",
+    "root_product_refs": [],
+    "root_workflow_actions": [],
+    "scale_dispatch": false,
+    "retry": false,
+    "cancel": false
+  }
+}

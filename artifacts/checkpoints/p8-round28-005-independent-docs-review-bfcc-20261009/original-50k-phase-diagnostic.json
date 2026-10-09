@@ -1,0 +1,353 @@
+{
+  "schema": "original-50k-phase-diagnostic-only-v1",
+  "observed_at": "2026-10-09T21:46:48.452230+00:00",
+  "scope": "Two separate already accepted rep0 histories, each preserved under its original source/profile. No new samples, no pooling or causal cross-profile inference, and no claim to diagnose the unfinished 100k worker.",
+  "observations": [
+    {
+      "profile_label": "default",
+      "original_source": "4fe927488d5cb7f26bd27c7624745fb1b6ca202b",
+      "original_raw_sha256": "24ba7847ff070fd169c4fb2ebc807a65fb7f97e813af8036b32ec83b26746d6c",
+      "raw_local_path": "/workspace/scratch/bfccb8494ba0/todo-audit-round25-50k-recovery/shard-50000-0/native/raw.jsonl",
+      "plan": {
+        "batch_sizes": [
+          1,
+          10,
+          100,
+          1000
+        ],
+        "capacity_profile": "scale_capacity_v1",
+        "deadline_ms": 18000000,
+        "dirty_budget": 200,
+        "fanouts": [
+          1,
+          4,
+          16,
+          64,
+          128
+        ],
+        "files": [
+          50000
+        ],
+        "max_output_bytes": 536870912,
+        "max_resume_builds": 1024,
+        "profile": "release",
+        "repetitions": 30,
+        "schema_version": 1,
+        "seed": 12648430,
+        "shard": {
+          "count": 30,
+          "index": 0
+        },
+        "skip_fanout": true
+      },
+      "worker_wall_ms": 3581145,
+      "original_exit_code": 0,
+      "original_status": "measurement_complete",
+      "events": {
+        "run_started": 1,
+        "input": 1,
+        "build_started": 511,
+        "build_finished": 511,
+        "cold_parity": 1,
+        "mutation": 8,
+        "stage_finished": 8
+      },
+      "full_build_count": 10,
+      "full_build_wall_us": 1706917954,
+      "incremental_build_wall_us": 810079103,
+      "parity_wall_us": 1039464238,
+      "unallocated_outer_lifetime_us": 24683705,
+      "full_builds": [
+        {
+          "label": "scale-50000/repetition-0/cold_incremental",
+          "wall_us": 123747743,
+          "reported_engine_elapsed_ms": 123700
+        },
+        {
+          "label": "scale-50000/repetition-0/cold_full_control",
+          "wall_us": 121402681,
+          "reported_engine_elapsed_ms": 121319
+        },
+        {
+          "label": "scale-50000/repetition-0/no_op/full_control",
+          "wall_us": 187813646,
+          "reported_engine_elapsed_ms": 187671
+        },
+        {
+          "label": "scale-50000/repetition-0/body/full_control",
+          "wall_us": 202198983,
+          "reported_engine_elapsed_ms": 202127
+        },
+        {
+          "label": "scale-50000/repetition-0/api/full_control",
+          "wall_us": 187635499,
+          "reported_engine_elapsed_ms": 187586
+        },
+        {
+          "label": "scale-50000/repetition-0/config/full_control",
+          "wall_us": 197294906,
+          "reported_engine_elapsed_ms": 197244
+        },
+        {
+          "label": "scale-50000/repetition-0/batch_1/full_control",
+          "wall_us": 175482231,
+          "reported_engine_elapsed_ms": 175387
+        },
+        {
+          "label": "scale-50000/repetition-0/batch_10/full_control",
+          "wall_us": 160703821,
+          "reported_engine_elapsed_ms": 160631
+        },
+        {
+          "label": "scale-50000/repetition-0/batch_100/full_control",
+          "wall_us": 179727631,
+          "reported_engine_elapsed_ms": 179647
+        },
+        {
+          "label": "scale-50000/repetition-0/batch_1000/full_control",
+          "wall_us": 170910813,
+          "reported_engine_elapsed_ms": 170812
+        }
+      ],
+      "stages": [
+        {
+          "label": "scale-50000/repetition-0/no_op",
+          "incremental_builds": 1,
+          "incremental_wall_us": 428727,
+          "parity_wall_us": 102410133,
+          "complete": true,
+          "passed": true
+        },
+        {
+          "label": "scale-50000/repetition-0/body",
+          "incremental_builds": 245,
+          "incremental_wall_us": 365935236,
+          "parity_wall_us": 133486171,
+          "complete": true,
+          "passed": true
+        },
+        {
+          "label": "scale-50000/repetition-0/api",
+          "incremental_builds": 86,
+          "incremental_wall_us": 182717384,
+          "parity_wall_us": 141546900,
+          "complete": true,
+          "passed": true
+        },
+        {
+          "label": "scale-50000/repetition-0/config",
+          "incremental_builds": 165,
+          "incremental_wall_us": 236747182,
+          "parity_wall_us": 131061962,
+          "complete": true,
+          "passed": true
+        },
+        {
+          "label": "scale-50000/repetition-0/batch_1",
+          "incremental_builds": 1,
+          "incremental_wall_us": 1336400,
+          "parity_wall_us": 106204968,
+          "complete": true,
+          "passed": true
+        },
+        {
+          "label": "scale-50000/repetition-0/batch_10",
+          "incremental_builds": 1,
+          "incremental_wall_us": 3194464,
+          "parity_wall_us": 106660151,
+          "complete": true,
+          "passed": true
+        },
+        {
+          "label": "scale-50000/repetition-0/batch_100",
+          "incremental_builds": 1,
+          "incremental_wall_us": 2387007,
+          "parity_wall_us": 109672237,
+          "complete": true,
+          "passed": true
+        },
+        {
+          "label": "scale-50000/repetition-0/batch_1000",
+          "incremental_builds": 1,
+          "incremental_wall_us": 17818381,
+          "parity_wall_us": 107735042,
+          "complete": true,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "profile_label": "wide",
+      "original_source": "008f1ec0ae16b9b6aff9f20d033b17b2219168f8",
+      "original_raw_sha256": "75a0d1e239961c43bdfd4392ef6f22da1c45d45f5bbb7240b47967a857405fe7",
+      "raw_local_path": "/workspace/scratch/bfccb8494ba0/GW4-next-original-intake/scale-50000-validation-attempt01/extracted/native/raw.jsonl",
+      "plan": {
+        "batch_sizes": [
+          1,
+          10,
+          100,
+          1000
+        ],
+        "capacity_profile": "scale_wide_dirty_v1",
+        "deadline_ms": 18000000,
+        "dirty_budget": 4096,
+        "fanouts": [
+          1,
+          4,
+          16,
+          64,
+          128
+        ],
+        "files": [
+          50000
+        ],
+        "max_output_bytes": 536870912,
+        "max_resume_builds": 1024,
+        "profile": "release",
+        "repetitions": 30,
+        "schema_version": 1,
+        "seed": 12648430,
+        "shard": {
+          "count": 30,
+          "index": 0
+        },
+        "skip_fanout": true
+      },
+      "worker_wall_ms": 2904042,
+      "original_exit_code": 0,
+      "original_status": "measurement_complete",
+      "events": {
+        "run_started": 1,
+        "input": 1,
+        "build_started": 41,
+        "build_finished": 41,
+        "cold_parity": 1,
+        "mutation": 8,
+        "stage_finished": 8
+      },
+      "full_build_count": 10,
+      "full_build_wall_us": 1531863377,
+      "incremental_build_wall_us": 315228089,
+      "parity_wall_us": 1031112626,
+      "unallocated_outer_lifetime_us": 25837908,
+      "full_builds": [
+        {
+          "label": "scale-50000/repetition-0/cold_incremental",
+          "wall_us": 115206784,
+          "reported_engine_elapsed_ms": 115160
+        },
+        {
+          "label": "scale-50000/repetition-0/cold_full_control",
+          "wall_us": 110739825,
+          "reported_engine_elapsed_ms": 110661
+        },
+        {
+          "label": "scale-50000/repetition-0/no_op/full_control",
+          "wall_us": 183794399,
+          "reported_engine_elapsed_ms": 183748
+        },
+        {
+          "label": "scale-50000/repetition-0/body/full_control",
+          "wall_us": 152193073,
+          "reported_engine_elapsed_ms": 152070
+        },
+        {
+          "label": "scale-50000/repetition-0/api/full_control",
+          "wall_us": 159550083,
+          "reported_engine_elapsed_ms": 159421
+        },
+        {
+          "label": "scale-50000/repetition-0/config/full_control",
+          "wall_us": 169935844,
+          "reported_engine_elapsed_ms": 169758
+        },
+        {
+          "label": "scale-50000/repetition-0/batch_1/full_control",
+          "wall_us": 170192715,
+          "reported_engine_elapsed_ms": 170092
+        },
+        {
+          "label": "scale-50000/repetition-0/batch_10/full_control",
+          "wall_us": 184511094,
+          "reported_engine_elapsed_ms": 184411
+        },
+        {
+          "label": "scale-50000/repetition-0/batch_100/full_control",
+          "wall_us": 145116079,
+          "reported_engine_elapsed_ms": 144984
+        },
+        {
+          "label": "scale-50000/repetition-0/batch_1000/full_control",
+          "wall_us": 140623481,
+          "reported_engine_elapsed_ms": 140515
+        }
+      ],
+      "stages": [
+        {
+          "label": "scale-50000/repetition-0/no_op",
+          "incremental_builds": 1,
+          "incremental_wall_us": 533585,
+          "parity_wall_us": 118957583,
+          "complete": true,
+          "passed": true
+        },
+        {
+          "label": "scale-50000/repetition-0/body",
+          "incremental_builds": 12,
+          "incremental_wall_us": 118717807,
+          "parity_wall_us": 107856915,
+          "complete": true,
+          "passed": true
+        },
+        {
+          "label": "scale-50000/repetition-0/api",
+          "incremental_builds": 5,
+          "incremental_wall_us": 71457497,
+          "parity_wall_us": 109910533,
+          "complete": true,
+          "passed": true
+        },
+        {
+          "label": "scale-50000/repetition-0/config",
+          "incremental_builds": 9,
+          "incremental_wall_us": 110282313,
+          "parity_wall_us": 115890106,
+          "complete": true,
+          "passed": true
+        },
+        {
+          "label": "scale-50000/repetition-0/batch_1",
+          "incremental_builds": 1,
+          "incremental_wall_us": 1064664,
+          "parity_wall_us": 113920182,
+          "complete": true,
+          "passed": true
+        },
+        {
+          "label": "scale-50000/repetition-0/batch_10",
+          "incremental_builds": 1,
+          "incremental_wall_us": 1356317,
+          "parity_wall_us": 141076731,
+          "complete": true,
+          "passed": true
+        },
+        {
+          "label": "scale-50000/repetition-0/batch_100",
+          "incremental_builds": 1,
+          "incremental_wall_us": 2379618,
+          "parity_wall_us": 102804490,
+          "complete": true,
+          "passed": true
+        },
+        {
+          "label": "scale-50000/repetition-0/batch_1000",
+          "incremental_builds": 1,
+          "incremental_wall_us": 9460538,
+          "parity_wall_us": 123900333,
+          "complete": true,
+          "passed": true
+        }
+      ]
+    }
+  ]
+}

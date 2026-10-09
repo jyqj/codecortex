@@ -1,0 +1,197 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-10-09T06:41:31.260993+00:00",
+  "author": "/root/todo_audit",
+  "status": "prepared_only_not_executed",
+  "purpose": "Run the unmodified original v15 CLI on a future exact clean combined G under the already proven Linux Docker environment. Source verification only, no performance/workload/platform-matrix credit.",
+  "combined_G": null,
+  "combined_P": null,
+  "combined_R": null,
+  "actual_worktree": null,
+  "image": {
+    "reference": "docker.io/library/python@sha256:3d361d7fea344d55ac7a0f51ed7faa99213808ccc96fc9b9170adb95b6570b96",
+    "current_inspect": {
+      "path": "review-next-candidate/linux-v15-execution-preparation/current-image-inspect.json",
+      "bytes": 2402,
+      "sha256": "5934da7b29ce74a79bdc902b46d02638089b7cc93ca4612cc629e2647e060963"
+    },
+    "docker_image_id": "sha256:3d361d7fea344d55ac7a0f51ed7faa99213808ccc96fc9b9170adb95b6570b96",
+    "manifest_digest": "sha256:3d361d7fea344d55ac7a0f51ed7faa99213808ccc96fc9b9170adb95b6570b96",
+    "oci_config_digest": "sha256:720762d97dcd513c0e9e578cbc6cd97bb633f8f9e268ef75b73fd4f4621ea200",
+    "image_id_semantics": "This existing Docker engine reports manifest digest as Image Id; do not conflate it with config digest.",
+    "os": "linux",
+    "architecture": "amd64",
+    "historical_actual_runtime": {
+      "python": "3.12.15",
+      "git": "2.47.3",
+      "glibc": "2.41",
+      "machine": "x86_64"
+    },
+    "runtime_identity_basis": {
+      "path": "review-scale/replay-linux/output-v2/replay-result.json",
+      "bytes": 4423,
+      "sha256": "994e76aee29830a20849e7599ee14576f5727e7f7f8c4e33ddce10eba5dd03dc"
+    },
+    "runtime_probe_on_future_execution": "Record sys.version/sys.executable, sys.flags.optimize, git --version, platform/uname and exact image/container inspect. Current preparation inspected image but started no container."
+  },
+  "reused_original_controller": {
+    "path": "review-scale/replay-linux/launch_replay_v3.py",
+    "bytes": 7391,
+    "sha256": "56654c44f29b9bb89560e76f07082101a99f26f97e2ca70b2185b3ae173a8933"
+  },
+  "reused_original_create_receipt": {
+    "path": "review-scale/replay-linux/controller-v2/create-command.json",
+    "bytes": 2693,
+    "sha256": "1c2da06f7980fc6fe6e33ca17e2122b19366bbad7292397d00cdf1dc0e84cded"
+  },
+  "source_mount_requirements": {
+    "worktree": "Mount the actual future clean combined-G linked worktree at the identical absolute source path, read-only; do not mount a detached archive or rename .git.",
+    "common_git": "/Users/jin/Desktop/codecortex-rust/.git",
+    "common_git_read_only": true,
+    "gitdir_structure_observed": "Current example .git file points inside common .git/worktrees/<worktree-name>; commondir=../..; preserving both absolute mount targets makes the original unmodified git calls resolve correctly.",
+    "alternates_observed": false,
+    "shallow_observed": false,
+    "local_core_fsmonitor_config_observed": false,
+    "replace_refs_observed": [],
+    "global_configuration": "Container-only GIT_CONFIG_GLOBAL=/dev/null/GIT_CONFIG_NOSYSTEM=1 and safe.directory env; do not edit host global/repository config.",
+    "shared_git_mutation": "No fetch/reset/worktree repair/gc or historical-protection change. Any missing required object is failure, not permission to populate shared history."
+  },
+  "history_readiness": {
+    "partial_clone": true,
+    "filter": "blob:none",
+    "offline_inventory": {
+      "path": "review-next-candidate/linux-v15-execution-preparation/extended-historical-object-readiness.json",
+      "bytes": 8184,
+      "sha256": "7dbae12a6e9f9c10b2ce315d2c7cc4bdeb8bfc365ae4cd68de0c5c15dee87897"
+    },
+    "named_commit_count": 62,
+    "object_lines": 16984,
+    "missing_objects": [
+      "3852fb979c72bf5e9d7bce8773405b8e09a0e57e",
+      "1df17434e0e3aa2108ee56d18b5da71201bbf353"
+    ],
+    "known_missing_paths": {
+      "path": "review-next-candidate/linux-v15-execution-preparation/missing-object-path-map.json",
+      "bytes": 1515,
+      "sha256": "b9f0c9d91bc64ac210d6dc5a6578e1e73c507068684b8ed2cbe71a6461d360f2"
+    },
+    "missing_scope": "Observed missing objects are old tasks.json/05-TODO at capture/review refs e3b932ed…,a17f05d…,1fe4dc5…. They are outside v2 crates/Cargo queries and the inspected fixed registry review records. This proves neither an entirely complete Git object store nor the future combined G.",
+    "static_required_path_finding": "No identified missing object is selected by the inspected current v15 inherited proof. v2 approved_union lines55-57/71-105 binds crates/Cargo and exact review records; no source registry records referred to those two old ledger paths. Original CLI remains the authoritative check.",
+    "future_preflight": "After combined G exists, bind exact G/P/R and repeat metadata-only local availability checks with GIT_NO_LAZY_FETCH=1. No network allowed. Do not treat the current-G preflight as a future-G execution."
+  },
+  "container_create_argv_template": [
+    "/usr/local/bin/docker",
+    "create",
+    "--pull=never",
+    "--platform=linux/amd64",
+    "--name",
+    "{UNIQUE_CONTAINER_NAME}",
+    "--hostname",
+    "p8-v15-source-verifier",
+    "--network=none",
+    "--read-only",
+    "--cap-drop=ALL",
+    "--security-opt=no-new-privileges",
+    "--pids-limit=128",
+    "--memory=2g",
+    "--cpus=2",
+    "--tmpfs",
+    "/tmp:rw,noexec,nosuid,size=64m",
+    "--workdir",
+    "{WORKTREE_ABSOLUTE}",
+    "--env",
+    "PYTHONDONTWRITEBYTECODE=1",
+    "--env",
+    "GIT_OPTIONAL_LOCKS=0",
+    "--env",
+    "GIT_NO_LAZY_FETCH=1",
+    "--env",
+    "GIT_TERMINAL_PROMPT=0",
+    "--env",
+    "GIT_CONFIG_GLOBAL=/dev/null",
+    "--env",
+    "GIT_CONFIG_NOSYSTEM=1",
+    "--env",
+    "GIT_CONFIG_COUNT=1",
+    "--env",
+    "GIT_CONFIG_KEY_0=safe.directory",
+    "--env",
+    "GIT_CONFIG_VALUE_0={WORKTREE_ABSOLUTE}",
+    "--env",
+    "TMPDIR=/output/tmp",
+    "--env",
+    "TMP=/output/tmp",
+    "--env",
+    "TEMP=/output/tmp",
+    "--mount",
+    "type=bind,src={WORKTREE_ABSOLUTE},dst={WORKTREE_ABSOLUTE},readonly",
+    "--mount",
+    "type=bind,src=/Users/jin/Desktop/codecortex-rust/.git,dst=/Users/jin/Desktop/codecortex-rust/.git,readonly",
+    "--mount",
+    "type=bind,src={NEW_OBSERVER_ABSOLUTE},dst=/observer,readonly",
+    "--mount",
+    "type=bind,src={NEW_OUTPUT_ABSOLUTE},dst=/output",
+    "docker.io/library/python@sha256:3d361d7fea344d55ac7a0f51ed7faa99213808ccc96fc9b9170adb95b6570b96",
+    "/usr/local/bin/python3",
+    "/observer/controller.py"
+  ],
+  "original_child_argv": [
+    "/usr/local/bin/python3",
+    "scripts/verify_reviewed_source_v15.py",
+    "--source-version",
+    "p8-completion-source-20261009-v15"
+  ],
+  "original_child_cwd": "{WORKTREE_ABSOLUTE}",
+  "child_env_overrides": {
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "GIT_OPTIONAL_LOCKS": "0",
+    "GIT_NO_LAZY_FETCH": "1",
+    "GIT_TERMINAL_PROMPT": "0",
+    "GIT_CONFIG_GLOBAL": "/dev/null",
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_CONFIG_COUNT": "1",
+    "GIT_CONFIG_KEY_0": "safe.directory",
+    "GIT_CONFIG_VALUE_0": "{WORKTREE_ABSOLUTE}",
+    "TMPDIR": "/output/tmp",
+    "TMP": "/output/tmp",
+    "TEMP": "/output/tmp"
+  },
+  "python_requirements": {
+    "optimize": 0,
+    "PYTHONOPTIMIZE": "unset",
+    "PYTHONPATH": "unset",
+    "bytecode_writes": false
+  },
+  "temporary_storage": {
+    "only_writable_bind": "/output",
+    "historical_temp_root": "/output/tmp",
+    "require_new_empty_output": true,
+    "reason": "Original v14/v15 HistoricalContext each allow up to256MiB of fixed historical files and create their own read-only temporary replicas. Preserve their original bounds. A dedicated writable output/tmp prevents adding the earlier replay64MiB tmpfs bound to those replicas; /tmp64MiB is only fallback. No source or Git writes permitted."
+  },
+  "observer_controller_contract": [
+    "Require actual clean tracked/untracked worktree, exact G/tree/parent R and R parent P before any CLI call.",
+    "Assert expected exact guard and registry blob/byte digests, complete product/validation inputs and independent review/source pins; save a full pre-execution raw-SHA/mode/blob map and git index/HEAD identity.",
+    "Inspect created container before starting: selected image identity, linux/amd64, NetworkMode none, ReadonlyRootfs true, all source/common-Git/observer binds read-only, only output bind writable. Do not infer network state from the presence of kernel tunnel interface names.",
+    "Record original child argv verbatim; execute it through subprocess without import/monkeypatch of the guard. Open /output/original-v15.stdout and .stderr before child starts so full unmodified streams persist.",
+    "Record child PID, timestamps and actual integer return code independently of observer/docker-start exit; outer allowance3600s does not change any internal source validation logic or measurement budgets.",
+    "On timeout or failure preserve all evidence, return nonzero, no automatic retry or fetch. Report actual negative signal if termination was required.",
+    "Compare complete source/validation/review/guard/registry byte+mode/blob and HEAD/index/status after child; record Docker State.ExitCode/OOMKilled/NetworkMode/mount identities and docker-start exit.",
+    "Keep runner/controller startup errors separate from actual CLI verdict. Do not mark passed from absence of output or successful Docker creation."
+  ],
+  "checks_not_scheduled": [
+    "No repeat local181 source-integrity suite for the future combined G in this proposed execution; original CI keeps and executes its full181入口 unchanged.",
+    "No Rust four-command repetition as part of this source-proof plan.",
+    "No benchmarks, scale dispatch, image pull or new Cloud task."
+  ],
+  "limitations": [
+    "No new combined G currently bound here; readiness plan only.",
+    "Linux amd64 container compatibility execution on Mac host is not Mac native validation and not a performance measurement.",
+    "No claim of throughput improvement from this preparation.",
+    "Original CI source-integrity suite is not removed/skipped or credited by this single CLI."
+  ],
+  "source_or_git_changes": false,
+  "new_container_started": false,
+  "image_pulled": false,
+  "original_todos_completed": 0,
+  "remaining_original_todos": 29
+}

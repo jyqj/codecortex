@@ -1,0 +1,165 @@
+{
+  "schema_version": 1,
+  "observed_utc": "2026-10-09T06:16:12.145470+00:00",
+  "verdict": "accepted_scoped_frozen_FTS_source_integration",
+  "reviewer": "/root/pr_triage",
+  "author": "/root/execution_recon",
+  "execution_credit": false,
+  "candidate_commit": null,
+  "parent": "ae77486dab0141173fcb2c4c99dd85d34e888157",
+  "parent_tree": "86233d9f79c6be50145922d1b05d5739d88acc4e",
+  "worktree": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/candidate-fts-integration",
+  "source": [
+    {
+      "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+      "bytes": 18581,
+      "sha256": "1dbc014e9798dfac6d1d2b82bc9913fb4603e6aeb301e9e0fd22c8823a2cb1ee",
+      "mode": "100644",
+      "equals_repaired_A": true
+    },
+    {
+      "path": "crates/cc-db/src/index_db_write_batch.rs",
+      "bytes": 56514,
+      "sha256": "25f82e53d9479c357cbe7a02741f24cb92114f580e2dcddd8b1056e2080b52d7",
+      "mode": "100644",
+      "equals_repaired_A": true
+    },
+    {
+      "path": "crates/cc-db/src/snapshot_write_txn.rs",
+      "bytes": 9084,
+      "sha256": "7c941b0e7fca4c48ec0c8b44ee81108a2c201e0b28ab7a69f285dbc329eb446f",
+      "mode": "100644",
+      "equals_repaired_A": true
+    },
+    {
+      "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+      "bytes": 10144,
+      "sha256": "bca23a73b0a2de0ca38f9593fbb526b69a7acc138b9ec8a680001fb79e666e9e",
+      "mode": "100644",
+      "equals_repaired_A": true
+    },
+    {
+      "path": "crates/cc-db/src/snapshot_fts_tests.rs",
+      "bytes": 22068,
+      "sha256": "c0454c8325a0691cc9caa0b2d9d99e017483b56991fd76dabde371869bfe428d",
+      "mode": "100644",
+      "equals_repaired_A": false
+    }
+  ],
+  "status": " M crates/cc-db/src/index_db_snapshot_insert.rs\n M crates/cc-db/src/index_db_write_batch.rs\n M crates/cc-db/src/snapshot_write_txn.rs\n M crates/cc-index/src/indexer_phases/snapshot.rs\n?? crates/cc-db/src/snapshot_fts_tests.rs\n",
+  "source_diff": {
+    "path": "review-next-candidate/fts-integration-round9/source.diff",
+    "bytes": 33702,
+    "sha256": "cdea739d5444aec5377d445de4e0149b5f0adb8e1f9982c513c03459a56523d2"
+  },
+  "prior_independent_review": {
+    "path": "review-next-candidate/fts-rebuild-api-independent-review.json",
+    "bytes": 10878,
+    "sha256": "fe815d1e89d379320c1faf3caa3aaf93f5e43106b0e291620adc248b8ffaee4a",
+    "scope": "Non-author read-only review of public API restoration, sole production opt-in call, and original owner error propagation. Not a complete FTS algorithm or release/scale review.",
+    "reviewer": "/root/todo_audit",
+    "four_production_files_exact": true
+  },
+  "findings": [
+    {
+      "id": "old_public_API",
+      "conclusion": "408-byte write_file_data function unchanged from G; no schema probe or deferred write reached from this entry. Existing partial-error-then-commit control retained exactly.",
+      "sha256": "85a85c85553980141ac93735c865a4fa189ccdac5bf90d29b4b384d76f241000",
+      "path": "crates/cc-db/src/snapshot_write_txn.rs",
+      "lines": "65-78"
+    },
+    {
+      "id": "new_opt_in_owner",
+      "conclusion": "New write_file_data_for_rebuild explicitly requires propagate error, abandon staging transaction/database, and prevent publication. It does not own rollback. Only production call retains question-mark propagation from shared full snapshot contents.",
+      "calls": [
+        "crates/cc-db/src/snapshot_write_txn.rs:90:    pub fn write_file_data_for_rebuild(",
+        "crates/cc-db/src/snapshot_fts_tests.rs:109:    SnapshotWriteTxn::new(conn).write_file_data_for_rebuild(files, &PrecompressedChunks::new())",
+        "crates/cc-index/src/indexer_phases/snapshot.rs:111:        txn.write_file_data_for_rebuild(write_units, chunk_blobs)?;"
+      ],
+      "owner_paths": [
+        "crates/cc-db/src/index_db_rebuild.rs:90-99,238-301,351-360",
+        "crates/cc-db/src/direct_writer.rs:97-106"
+      ],
+      "owner_files_unchanged": true
+    },
+    {
+      "id": "bounded_rowid_mirrors",
+      "conclusion": "Only files/literal FTS mirrors deferred across <=256 files. Leaf binders/base order unchanged. SnapshotFtsWindow captures before/after maxima and selects actual new rows by rowid range, preserving ignored literal winners and cross-path literals. Checked usize/i64 addition counts every attempted literal and falls back before i64::MAX/random-rowid regime.",
+      "path": "crates/cc-db/src/index_db_snapshot_insert.rs:62-147"
+    },
+    {
+      "id": "schema_gate",
+      "conclusion": "Autocommit and any TEMP object use original path. Entire non-index main schema type/name/table/SQL must match fresh canonical schema from same linked SQLite; extra/modified tables/views/triggers/FK definitions fall back. Ignoring indexes supports existing staging drop. Canonical schema and owner unchanged, insert path has no deletion/replacement of files/literal_index.",
+      "path": "crates/cc-db/src/index_db_snapshot_insert.rs:19-60"
+    },
+    {
+      "id": "unchanged_existing_insert",
+      "conclusion": "Removing only added private helper recovers entire original index_db_write_batch.rs bytes; renaming only the sole caller recovers entire parent snapshot.rs. Existing chunks/symbols/file_paths FTS behavior preserved."
+    },
+    {
+      "id": "controls_retention",
+      "conclusion": "All eight existing correctness/failure controls and all common test helpers retained byte-for-byte. Only uncommitted prototype ordinary ABBA diagnostic (2061 B including separator) removed; historical source/evidence untouched. Nine ordinary tests now: retained eight plus MAX risk control. No ignore/skip added.",
+      "retained_tests": [
+        "windows_preserve_all_rows_fts_search_and_cross_path_survivors",
+        "checked_capacity_and_near_maximum_rowids_use_original_fallback",
+        "public_entry_preserves_partial_state_when_caller_commits_after_error",
+        "autocommit_keeps_original_partial_failure_and_immediate_mirrors",
+        "noncanonical_or_temp_schema_falls_back_without_losing_mirrors",
+        "late_failure_rolls_back_flushed_windows_and_preserves_live_generation",
+        "private_fts_flush_full_error_abandons_actual_rebuild_without_publication",
+        "rowid_range_uses_primary_key_and_reduces_mirror_statement_runs"
+      ],
+      "removed_prototype_test": "small_write_stage_ab_ba_diagnostic_keeps_complete_outputs",
+      "removed_bytes": 2061,
+      "new_test": "max_rowid_boundaries_use_tail_lookup_with_a_real_scan_control"
+    },
+    {
+      "id": "MAX_non_timing_control",
+      "conclusion": "Uses same crate linked SQLite; files/literal_index at 0/1/257 rows each, exact MAX value, FullscanStep==0, EXPLAIN Last present. Separate SUM control checks result and positive FullscanStep for 257 rows, preventing inert-counter false assurance. Preserves opcode records via direct stderr under ordinary harness. No time budget, wall clock or performance speedup assertion."
+    }
+  ],
+  "validation_inputs": {
+    "count": 138,
+    "map_sha256": "41ef41f5e45cd7edcb1c82c61ced9827c55f38e0abb96a539c32f777d9556725",
+    "all_actual_hashes_equal_registry": true,
+    "changed": false
+  },
+  "mac_fixes": [
+    {
+      "path": "crates/cc-eval/tests/p8_scale.rs",
+      "bytes": 21068,
+      "sha256": "71831ab2b2ab0e7b34e9917f499bc33f7b66a74e0c156874b4154bb6b783d8dc",
+      "equals_G": true
+    },
+    {
+      "path": "crates/cc-index/src/project_model/python_inventory.rs",
+      "bytes": 13291,
+      "sha256": "e3fd1a31e0ed7cb9c8fa90a7025508a957f0bc8288f7850fff5e400094a5203e",
+      "equals_G": true
+    },
+    {
+      "path": "crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs",
+      "bytes": 15513,
+      "sha256": "5d9d105a151dff3b82bb27125e5e4d276966611de0ef74634cb3a4a67396f495",
+      "equals_G": true
+    },
+    {
+      "path": "crates/cc-eval/tests/benchmark_adapters.rs",
+      "bytes": 38925,
+      "sha256": "a5ef80d761a89c83d97998fe02e68a185d6c803ed0999723d9b24d90d1f1289c",
+      "equals_G": true
+    }
+  ],
+  "blockers": [],
+  "limits": [
+    "Source review only; author original four-command engineering run is separate pending evidence, not assigned passed by this report.",
+    "Public opt-in borrowed Connection cannot enforce owner abort at type level; misuse outside documented owner protocol is not promised safe.",
+    "DirectWriter journal_mode=OFF means no physical rollback claim for disposable staging DB; guarantee is no publication after build error.",
+    "Private flush-full control is private helper plus actual temp rebuild owner, not public-entry end-to-end injection or DirectWriter physical rollback proof.",
+    "FullscanStep/EXPLAIN controls do not certify elapsed-time or scale improvement.",
+    "Earlier prototype timing and a23/G3/Mac engineering evidence are not transferred to this combination.",
+    "Future committed P/R/G source binding and source-integrity CLI remain separate work."
+  ],
+  "original_todo_credit": 0,
+  "remaining_original_todos": 29
+}

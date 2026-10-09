@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "reviewer": "execution_recon",
+  "observed_at": "2026-10-09T05:10:22.385149+00:00",
+  "parent": "b21cce4c8661589267ad5719f850accbec088d2f",
+  "scope": "Consolidated five-path source review; execution remains independently pending.",
+  "prior_two_path_review": {
+    "path": "review-ci/macos-engineering-candidate/two-file-independent-source-review.json",
+    "bytes": 5076,
+    "sha256": "08fafc692d13da6492eaabd536bc4ed6e77b9b8cb1c331accc34daa3546ea1e6",
+    "scope_conclusion_retained": true
+  },
+  "current_changed_path_count": 5,
+  "source_inventory": [
+    {
+      "path": "crates/cc-eval/tests/p8_scale.rs",
+      "bytes": 21068,
+      "sha256": "71831ab2b2ab0e7b34e9917f499bc33f7b66a74e0c156874b4154bb6b783d8dc",
+      "git_blob": "31b34057ff76e0b07e9242ef179951577ed22187"
+    },
+    {
+      "path": "crates/cc-index/src/project_model/python_inventory.rs",
+      "bytes": 13291,
+      "sha256": "e3fd1a31e0ed7cb9c8fa90a7025508a957f0bc8288f7850fff5e400094a5203e",
+      "git_blob": "e8f3ccd2d5d24ac222186f6954d983d859b4ee18"
+    },
+    {
+      "path": "crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs",
+      "bytes": 15513,
+      "sha256": "5d9d105a151dff3b82bb27125e5e4d276966611de0ef74634cb3a4a67396f495",
+      "git_blob": "4d3b82904f0b9415f1f901a4192f66525492cd02"
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+      "bytes": 46137,
+      "sha256": "18e6fbe38bc0484ff32050c749186671a7e4c3b15c0894b5fb205c9948fb7530",
+      "git_blob": "1281d5340096699663308c92ce27978ae96ac84e"
+    },
+    {
+      "path": "crates/cc-eval/tests/benchmark_adapters.rs",
+      "bytes": 38925,
+      "sha256": "a5ef80d761a89c83d97998fe02e68a185d6c803ed0999723d9b24d90d1f1289c"
+    }
+  ],
+  "third_path": {
+    "kind": "existing-platform import grouping only",
+    "body_from_struct_Allocator_to_EOF_exact_M": true,
+    "specific_callsite_review": "Path appears only in Linux-cfg fifo/wait_payload_open; Duration/Instant only in these or existing Linux-cfg tests; PathBuf remains unconditional.",
+    "original_platform_cfg_and_test_bodies_budgets": "unchanged",
+    "verdict": "accepted_scoped_source"
+  },
+  "fourth_path": {
+    "complete_bytes_equal_previously_reviewed_G3": "26768b5e38ed1784bf77a8c4fe57baf01a19c626",
+    "git_blob": "1281d5340096699663308c92ce27978ae96ac84e",
+    "change": "!self.shard.is_some_and(|s| s.count == self.repetitions) becomes self.shard.is_none_or(|s| s.count != self.repetitions); both reject None or a present shard whose count differs from repetitions.",
+    "no_clock_budget_supervisor_semantic_change": true,
+    "verdict": "accepted_prior_full_file_source_identity"
+  },
+  "validation_boundary": {
+    "attempt01_and02_failed_originals_retained": true,
+    "attempt03": "failed, retained original Clippy diagnostic for fifth-path Mac dead-code",
+    "overall_execution_acceptance": "pending",
+    "source_result": "accepted_scoped_five_path_source_review",
+    "no_new_P_R_G_installation": true,
+    "attempt04": "author reports Clippy exit0 and workspace tests still running; full final execution not reviewed here"
+  },
+  "todo_credit": 0,
+  "remaining_original_todos": 29,
+  "fifth_path": {
+    "reviewer": "execution_recon",
+    "observed_at": "2026-10-09T05:13:44.227917+00:00",
+    "path": "crates/cc-eval/tests/benchmark_adapters.rs",
+    "bytes": 38925,
+    "sha256": "a5ef80d761a89c83d97998fe02e68a185d6c803ed0999723d9b24d90d1f1289c",
+    "diff": "Seven Linux cfg attributes only, zero removed/changed original lines",
+    "gated_items": [
+      "file_digest helper",
+      "KillOnNetwork variant",
+      "proof guarded arm",
+      "spawn evidence binding",
+      "spawn receipt_path binding",
+      "spawn command guarded arm",
+      "spawn receipt guarded arm"
+    ],
+    "non_linux_fail_closed": "Original verified_network_guard panic and restricted policy selection remain exact source; no fallback to Direct on restricted requests.",
+    "linux": "All original statements compile unchanged under true attributes; network launcher checksum/probe/receipt guards retained.",
+    "verdict": "accepted_scoped_source_pending_execution",
+    "source_mutated_by_reviewer": false,
+    "todo_credit": 0
+  }
+}

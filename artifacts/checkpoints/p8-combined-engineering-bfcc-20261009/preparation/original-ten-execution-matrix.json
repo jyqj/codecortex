@@ -1,0 +1,692 @@
+{
+  "schema_version": 1,
+  "review_status": "read_only_execution_plan_for_original_ten_not_task_acceptance",
+  "reviewed_product_commit": "9d13cb30dd618bc5d106186711c1d98e01b47995",
+  "new_combined_G": null,
+  "G_note": "G is parent-owned pending final R/guard identity; replace symbolic G only after frozen exact source exists, do not run at P or assume old G evidence",
+  "original_map": {
+    "path": "review-next-candidate/original-task-closeout-map.json",
+    "sha256": "9d5438c24dcdf1199054044dcebaad04569a8bef2cf776f47b4ed241f35df29c"
+  },
+  "ledger": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "newly_complete": 0
+  },
+  "minimal_execution_matrix": [
+    {
+      "protocol": "scale",
+      "workflow": ".github/workflows/p8-scale.yml",
+      "jobs": [
+        "build",
+        "preflight:5",
+        "measure:145",
+        "aggregate"
+      ],
+      "original_tasks": [
+        "P8-005",
+        "P8-006"
+      ],
+      "workflow_line_ranges": [
+        [
+          3,
+          6
+        ],
+        [
+          18,
+          25
+        ],
+        [
+          46,
+          106
+        ],
+        [
+          108,
+          166
+        ],
+        [
+          168,
+          212
+        ]
+      ],
+      "original_execution": {
+        "trigger": "one explicit workflow_dispatch on frozen new-G branch/ref; no workflow inputs; labeled p8-scale-run is alternate not additional",
+        "build": "python3 scripts/p8_scale_matrix.py build --root $GITHUB_WORKSPACE --output $RUNNER_TEMP/p8-scale-build --target-directory $RUNNER_TEMP/p8-scale-cargo",
+        "capacity": "python3 scripts/p8_runner_capacity.py --scale $SCALE --output $RUNNER_TEMP/p8-scale-capacity-$SCALE-$SHARD --prepare-ephemeral",
+        "run": "python3 scripts/p8_scale_matrix.py run --root $GITHUB_WORKSPACE --build $RUNNER_TEMP/p8-scale-build --scale $SCALE --shard-index $SHARD --shard-count 30 --repetitions 30 --capacity-profile scale_capacity_v1 --output $RUNNER_TEMP/p8-scale-shard-$SCALE-$SHARD",
+        "matrix": {
+          "capacity_profile": "scale_capacity_v1",
+          "sizes": [
+            1000,
+            5000,
+            10000,
+            50000,
+            100000
+          ],
+          "seed": 12648430,
+          "repetitions_per_size": 30,
+          "shard_count_per_size": 30,
+          "preflight_shards": 5,
+          "remaining_shards": 145,
+          "total_shards": 150,
+          "main_phases": [
+            "cold",
+            "no_op",
+            "body",
+            "api",
+            "config",
+            "batch_1",
+            "batch_10",
+            "batch_100",
+            "batch_1000"
+          ],
+          "main_samples": 1350,
+          "fanouts": [
+            1,
+            4,
+            16,
+            64,
+            128
+          ],
+          "fanout_repetitions": 30,
+          "fanout_owner_size": 1000,
+          "fanout_samples": 150,
+          "total_samples": 1500,
+          "main_dirty_budget": 200,
+          "main_max_resume_builds": 1024,
+          "fanout_dirty_budget": 8,
+          "fanout_max_resume_builds": 128
+        },
+        "aggregate": "original matrix.aggregate(... repetitions=30, shard_count=30, capacity_profile=CAPACITY_PROFILE); actual exit0 only if passed true"
+      },
+      "artifacts": [
+        "p8-scale-build-RUN_ID",
+        "p8-scale-capacity-SCALE-SHARD-RUN_ID",
+        "p8-scale-shard-SCALE-SHARD-RUN_ID, all150",
+        "p8-scale-matrix-RUN_ID"
+      ]
+    },
+    {
+      "protocol": "mixed",
+      "workflow": ".github/workflows/p8-runtime.yml",
+      "jobs": [
+        "mixed:C1",
+        "mixed:C4",
+        "mixed:C8",
+        "mixed:C16"
+      ],
+      "original_tasks": [
+        "P8-007",
+        "P8-009"
+      ],
+      "workflow_line_ranges": [
+        [
+          3,
+          19
+        ],
+        [
+          31,
+          74
+        ]
+      ],
+      "original_execution": {
+        "trigger": "automatic new PR matching crates/**; dispatch only if automatic exact-G workflow did not occur, not additional",
+        "builder": "scripts/p8_runtime_build.py --output $RUNNER_TEMP/p8-build",
+        "runner": "scripts/p8_runtime.py --binary .../codecortex --oracle .../p8-oracle --statistics .../p8-runtime-statistics --build-receipt .../build-receipt.json --concurrency C --operations 900 --files 1000 --interval-ms 500 --output $RUNNER_TEMP/p8-runtime",
+        "verify": "scripts/p8_runtime.py verify --output .../p8-runtime --build-output .../p8-build"
+      },
+      "artifacts": [
+        "p8-mixed-cC-G, each contains p8-build plus full raw/statistics/replay/parity/seal"
+      ]
+    },
+    {
+      "protocol": "backfill",
+      "workflow": ".github/workflows/p8-runtime.yml",
+      "jobs": [
+        "fake_backfill"
+      ],
+      "original_tasks": [
+        "P8-007",
+        "P8-009"
+      ],
+      "workflow_line_ranges": [
+        [
+          117,
+          143
+        ]
+      ],
+      "original_execution": {
+        "trigger": "same automatic runtime workflow",
+        "runner": "python3 scripts/p8_backfill.py --output $RUNNER_TEMP/p8-backfill",
+        "test": "real_slow_backfill_preserves_local_progress_and_records_every_request, exact release semantic original executable, 1passed0failed0ignored",
+        "seeds": [
+          7,
+          19,
+          43
+        ],
+        "concurrency": [
+          1,
+          4,
+          8,
+          16
+        ],
+        "samples_per_cell": 32,
+        "verify": "python3 scripts/p8_backfill.py verify --output $RUNNER_TEMP/p8-backfill"
+      },
+      "artifacts": [
+        "p8-backfill-G; full original seeds, Cargo/build/test executable receipts, stdio and seal"
+      ]
+    },
+    {
+      "protocol": "soak",
+      "workflow": ".github/workflows/p8-runtime.yml",
+      "jobs": [
+        "soak"
+      ],
+      "original_tasks": [
+        "P8-010",
+        "P8-009",
+        "P8-011"
+      ],
+      "workflow_line_ranges": [
+        [
+          76,
+          115
+        ]
+      ],
+      "original_execution": {
+        "trigger": "same automatic runtime workflow",
+        "builder": "scripts/p8_runtime_build.py --output $RUNNER_TEMP/p8-build",
+        "runner": "scripts/p8_runtime.py --binary .../codecortex --oracle .../p8-oracle --statistics .../p8-runtime-statistics --build-receipt .../build-receipt.json --profile soak --concurrency 4 --operations 3601 --files 1000 --interval-ms 1000 --output $RUNNER_TEMP/p8-runtime",
+        "minimum_offered_work_ms": 3600000,
+        "verify": "scripts/p8_runtime.py verify --output .../p8-runtime --build-output .../p8-build"
+      },
+      "artifacts": [
+        "p8-soak-G; full one-hour work/raw/RSS/cache/catalog/worker observations, endpoint15-table no-repair parity and seal"
+      ]
+    },
+    {
+      "protocol": "lifecycle",
+      "workflow": ".github/workflows/p8-lifecycle.yml",
+      "jobs": [
+        "lifecycle"
+      ],
+      "original_tasks": [
+        "P8-008",
+        "P8-009"
+      ],
+      "workflow_line_ranges": [
+        [
+          3,
+          14
+        ],
+        [
+          25,
+          95
+        ],
+        [
+          96,
+          106
+        ]
+      ],
+      "original_execution": {
+        "trigger": "automatic new PR; also main push; no additional dispatch needed",
+        "builder": "original default --offline --release product + actual release p8-measurements build with original receipt",
+        "runner": "python3 scripts/p8_lifecycle.py --binary .../product/codecortex --build-receipt .../product/build-receipt.json --evaluator .../p8-measurements --evaluator-build-receipt .../replay-build-receipt.json --profile release --cold-samples 30 --query-samples 400 --files 32 --run-timeout-seconds 3600 --artifact-budget-bytes 536870912 --output-dir .../measurement",
+        "attempts": 1230,
+        "verify": "scripts/p8_lifecycle.py verify --output-dir .../measurement"
+      },
+      "artifacts": [
+        "p8-lifecycle-G; both builds,1230attempts,replay/resource/storage/cost and complete seal"
+      ]
+    },
+    {
+      "protocol": "recovery",
+      "workflow": ".github/workflows/p8-platform.yml",
+      "jobs": [
+        "recovery"
+      ],
+      "original_tasks": [
+        "P8-011",
+        "P8-016"
+      ],
+      "workflow_line_ranges": [
+        [
+          3,
+          7
+        ],
+        [
+          18,
+          60
+        ]
+      ],
+      "original_execution": {
+        "trigger": "automatic new PR; same platform workflow",
+        "runner": "python3 scripts/p8_recovery.py --full-matrix --expected-commit G --previous-source-root $GITHUB_WORKSPACE/p8-previous-source --previous-commit 277f2490fad3fa30f2812b5547bad033867c9ea5 --jobs 2 --output-dir $RUNNER_TEMP/p8-full-recovery",
+        "current_packages": [
+          "default",
+          "semantic",
+          "semantic-HTTP"
+        ],
+        "previous_schema": 24,
+        "current_schema": 25
+      },
+      "artifacts": [
+        "p8-full-recovery-G; preparation,actual fault/persistence/version-pair/rollback sources+executables+stdio/results, all failures retained"
+      ]
+    },
+    {
+      "protocol": "platform",
+      "workflow": ".github/workflows/p8-platform.yml",
+      "jobs": [
+        "cold-build:8",
+        "complete-matrix"
+      ],
+      "original_tasks": [
+        "P8-012"
+      ],
+      "workflow_line_ranges": [
+        [
+          62,
+          135
+        ],
+        [
+          137,
+          165
+        ]
+      ],
+      "original_execution": {
+        "trigger": "same automatic platform workflow",
+        "matrix": {
+          "platform": [
+            "linux",
+            "macos"
+          ],
+          "toolchain": [
+            "1.95",
+            "stable"
+          ],
+          "package": [
+            "default",
+            "semantic"
+          ]
+        },
+        "cold": "python3 scripts/p8_cold_build.py --execute --stdio-smoke --only-toolchain TOOLCHAIN --only-package PACKAGE --profile release --jobs 2 --timeout-seconds 1800 --output-dir $RUNNER_TEMP/p8-platform/cold",
+        "selected_exit": "original selected-cell2 is required, followed by strict --export-selected checking actual cell; not declared standalone success",
+        "aggregate": "scripts/p8_cold_build.py --collect-cells $RUNNER_TEMP/p8-platform-cells --expected-commit G --output-dir $RUNNER_TEMP/p8-platform-complete",
+        "target": "each actual target initially absent; Round10 cloned-target tests do not satisfy this"
+      },
+      "artifacts": [
+        "8 p8-platform-cell-PLATFORM-TOOLCHAIN-PACKAGE-G",
+        "8 p8-platform-raw-PLATFORM-TOOLCHAIN-PACKAGE-G",
+        "p8-platform-complete-G"
+      ]
+    },
+    {
+      "protocol": "gates",
+      "workflow": ".github/workflows/p8-gates.yml",
+      "jobs": [
+        "gate_controls"
+      ],
+      "original_tasks": [
+        "P8-013"
+      ],
+      "workflow_line_ranges": [
+        [
+          3,
+          14
+        ],
+        [
+          20,
+          40
+        ]
+      ],
+      "original_execution": {
+        "trigger": "automatic new PR matching crates/**; no additional dispatch needed",
+        "runner": "python3 scripts/p8_gate_controls.py --output $RUNNER_TEMP/p8-gates --target $RUNNER_TEMP/p8-gates-target",
+        "scope": "original deliberately failing quality/performance/lock/policy/inconclusive controls, not product performance sampling"
+      },
+      "artifacts": [
+        "p8-gates-G; retained actual executable, original fault fixtures and original child exits/stdio/raw"
+      ]
+    }
+  ],
+  "automatic_P8_workflows": {
+    "workflow_count": 4,
+    "job_count": 18,
+    "names": [
+      "p8-runtime.yml:6",
+      "p8-lifecycle.yml:1",
+      "p8-platform.yml:10",
+      "p8-gates.yml:1"
+    ],
+    "reason": "new combined PR has product crates changes so existing runtime/gates path filters match; no label/draft-skip condition exists in these job definitions"
+  },
+  "explicit_only_component": {
+    "workflow": "p8-scale.yml",
+    "workflow_dispatch_count": 1,
+    "inputs": {},
+    "fixed_source": "all five P8 workflows explicitly checkout pull_request.head.sha or github.sha, so new PR should be created only after G frozen",
+    "expected_scale_jobs_if_all_preserved_primary_measurements_succeed": 152
+  },
+  "closure": {
+    "P8-005": {
+      "title": "完整规模1k到100k",
+      "original_protocols": [
+        "scale"
+      ],
+      "direct_dependencies": [
+        "P8-004"
+      ],
+      "conditional_dependencies": [],
+      "needs_full150_directly": true,
+      "needs_full150_via_original_hard_dependency": false,
+      "current_status": "in_progress",
+      "current_task_credit": 0
+    },
+    "P8-006": {
+      "title": "增量规模与fanout曲线",
+      "original_protocols": [
+        "scale"
+      ],
+      "direct_dependencies": [
+        "P7-020",
+        "P8-001",
+        "P8-005"
+      ],
+      "conditional_dependencies": [],
+      "needs_full150_directly": true,
+      "needs_full150_via_original_hard_dependency": false,
+      "current_status": "in_progress",
+      "current_task_credit": 0
+    },
+    "P8-007": {
+      "title": "多并发与混合负载",
+      "original_protocols": [
+        "mixed",
+        "backfill"
+      ],
+      "direct_dependencies": [
+        "P8-006"
+      ],
+      "conditional_dependencies": [],
+      "needs_full150_directly": false,
+      "needs_full150_via_original_hard_dependency": true,
+      "current_status": "in_progress",
+      "current_task_credit": 0
+    },
+    "P8-008": {
+      "title": "冷建/重开/热查分层",
+      "original_protocols": [
+        "lifecycle"
+      ],
+      "direct_dependencies": [
+        "P8-007"
+      ],
+      "conditional_dependencies": [],
+      "needs_full150_directly": false,
+      "needs_full150_via_original_hard_dependency": true,
+      "current_status": "in_progress",
+      "current_task_credit": 0
+    },
+    "P8-009": {
+      "title": "内存/磁盘/费用总账",
+      "original_protocols": [
+        "lifecycle",
+        "mixed",
+        "backfill",
+        "soak"
+      ],
+      "direct_dependencies": [
+        "P8-008"
+      ],
+      "conditional_dependencies": [],
+      "needs_full150_directly": false,
+      "needs_full150_via_original_hard_dependency": true,
+      "current_status": "in_progress",
+      "current_task_credit": 0
+    },
+    "P8-010": {
+      "title": "长时soak与连续修改",
+      "original_protocols": [
+        "soak"
+      ],
+      "direct_dependencies": [
+        "P8-009"
+      ],
+      "conditional_dependencies": [],
+      "needs_full150_directly": false,
+      "needs_full150_via_original_hard_dependency": true,
+      "current_status": "in_progress",
+      "current_task_credit": 0
+    },
+    "P8-011": {
+      "title": "端到端故障与恢复认证",
+      "original_protocols": [
+        "recovery",
+        "mixed",
+        "soak"
+      ],
+      "direct_dependencies": [
+        "P7-020",
+        "P8-007",
+        "P8-010"
+      ],
+      "conditional_dependencies": [],
+      "needs_full150_directly": false,
+      "needs_full150_via_original_hard_dependency": true,
+      "current_status": "in_progress",
+      "current_task_credit": 0
+    },
+    "P8-012": {
+      "title": "MSRV与平台冷构建矩阵",
+      "original_protocols": [
+        "platform"
+      ],
+      "direct_dependencies": [
+        "P8-011"
+      ],
+      "conditional_dependencies": [],
+      "needs_full150_directly": false,
+      "needs_full150_via_original_hard_dependency": true,
+      "current_status": "in_progress",
+      "current_task_credit": 0
+    },
+    "P8-013": {
+      "title": "指标/门槛与失败退出最终认证",
+      "original_protocols": [
+        "gates"
+      ],
+      "direct_dependencies": [
+        "P8-012"
+      ],
+      "conditional_dependencies": [],
+      "needs_full150_directly": false,
+      "needs_full150_via_original_hard_dependency": true,
+      "current_status": "in_progress",
+      "current_task_credit": 0
+    },
+    "P8-016": {
+      "title": "数据库/配置/包回滚演练",
+      "original_protocols": [
+        "recovery",
+        "platform",
+        "gates"
+      ],
+      "direct_dependencies": [
+        "P7-020",
+        "P8-012",
+        "P8-013"
+      ],
+      "conditional_dependencies": [],
+      "needs_full150_directly": false,
+      "needs_full150_via_original_hard_dependency": true,
+      "current_status": "in_progress",
+      "current_task_credit": 0
+    }
+  },
+  "closure_rules": {
+    "dependency_semantics": "depends_on 为硬集成依赖；conditional_dependencies 仅在 when 对应认证范围启用。未启用的条件任务仍标 todo/blocked/deferred，不算 done。optional-judge 不阻塞确定性或语义效果认证。",
+    "all_ten_wait_for_scale_closure": true,
+    "parallel_measurements_allowed": "04-PHASES.md:22 permits early local profile preparation; workflows do not impose cross-workflow needs. Measurements may finish before hard-dependency task acceptance.",
+    "done_requirements": "04-PHASES.md:169 and README.md:97 require current SHA evidence, acceptance, review and rollback. Green workflow badge alone never changes task status.",
+    "do_not_reopen_scoped_done_prerequisites": [
+      "P7-020",
+      "P8-001",
+      "P8-004"
+    ],
+    "no_new_holdout_or_live_provider_gate": true,
+    "permitted_unknowns": [
+      "P8-005 strict_paired_causal_performance not_established",
+      "P8-005 whole_tree_memory_peak unknown",
+      "N30 scale does not establish stable p99,causal speedup or release certification",
+      "unavailable resource/cost values stay explicit/null"
+    ]
+  },
+  "engineering_CI_note": {
+    "workflow": ".github/workflows/ci.yml",
+    "trigger": "ordinary automatic PR CI, no dispatch option",
+    "scope": "retain existing exact PR engineering checks and their actual checkout identity; generic checkout has no explicit ref (L16), unlike five P8 measurement workflows, so PR merge-ref check must not be mislabeled as exact G primary sample",
+    "adds_new_gate": false
+  },
+  "operational_boundaries": [
+    "Consume one actual new-G automatic run per existing non-scale workflow; do not dispatch a duplicate solely for a new report label.",
+    "p8-lifecycle concurrency group is PR-number/ref and cancel-in-progress true (L12-14); freeze G before PR creation and preserve failures/cancellations if branch later changes.",
+    "Artifact names bind exact head G (non-scale) or run_id (scale); preserve run IDs/attempts/actual checkout/build/input/binary/observer identities and immutable raw.",
+    "Existing build/raw validators and independent task-specific review must accept actual produced artifacts; merely knowing expected artifact names is not acceptance.",
+    "Original failed a23 primary/run/aggregate and any new failures remain failure; no replacement/rerun-failed-jobs credit or sample selection.",
+    "This review ran no Rust, benchmark, workflow_dispatch, new study or holdout inspection, and modified no source/target/task state."
+  ],
+  "sources": [
+    {
+      "path": ".github/workflows/p8-scale.yml",
+      "commit": "9d13cb30dd618bc5d106186711c1d98e01b47995",
+      "git_blob": "74f1b64ed447ef24da584f1c1f8d090d2fa1e03e",
+      "bytes": 8621,
+      "sha256": "4258476dd37d8af223aaa7ad45d7c97d7298be1ba4ec5ffd9af9949785ed8f3d",
+      "unchanged_from_a23": true
+    },
+    {
+      "path": ".github/workflows/p8-runtime.yml",
+      "commit": "9d13cb30dd618bc5d106186711c1d98e01b47995",
+      "git_blob": "ad73ee803df6936c2750b3e1045bc397e5d154f3",
+      "bytes": 5782,
+      "sha256": "82e39dadd5557d800450ead6cf1d861e382283447af2fd35eb4c952d7897c09f",
+      "unchanged_from_a23": true
+    },
+    {
+      "path": ".github/workflows/p8-lifecycle.yml",
+      "commit": "9d13cb30dd618bc5d106186711c1d98e01b47995",
+      "git_blob": "577ba891ec1eb56da364087c1ad180045185f61c",
+      "bytes": 5387,
+      "sha256": "1c29a376003afd380c09f75e3ab17569449aa3b83cb45a637866e14aebb083ec",
+      "unchanged_from_a23": true
+    },
+    {
+      "path": ".github/workflows/p8-platform.yml",
+      "commit": "9d13cb30dd618bc5d106186711c1d98e01b47995",
+      "git_blob": "795ae46324c451cb8736c77c19229f285783eec8",
+      "bytes": 6812,
+      "sha256": "9f1bc4bd1cf715836987332906d4c72f85bd835652bfe196de56a9f1945a0ff4",
+      "unchanged_from_a23": true
+    },
+    {
+      "path": ".github/workflows/p8-gates.yml",
+      "commit": "9d13cb30dd618bc5d106186711c1d98e01b47995",
+      "git_blob": "91c3f8fc631c01bbcd326ec17c74f83a75f28d34",
+      "bytes": 1255,
+      "sha256": "4cdea43584221217acc7b33b2489b91b7dc4e6f02cfb5e42330b0d64c9cc65ca",
+      "unchanged_from_a23": true
+    },
+    {
+      "path": "scripts/p8_scale_matrix.py",
+      "commit": "9d13cb30dd618bc5d106186711c1d98e01b47995",
+      "git_blob": "b4ba4b57f8d23a16128ef82927e78799ae70f886",
+      "bytes": 65092,
+      "sha256": "f169b0f26cf2a87d3e2548d734431c530cbf63d353ac054045ec8be80889f957",
+      "unchanged_from_a23": true
+    },
+    {
+      "path": "scripts/p8_runtime.py",
+      "commit": "9d13cb30dd618bc5d106186711c1d98e01b47995",
+      "git_blob": "3fe09616768cf35ecc3b76f348ef9eca88d98cd8",
+      "bytes": 58896,
+      "sha256": "0656766656ad73b69e6e28db742115ec9b3dd0440c515f694b7568d3cf87c79d",
+      "unchanged_from_a23": true
+    },
+    {
+      "path": "scripts/p8_backfill.py",
+      "commit": "9d13cb30dd618bc5d106186711c1d98e01b47995",
+      "git_blob": "380b775c0de6141ed8b4f63d2fb4a223bba54221",
+      "bytes": 8799,
+      "sha256": "c6f75ab31b226b7fea6ef7f14adc66d823015d909f57b0bd47a8e7f10b47a4dd",
+      "unchanged_from_a23": true
+    },
+    {
+      "path": "scripts/p8_lifecycle.py",
+      "commit": "9d13cb30dd618bc5d106186711c1d98e01b47995",
+      "git_blob": "4d413c2b23930f2856139a4bfef0f9c114254df3",
+      "bytes": 38417,
+      "sha256": "820a63c0dd76a6cfd52dfbf633afe66a72c7eee152cbe08db69971b39d896f5d",
+      "unchanged_from_a23": true
+    },
+    {
+      "path": "scripts/p8_recovery.py",
+      "commit": "9d13cb30dd618bc5d106186711c1d98e01b47995",
+      "git_blob": "aae54fe62ba3aa81cea84daa3a9307240e4700b3",
+      "bytes": 58272,
+      "sha256": "a290e87dcd1420ca37d4a32fc0e4ddbd2b269b407e8775a3de42c6cf7de61f42",
+      "unchanged_from_a23": true
+    },
+    {
+      "path": "scripts/p8_cold_build.py",
+      "commit": "9d13cb30dd618bc5d106186711c1d98e01b47995",
+      "git_blob": "ed454b6d29e727c87b0b26e4a975a840d0dec310",
+      "bytes": 52649,
+      "sha256": "f910326658b5539c539d1c02cd29a1236e11911b581f1beaf2495a42b53319fa",
+      "unchanged_from_a23": true
+    },
+    {
+      "path": "scripts/p8_gate_controls.py",
+      "commit": "9d13cb30dd618bc5d106186711c1d98e01b47995",
+      "git_blob": "5e988ac23537ff7bb8e5b3c764ad2b2eb46b913b",
+      "bytes": 4238,
+      "sha256": "0ea7c6544392b5cbe87fede2dc01ed0912e6da4ddc6f5ced621b9c595f1ec6f7",
+      "unchanged_from_a23": true
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/tasks.json",
+      "commit": "9d13cb30dd618bc5d106186711c1d98e01b47995",
+      "git_blob": "f400eb2b5a3f8c524978bee1dfa87f98efe4bce8",
+      "bytes": 802282,
+      "sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207",
+      "unchanged_from_a23": true
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/04-PHASES.md",
+      "commit": "9d13cb30dd618bc5d106186711c1d98e01b47995",
+      "git_blob": "2a8245f07bdaea69372e4fc7289eae15650e62e6",
+      "bytes": 11972,
+      "sha256": "7c799531fa9bad32b274db107f4808e0e641fe1585e9d5fbbe5fe32ddcb52fd3",
+      "unchanged_from_a23": true
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/P8-SCALE.md",
+      "commit": "9d13cb30dd618bc5d106186711c1d98e01b47995",
+      "git_blob": "d23c80666c8885ee7274cdffc3c023e6a0ef9e08",
+      "bytes": 26078,
+      "sha256": "7093bcdb74a7bcd6ff32e05f5cd2c7a7bd6576c90fff42b36251884cfbfe1442",
+      "unchanged_from_a23": true
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/README.md",
+      "commit": "9d13cb30dd618bc5d106186711c1d98e01b47995",
+      "git_blob": "834af38f12fb8e6461de1fe23d367b6279fd80f6",
+      "bytes": 11754,
+      "sha256": "7dd01b229a3fc749ba0d106645a91c4b522ae4593fb46cec3adc9cdb7cd0e474",
+      "unchanged_from_a23": true
+    }
+  ],
+  "generated_at": "2026-10-09T06:48:33.893824+00:00"
+}

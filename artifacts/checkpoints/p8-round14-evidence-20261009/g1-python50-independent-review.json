@@ -1,0 +1,300 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/acceptance_audit",
+  "status": "accepted_scoped_actual_G_python50_complete_archive",
+  "source": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+  "tree": "afbe52cce1019c36f2a80dc1c44769fca95ae959",
+  "run_id": 37874665224,
+  "run_attempt": 1,
+  "job_id": 113640379294,
+  "artifact_id": 11591747962,
+  "original_zip": {
+    "bytes": 1241560,
+    "sha256": "b9aebbb62ccd5b815876d12968fc9bb251235a185c777071edd8eca91398d05f",
+    "git_blob": "ac90cd20cb784d1faa94a732b0de77b1caea6b49",
+    "members": 1659,
+    "expanded_bytes": 2591615,
+    "top": [
+      "integrated-runtime-controls/00.stderr",
+      "integrated-runtime-controls/01.stderr",
+      "integrated-runtime-controls/00.stdout",
+      "integrated-runtime-controls/01.stdout",
+      "integrated-runtime-controls/02.stderr",
+      "integrated-runtime-controls/02.stdout",
+      "integrated-runtime-controls/03.stderr",
+      "integrated-runtime-controls/03.stdout",
+      "integrated-runtime-controls/controller.py",
+      "integrated-runtime-controls/module-00/events.jsonl",
+      "integrated-runtime-controls/module-00/summary.json",
+      "integrated-runtime-controls/module-01/events.jsonl"
+    ],
+    "roots": [
+      "integrated-runtime-controls",
+      "p8-integrated-runtime-controller.py"
+    ],
+    "local_file": null,
+    "storage": "Exact original bytes in Actions and this previously unreferenced Git blob; no local ZIP or extraction."
+  },
+  "actual_results": {
+    "status": "accepted_scoped_actual_G_python50_complete_archive",
+    "source": {
+      "input_count": 1089,
+      "manifest_sha256": "d006974afc0fa4752f3ebcc5ac441c651bf18870ca6af8ae1217e135bed2730d",
+      "source_commit": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+      "source_tree": "afbe52cce1019c36f2a80dc1c44769fca95ae959"
+    },
+    "observer": {
+      "files": {
+        "scripts/p7_build_identity.py": {
+          "bytes": 5940,
+          "git_blob": "4f2213705984effd6aa3cdb75a99cbb03a08c39e",
+          "git_mode": "100644",
+          "sha256": "5003305105464936edf8f444fc0b93cd14a5d5f074dc650f16de2259e86f1cc5"
+        },
+        "scripts/p7_stdio_build_receipt.py": {
+          "bytes": 9147,
+          "git_blob": "2b031eb8fc71b0e64ee4bc41f835a49f7c01e45e",
+          "git_mode": "100644",
+          "sha256": "e3fd3015d52765f4b61a3ef1f7381b3037b8254c36f1bd26f548d28053e85da2"
+        },
+        "scripts/p8_backfill.py": {
+          "bytes": 8799,
+          "git_blob": "380b775c0de6141ed8b4f63d2fb4a223bba54221",
+          "git_mode": "100644",
+          "sha256": "c6f75ab31b226b7fea6ef7f14adc66d823015d909f57b0bd47a8e7f10b47a4dd"
+        },
+        "scripts/p8_cold_build.py": {
+          "bytes": 51726,
+          "git_blob": "c911f2c94df8c759a8c5f957e4bc92f868a8d4ef",
+          "git_mode": "100644",
+          "sha256": "ee0bd478e0a151dba79c4588282ea4ea10dd2530769018d189cd6d1a0285d974"
+        },
+        "scripts/p8_rollback.py": {
+          "bytes": 38551,
+          "git_blob": "c561d61443467c2737babf498e213f13ed094e93",
+          "git_mode": "100644",
+          "sha256": "a54b40f950aa73cffeaefb064b5ae3b0757ed68edc774b5ca41a7b5642c3a734"
+        },
+        "scripts/p8_runtime.py": {
+          "bytes": 54182,
+          "git_blob": "0b8587c755698af9fe87987298a6578764e87c25",
+          "git_mode": "100644",
+          "sha256": "44e0a1166466e9e8ea870cccaa9faeea24d1ce8b9c56d70ec4eae040ccd094f3"
+        },
+        "scripts/p8_runtime_build.py": {
+          "bytes": 18068,
+          "git_blob": "95da67c6a270cf4fd96f318cc4ffd494bbad5512",
+          "git_mode": "100644",
+          "sha256": "cf453e1f4312b95dde0cc0338cecab3abf0467c8c3c1428c354824d01c1d20db"
+        },
+        "scripts/resource_harness/__init__.py": {
+          "bytes": 74,
+          "git_blob": "2371ef6525a9815cf327d95d7f8aca1455257e8d",
+          "git_mode": "100644",
+          "sha256": "3193f3cffa59c2c6613b3ec007343207598b3cbb0d7c4c7fbcf4513cb9ca3a36"
+        },
+        "scripts/resource_harness/runtime.py": {
+          "bytes": 11117,
+          "git_blob": "d39eb4ba95f3c3431d1a424c3f6d7f4563664b5c",
+          "git_mode": "100644",
+          "sha256": "5876d2b0102f6e3a38189b2337c1783500393acde0dc04666d7f97ff34d92cc5"
+        }
+      },
+      "manifest_sha256": "7400bbc65da1b39384f28de605aef023b0608b1e652c98b7603bd53c91e1cc82",
+      "source_commit": "f3c71a6bbafbc639413c4737c469c3b873a8888f"
+    },
+    "modules": [
+      {
+        "module": "test_p8_runtime",
+        "methods": 14,
+        "subtests": 0,
+        "exit_code": 0,
+        "ids": [
+          "test_p8_runtime.RuntimeEvidenceTests.test_clustered_rss_cannot_certify_an_hour",
+          "test_p8_runtime.RuntimeEvidenceTests.test_exact_public_hit_rejects_query_echo_and_wrong_path",
+          "test_p8_runtime.RuntimeEvidenceTests.test_existing_memory_threshold_is_preserved",
+          "test_p8_runtime.RuntimeEvidenceTests.test_failed_outcomes_still_enter_latency_denominator",
+          "test_p8_runtime.RuntimeEvidenceTests.test_mutations_use_real_git_and_do_not_grow_source",
+          "test_p8_runtime.RuntimeEvidenceTests.test_raw_is_exclusive_and_preserves_every_row",
+          "test_p8_runtime.RuntimeEvidenceTests.test_unowned_git_mutation_is_refused",
+          "test_p8_runtime.RuntimeEvidenceTests.test_zero_or_missing_rss_cannot_pass",
+          "test_p8_runtime.RuntimeFailureLifecycleTests.test_equal_oracle_still_keeps_passing_statistics",
+          "test_p8_runtime.RuntimeFailureLifecycleTests.test_oracle_difference_keeps_statistics_and_failure_exit_one",
+          "test_p8_runtime.RuntimeFailureLifecycleTests.test_oracle_infrastructure_failure_stays_exit_two",
+          "test_p8_runtime.RuntimeFailureLifecycleTests.test_original_drain_deadline_has_one_cleanup_wait_and_all_terminal_rows",
+          "test_p8_runtime.RuntimeFailureLifecycleTests.test_raw_budget_abort_drains_actual_worker_before_sealing",
+          "test_p8_runtime.RuntimeFailureLifecycleTests.test_unconfirmed_worker_shutdown_cannot_create_a_seal"
+        ],
+        "source": {
+          "bytes": 14568,
+          "git_blob": "4cef5c6ebfcaef942c9771f62f3f78c3701427ba",
+          "mode": "100644",
+          "path": "scripts/tests/test_p8_runtime.py",
+          "sha256": "9bdfd77ee40a314c955db9a70472923bda0ebca218c2612c25caba9c88f815a0"
+        }
+      },
+      {
+        "module": "test_p8_runtime_evidence",
+        "methods": 15,
+        "subtests": 0,
+        "exit_code": 0,
+        "ids": [
+          "test_p8_runtime_evidence.RuntimeArtifactSealTests.test_every_decision_input_including_stderr_plan_rpc_and_sqlite_is_sealed",
+          "test_p8_runtime_evidence.RuntimeArtifactSealTests.test_missing_extra_and_symlink_artifacts_are_rejected",
+          "test_p8_runtime_evidence.RuntimeBuildBindingTests.test_complete_contract_checks_every_original_and_retained_artifact",
+          "test_p8_runtime_evidence.RuntimeBuildBindingTests.test_deleted_original_target_does_not_gain_cross_job_build_approval",
+          "test_p8_runtime_evidence.RuntimeBuildBindingTests.test_different_compiler_or_rewritten_compiler_bytes_are_rejected",
+          "test_p8_runtime_evidence.RuntimeBuildBindingTests.test_foreign_checkout_with_identical_suffix_is_rejected",
+          "test_p8_runtime_evidence.RuntimeBuildBindingTests.test_loaded_foreign_module_cannot_borrow_a_committed_file_hash",
+          "test_p8_runtime_evidence.RuntimeBuildBindingTests.test_missing_or_outside_target_original_executable_is_rejected",
+          "test_p8_runtime_evidence.RuntimeBuildBindingTests.test_original_log_mutation_is_detected_by_the_build_seal",
+          "test_p8_runtime_evidence.RuntimeBuildBindingTests.test_private_environment_rejects_existing_target_and_overrides_build_configuration",
+          "test_p8_runtime_evidence.RuntimeBuildBindingTests.test_replaced_binary_cannot_be_rebound_with_only_a_self_reported_hash",
+          "test_p8_runtime_evidence.RuntimeBuildBindingTests.test_rewritten_command_or_missing_statistics_artifact_is_rejected",
+          "test_p8_runtime_evidence.RuntimeBuildBindingTests.test_second_check_rejects_original_executable_changed_after_admission",
+          "test_p8_runtime_evidence.RuntimeBuildBindingTests.test_shared_target_or_fresh_workspace_artifact_cannot_pass",
+          "test_p8_runtime_evidence.RuntimeBuildBindingTests.test_source_and_observer_changes_are_rejected_after_initial_verification"
+        ],
+        "source": {
+          "bytes": 15897,
+          "git_blob": "0db559c8e6f84fe4c76abacffbff65b66066bd40",
+          "mode": "100644",
+          "path": "scripts/tests/test_p8_runtime_evidence.py",
+          "sha256": "858c8e4b738b52cdbb3da53a1921009874aa92b1dfd2dbcca33c96b06bb5cfd1"
+        }
+      },
+      {
+        "module": "test_p8_runtime_cache",
+        "methods": 13,
+        "subtests": 22,
+        "exit_code": 0,
+        "ids": [
+          "test_p8_runtime_cache.SoakCacheProtocolTests.test_cache_hit_cannot_hide_stale_source_or_wrong_entity",
+          "test_p8_runtime_cache.SoakCacheProtocolTests.test_clustered_cache_receipts_cannot_certify_temporal_reuse",
+          "test_p8_runtime_cache.SoakCacheProtocolTests.test_cross_generation_or_server_cannot_be_cache_receipt",
+          "test_p8_runtime_cache.SoakCacheProtocolTests.test_each_failed_request_prefix_keeps_actual_counts_no_invented_attempts",
+          "test_p8_runtime_cache.SoakCacheProtocolTests.test_missing_original_call_or_changed_request_is_rejected",
+          "test_p8_runtime_cache.SoakCacheProtocolTests.test_observed_wire_status_has_outer_and_nested_matching_freshness",
+          "test_p8_runtime_cache.SoakCacheProtocolTests.test_real_generation_rule_includes_noop_hit_and_refill_then_hit",
+          "test_p8_runtime_cache.SoakCacheProtocolTests.test_shared_pool_counters_must_progress_without_reset_or_rejection",
+          "test_p8_runtime_cache.SoakCacheProtocolTests.test_spread_offers_with_clustered_actual_calls_do_not_cover_four_quarters",
+          "test_p8_runtime_cache.SoakCacheProtocolTests.test_summary_keeps_original_operation_N_and_explicit_rpc_totals_and_quarters",
+          "test_p8_runtime_cache.SoakCacheProtocolTests.test_summary_rejects_missing_raw_changed_receipt_or_preceding_mutation",
+          "test_p8_runtime_cache.SoakCacheProtocolTests.test_wrong_hit_after_invalidation_and_wrong_miss_same_generation_fail",
+          "test_p8_runtime_cache.SoakCacheProtocolTests.test_zero_ambiguous_reset_missing_and_boolean_counters_rejected"
+        ],
+        "source": {
+          "bytes": 20087,
+          "git_blob": "7c00bcdd8024c7159c8e00a088a52ba5813272cf",
+          "mode": "100644",
+          "path": "scripts/tests/test_p8_runtime_cache.py",
+          "sha256": "c43b0b74d2a7dc5afcc64c3956e08319bdceb9c9270ca2774b5565a0e79f3ad7"
+        }
+      },
+      {
+        "module": "test_p8_runtime_finalization",
+        "methods": 8,
+        "subtests": 2,
+        "exit_code": 0,
+        "ids": [
+          "test_p8_runtime_finalization.FinalizationFailureControls.test_failed_seal_fingerprint_error_does_not_block_final_failure_report",
+          "test_p8_runtime_finalization.FinalizationFailureControls.test_failed_stopped_observation_remains_exit_one_with_valid_failure_seal",
+          "test_p8_runtime_finalization.FinalizationFailureControls.test_inventory_enoent_before_seal_retains_final_failure_and_original_report",
+          "test_p8_runtime_finalization.FinalizationFailureControls.test_keyboard_interrupt_in_seal_or_verify_keeps_failed_report_after_workers_finish",
+          "test_p8_runtime_finalization.FinalizationFailureControls.test_lost_output_keeps_explicit_finalization_error",
+          "test_p8_runtime_finalization.FinalizationFailureControls.test_occupied_backup_is_not_overwritten_or_retried",
+          "test_p8_runtime_finalization.FinalizationFailureControls.test_successful_stopped_observation_keeps_original_valid_seal",
+          "test_p8_runtime_finalization.FinalizationFailureControls.test_verify_inventory_mismatch_preserves_original_failed_seal_bytes"
+        ],
+        "source": {
+          "bytes": 11792,
+          "git_blob": "96b24425e75677708029a382f67e012810eed01a",
+          "mode": "100644",
+          "path": "scripts/tests/test_p8_runtime_finalization.py",
+          "sha256": "aeed33692d86551db32b010c39f14bebe51d899196c6018a488d9feef3c15145"
+        }
+      }
+    ],
+    "zip_members": 1659,
+    "receipt_sealed_files": 1657,
+    "full_member_crc_sha_verified": true,
+    "whole_inventory_exact": true,
+    "missing_seal_file_count": 0,
+    "extra_seal_file_count": 0,
+    "hidden_fixture_git_files_received": 660,
+    "hidden_fixture_git_bytes": 470145,
+    "raw_receipt_sha256": "cce65cbb9b55b4574dc3f5bf504e5c00033575ab47a38c6c0dd4bfeabad2d501",
+    "actual_explicit_subtests": 24,
+    "actual_methods": 50,
+    "all_source_inputs_equal_independently_rehashed_actual_P1089_and_G_git_tree_bridge": true,
+    "controller_copies_exact": true,
+    "control_stdout_stderr_events_and_summary_concordant": true
+  },
+  "source_admission_bridge": {
+    "P": "6cc0f5d56e4ffa37f7b0a19a14e4fb7a4b5695f1",
+    "R": "e2cb7b3633c94d5564a5c6d94225573217e0fded",
+    "G": "f3c71a6bbafbc639413c4737c469c3b873a8888f",
+    "complete_review_blob": "abd8bc21d3459ef60bf3cfb07fe9c9c6c4d56057",
+    "complete_review_sha256": "42c45e8fd008554701197acb0dde27c708fa390d22215be9ddbf63019635402a",
+    "original_source_bytes_independently_checked": 1089,
+    "production_manifest": "d006974afc0fa4752f3ebcc5ac441c651bf18870ca6af8ae1217e135bed2730d",
+    "independently_read_G_commit_and_root": true,
+    "all_P_product_workflow_test_roots_equal_G": true,
+    "complete_scripts_entries": 126,
+    "only_scripts_changes_between_P_and_G": [
+      "scripts/reviewed-source-registry-v15.json",
+      "scripts/verify_reviewed_source_v15.py"
+    ],
+    "exact_original_G_nine_observer_and_four_test_module_bytes_rechecked": true,
+    "source_before_after_and_observer_before_after_and_validation_before_after_byte_equal": true
+  },
+  "controller_binding": {
+    "workflow_git_blob": "22a006c1023bfb9254e3cfe238818cdf13259cef",
+    "workflow_sha256": "d706586edfd79713358b03a39a78ca1a0bc468bd3de9c3fd7470e22e45835991",
+    "controller_git_blob": "528ecbefeb56e1a39898a08a1c083ea3e296ce84",
+    "controller_sha256": "588276995a1a25dcc3bdb68ffa3a59affd7220e9009cdc52f8576c4780f3bc5a",
+    "expectations_git_blob": "9baf41b8d904534d9c97c0d5dbb0a68ff9f79a2a",
+    "expectations_sha256": "11300b2e9dc47d5a8f1fa39e9a5da0d5b27d90cd34a31108f4340b084a96afad"
+  },
+  "complete_archive": {
+    "safe_paths_and_unique_names": true,
+    "all_CRC_size_SHA_checked": true,
+    "received_members": 1659,
+    "expanded_bytes": 2591615,
+    "receipt_inventory_files": 1657,
+    "missing": 0,
+    "extra": 0,
+    "hidden_fixture_git_members": 660,
+    "hidden_fixture_git_bytes": 470145,
+    "receipt_excluded_from_its_own_inventory": true,
+    "outer_controller_copy_accounted": true
+  },
+  "original47_boundary": {
+    "source": "c8decec3e74955de089f5fd1effbe985dfcbe6b5",
+    "run": 37870351197,
+    "artifact": 11590332872,
+    "actual_methods": 47,
+    "actual_subtests": 24,
+    "observers": 7,
+    "archive_still_incomplete_missing_files": 630,
+    "archive_still_incomplete_missing_bytes": 463965,
+    "old_ref_or_artifact_not_changed": true,
+    "distinction": "This actual new G archive includes all of its own hidden fixture files. It does not repair, relabel or substitute for the old c8 archive."
+  },
+  "limitations": [
+    "Only the four Python protocol/regression modules and their exact50 methods/24 explicit subcases are accepted here.",
+    "This does not certify all original385 P8 methods, source-integrity proof, main requiredCI, Rust53, product builds, runtime/soak performance, complete scaleN30/N150 or a release.",
+    "The synthetic fixture control success is not evidence of a new product workload, provider call, recovery drill or benchmark measurement.",
+    "The original G Rust Clippy E0282 failure remains separate and failed; the later one-line correction is not executed or approved by this Python50 receipt.",
+    "No local test, product, Cargo or native binary was run during reception. Only archive/API/Git byte hashing and offline event/manifest parsing were performed.",
+    "All files are retained as original ZIP bytes. Download URL credentials and private redirects are excluded from this record."
+  ],
+  "transport_notes": [
+    "The first download passed exact original size/SHA and all archive checks. During later base64 export, an old memory helper ended; this did not change already observed results.",
+    "An attempted old-URL re-read failed an assertion without established cause; it is not attributed to ZIP content change or source failure.",
+    "A fresh URL for the same original artifact was fetched. Default curl returned0, empty stderr and exactly the same1241560 bytes/SHA. The second identical copy was exported in bounded pure-memory chunks; Git returned the independently computed rawZIP blob hash."
+  ],
+  "no_local_files_written": true,
+  "original_TODO_closed": 0,
+  "remaining_TODO": 29
+}

@@ -1,0 +1,99 @@
+name: P8 existing scale artifact intake
+
+on: [create]
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: p8-scale-artifact-intake-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  PYTHONDONTWRITEBYTECODE: "1"
+
+jobs:
+  source_admission:
+    if: github.event.ref_type == 'branch' && github.event.ref == 'task/p8-scale-artifact-intake-a217-20261009' && github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Run the unchanged complete v15 source admission
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir "$RUNNER_TEMP/scale-intake-source-admission"
+          git rev-parse HEAD > "$RUNNER_TEMP/scale-intake-source-admission/execution-head.txt"
+          set +e
+          python3 -B scripts/verify_reviewed_source_v15.py --source-version p8-completion-source-20261009-v15 > "$RUNNER_TEMP/scale-intake-source-admission/stdout.log" 2> "$RUNNER_TEMP/scale-intake-source-admission/stderr.log"
+          result=$?
+          set -e
+          echo "$result" > "$RUNNER_TEMP/scale-intake-source-admission/exit-code.txt"
+          cat "$RUNNER_TEMP/scale-intake-source-admission/stdout.log"
+          cat "$RUNNER_TEMP/scale-intake-source-admission/stderr.log"
+          exit "$result"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: scale-intake-source-admission-${{ github.sha }}
+          path: ${{ runner.temp }}/scale-intake-source-admission
+          if-no-files-found: error
+
+  intake:
+    needs: source_admission
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: admission
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: 275e8799d4947d297329073eaa3ca675d3fd0777
+          path: source-173
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/artifacts/
+      - name: Bind the reviewed transport driver and frozen existing subset
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B - <<'PY'
+          import hashlib
+          from pathlib import Path
+          root = Path("admission/artifacts/checkpoints/p8-scale-artifact-intake-20261009")
+          expected = {
+              "intake.py": "350f1943501c385250e778a325bc3b22abe2e5479adbf9de2f6758e95b62ed93",
+              "plan.json": "c6b0047659151a87beb12cd48b1d783177d93d7b8a1a6c1536f83463da021f4a",
+          }
+          for name, value in expected.items():
+              path = root / name
+              assert path.is_file() and not path.is_symlink()
+              assert hashlib.sha256(path.read_bytes()).hexdigest() == value, name
+          PY
+      - name: Download fixed originals and invoke the unmodified helper once per selected artifact
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 -B admission/artifacts/checkpoints/p8-scale-artifact-intake-20261009/intake.py --admission-root "$GITHUB_WORKSPACE/admission" --source-root "$GITHUB_WORKSPACE/source-173" --output "$RUNNER_TEMP/p8-scale-artifact-intake" --execution-sha "${{ github.sha }}"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: existing-scale-artifact-intake-${{ github.sha }}
+          path: ${{ runner.temp }}/p8-scale-artifact-intake
+          include-hidden-files: true
+          if-no-files-found: error

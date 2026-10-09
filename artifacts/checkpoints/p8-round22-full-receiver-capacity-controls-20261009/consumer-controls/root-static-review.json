@@ -1,0 +1,210 @@
+{
+  "schema": "p8-full-receiver-capacity-controls-root-static-review-v1",
+  "reviewer": "/root",
+  "status": "accepted_scoped_for_first_synthetic_only_execution",
+  "reviewed_utc": "2026-10-09 10:16:17 UTC",
+  "role": "Non-author of capacity consumer, test, workflow and runner derivatives. Author of predecessor full wrapper8aa; independently reviewed the derivative9-change transport logic without self-approving the earlier wrapper source.",
+  "fixed_plan": {
+    "blob": "8423803a956c0ad572e32d1bee2fa14d2afe8187",
+    "bytes": 12502,
+    "sha256": "d112fca130be7897d97831822fe2eb71bcf378122d6f190eef8883e7452afac8"
+  },
+  "fixed_inputs": [
+    {
+      "path": "artifacts/checkpoints/p8-round22-full-receiver-capacity-controls-20261009/consumer/consumer.py",
+      "blob": "e873b4cedeb08dbeb44e594187307a7382e3932a",
+      "bytes": 38134,
+      "sha256": "678e163df14847203a0c71197afc58d617de7bacc437ed785c11a33dce25ee1c"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-round22-full-receiver-capacity-controls-20261009/consumer/operator.py",
+      "blob": "ca9f49761b80d1cc0cf95b9720667763f2a4eb0e",
+      "bytes": 9745,
+      "sha256": "60a65b720fd94901fea51dd02f98e7f05d0fa1fdf41038ec79b4714d84a928cd"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-round22-full-receiver-capacity-controls-20261009/consumer/test_contract.py",
+      "blob": "b96ab232b30742897d3c9077dac20ad91b8080af",
+      "bytes": 12326,
+      "sha256": "32edf97614cef5cc2e718172eabd22cc319fa2a039db3d5eb2086cd6e94353a0"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-round22-full-receiver-capacity-controls-20261009/consumer/p8_scale_matrix.py",
+      "blob": "b4ba4b57f8d23a16128ef82927e78799ae70f886",
+      "bytes": 65092,
+      "sha256": "f169b0f26cf2a87d3e2548d734431c530cbf63d353ac054045ec8be80889f957"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-round22-full-receiver-capacity-controls-20261009/consumer/full-replay.py",
+      "blob": "cb82eba2c263b5830dcf17cca32b1e3ea60feaf0",
+      "bytes": 14243,
+      "sha256": "6da29c67c0107937b92841f4a63f80e84a1e8b225f309480295aaa783c119b8f"
+    }
+  ],
+  "new_fixed_files": [
+    {
+      "path": "artifacts/checkpoints/p8-round22-full-receiver-capacity-controls-20261009/consumer-controls/run.py",
+      "blob": "e99c5aef233b05592f96ed894ada569f9e3afd3b",
+      "bytes": 12511,
+      "sha256": "9961e73d808cf3e5b568b0459d6133e203b4ae39254f4a05191a341f2986bdc6"
+    },
+    {
+      "path": ".github/workflows/p8-full-receiver-capacity-controls.yml",
+      "blob": "64045d7acc8cbf77b9c20b31dd77371557e96593",
+      "bytes": 2091,
+      "sha256": "44200a571b1df3356d28ddc1ee4be0efd9c65b6605ece011b9f7161fc9432212"
+    }
+  ],
+  "full_source_read": true,
+  "exact_whole_body_inverse_checks": [
+    {
+      "name": "consumer",
+      "replacement_count": 1,
+      "actual_inverse_matches": [
+        1
+      ],
+      "whole_original_equal": true,
+      "original": {
+        "bytes": 38114,
+        "sha256": "dd19c6c07ddbde0cf797828c2860d2df81bd0e144465f1afdd17930863e0fecc"
+      },
+      "derived": {
+        "bytes": 38134,
+        "sha256": "678e163df14847203a0c71197afc58d617de7bacc437ed785c11a33dce25ee1c"
+      }
+    },
+    {
+      "name": "wrapper",
+      "replacement_count": 9,
+      "actual_inverse_matches": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "whole_original_equal": true,
+      "original": {
+        "bytes": 8864,
+        "sha256": "3b89a73f6b303d04e83529e3d9bfc357a24d7a9b76e2247a98b62b4e48114483"
+      },
+      "derived": {
+        "bytes": 14243,
+        "sha256": "6da29c67c0107937b92841f4a63f80e84a1e8b225f309480295aaa783c119b8f"
+      }
+    },
+    {
+      "name": "controls",
+      "replacement_count": 7,
+      "actual_inverse_matches": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "whole_original_equal": true,
+      "original": {
+        "bytes": 8728,
+        "sha256": "6736aea1c2d056c7ea8bd2040300506718fcccc7510d8812a8d288c84ddd3bfa"
+      },
+      "derived": {
+        "bytes": 12326,
+        "sha256": "32edf97614cef5cc2e718172eabd22cc319fa2a039db3d5eb2086cd6e94353a0"
+      }
+    },
+    {
+      "name": "runner",
+      "replacement_count": 14,
+      "actual_inverse_matches": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "whole_original_equal": true,
+      "original": {
+        "bytes": 10718,
+        "sha256": "1002fd8037246b9f54dd082485501e75977a7f2e70874f0bae9e4b13e2a7eedd"
+      },
+      "derived": {
+        "bytes": 12511,
+        "sha256": "9961e73d808cf3e5b568b0459d6133e203b4ae39254f4a05191a341f2986bdc6"
+      }
+    },
+    {
+      "name": "workflow",
+      "replacement_count": 8,
+      "actual_inverse_matches": [
+        2,
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        1
+      ],
+      "whole_original_equal": true,
+      "original": {
+        "bytes": 2024,
+        "sha256": "e0a4620502f4f0da837aa686365c8a19fd4c4948f1490f0192a0ec57c2cb3650"
+      },
+      "derived": {
+        "bytes": 2091,
+        "sha256": "44200a571b1df3356d28ddc1ee4be0efd9c65b6605ece011b9f7161fc9432212"
+      }
+    }
+  ],
+  "source_derived_methods": [
+    "__main__.ReceptionContractTests.test_301_core_and_failed_aggregate_job_not_rejected",
+    "__main__.ReceptionContractTests.test_artifact_and_job_source_mismatch_rejected",
+    "__main__.ReceptionContractTests.test_duplicate_extra_and_expired_artifacts_rejected",
+    "__main__.ReceptionContractTests.test_exact_full_directory_relocation",
+    "__main__.ReceptionContractTests.test_missing_original_is_reported_not_counted",
+    "__main__.ReceptionContractTests.test_new_upload_not_added_to_selected_batch",
+    "__main__.ReceptionContractTests.test_optional_remote_artifact_retained",
+    "__main__.ReceptionContractTests.test_previously_received_original_identity_pinned",
+    "__main__.ReceptionContractTests.test_relocation_rejects_missing_duplicate_extra_field",
+    "__main__.ReceptionContractTests.test_remote_matrix_original_json_limit_capacity_boundaries",
+    "__main__.ReceptionContractTests.test_selected_identity_change_refused",
+    "__main__.ReceptionContractTests.test_wrong_source_or_attempt_or_created_time_rejected"
+  ],
+  "original11_method_bodies_unchanged": true,
+  "findings": [
+    "Consumer differs from originalfbd6 only by the explicit16MiB argument to unchanged original matrix.read_json; full301 registration and exact remote equality remain.",
+    "The new single method uses actual original matrix require/unique_object/decode/read_json/exact_equal bodies selected from the fixed source AST, with temporary validJSON file sizes8MiB+1,16MiB,16MiB+1. It exercises the derived comparison entry and all150 synthetic directory relocations; it runs neither measurement nor aggregation.",
+    "Runner uses exact8-file Git/body/SHA snapshots; fixed5inputs; exact12method enumeration and actual verbose ok records; it keeps source-after, final exit/status, receipts, original stdout/stderr and the unchanged six-file framing.",
+    "Wrapper only undergoes AST/compile in this job. The reviewed static transport has an explicit16MiB matrix-only file cap,4MiB other files,24MiB cross-phase total, unchanged1024/2048 framing, and separate delivery failure without rewriting original measurement receipts.",
+    "The cross-process wrapper compares complete prepare file identities and its delivery receipt before original replay and before/after output; the passed15-file population and cumulative bytes are required before replay emission.",
+    "The workflow runs only on the one named branch's first push attempt, under contentsread; child environment contains four explicit benign variables, outputs a fresh-owned directory, uses90s child and10min job limits, and retains failures with always upload."
+  ],
+  "limitations": [
+    "This is static review only: Python AST/compile/control execution and actual workflow execution are not yet done.",
+    "A successful12-method execution does not test wrapper delivery runtime or establish original301 completeness, any new product behavior/performance, or TODO completion.",
+    "Outer complete job-log64MiB constraint is enforced by the future appropriate decoder, not by wrapper control of unrelated GitHub runner logs.",
+    "The hosted six-file decoder may be reused structurally but intake must bind the actual new12 methods and8source identities, not inherit the old11 semantic result."
+  ],
+  "parent": "e0fc6bc263e8aa7c11de1ef94cb6e75c5362c46f",
+  "branch": "task/p8-full-receiver-capacity-controls-20261009",
+  "tree_or_commit_or_ref_created": false,
+  "original_study_unchanged": true,
+  "TODO_closed": 0,
+  "TODO_remaining": 29
+}

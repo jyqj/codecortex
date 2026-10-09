@@ -1,0 +1,120 @@
+{
+  "actual_cargo_success_and_one_test_footer": true,
+  "actual_original_streams_match_observation": true,
+  "artifact_id": 11630255138,
+  "attempt": 1,
+  "interpretation": "Four small/blob cases improved in all 20 pairs; multiple_text has mixed/order-dependent results. This does not establish end-to-end parity or scale speedup. Hold default performance integration until the large-row behavior and normal semantic CI are assessed.",
+  "limitations": [
+    "One release libtest process, one runner, 20 alternating warm paired rounds per case; not 20 independent builds or hosts.",
+    "Recorded ns include same SQLite SELECT traversal, row serialization and output retention, not whole indexing/parity duration.",
+    "Original observer verified actual ELF and retained its digest; this ZIP does not contain that ELF, so local intake does not independently rehash the ELF.",
+    "No p95/p99 reliability, pooled cross-case estimate, new timing threshold or original TODO/sample credit.",
+    "No new workload or native probe execution by this intake. Four normal Rust controls remain separate from the single ignored probe."
+  ],
+  "original_files_unchanged": true,
+  "original_zip_sha256": "6575f9192ecd9191c3761d7fe0a0ddbec6ca8d15c5080bf20b5ad94164f1aa52",
+  "run_id": 37956976406,
+  "schema": "p8-oracle-original-cost-intake-v1",
+  "source_commit": "eded24951c3e99693410ce959a627ab575f66bec",
+  "source_input_count": 1095,
+  "source_tree": "b95b5d069cf35f0181c0534ea7855ca48c503cc4",
+  "status": "accepted_finite_original_observation",
+  "summary": [
+    {
+      "borrowed_faster_pairs": 20,
+      "borrowed_median_ns": 735060.5,
+      "canonical_bytes": [
+        59648
+      ],
+      "case": "blob",
+      "original_median_ns": 817270.0,
+      "paired_borrowed_over_original_ratio_median": 0.9055973151037267,
+      "paired_ratio_max": 0.9469320489899175,
+      "paired_ratio_median_by_first": {
+        "borrowed": 0.9093457817660293,
+        "original": 0.9005052158834419
+      },
+      "paired_ratio_min": 0.8844116792810648,
+      "paired_rounds": 20,
+      "rows_each": 256
+    },
+    {
+      "borrowed_faster_pairs": 20,
+      "borrowed_median_ns": 115096.0,
+      "canonical_bytes": [
+        15872
+      ],
+      "case": "empty_text",
+      "original_median_ns": 158421.5,
+      "paired_borrowed_over_original_ratio_median": 0.7226551391439737,
+      "paired_ratio_max": 0.9343024651580051,
+      "paired_ratio_median_by_first": {
+        "borrowed": 0.7325235412055292,
+        "original": 0.7159520727000037
+      },
+      "paired_ratio_min": 0.6681206243510843,
+      "paired_rounds": 20,
+      "rows_each": 256
+    },
+    {
+      "borrowed_faster_pairs": 10,
+      "borrowed_median_ns": 5779451.0,
+      "canonical_bytes": [
+        4079616
+      ],
+      "case": "multiple_text",
+      "original_median_ns": 5443531.5,
+      "paired_borrowed_over_original_ratio_median": 1.066428932861719,
+      "paired_ratio_max": 1.243865282321879,
+      "paired_ratio_median_by_first": {
+        "borrowed": 0.9557795022755746,
+        "original": 1.2050853692999333
+      },
+      "paired_ratio_min": 0.9260202379892176,
+      "paired_rounds": 20,
+      "rows_each": 256
+    },
+    {
+      "borrowed_faster_pairs": 20,
+      "borrowed_median_ns": 88380.0,
+      "canonical_bytes": [
+        18944
+      ],
+      "case": "null",
+      "original_median_ns": 122684.5,
+      "paired_borrowed_over_original_ratio_median": 0.7179860284714299,
+      "paired_ratio_max": 0.842485311976893,
+      "paired_ratio_median_by_first": {
+        "borrowed": 0.73237282186116,
+        "original": 0.706796423668187
+      },
+      "paired_ratio_min": 0.6690634770651364,
+      "paired_rounds": 20,
+      "rows_each": 256
+    },
+    {
+      "borrowed_faster_pairs": 20,
+      "borrowed_median_ns": 121943.0,
+      "canonical_bytes": [
+        26624
+      ],
+      "case": "short_fields",
+      "original_median_ns": 150556.5,
+      "paired_borrowed_over_original_ratio_median": 0.8047020878220841,
+      "paired_ratio_max": 0.8265828708965701,
+      "paired_ratio_median_by_first": {
+        "borrowed": 0.8218996021401835,
+        "original": 0.8001888455981361
+      },
+      "paired_ratio_min": 0.7350519825918762,
+      "paired_rounds": 20,
+      "rows_each": 256
+    }
+  ],
+  "task_counts": {
+    "done": 163,
+    "newly_completed": 0,
+    "remaining": 29
+  },
+  "unique_paired_records": 100
+}

@@ -1,0 +1,581 @@
+﻿2026-10-09T05:42:35.2915870Z Current runner version: '2.337.0'
+2026-10-09T05:42:35.2961940Z ##[group]Runner Image Provisioner
+2026-10-09T05:42:35.2963500Z Hosted Compute Agent
+2026-10-09T05:42:35.2964740Z Version: 20260828.587
+2026-10-09T05:42:35.2965900Z Commit: abac92662cab4cc7352de4f9f9d2e2419aad9c29
+2026-10-09T05:42:35.2967240Z Build Date: 2026-08-28T16:44:25Z
+2026-10-09T05:42:35.2968450Z Worker ID: {c87bc38f-dde4-4330-aeaf-f2dbc650cd46}
+2026-10-09T05:42:35.2969720Z Azure Region: westus
+2026-10-09T05:42:35.2970670Z ##[endgroup]
+2026-10-09T05:42:35.2974500Z ##[group]Operating System
+2026-10-09T05:42:35.2975710Z macOS
+2026-10-09T05:42:35.2976620Z 26.6.2
+2026-10-09T05:42:35.2977450Z 25G83
+2026-10-09T05:42:35.2978390Z ##[endgroup]
+2026-10-09T05:42:35.2979340Z ##[group]Runner Image
+2026-10-09T05:42:35.2980380Z Image: macos-26-arm64
+2026-10-09T05:42:35.2981360Z Version: 20260907.0351.1
+2026-10-09T05:42:35.2983800Z Included Software: https://github.com/actions/runner-images/blob/macos-26-arm64/20260907.0351/images/macos/macos-26-arm64-Readme.md
+2026-10-09T05:42:35.2986770Z Image Release: https://github.com/actions/runner-images/releases/tag/macos-26-arm64%2F20260907.0351
+2026-10-09T05:42:35.2988630Z ##[endgroup]
+2026-10-09T05:42:35.2990960Z ##[group]GITHUB_TOKEN Permissions
+2026-10-09T05:42:35.2993080Z Contents: read
+2026-10-09T05:42:35.2993520Z Metadata: read
+2026-10-09T05:42:35.2993970Z ##[endgroup]
+2026-10-09T05:42:35.2995980Z Secret source: Actions
+2026-10-09T05:42:35.2996630Z Cache mode: write
+2026-10-09T05:42:35.2997110Z Prepare workflow directory
+2026-10-09T05:42:35.3361750Z Prepare all required actions
+2026-10-09T05:42:35.3411950Z Getting action download info
+2026-10-09T05:42:35.7732470Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-09T05:42:36.0833620Z Download action repository 'dtolnay/rust-toolchain@stable' (SHA:686976e191b89faba57d3206551f0f330d8cb249)
+2026-10-09T05:42:36.3546300Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-10-09T05:42:36.6409570Z Complete job name: Supervisor observation (macos-26)
+2026-10-09T05:42:36.6956340Z ##[group]Run python3 -B - <<'PY'
+2026-10-09T05:42:36.6957190Z [36;1mpython3 -B - <<'PY'[0m
+2026-10-09T05:42:36.6957660Z [36;1mimport datetime, json, os, pathlib, platform[0m
+2026-10-09T05:42:36.6958210Z [36;1mroot = pathlib.Path(os.environ['RUNNER_TEMP']) / ([0m
+2026-10-09T05:42:36.6958820Z [36;1m    'p8-mac-supervisor-diagnosis-' + os.environ['GITHUB_RUN_ID'][0m
+2026-10-09T05:42:36.6959510Z [36;1m    + '-attempt' + os.environ['GITHUB_RUN_ATTEMPT'])[0m
+2026-10-09T05:42:36.6960020Z [36;1mroot.mkdir()[0m
+2026-10-09T05:42:36.6960380Z [36;1m(root / 'run').mkdir()[0m
+2026-10-09T05:42:36.6960760Z [36;1mreceipt = {[0m
+2026-10-09T05:42:36.6961250Z [36;1m    'schema': 'p8-mac-supervisor-workflow-start-v1',[0m
+2026-10-09T05:42:36.6961820Z [36;1m    'status': 'initialized_not_executed',[0m
+2026-10-09T05:42:36.6962520Z [36;1m    'recorded_at_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),[0m
+2026-10-09T05:42:36.6963410Z [36;1m    'expected_source': 'a23bb72d3c954f385b99fe81ce9189885c208557',[0m
+2026-10-09T05:42:36.6964090Z [36;1m    'controller_commit': os.environ['GITHUB_SHA'],[0m
+2026-10-09T05:42:36.6964620Z [36;1m    'platform': platform.platform(),[0m
+2026-10-09T05:42:36.6965190Z [36;1m    'metadata': {key: os.environ.get(key) for key in ([0m
+2026-10-09T05:42:36.6965820Z [36;1m        'GITHUB_REPOSITORY', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT',[0m
+2026-10-09T05:42:36.6966510Z [36;1m        'RUNNER_OS', 'RUNNER_ARCH', 'RUNNER_ENVIRONMENT',[0m
+2026-10-09T05:42:36.6967230Z [36;1m        'ImageOS', 'ImageVersion', 'SDKROOT', 'DEVELOPER_DIR')},[0m
+2026-10-09T05:42:36.6967970Z [36;1m    'scope': 'Two fixed 250ms diagnostic cases; no product benchmark or task acceptance',[0m
+2026-10-09T05:42:36.6968580Z [36;1m}[0m
+2026-10-09T05:42:36.6969070Z [36;1mwith (root / 'workflow-start.json').open('x', encoding='utf-8') as output:[0m
+2026-10-09T05:42:36.6969810Z [36;1m    json.dump(receipt, output, indent=2, allow_nan=False)[0m
+2026-10-09T05:42:36.6971190Z [36;1m    output.write('\n')[0m
+2026-10-09T05:42:36.6971670Z [36;1mif os.environ['GITHUB_RUN_ATTEMPT'] != '1':[0m
+2026-10-09T05:42:36.6972470Z [36;1m    raise RuntimeError('this registered diagnostic only admits workflow attempt 1')[0m
+2026-10-09T05:42:36.6975160Z [36;1mPY[0m
+2026-10-09T05:42:36.7061490Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T05:42:36.7062230Z env:
+2026-10-09T05:42:36.7062580Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T05:42:36.7062960Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T05:42:36.7063310Z ##[endgroup]
+2026-10-09T05:42:37.0417050Z ##[group]Run actions/checkout@v4
+2026-10-09T05:42:37.0417650Z with:
+2026-10-09T05:42:37.0418080Z   persist-credentials: false
+2026-10-09T05:42:37.0418560Z   ref: 57e478b9fb742d1e3bcb4501c7be299530c0521a
+2026-10-09T05:42:37.0419020Z   path: controller
+2026-10-09T05:42:37.0419430Z   sparse-checkout-cone-mode: false
+2026-10-09T05:42:37.0420550Z   sparse-checkout: /artifacts/checkpoints/p8-mac-supervisor-diagnosis-28fe-20261009/observe.rs
+/artifacts/checkpoints/p8-mac-supervisor-diagnosis-28fe-20261009/run.py
+
+2026-10-09T05:42:37.0421990Z   repository: jyqj/codecortex
+2026-10-09T05:42:37.0424980Z   token: ***
+2026-10-09T05:42:37.0425350Z   ssh-strict: true
+2026-10-09T05:42:37.0425760Z   ssh-user: git
+2026-10-09T05:42:37.0426080Z   clean: true
+2026-10-09T05:42:37.0426420Z   fetch-depth: 1
+2026-10-09T05:42:37.0427200Z   fetch-tags: false
+2026-10-09T05:42:37.0427550Z   show-progress: true
+2026-10-09T05:42:37.0427940Z   lfs: false
+2026-10-09T05:42:37.0428330Z   submodules: false
+2026-10-09T05:42:37.0428730Z   set-safe-directory: true
+2026-10-09T05:42:37.0429150Z   allow-unsafe-pr-checkout: false
+2026-10-09T05:42:37.0429650Z env:
+2026-10-09T05:42:37.0430050Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T05:42:37.0430480Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T05:42:37.0430850Z ##[endgroup]
+2026-10-09T05:42:37.4649620Z Syncing repository: jyqj/codecortex
+2026-10-09T05:42:37.4728690Z ##[group]Getting Git version info
+2026-10-09T05:42:37.4761260Z Working directory is '/Users/runner/work/codecortex/codecortex/controller'
+2026-10-09T05:42:37.4784920Z [command]/opt/homebrew/bin/git version
+2026-10-09T05:42:37.5165800Z git version 2.55.0
+2026-10-09T05:42:37.5224250Z ##[endgroup]
+2026-10-09T05:42:37.5229380Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/97d02f57-b478-4f76-a2e8-0476594e57ba/.gitconfig'
+2026-10-09T05:42:37.5233780Z Temporarily overriding HOME='/Users/runner/work/_temp/97d02f57-b478-4f76-a2e8-0476594e57ba' before making global git config changes
+2026-10-09T05:42:37.5235920Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-09T05:42:37.5237100Z [command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/codecortex/codecortex/controller
+2026-10-09T05:42:37.5341960Z ##[group]Initializing the repository
+2026-10-09T05:42:37.5443380Z [command]/opt/homebrew/bin/git init /Users/runner/work/codecortex/codecortex/controller
+2026-10-09T05:42:37.5746370Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-09T05:42:37.5748740Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-09T05:42:37.5750780Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-09T05:42:37.5752390Z hint: call:
+2026-10-09T05:42:37.5753310Z hint:
+2026-10-09T05:42:37.5754470Z hint: 	git config --global init.defaultBranch <name>
+2026-10-09T05:42:37.5755820Z hint:
+2026-10-09T05:42:37.5757150Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-09T05:42:37.5759020Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-09T05:42:37.5760900Z hint:
+2026-10-09T05:42:37.5761910Z hint: 	git branch -m <name>
+2026-10-09T05:42:37.5762920Z hint:
+2026-10-09T05:42:37.5764250Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-09T05:42:37.5767910Z Initialized empty Git repository in /Users/runner/work/codecortex/codecortex/controller/.git/
+2026-10-09T05:42:37.5771690Z [command]/opt/homebrew/bin/git remote add origin https://github.com/jyqj/codecortex
+2026-10-09T05:42:37.5851710Z ##[endgroup]
+2026-10-09T05:42:37.5853440Z ##[group]Disabling automatic garbage collection
+2026-10-09T05:42:37.5855300Z [command]/opt/homebrew/bin/git config --local gc.auto 0
+2026-10-09T05:42:37.5933230Z ##[endgroup]
+2026-10-09T05:42:37.5935000Z ##[group]Setting up auth
+2026-10-09T05:42:37.5936740Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T05:42:37.6024070Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T05:42:37.7212800Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T05:42:37.7294530Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T05:42:37.8216950Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T05:42:37.8310600Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T05:42:37.9857510Z [command]/opt/homebrew/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-09T05:42:37.9978590Z ##[endgroup]
+2026-10-09T05:42:37.9979300Z ##[group]Fetching the repository
+2026-10-09T05:42:37.9986170Z [command]/opt/homebrew/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --filter=blob:none --depth=1 origin 57e478b9fb742d1e3bcb4501c7be299530c0521a
+2026-10-09T05:42:38.4649810Z From https://github.com/jyqj/codecortex
+2026-10-09T05:42:38.4652130Z  * branch            57e478b9fb742d1e3bcb4501c7be299530c0521a -> FETCH_HEAD
+2026-10-09T05:42:38.4755100Z ##[endgroup]
+2026-10-09T05:42:38.4756150Z ##[group]Determining the checkout info
+2026-10-09T05:42:38.4757000Z ##[endgroup]
+2026-10-09T05:42:38.4757750Z ##[group]Setting up sparse checkout
+2026-10-09T05:42:38.4758470Z [command]/opt/homebrew/bin/git config core.sparseCheckout true
+2026-10-09T05:42:38.4821860Z [command]/opt/homebrew/bin/git rev-parse --git-path info/sparse-checkout
+2026-10-09T05:42:38.4934170Z .git/info/sparse-checkout
+2026-10-09T05:42:38.4952770Z ##[endgroup]
+2026-10-09T05:42:38.4954930Z ##[group]Checking out the ref
+2026-10-09T05:42:38.4957550Z [command]/opt/homebrew/bin/git checkout --progress --force 57e478b9fb742d1e3bcb4501c7be299530c0521a
+2026-10-09T05:42:38.8278900Z HEAD is now at 57e478b diagnostic: observe fixed A23 shell supervisor phases once per OS
+2026-10-09T05:42:38.8359030Z ##[endgroup]
+2026-10-09T05:42:38.8417110Z [command]/opt/homebrew/bin/git log -1 --format=%H
+2026-10-09T05:42:38.8487900Z 57e478b9fb742d1e3bcb4501c7be299530c0521a
+2026-10-09T05:42:38.8503990Z ##[group]Removing auth
+2026-10-09T05:42:38.8514000Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T05:42:38.8583910Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T05:42:38.9858500Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T05:42:38.9958680Z http.https://github.com/.extraheader
+2026-10-09T05:42:39.0214910Z [command]/opt/homebrew/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-09T05:42:39.0224980Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T05:42:39.1431850Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T05:42:39.1736900Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T05:42:39.2999870Z ##[endgroup]
+2026-10-09T05:42:39.3330440Z ##[group]Run actions/checkout@v4
+2026-10-09T05:42:39.3331540Z with:
+2026-10-09T05:42:39.3332080Z   persist-credentials: false
+2026-10-09T05:42:39.3332930Z   ref: a23bb72d3c954f385b99fe81ce9189885c208557
+2026-10-09T05:42:39.3334030Z   path: original
+2026-10-09T05:42:39.3334710Z   sparse-checkout-cone-mode: false
+2026-10-09T05:42:39.3336490Z   sparse-checkout: /crates/cc-eval/tests/p8_scale.rs
+/crates/cc-eval/src/benchmark/p8_scale.rs
+
+2026-10-09T05:42:39.3338100Z   repository: jyqj/codecortex
+2026-10-09T05:42:39.3345670Z   token: ***
+2026-10-09T05:42:39.3346310Z   ssh-strict: true
+2026-10-09T05:42:39.3346890Z   ssh-user: git
+2026-10-09T05:42:39.3347430Z   clean: true
+2026-10-09T05:42:39.3347960Z   fetch-depth: 1
+2026-10-09T05:42:39.3348520Z   fetch-tags: false
+2026-10-09T05:42:39.3349490Z   show-progress: true
+2026-10-09T05:42:39.3350070Z   lfs: false
+2026-10-09T05:42:39.3350710Z   submodules: false
+2026-10-09T05:42:39.3351280Z   set-safe-directory: true
+2026-10-09T05:42:39.3351990Z   allow-unsafe-pr-checkout: false
+2026-10-09T05:42:39.3352770Z env:
+2026-10-09T05:42:39.3353300Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T05:42:39.3354030Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T05:42:39.3354650Z ##[endgroup]
+2026-10-09T05:42:39.4301340Z Syncing repository: jyqj/codecortex
+2026-10-09T05:42:39.4303670Z ##[group]Getting Git version info
+2026-10-09T05:42:39.4304690Z Working directory is '/Users/runner/work/codecortex/codecortex/original'
+2026-10-09T05:42:39.4326410Z [command]/opt/homebrew/bin/git version
+2026-10-09T05:42:39.4387930Z git version 2.55.0
+2026-10-09T05:42:39.4400140Z ##[endgroup]
+2026-10-09T05:42:39.4405320Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/f14c9116-fbf0-4cf5-a544-6ce62dbf5625/.gitconfig'
+2026-10-09T05:42:39.4411960Z Temporarily overriding HOME='/Users/runner/work/_temp/f14c9116-fbf0-4cf5-a544-6ce62dbf5625' before making global git config changes
+2026-10-09T05:42:39.4414210Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-09T05:42:39.4416130Z [command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/codecortex/codecortex/original
+2026-10-09T05:42:39.4487130Z ##[group]Initializing the repository
+2026-10-09T05:42:39.4489930Z [command]/opt/homebrew/bin/git init /Users/runner/work/codecortex/codecortex/original
+2026-10-09T05:42:39.4595300Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-09T05:42:39.4598500Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-09T05:42:39.4600390Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-09T05:42:39.4601950Z hint: call:
+2026-10-09T05:42:39.4602710Z hint:
+2026-10-09T05:42:39.4603490Z hint: 	git config --global init.defaultBranch <name>
+2026-10-09T05:42:39.4604520Z hint:
+2026-10-09T05:42:39.4605380Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-09T05:42:39.4606860Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-09T05:42:39.4608010Z hint:
+2026-10-09T05:42:39.4608660Z hint: 	git branch -m <name>
+2026-10-09T05:42:39.4609450Z hint:
+2026-10-09T05:42:39.4610510Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-09T05:42:39.4612120Z Initialized empty Git repository in /Users/runner/work/codecortex/codecortex/original/.git/
+2026-10-09T05:42:39.4615010Z [command]/opt/homebrew/bin/git remote add origin https://github.com/jyqj/codecortex
+2026-10-09T05:42:39.4673850Z ##[endgroup]
+2026-10-09T05:42:39.4675350Z ##[group]Disabling automatic garbage collection
+2026-10-09T05:42:39.4676990Z [command]/opt/homebrew/bin/git config --local gc.auto 0
+2026-10-09T05:42:39.4744110Z ##[endgroup]
+2026-10-09T05:42:39.4745080Z ##[group]Setting up auth
+2026-10-09T05:42:39.4748250Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T05:42:39.4815650Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T05:42:39.5575940Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T05:42:39.5641110Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T05:42:39.6803270Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T05:42:39.6810400Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T05:42:39.8375580Z [command]/opt/homebrew/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-09T05:42:39.8587610Z ##[endgroup]
+2026-10-09T05:42:39.8630060Z ##[group]Fetching the repository
+2026-10-09T05:42:39.8677630Z [command]/opt/homebrew/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --filter=blob:none --depth=1 origin a23bb72d3c954f385b99fe81ce9189885c208557
+2026-10-09T05:42:40.2210340Z From https://github.com/jyqj/codecortex
+2026-10-09T05:42:40.2212040Z  * branch            a23bb72d3c954f385b99fe81ce9189885c208557 -> FETCH_HEAD
+2026-10-09T05:42:40.2213390Z ##[endgroup]
+2026-10-09T05:42:40.2214010Z ##[group]Determining the checkout info
+2026-10-09T05:42:40.2214700Z ##[endgroup]
+2026-10-09T05:42:40.2215240Z ##[group]Setting up sparse checkout
+2026-10-09T05:42:40.2218710Z [command]/opt/homebrew/bin/git config core.sparseCheckout true
+2026-10-09T05:42:40.2308290Z [command]/opt/homebrew/bin/git rev-parse --git-path info/sparse-checkout
+2026-10-09T05:42:40.2425520Z .git/info/sparse-checkout
+2026-10-09T05:42:40.2440540Z ##[endgroup]
+2026-10-09T05:42:40.2442920Z ##[group]Checking out the ref
+2026-10-09T05:42:40.2467950Z [command]/opt/homebrew/bin/git checkout --progress --force a23bb72d3c954f385b99fe81ce9189885c208557
+2026-10-09T05:42:40.6537220Z HEAD is now at a23bb72 test(p8): bind combined source admission for original full execution
+2026-10-09T05:42:40.6547620Z ##[endgroup]
+2026-10-09T05:42:40.6657930Z [command]/opt/homebrew/bin/git log -1 --format=%H
+2026-10-09T05:42:40.6746510Z a23bb72d3c954f385b99fe81ce9189885c208557
+2026-10-09T05:42:40.6764470Z ##[group]Removing auth
+2026-10-09T05:42:40.6775720Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T05:42:40.6889610Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T05:42:40.8226130Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T05:42:40.8328140Z http.https://github.com/.extraheader
+2026-10-09T05:42:40.8585420Z [command]/opt/homebrew/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-09T05:42:40.8594620Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T05:42:40.9895780Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T05:42:41.0197950Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T05:42:41.1829860Z ##[endgroup]
+2026-10-09T05:42:41.2100060Z ##[group]Run dtolnay/rust-toolchain@stable
+2026-10-09T05:42:41.2100400Z with:
+2026-10-09T05:42:41.2100580Z   toolchain: 1.95.0
+2026-10-09T05:42:41.2100760Z env:
+2026-10-09T05:42:41.2100920Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T05:42:41.2101130Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T05:42:41.2101320Z ##[endgroup]
+2026-10-09T05:42:41.2164010Z ##[start-action display=Parse toolchain version;id=toolchain.parse]
+2026-10-09T05:42:41.2212090Z ##[group]Run if [[ -z $toolchain ]]; then
+2026-10-09T05:42:41.2212430Z [36;1mif [[ -z $toolchain ]]; then[0m
+2026-10-09T05:42:41.2212910Z [36;1m  # GitHub does not enforce `required: true` inputs itself. https://github.com/actions/runner/issues/1070[0m
+2026-10-09T05:42:41.2213410Z [36;1m  echo "'toolchain' is a required input" >&2[0m
+2026-10-09T05:42:41.2213680Z [36;1m  exit 1[0m
+2026-10-09T05:42:41.2213980Z [36;1melif [[ $toolchain =~ ^stable' '[0-9]+' '(year|month|week|day)s?' 'ago$ ]]; then[0m
+2026-10-09T05:42:41.2214410Z [36;1m  if [[ macOS == macOS ]]; then[0m
+2026-10-09T05:42:41.2214970Z [36;1m    echo "toolchain=1.$((($(date -v-$(sed 's/stable \([0-9]*\) \(.\).*/\1\2/' <<< $toolchain) +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT[0m
+2026-10-09T05:42:41.2215440Z [36;1m  else[0m
+2026-10-09T05:42:41.2215790Z [36;1m    echo "toolchain=1.$((($(date --date "${toolchain#stable }" +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT[0m
+2026-10-09T05:42:41.2216270Z [36;1m  fi[0m
+2026-10-09T05:42:41.2216540Z [36;1melif [[ $toolchain =~ ^stable' 'minus' '[0-9]+' 'releases?$ ]]; then[0m
+2026-10-09T05:42:41.2217000Z [36;1m  echo "toolchain=1.$((($(date +%s)/60/60/24-16569)/7/6-${toolchain//[^0-9]/}))" >> $GITHUB_OUTPUT[0m
+2026-10-09T05:42:41.2217400Z [36;1melif [[ $toolchain =~ ^1\.[0-9]+$ ]]; then[0m
+2026-10-09T05:42:41.2217900Z [36;1m  echo "toolchain=1.$((i=${toolchain#1.}, c=($(date +%s)/60/60/24-16569)/7/6, i+9*i*(10*i<=c)+90*i*(100*i<=c)))" >> $GITHUB_OUTPUT[0m
+2026-10-09T05:42:41.2218370Z [36;1melse[0m
+2026-10-09T05:42:41.2218550Z [36;1m  delimiter=EOF[0m
+2026-10-09T05:42:41.2218830Z [36;1m  while [[ $toolchain == *$delimiter* ]]; do delimiter+=_; done[0m
+2026-10-09T05:42:41.2219280Z [36;1m  printf 'toolchain<<%s\n%s\n%s\n' "$delimiter" "$toolchain" "$delimiter" >> $GITHUB_OUTPUT[0m
+2026-10-09T05:42:41.2219850Z [36;1mfi[0m
+2026-10-09T05:42:41.2273160Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T05:42:41.2274010Z env:
+2026-10-09T05:42:41.2274580Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T05:42:41.2275210Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T05:42:41.2275770Z   toolchain: 1.95.0
+2026-10-09T05:42:41.2276300Z ##[endgroup]
+2026-10-09T05:42:41.2784440Z ##[end-action id=toolchain.parse;outcome=success;conclusion=success;duration_ms=61]
+2026-10-09T05:42:41.2787010Z ##[start-action display=Set $CARGO_HOME;id=toolchain.__run]
+2026-10-09T05:42:41.2886130Z ##[group]Run echo CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV
+2026-10-09T05:42:41.2887400Z [36;1mecho CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV[0m
+2026-10-09T05:42:41.2946680Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T05:42:41.2947700Z env:
+2026-10-09T05:42:41.2948300Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T05:42:41.2948970Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T05:42:41.2949530Z ##[endgroup]
+2026-10-09T05:42:41.3499370Z ##[end-action id=toolchain.__run;outcome=success;conclusion=success;duration_ms=71]
+2026-10-09T05:42:41.3501840Z ##[start-action display=Install rustup if needed;id=toolchain.__run_2]
+2026-10-09T05:42:41.3531130Z ##[group]Run if ! command -v rustup &>/dev/null; then
+2026-10-09T05:42:41.3531560Z [36;1mif ! command -v rustup &>/dev/null; then[0m
+2026-10-09T05:42:41.3532380Z [36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://sh.rustup.rs | sh -s -- --default-toolchain none -y[0m
+2026-10-09T05:42:41.3533120Z [36;1m  echo "$CARGO_HOME/bin" >> $GITHUB_PATH[0m
+2026-10-09T05:42:41.3533380Z [36;1mfi[0m
+2026-10-09T05:42:41.3571310Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T05:42:41.3571700Z env:
+2026-10-09T05:42:41.3571900Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T05:42:41.3572140Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T05:42:41.3572350Z   CARGO_HOME: /Users/runner/.cargo
+2026-10-09T05:42:41.3572580Z ##[endgroup]
+2026-10-09T05:42:41.4014710Z ##[end-action id=toolchain.__run_2;outcome=success;conclusion=success;duration_ms=51]
+2026-10-09T05:42:41.4017300Z ##[start-action display=Install rustup if needed on windows;id=toolchain.__run_3]
+2026-10-09T05:42:41.4025730Z ##[end-action id=toolchain.__run_3;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-10-09T05:42:41.4044950Z ##[start-action display=rustup toolchain install 1.95.0;id=toolchain.__run_4]
+2026-10-09T05:42:41.4087930Z ##[group]Run set -f  # split targets and components on commas and whitespace, without glob expansion
+2026-10-09T05:42:41.4088600Z [36;1mset -f  # split targets and components on commas and whitespace, without glob expansion[0m
+2026-10-09T05:42:41.4089140Z [36;1mflags=()[0m
+2026-10-09T05:42:41.4089410Z [36;1mfor t in ${targets//,/ }; do flags+=(--target "$t"); done[0m
+2026-10-09T05:42:41.4089810Z [36;1mfor c in ${components//,/ }; do flags+=(--component "$c"); done[0m
+2026-10-09T05:42:41.4090450Z [36;1mif [[ $toolchain == nightly && -n $components ]]; then flags+=(--allow-downgrade); fi[0m
+2026-10-09T05:42:41.4090830Z [36;1mlog=$(mktemp)[0m
+2026-10-09T05:42:41.4091060Z [36;1mtrap 'rm -f "$log"' EXIT[0m
+2026-10-09T05:42:41.4091310Z [36;1mfor attempt in 1 2 3 4 5; do[0m
+2026-10-09T05:42:41.4091900Z [36;1m  if rustup toolchain install "$toolchain" "${flags[@]}" --profile minimal --no-self-update --force-non-host 2>&1 | tee "$log"; then[0m
+2026-10-09T05:42:41.4092490Z [36;1m    break[0m
+2026-10-09T05:42:41.4092720Z [36;1m  else[0m
+2026-10-09T05:42:41.4092960Z [36;1m    status=$?[0m
+2026-10-09T05:42:41.4093190Z [36;1m  fi[0m
+2026-10-09T05:42:41.4093530Z [36;1m  if [[ $attempt == 5 ]] || ! grep -Fq 'checksum failed for ' "$log" \[0m
+2026-10-09T05:42:41.4094150Z [36;1m      || ! grep -Fq 'this is likely due to an ongoing update of the official release server' "$log"; then[0m
+2026-10-09T05:42:41.4094570Z [36;1m    exit "$status"[0m
+2026-10-09T05:42:41.4094800Z [36;1m  fi[0m
+2026-10-09T05:42:41.4095110Z [36;1m  echo "Retrying rustup toolchain install in 30 seconds (retry $attempt of 4)" >&2[0m
+2026-10-09T05:42:41.4095500Z [36;1m  sleep 30[0m
+2026-10-09T05:42:41.4095690Z [36;1mdone[0m
+2026-10-09T05:42:41.4137920Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T05:42:41.4138220Z env:
+2026-10-09T05:42:41.4138430Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T05:42:41.4138670Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T05:42:41.4138890Z   CARGO_HOME: /Users/runner/.cargo
+2026-10-09T05:42:41.4139140Z   toolchain: 1.95.0
+2026-10-09T05:42:41.4139320Z   targets: 
+2026-10-09T05:42:41.4139510Z   components: 
+2026-10-09T05:42:41.4139680Z   RUSTUP_PERMIT_COPY_RENAME: 1
+2026-10-09T05:42:41.4139920Z ##[endgroup]
+2026-10-09T05:42:41.5413940Z info: syncing channel updates for 1.95.0-aarch64-apple-darwin
+2026-10-09T05:42:41.8065400Z info: latest update on 2026-04-16 for version 1.95.0 (59807616e 2026-04-14)
+2026-10-09T05:42:41.8442000Z info: downloading 3 components
+2026-10-09T05:42:50.2934280Z 
+2026-10-09T05:42:50.4614520Z   1.95.0-aarch64-apple-darwin installed - rustc 1.95.0 (59807616e 2026-04-14)
+2026-10-09T05:42:50.4616170Z 
+2026-10-09T05:42:50.4616600Z info: self-update is disabled for this build of rustup
+2026-10-09T05:42:50.4618440Z info: any updates to rustup will need to be fetched with your system package manager
+2026-10-09T05:42:50.5050370Z ##[end-action id=toolchain.__run_4;outcome=success;conclusion=success;duration_ms=9100]
+2026-10-09T05:42:50.5100420Z ##[start-action display=rustup default 1.95.0;id=toolchain.__run_5]
+2026-10-09T05:42:50.5132520Z ##[group]Run rustup default "$toolchain" --force-non-host
+2026-10-09T05:42:50.5132950Z [36;1mrustup default "$toolchain" --force-non-host[0m
+2026-10-09T05:42:50.5191530Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T05:42:50.5192180Z env:
+2026-10-09T05:42:50.5192470Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T05:42:50.5192800Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T05:42:50.5193050Z   CARGO_HOME: /Users/runner/.cargo
+2026-10-09T05:42:50.5193370Z   toolchain: 1.95.0
+2026-10-09T05:42:50.5193610Z ##[endgroup]
+2026-10-09T05:42:50.6102270Z info: using existing install for 1.95.0-aarch64-apple-darwin
+2026-10-09T05:42:50.6121010Z info: default toolchain set to 1.95.0-aarch64-apple-darwin
+2026-10-09T05:42:50.6121970Z 
+2026-10-09T05:42:50.6251950Z   1.95.0-aarch64-apple-darwin unchanged - rustc 1.95.0 (59807616e 2026-04-14)
+2026-10-09T05:42:50.6254760Z 
+2026-10-09T05:42:50.6269260Z ##[end-action id=toolchain.__run_5;outcome=success;conclusion=success;duration_ms=116]
+2026-10-09T05:42:50.6272860Z ##[start-action display=Create cachekey;id=toolchain.rustc-version]
+2026-10-09T05:42:50.6296640Z ##[group]Run DATE=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')
+2026-10-09T05:42:50.6297620Z [36;1mDATE=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')[0m
+2026-10-09T05:42:50.6298470Z [36;1mHASH=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-hash: //p')[0m
+2026-10-09T05:42:50.6299020Z [36;1mecho "cachekey=$(echo $DATE$HASH | head -c12)" >> $GITHUB_OUTPUT[0m
+2026-10-09T05:42:50.6336490Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T05:42:50.6336960Z env:
+2026-10-09T05:42:50.6337230Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T05:42:50.6337560Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T05:42:50.6337800Z   CARGO_HOME: /Users/runner/.cargo
+2026-10-09T05:42:50.6338100Z   toolchain: 1.95.0
+2026-10-09T05:42:50.6338360Z ##[endgroup]
+2026-10-09T05:42:50.7442310Z ##[end-action id=toolchain.rustc-version;outcome=success;conclusion=success;duration_ms=116]
+2026-10-09T05:42:50.7445040Z ##[start-action display=Disable incremental compilation;id=toolchain.__run_6]
+2026-10-09T05:42:50.7471150Z ##[group]Run if [ -z "${CARGO_INCREMENTAL+set}" ]; then
+2026-10-09T05:42:50.7471570Z [36;1mif [ -z "${CARGO_INCREMENTAL+set}" ]; then[0m
+2026-10-09T05:42:50.7472120Z [36;1m  echo CARGO_INCREMENTAL=0 >> $GITHUB_ENV[0m
+2026-10-09T05:42:50.7472510Z [36;1mfi[0m
+2026-10-09T05:42:50.7509050Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T05:42:50.7509440Z env:
+2026-10-09T05:42:50.7509700Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T05:42:50.7510060Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T05:42:50.7510330Z   CARGO_HOME: /Users/runner/.cargo
+2026-10-09T05:42:50.7510630Z ##[endgroup]
+2026-10-09T05:42:50.7904670Z ##[end-action id=toolchain.__run_6;outcome=success;conclusion=success;duration_ms=45]
+2026-10-09T05:42:50.7907290Z ##[start-action display=Enable colors in Cargo output;id=toolchain.__run_7]
+2026-10-09T05:42:50.7927760Z ##[group]Run if [ -z "${CARGO_TERM_COLOR+set}" ]; then
+2026-10-09T05:42:50.7928560Z [36;1mif [ -z "${CARGO_TERM_COLOR+set}" ]; then[0m
+2026-10-09T05:42:50.7928950Z [36;1m  echo CARGO_TERM_COLOR=always >> $GITHUB_ENV[0m
+2026-10-09T05:42:50.7929420Z [36;1mfi[0m
+2026-10-09T05:42:50.7979510Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T05:42:50.7979790Z env:
+2026-10-09T05:42:50.7979960Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T05:42:50.7980170Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T05:42:50.7980350Z   CARGO_HOME: /Users/runner/.cargo
+2026-10-09T05:42:50.7980590Z   CARGO_INCREMENTAL: 0
+2026-10-09T05:42:50.7980780Z ##[endgroup]
+2026-10-09T05:42:50.8516600Z ##[end-action id=toolchain.__run_7;outcome=success;conclusion=success;duration_ms=60]
+2026-10-09T05:42:50.8520670Z ##[start-action display=Enable Cargo sparse registry;id=toolchain.__run_8]
+2026-10-09T05:42:50.8544680Z ##[group]Run # implemented in 1.66, stabilized in 1.68, made default in 1.70
+2026-10-09T05:42:50.8545170Z [36;1m# implemented in 1.66, stabilized in 1.68, made default in 1.70[0m
+2026-10-09T05:42:50.8546270Z [36;1mif [ -z "${CARGO_REGISTRIES_CRATES_IO_PROTOCOL+set}" -o -f "/Users/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol ]; then[0m
+2026-10-09T05:42:50.8547010Z [36;1m  if rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.6[89]\.'; then[0m
+2026-10-09T05:42:50.8547620Z [36;1m    touch "/Users/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol || true[0m
+2026-10-09T05:42:50.8548160Z [36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse >> $GITHUB_ENV[0m
+2026-10-09T05:42:50.8548610Z [36;1m  elif rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.6[67]\.'; then[0m
+2026-10-09T05:42:50.8549120Z [36;1m    touch "/Users/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol || true[0m
+2026-10-09T05:42:50.8549560Z [36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=git >> $GITHUB_ENV[0m
+2026-10-09T05:42:50.8549860Z [36;1m  fi[0m
+2026-10-09T05:42:50.8550010Z [36;1mfi[0m
+2026-10-09T05:42:50.8585050Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T05:42:50.8585350Z env:
+2026-10-09T05:42:50.8585540Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T05:42:50.8585740Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T05:42:50.8585960Z   CARGO_HOME: /Users/runner/.cargo
+2026-10-09T05:42:50.8586180Z   CARGO_INCREMENTAL: 0
+2026-10-09T05:42:50.8586360Z   CARGO_TERM_COLOR: always
+2026-10-09T05:42:50.8586550Z   toolchain: 1.95.0
+2026-10-09T05:42:50.8586740Z ##[endgroup]
+2026-10-09T05:42:50.9435590Z ##[end-action id=toolchain.__run_8;outcome=success;conclusion=success;duration_ms=91]
+2026-10-09T05:42:50.9440820Z ##[start-action display=Work around spurious network errors in curl 8.0;id=toolchain.__run_9]
+2026-10-09T05:42:50.9461520Z ##[group]Run # https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation
+2026-10-09T05:42:50.9462160Z [36;1m# https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation[0m
+2026-10-09T05:42:50.9462710Z [36;1mif rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.7[01]\.'; then[0m
+2026-10-09T05:42:50.9463250Z [36;1m  echo CARGO_HTTP_MULTIPLEXING=false >> $GITHUB_ENV[0m
+2026-10-09T05:42:50.9463520Z [36;1mfi[0m
+2026-10-09T05:42:50.9502940Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T05:42:50.9503230Z env:
+2026-10-09T05:42:50.9503390Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T05:42:50.9503590Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T05:42:50.9503800Z   CARGO_HOME: /Users/runner/.cargo
+2026-10-09T05:42:50.9504060Z   CARGO_INCREMENTAL: 0
+2026-10-09T05:42:50.9504250Z   CARGO_TERM_COLOR: always
+2026-10-09T05:42:50.9504440Z   toolchain: 1.95.0
+2026-10-09T05:42:50.9504620Z ##[endgroup]
+2026-10-09T05:42:51.0194920Z ##[end-action id=toolchain.__run_9;outcome=success;conclusion=success;duration_ms=75]
+2026-10-09T05:42:51.0198950Z ##[start-action display=rustc +1.95.0 --version --verbose;id=toolchain.__run_10]
+2026-10-09T05:42:51.0222270Z ##[group]Run rustc +"$toolchain" --version --verbose
+2026-10-09T05:42:51.0222630Z [36;1mrustc +"$toolchain" --version --verbose[0m
+2026-10-09T05:42:51.0292820Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T05:42:51.0293110Z env:
+2026-10-09T05:42:51.0293280Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T05:42:51.0293500Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T05:42:51.0293960Z   CARGO_HOME: /Users/runner/.cargo
+2026-10-09T05:42:51.0294740Z   CARGO_INCREMENTAL: 0
+2026-10-09T05:42:51.0294920Z   CARGO_TERM_COLOR: always
+2026-10-09T05:42:51.0295160Z   toolchain: 1.95.0
+2026-10-09T05:42:51.0295360Z ##[endgroup]
+2026-10-09T05:42:51.0928320Z rustc 1.95.0 (59807616e 2026-04-14)
+2026-10-09T05:42:51.0929450Z binary: rustc
+2026-10-09T05:42:51.0930050Z commit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860
+2026-10-09T05:42:51.0930740Z commit-date: 2026-04-14
+2026-10-09T05:42:51.0931230Z host: aarch64-apple-darwin
+2026-10-09T05:42:51.0931740Z release: 1.95.0
+2026-10-09T05:42:51.0933390Z LLVM version: 22.1.2
+2026-10-09T05:42:51.0954740Z ##[end-action id=toolchain.__run_10;outcome=success;conclusion=success;duration_ms=75]
+2026-10-09T05:42:51.1010910Z ##[group]Run output="$RUNNER_TEMP/p8-mac-supervisor-diagnosis-$GITHUB_RUN_ID-attempt$GITHUB_RUN_ATTEMPT"
+2026-10-09T05:42:51.1011670Z [36;1moutput="$RUNNER_TEMP/p8-mac-supervisor-diagnosis-$GITHUB_RUN_ID-attempt$GITHUB_RUN_ATTEMPT"[0m
+2026-10-09T05:42:51.1012410Z [36;1mcontroller="$GITHUB_WORKSPACE/controller/artifacts/checkpoints/p8-mac-supervisor-diagnosis-28fe-20261009"[0m
+2026-10-09T05:42:51.1012940Z [36;1mset +e[0m
+2026-10-09T05:42:51.1013160Z [36;1mpython3 -B "$controller/run.py" \[0m
+2026-10-09T05:42:51.1013990Z [36;1m  --source "$GITHUB_WORKSPACE/original" --output "$output/run" \[0m
+2026-10-09T05:42:51.1014410Z [36;1m  >"$output/driver.stdout" 2>"$output/driver.stderr"[0m
+2026-10-09T05:42:51.1014660Z [36;1mresult=$?[0m
+2026-10-09T05:42:51.1014820Z [36;1mset -e[0m
+2026-10-09T05:42:51.1015040Z [36;1mprintf '%s\n' "$result" >"$output/driver-exit-code.txt"[0m
+2026-10-09T05:42:51.1015400Z [36;1mcat "$output/driver.stdout"[0m
+2026-10-09T05:42:51.1015700Z [36;1mcat "$output/driver.stderr" >&2[0m
+2026-10-09T05:42:51.1015940Z [36;1mexit "$result"[0m
+2026-10-09T05:42:51.1058470Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T05:42:51.1058740Z env:
+2026-10-09T05:42:51.1058920Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T05:42:51.1059170Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T05:42:51.1059370Z   CARGO_HOME: /Users/runner/.cargo
+2026-10-09T05:42:51.1059550Z   CARGO_INCREMENTAL: 0
+2026-10-09T05:42:51.1059750Z   CARGO_TERM_COLOR: always
+2026-10-09T05:42:51.1059910Z ##[endgroup]
+2026-10-09T05:42:56.5955960Z {"case_results": [{"case": "original", "command_exit": 0, "diagnostic_assertions_satisfied": true, "report_status": "diagnostic_case_complete"}, {"case": "instrumented", "command_exit": 0, "diagnostic_assertions_satisfied": true, "report_status": "diagnostic_case_complete"}], "certification": "not_run", "exit_code": 0, "status": "diagnostic_completed"}
+2026-10-09T05:42:56.6101810Z ##[group]Run python3 -B - <<'PY'
+2026-10-09T05:42:56.6102290Z [36;1mpython3 -B - <<'PY'[0m
+2026-10-09T05:42:56.6102530Z [36;1mimport datetime, json, os, pathlib[0m
+2026-10-09T05:42:56.6102840Z [36;1mroot = pathlib.Path(os.environ['RUNNER_TEMP']) / ([0m
+2026-10-09T05:42:56.6103200Z [36;1m    'p8-mac-supervisor-diagnosis-' + os.environ['GITHUB_RUN_ID'][0m
+2026-10-09T05:42:56.6103670Z [36;1m    + '-attempt' + os.environ['GITHUB_RUN_ATTEMPT'])[0m
+2026-10-09T05:42:56.6103980Z [36;1mif root.is_symlink():[0m
+2026-10-09T05:42:56.6104260Z [36;1m    raise RuntimeError('preservation root is a symlink')[0m
+2026-10-09T05:42:56.6104560Z [36;1mroot.mkdir(exist_ok=True)[0m
+2026-10-09T05:42:56.6104770Z [36;1mreceipt = {[0m
+2026-10-09T05:42:56.6105030Z [36;1m    'schema': 'p8-mac-supervisor-workflow-terminal-v1',[0m
+2026-10-09T05:42:56.6105450Z [36;1m    'recorded_at_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),[0m
+2026-10-09T05:42:56.6105920Z [36;1m    'controller_commit': os.environ['GITHUB_SHA'],[0m
+2026-10-09T05:42:56.6106320Z [36;1m    'expected_source': 'a23bb72d3c954f385b99fe81ce9189885c208557',[0m
+2026-10-09T05:42:56.6106780Z [36;1m    'stage_outcomes': {key: os.environ.get(key) for key in ([0m
+2026-10-09T05:42:56.6107200Z [36;1m        'P8_INITIALIZE_OUTCOME', 'P8_CONTROLLER_OUTCOME', 'P8_ORIGINAL_OUTCOME',[0m
+2026-10-09T05:42:56.6107600Z [36;1m        'P8_TOOLCHAIN_OUTCOME', 'P8_OBSERVATION_OUTCOME',[0m
+2026-10-09T05:42:56.6108350Z [36;1m        'P8_JOB_STATUS_BEFORE_UPLOAD')},[0m
+2026-10-09T05:42:56.6108850Z [36;1m    'receipt_scope': 'Workflow outcome only; diagnostic sampling success is not original test or TODO acceptance',[0m
+2026-10-09T05:42:56.6109310Z [36;1m    'tasks_changed': False,[0m
+2026-10-09T05:42:56.6109550Z [36;1m}[0m
+2026-10-09T05:42:56.6109890Z [36;1mwith (root / 'workflow-terminal.json').open('x', encoding='utf-8') as output:[0m
+2026-10-09T05:42:56.6110310Z [36;1m    json.dump(receipt, output, indent=2, allow_nan=False)[0m
+2026-10-09T05:42:56.6110600Z [36;1m    output.write('\n')[0m
+2026-10-09T05:42:56.6111390Z [36;1mPY[0m
+2026-10-09T05:42:56.6162080Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T05:42:56.6162420Z env:
+2026-10-09T05:42:56.6162650Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T05:42:56.6162880Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T05:42:56.6163220Z   CARGO_HOME: /Users/runner/.cargo
+2026-10-09T05:42:56.6163480Z   CARGO_INCREMENTAL: 0
+2026-10-09T05:42:56.6163710Z   CARGO_TERM_COLOR: always
+2026-10-09T05:42:56.6164060Z   P8_INITIALIZE_OUTCOME: success
+2026-10-09T05:42:56.6164330Z   P8_CONTROLLER_OUTCOME: success
+2026-10-09T05:42:56.6164610Z   P8_ORIGINAL_OUTCOME: success
+2026-10-09T05:42:56.6164830Z   P8_TOOLCHAIN_OUTCOME: success
+2026-10-09T05:42:56.6165240Z   P8_OBSERVATION_OUTCOME: success
+2026-10-09T05:42:56.6165550Z   P8_JOB_STATUS_BEFORE_UPLOAD: success
+2026-10-09T05:42:56.6165850Z ##[endgroup]
+2026-10-09T05:42:56.7260220Z ##[group]Run actions/upload-artifact@v4
+2026-10-09T05:42:56.7260650Z with:
+2026-10-09T05:42:56.7260910Z   name: p8-mac-supervisor-diagnosis-macos-26-37889857154-attempt1
+2026-10-09T05:42:56.7261460Z   path: /Users/runner/work/_temp/p8-mac-supervisor-diagnosis-37889857154-attempt1
+2026-10-09T05:42:56.7261810Z   include-hidden-files: true
+2026-10-09T05:42:56.7262030Z   if-no-files-found: error
+2026-10-09T05:42:56.7262250Z   compression-level: 6
+2026-10-09T05:42:56.7262430Z   overwrite: false
+2026-10-09T05:42:56.7262610Z env:
+2026-10-09T05:42:56.7262750Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T05:42:56.7262960Z   GIT_OPTIONAL_LOCKS: 0
+2026-10-09T05:42:56.7263170Z   CARGO_HOME: /Users/runner/.cargo
+2026-10-09T05:42:56.7263400Z   CARGO_INCREMENTAL: 0
+2026-10-09T05:42:56.7263610Z   CARGO_TERM_COLOR: always
+2026-10-09T05:42:56.7263800Z ##[endgroup]
+2026-10-09T05:42:56.9530260Z (node:20120) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-09T05:42:56.9531400Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-09T05:42:56.9680520Z With the provided path, there will be 89 files uploaded
+2026-10-09T05:42:56.9688640Z Artifact name is valid!
+2026-10-09T05:42:56.9690840Z Root directory input is valid!
+2026-10-09T05:42:57.4189570Z Beginning upload of artifact content to blob storage
+2026-10-09T05:42:57.4834870Z (node:20120) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-09T05:42:57.9927830Z Uploaded bytes 368085
+2026-10-09T05:42:58.0698930Z Finished uploading artifact content to blob storage!
+2026-10-09T05:42:58.0741120Z SHA256 digest of uploaded artifact zip is 042724d54106f8750da1d8d45bace2bb7a8ed79284e56accc1c88ab7b681191e
+2026-10-09T05:42:58.0762850Z Finalizing artifact upload
+2026-10-09T05:42:58.3764910Z Artifact p8-mac-supervisor-diagnosis-macos-26-37889857154-attempt1.zip successfully finalized. Artifact ID 11598385875
+2026-10-09T05:42:58.3766270Z Artifact p8-mac-supervisor-diagnosis-macos-26-37889857154-attempt1 has been successfully uploaded! Final size is 368085 bytes. Artifact ID is 11598385875
+2026-10-09T05:42:58.3767490Z Artifact download URL: https://github.com/jyqj/codecortex/actions/runs/37889857154/artifacts/11598385875
+2026-10-09T05:42:58.4062360Z Post job cleanup.
+2026-10-09T05:42:58.5231250Z [command]/opt/homebrew/bin/git version
+2026-10-09T05:42:58.5309000Z git version 2.55.0
+2026-10-09T05:42:58.5369470Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/d10e1671-cfc5-41cd-802c-02ec9627a68f/.gitconfig'
+2026-10-09T05:42:58.5385840Z Temporarily overriding HOME='/Users/runner/work/_temp/d10e1671-cfc5-41cd-802c-02ec9627a68f' before making global git config changes
+2026-10-09T05:42:58.5419290Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-09T05:42:58.5422490Z [command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/codecortex/codecortex/original
+2026-10-09T05:42:58.5522040Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T05:42:58.5673030Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T05:42:58.6996950Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T05:42:58.7088880Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T05:42:58.8746880Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T05:42:58.9053620Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T05:42:59.0989410Z Post job cleanup.
+2026-10-09T05:42:59.2839300Z [command]/opt/homebrew/bin/git version
+2026-10-09T05:42:59.2943070Z git version 2.55.0
+2026-10-09T05:42:59.3019930Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/8cbfad16-04ef-4f10-be46-1a569b0843ee/.gitconfig'
+2026-10-09T05:42:59.3025600Z Temporarily overriding HOME='/Users/runner/work/_temp/8cbfad16-04ef-4f10-be46-1a569b0843ee' before making global git config changes
+2026-10-09T05:42:59.3033580Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-09T05:42:59.3044590Z [command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/codecortex/codecortex/controller
+2026-10-09T05:42:59.3053340Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T05:42:59.3144120Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T05:42:59.4799940Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T05:42:59.5102800Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T05:42:59.6202270Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T05:42:59.6449420Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T05:42:59.7909850Z Cleaning up orphan processes
+2026-10-09T05:43:00.4782920Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

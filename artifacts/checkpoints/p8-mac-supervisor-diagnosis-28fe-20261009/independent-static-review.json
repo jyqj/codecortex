@@ -1,0 +1,137 @@
+{
+  "schema": "p8-mac-supervisor-diagnosis-independent-static-review-v1",
+  "reviewer": "/root/recovery_audit",
+  "author_rust_python": "/root/runtime_review",
+  "author_workflow": "/root/acceptance_review",
+  "decision": "static_candidate_approved_for_fixed_diagnostic_scope; prepared_tree_identity_review_pending",
+  "source": {
+    "commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+    "tree": "58147c952505c44da1f41eb4b9c31643f2303b96",
+    "files": [
+      {
+        "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+        "git_blob": "3f217d116e5fab8a1035cb643f0d74ea3c122568",
+        "bytes": 46139,
+        "sha256": "fede948c535ca8b91a6b30d3752cd28204abc310423debfd169ff53541f3afbc"
+      },
+      {
+        "path": "crates/cc-eval/tests/p8_scale.rs",
+        "git_blob": "e4369e275bee0ddbc1cbea91e61bcc5735483e4e",
+        "bytes": 19815,
+        "sha256": "e178777707b978b04918b8de38ce1beaca76f2bf0fb342928fca0f97657e0c6d"
+      }
+    ],
+    "helper": {
+      "bytes": 159,
+      "sha256": "0e366f70d7deb927f196f6a0aeaedf6eda8665ff0a141df03148fab81fba31ae",
+      "extraction": "Independent JSON-compatible decoding of original literal at test line 488"
+    }
+  },
+  "candidate": [
+    {
+      "path": "artifacts/checkpoints/p8-mac-supervisor-diagnosis-28fe-20261009/observe.rs",
+      "git_blob": "5b8fba174872cbc27911272b4343520125a1e2f9",
+      "bytes": 15946,
+      "sha256": "dc9cc22732be459aada546324042fa0e726bd2ce9a6eaa0f011a0293bca76f8e"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-mac-supervisor-diagnosis-28fe-20261009/run.py",
+      "git_blob": "76c777f119943e702807c656f6b84e3231b33640",
+      "bytes": 20957,
+      "sha256": "e281b673425b886a49e6b3f6a645bd2da347272c8e2f8ef27cb82a7466bcb6f7"
+    },
+    {
+      "path": ".github/workflows/p8-mac-supervisor-diagnosis-28fe.yml",
+      "git_blob": "a3a35cd61954aeeee19b6c108443fb8814f7f435",
+      "bytes": 6273,
+      "sha256": "4b7dd93cb2d0e2a284aa0e97f5ac2c7ad62706310d9be8233b09101d09de3144"
+    }
+  ],
+  "review_performed": [
+    "Official Git blob reads with independent SHA256, Git blob SHA1 and byte-count verification",
+    "Complete original run_supervised/ChildGuard and original negative-control helper source read",
+    "Complete candidate Rust, Python and workflow static source review",
+    "Ten author-described v1-to-v2 replacement anchors independently checked unique; applying only those ten reconstructs both complete v2 files exactly",
+    "Workflow v1-to-v2 two-line first-attempt guard removal reconstructs complete v1 exactly"
+  ],
+  "static_findings": [
+    {
+      "area": "fixed_fixture",
+      "result": "original case extracts exact original 159 bytes and checks original SHA; helper mode0700; second case only adds shell builtin printf markers; no retry or best-of"
+    },
+    {
+      "area": "command_contract",
+      "result": "Rust same --worker-plan/--output flags; stdin/stdout null, stderr pipe; RAYON2, owned TMPDIR/TMP/TEMP, six exact CODECORTEX removals, fresh process_group(0)"
+    },
+    {
+      "area": "clock",
+      "result": "before-spawn monotonic clock, 250ms lifetime+drain deadline, original overflow then deadline then try_wait check order, 10ms poll; no ready handshake removed from budget"
+    },
+    {
+      "area": "diagnostic_perturbation",
+      "result": "explicitly records memory stderr16KiB vs original256KiB, summary visibility polling, sanitized inherited env, diagnostic plan, bounded reap vs original blockingwait, fixed case-order warming possibility, marker receipt upperbounds"
+    },
+    {
+      "area": "fresh_group_cleanup",
+      "result": "v1 repeated postreap signal finding fixed with group_stop_attempted and child_reaped states; both successful try_wait paths mark reaped; Drop no repeat group signal and no kill reapedchild"
+    },
+    {
+      "area": "outer_cleanup",
+      "result": "ownership record must bind same observerPID/case, positive distinctworkerPID, freshgroup request; explicit observed PGID contradiction rejected; ESRCH stored as exactlyobserved not claimedreap; timeoutcleanup signal is not reaping proof; finally prevents eager repeated cleanup"
+    },
+    {
+      "area": "stderr_threads",
+      "result": "Rust/Python do not join unfinished reader; state frozen before raw persistence; readers cannot write saved files; EOF/overflow/error are retained; bounded buffers"
+    },
+    {
+      "area": "bound_limit",
+      "result": "normal case outerbudget2seconds with1.8second containment signal; rust boundedreap1.5seconds; actual timeout/unreaped/missingownership/null exit never success; synchronous OS spawn and filesystem stalls are not claimed hard realtime bounded"
+    },
+    {
+      "area": "receipt_and_source",
+      "result": "workflow receipt before checkout/toolchain; execution-start before toolchainqueries/compile; source before/after checks actual A23 Git HEAD/tree and both original filebytes; outputs outside source and new emptydir; every real command preserves stdout/stderr/exit/timeout"
+    },
+    {
+      "area": "no_hidden_product_execution",
+      "result": "compiler rustc only and its linker; no Cargo/dependencies/indexing/scale/DB/native product/testbinary/artifact/Docker execution; diagnostic shell fixture is only case workload"
+    },
+    {
+      "area": "failure_accounting",
+      "result": "nonzero original still followed by exactly one marker case; case results separate; overall nonzero if either diagnosticassertion fails; no original product acceptance field upgraded"
+    },
+    {
+      "area": "workflow",
+      "result": "one unique pushbranch, attempt1guard after startreceipt and beforecheckouts, ubuntu-latest/macOS26 matrix2 standardjobs/Rust1.95.0, separate fixedA23 sparse2file and exactcontroller sparse2file checkout, contentsread/persistcredentialsfalse, failfastfalse, no continueonerror, alwaysfooter+rawupload"
+    },
+    {
+      "area": "ownership_write",
+      "result": "exclusive tiny ownership write no fsync in250ms clock, before/after event timestamps expose remaining observeroverhead; missingrecord still unknown"
+    }
+  ],
+  "validation_not_run": [
+    "Python AST/syntax execution",
+    "Rust metadata/typecheck/compilation/link",
+    "either diagnostic case",
+    "original supervisor test or any product/native/index/scale workload",
+    "prepared Git tree equality (not yet provided)"
+  ],
+  "proposed_optional_preparation_only_commands": [
+    "python3 -B -c 'import ast,pathlib; ast.parse(pathlib.Path(\"<fixed-run.py>\").read_bytes(), filename=\"run.py\")'",
+    "rustc +1.95.0 --edition=2021 --emit=metadata <fixed-observe.rs> -o <fresh-owned-directory>/observe.rmeta",
+    "bash -n <extracted-fixed-workflow-run-script>"
+  ],
+  "prior_failures_preserved": {
+    "mac_actual_failure_review": "62d2d1960ab0f15432ba869225951988a80ed843",
+    "mac_failure_resolved": false,
+    "original_test_pass_claim": false,
+    "marker_case_can_certify_original": false,
+    "original_studies_modified": false,
+    "original_todos": {
+      "total": 192,
+      "done": 163,
+      "remaining": 29,
+      "newly_completed": 0
+    }
+  },
+  "scope_boundary": "Approval is only for the proposed two-case causal observation preparation. No source fix, permanent gate change, deadline relaxation, new scale study, failure replacement, native benchmark or TODO closure is authorized by this review. Final actual OS/ARCH, compiler outcome, execution and raw artifacts remain to be observed."
+}

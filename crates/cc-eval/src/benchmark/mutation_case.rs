@@ -156,7 +156,9 @@ fn evaluate_internal(case: &MutationCase, retain_initial: bool) -> Result<Value>
         if evidence["incremental_report"]["resolution_freshness"]["complete"] != true
             || evidence["full_report"]["resolution_freshness"]["complete"] != true
         {
-            return Err(invalid("isolated fanout initial full builds are incomplete"));
+            return Err(invalid(
+                "isolated fanout initial full builds are incomplete",
+            ));
         }
         Some(evidence)
     } else {
@@ -209,9 +211,10 @@ fn evaluate_internal(case: &MutationCase, retain_initial: bool) -> Result<Value>
             build(&mut full, true)?;
             None
         };
-        if full_report.as_ref().is_some_and(|report| {
-            report["resolution_freshness"]["complete"] != true
-        }) {
+        if full_report
+            .as_ref()
+            .is_some_and(|report| report["resolution_freshness"]["complete"] != true)
+        {
             return Err(invalid("isolated fanout final full build is incomplete"));
         }
         let ca = oracle::canonical(a.path())?;
@@ -253,7 +256,8 @@ fn evaluate_internal(case: &MutationCase, retain_initial: bool) -> Result<Value>
         if retain_initial {
             let checkpoint = checkpoints.last_mut().unwrap();
             checkpoint["full_report"] = full_report.unwrap();
-            checkpoint["process_snapshot"] = json!(super::sampler::process_snapshot(std::process::id()));
+            checkpoint["process_snapshot"] =
+                json!(super::sampler::process_snapshot(std::process::id()));
         }
         if failure.is_some() {
             break;

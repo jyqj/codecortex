@@ -71,7 +71,14 @@ pub struct ProfileStudy {
 }
 
 pub const MUTATION_PROFILES: [&str; 8] = [
-    "no_op", "body", "api", "config", "batch_1", "batch_10", "batch_100", "batch_1000",
+    "no_op",
+    "body",
+    "api",
+    "config",
+    "batch_1",
+    "batch_10",
+    "batch_100",
+    "batch_1000",
 ];
 
 /// A disjoint slice of the registered repetition population. A successful
@@ -213,10 +220,11 @@ impl ScalePlan {
                 "cold_only_v1 requires an explicit shard without fanout; release keeps the fixed seed, N30, capacity and original time/output/work budgets",
             ));
         }
-        if (self.stage_scope == Some(StageScope::ProfileIsolatedV1))
-            != self.profile_study.is_some()
+        if (self.stage_scope == Some(StageScope::ProfileIsolatedV1)) != self.profile_study.is_some()
         {
-            return Err(invalid("isolated profile identity requires its own explicit scope"));
+            return Err(invalid(
+                "isolated profile identity requires its own explicit scope",
+            ));
         }
         if let Some(study) = &self.profile_study {
             let fanout = study.mutation_profile == "fanout";
@@ -227,10 +235,14 @@ impl ScalePlan {
                 || self.files.len() != 1
                 || self.shard.is_none_or(|s| s.count != self.repetitions)
                 || self.skip_fanout == fanout
-                || (!fanout && (!MUTATION_PROFILES.contains(&study.mutation_profile.as_str())
-                    || study.fanout.is_some()))
-                || (fanout && (!study.fanout.is_some_and(|n| [1, 4, 16, 64, 128].contains(&n))
-                    || self.files != [1000]))
+                || (!fanout
+                    && (!MUTATION_PROFILES.contains(&study.mutation_profile.as_str())
+                        || study.fanout.is_some()))
+                || (fanout
+                    && (!study
+                        .fanout
+                        .is_some_and(|n| [1, 4, 16, 64, 128].contains(&n))
+                        || self.files != [1000]))
                 || (self.profile == Profile::Release
                     && (self.capacity_profile != Some(CapacityProfile::ScaleCapacityV1)
                         || self.repetitions != 30
@@ -240,7 +252,9 @@ impl ScalePlan {
                         || self.batch_sizes != [1, 10, 100, 1000]
                         || self.fanouts != [1, 4, 16, 64, 128]))
             {
-                return Err(invalid("invalid isolated profile, fanout, identity or fixed release population/budget"));
+                return Err(invalid(
+                    "invalid isolated profile, fanout, identity or fixed release population/budget",
+                ));
             }
         }
         Ok(())
@@ -339,7 +353,9 @@ pub fn run_supervised(plan: &ScalePlan, out: &Path, binary: &Path) -> Result<Val
     // The supervisor owns all fixture directories, including those allocated
     // by the existing mutation runner; a deadline cannot orphan 100k trees.
     let workspace = tempfile::tempdir()?;
-    let cold_temporary_environment = plan.stage_scope.is_some()
+    let cold_temporary_environment = plan
+        .stage_scope
+        .is_some()
         .then(|| json!({"parent_root":std::env::temp_dir(),"worker_root":workspace.path()}));
     let mut command = Command::new(binary);
     command
@@ -920,7 +936,9 @@ fn scale_sample(
     if let Some(study) = &plan.profile_study {
         stages.retain(|(stage, _)| stage == &study.mutation_profile);
         if stages.len() != 1 {
-            return Err(invalid("isolated scale cell must execute exactly one registered mutation"));
+            return Err(invalid(
+                "isolated scale cell must execute exactly one registered mutation",
+            ));
         }
     }
     for (stage, requested) in stages {
@@ -1024,9 +1042,7 @@ fn scale_sample(
         let fact = config_fact(
             a.path(),
             &config_files[2],
-            if stage == "config"
-                || (plan.profile_study.is_none() && stage.starts_with("batch_"))
-            {
+            if stage == "config" || (plan.profile_study.is_none() && stage.starts_with("batch_")) {
                 &config_files[1]
             } else {
                 &config_files[0]
@@ -1133,7 +1149,9 @@ fn worker_measure(plan: &ScalePlan, raw: &mut Raw) -> Result<Value> {
     raw.emit(started)?;
     let mut summaries = Vec::new();
     for &files in plan.files.iter().filter(|_| {
-        plan.profile_study.as_ref().is_none_or(|s| s.mutation_profile != "fanout")
+        plan.profile_study
+            .as_ref()
+            .is_none_or(|s| s.mutation_profile != "fanout")
     }) {
         for repetition in plan.repetition_range()? {
             summaries.extend(scale_sample(plan, files, repetition, raw)?);
@@ -1141,7 +1159,10 @@ fn worker_measure(plan: &ScalePlan, raw: &mut Raw) -> Result<Value> {
     }
     for &fanout in plan.fanouts.iter().filter(|&&n| {
         !plan.skip_fanout
-            && plan.profile_study.as_ref().is_none_or(|s| s.fanout == Some(n))
+            && plan
+                .profile_study
+                .as_ref()
+                .is_none_or(|s| s.fanout == Some(n))
     }) {
         for repetition in plan.repetition_range()? {
             let (dirty_budget, max_resume_builds) = plan.fanout_budgets();

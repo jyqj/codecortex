@@ -1,7 +1,9 @@
 //! Development-only local P8 measurements. Never certifies a release.
 use cc_eval::benchmark::{
     invalid,
-    p8_scale::{self, CapacityProfile, ColdStudy, Profile, ProfileStudy, ScalePlan, ScaleShard, StageScope},
+    p8_scale::{
+        self, CapacityProfile, ColdStudy, Profile, ProfileStudy, ScalePlan, ScaleShard, StageScope,
+    },
     Result,
 };
 use clap::{Parser, ValueEnum};
@@ -121,7 +123,9 @@ fn run(cli: Cli) -> Result<i32> {
     if cli.mutation_profile.is_some() != matches!(cli.stage_scope, Some(Stages::ProfileIsolatedV1))
         || (cli.profile_fanout.is_some() && cli.mutation_profile.as_deref() != Some("fanout"))
     {
-        return Err(invalid("profile selection requires its explicit isolated scope"));
+        return Err(invalid(
+            "profile selection requires its explicit isolated scope",
+        ));
     }
     let plan = ScalePlan {
         schema_version: 1,
@@ -136,9 +140,15 @@ fn run(cli: Cli) -> Result<i32> {
             Stages::ColdOnlyV1 => StageScope::ColdOnlyV1,
             Stages::ProfileIsolatedV1 => StageScope::ProfileIsolatedV1,
         }),
-        cold_study: identity.clone().filter(|_| !matches!(cli.stage_scope, Some(Stages::ProfileIsolatedV1)))
-            .map(|(run_id, run_attempt)| ColdStudy { run_id, run_attempt }),
-        profile_study: identity.filter(|_| matches!(cli.stage_scope, Some(Stages::ProfileIsolatedV1)))
+        cold_study: identity
+            .clone()
+            .filter(|_| !matches!(cli.stage_scope, Some(Stages::ProfileIsolatedV1)))
+            .map(|(run_id, run_attempt)| ColdStudy {
+                run_id,
+                run_attempt,
+            }),
+        profile_study: identity
+            .filter(|_| matches!(cli.stage_scope, Some(Stages::ProfileIsolatedV1)))
             .map(|(run_id, run_attempt)| ProfileStudy {
                 run_id,
                 run_attempt,

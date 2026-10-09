@@ -690,7 +690,11 @@ fn isolated_smoke(profile: &str, fanout: Option<usize>) -> ScalePlan {
             mutation_profile: profile.into(),
             fanout,
         }),
-        files: if fanout.is_some() { vec![1000] } else { vec![60] },
+        files: if fanout.is_some() {
+            vec![1000]
+        } else {
+            vec![60]
+        },
         shard: Some(ScaleShard { index: 0, count: 1 }),
         skip_fanout: fanout.is_none(),
         dirty_budget: 8,
@@ -713,7 +717,10 @@ fn isolated_profile_wire_cannot_select_another_protocol_or_omit_its_identity() {
     plan.profile_study.as_mut().unwrap().mutation_profile = "cold".into();
     assert!(plan.validate().is_err());
     plan = isolated_smoke("body", None);
-    plan.cold_study = Some(ColdStudy { run_id: "12345".into(), run_attempt: 1 });
+    plan.cold_study = Some(ColdStudy {
+        run_id: "12345".into(),
+        run_attempt: 1,
+    });
     assert!(plan.validate().is_err());
     plan.cold_study = None;
     plan.stage_scope = None;
@@ -734,22 +741,42 @@ fn isolated_fresh_batch_keeps_original_target_and_both_full_parity_checkpoints()
     assert_eq!(report["summary"]["stage_scope"], "profile_isolated_v1");
     assert_eq!(report["summary"]["sample_count"], 2);
     let rows: Vec<Value> = std::fs::read_to_string(out.join("raw.jsonl"))
-        .unwrap().lines().map(|line| serde_json::from_str(line).unwrap()).collect();
+        .unwrap()
+        .lines()
+        .map(|line| serde_json::from_str(line).unwrap())
+        .collect();
     assert_eq!(rows[0]["plan"], serde_json::to_value(&plan).unwrap());
-    let initial = rows.iter().find(|row| row["event"] == "cold_parity").unwrap();
-    let stages: Vec<_> = rows.iter().filter(|row| row["event"] == "stage_finished").collect();
+    let initial = rows
+        .iter()
+        .find(|row| row["event"] == "cold_parity")
+        .unwrap();
+    let stages: Vec<_> = rows
+        .iter()
+        .filter(|row| row["event"] == "stage_finished")
+        .collect();
     assert_eq!(stages.len(), 1);
     assert!(stages[0]["label"].as_str().unwrap().ends_with("/batch_1"));
-    assert_eq!(initial["independent_config_fact"], stages[0]["independent_config_fact"]);
+    assert_eq!(
+        initial["independent_config_fact"],
+        stages[0]["independent_config_fact"]
+    );
     for point in [initial, stages[0]] {
         assert_eq!(point["parity"]["equal"], true);
         assert_eq!(point["parity"]["tables"].as_array().unwrap().len(), 15);
         assert_eq!(point["independent_config_fact"]["passed"], true);
     }
-    let mutations: Vec<_> = rows.iter().filter(|row| row["event"] == "mutation").collect();
+    let mutations: Vec<_> = rows
+        .iter()
+        .filter(|row| row["event"] == "mutation")
+        .collect();
     assert_eq!(mutations.len(), 1);
     assert_eq!(mutations[0]["operations"].as_array().unwrap().len(), 1);
-    assert_eq!(rows.iter().filter(|row| row["event"] == "build_finished" && row["full"] == true).count(), 3);
+    assert_eq!(
+        rows.iter()
+            .filter(|row| row["event"] == "build_finished" && row["full"] == true)
+            .count(),
+        3
+    );
     assert!(rows.iter().all(|row| row["event"] != "fanout_started"));
 }
 
@@ -762,7 +789,10 @@ fn isolated_fanout_retains_actual_initial_and_final_tables_without_a_scale_corpu
     assert_eq!(report["exit_code"], 0, "{report}");
     assert_eq!(report["summary"]["sample_count"], 1);
     let rows: Vec<Value> = std::fs::read_to_string(out.join("raw.jsonl"))
-        .unwrap().lines().map(|line| serde_json::from_str(line).unwrap()).collect();
+        .unwrap()
+        .lines()
+        .map(|line| serde_json::from_str(line).unwrap())
+        .collect();
     assert_eq!(rows.len(), 3);
     assert_eq!(rows[1]["event"], "fanout_started");
     assert_eq!(rows[1]["case"]["initial"].as_object().unwrap().len(), 17);
@@ -774,9 +804,15 @@ fn isolated_fanout_retains_actual_initial_and_final_tables_without_a_scale_corpu
     assert_eq!(initial["equal"], true);
     assert_eq!(initial["tables"].as_array().unwrap().len(), 15);
     assert_eq!(initial["incremental"], initial["full"]);
-    assert_eq!(initial["incremental"]["files"].as_array().unwrap().len(), 17);
+    assert_eq!(
+        initial["incremental"]["files"].as_array().unwrap().len(),
+        17
+    );
     let point = &result["checkpoints"][0];
     assert_eq!(point["incremental"], point["full"]);
     assert_eq!(point["truth"].as_array().unwrap().len(), 16);
-    assert_eq!(point["full_report"]["resolution_freshness"]["complete"], true);
+    assert_eq!(
+        point["full_report"]["resolution_freshness"]["complete"],
+        true
+    );
 }

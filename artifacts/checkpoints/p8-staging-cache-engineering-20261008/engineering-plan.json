@@ -1,0 +1,179 @@
+{
+  "TODO_closed": 0,
+  "TODO_remaining": 29,
+  "actual_source": "The immutable new publication commit, checked out via github.sha and independently verified after publication; no invented SHA",
+  "all_diagnostics_are_auxiliary_not_primary": true,
+  "base_product_source": "260f596582f2d82b8d7c707b61a6b8b6a43b069f",
+  "canonical_stream_budget_bytes": 17179869184,
+  "capacity_profile": "scale_capacity_v1",
+  "commands": [
+    [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-index",
+      "-p",
+      "cc-db",
+      "-p",
+      "cc-eval",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-db",
+      "--test",
+      "p2b_resolution_store"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-index",
+      "--test",
+      "qname_identity_transaction"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-index",
+      "--test",
+      "qname_identity_proof"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-db",
+      "--test",
+      "public_surface_store"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-db",
+      "--lib",
+      "full_rebuild_advances_both_epochs_past_previous_values"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-db",
+      "--lib",
+      "rebuild_generation_exceeds_writes_committed_during_rebuild"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-db",
+      "--lib",
+      "staging_checkpoint_busy_preserves_wal_and_refuses_replacement"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-db",
+      "--lib",
+      "schema_mismatch_rebuild_advances_generation_past_old_values"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-db",
+      "--test",
+      "p2d_dependency_cost"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-eval",
+      "--test",
+      "p8_scale"
+    ],
+    [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "cc-eval",
+      "--test",
+      "benchmark_oracle_streaming"
+    ]
+  ],
+  "diagnostic_order": "Controls and original release build; then 1k and 10k; 100k only after both small diagnostics complete successfully",
+  "dirty_budget": 200,
+  "failed_execution": "Retain every available original log/receipt/partial artifact; no rerun, replacement, successful-only grouping or invented terminal data",
+  "fixed_diagnostic_repetition": 0,
+  "fixed_diagnostic_scales": [
+    1000,
+    10000,
+    100000
+  ],
+  "job_timeout_minutes": 350,
+  "known_transport_limit": "if: always() cannot guarantee upload after hard runner loss; missing raw stays missing and cannot be accepted",
+  "native_deadline_ms": 18000000,
+  "native_or_Cargo_run_locally": false,
+  "new_formal_study_included": false,
+  "only_attempt": 1,
+  "oracle_scratch_budget_bytes": 8589934592,
+  "original_driver": "scripts/p8_scale_matrix.py",
+  "original_workloads_and_consumers": "Unmodified original driver, all original stages and all 15 parity tables; no custom fallback evaluator",
+  "original_wrapper_minutes": 302,
+  "raw_budget_bytes": 536870912,
+  "repetitions": 30,
+  "resume_iterations": 1024,
+  "retry_or_replacement_allowed": false,
+  "schema": "p8-staging-cache-engineering-plan-v1",
+  "scope": "Single new fixed-source engineering investigation, not an N30 primary matrix and not a repair of any prior study",
+  "seed": 12648430,
+  "shard_count": 30,
+  "source_and_build": "Original full source-before/source-after and exact release build validation, all compiler/copy identities and raw retained",
+  "source_wrapper_reference": {
+    "path": "/dev/shm/p8-D0-source-preparation/p8-prefix-window-engineering.yml",
+    "sha256": "bac8e376962ae91ce89907c660e941cc43314d17a2c9faf4e0332eaf3e972802"
+  },
+  "status": "draft_pending_independent_source_and_workflow_review",
+  "trigger_branch": "task/p8-staging-cache-engineering-20261008",
+  "workflow_sha256": "b68a2601e5c6577c54dce435eb2baba05b8588d09dcd35e5af574746be96735a"
+}

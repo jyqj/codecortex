@@ -1,0 +1,1421 @@
+{
+  "schema": "C3ff-final-benchmark-delivery-readonly-draft-v1",
+  "created_at": "2026-10-09T12:31:07.820774+00:00",
+  "scope": "Inventory/navigation proposal only; no raw copying, ZIP/member replay, native measurement, remote mutation or task update.",
+  "source_commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+  "source_tree": "0e655b4258afd9ca040dd7c1ace868bf1c322a30",
+  "published_evidence_commit_observed": "098a93cf6783887f1aed12466bc844b2c8d980dd",
+  "formal_todo_completion": false,
+  "task_counts": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "newly_closed": 0
+  },
+  "scale_observed_scope": {
+    "run_id": 37910924354,
+    "accepted_shards": 4,
+    "required_shards": 150,
+    "accepted_samples": 41,
+    "required_samples": 1500,
+    "not_rechecked_in_this_planning_task": true
+  },
+  "original_task_definition": {
+    "local_path": "scale-original-c3ff/docs/roadmap/code-index-v2/tasks.json",
+    "bytes": 802282,
+    "sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207",
+    "git_blob": "f400eb2b5a3f8c524978bee1dfa87f98efe4bce8"
+  },
+  "original_task_delivery_and_dependency_mapping": [
+    {
+      "id": "P8-005",
+      "deliverables": [
+        "完整规模1k到100k的实现/配置或规格变更",
+        "artifacts/benchmarks/<run-id>/ 中对应 V20 验证证据（实施时生成）"
+      ],
+      "depends_on": [
+        "P8-004"
+      ]
+    },
+    {
+      "id": "P8-006",
+      "deliverables": [
+        "增量规模与fanout曲线的实现/配置或规格变更",
+        "artifacts/benchmarks/<run-id>/ 中对应 V07, V20 验证证据（实施时生成）"
+      ],
+      "depends_on": [
+        "P7-020",
+        "P8-001",
+        "P8-005"
+      ]
+    },
+    {
+      "id": "P8-007",
+      "deliverables": [
+        "多并发与混合负载的实现/配置或规格变更",
+        "artifacts/benchmarks/<run-id>/ 中对应 V11, V20 验证证据（实施时生成）"
+      ],
+      "depends_on": [
+        "P8-006"
+      ]
+    },
+    {
+      "id": "P8-008",
+      "deliverables": [
+        "冷建/重开/热查分层的实现/配置或规格变更",
+        "artifacts/benchmarks/<run-id>/ 中对应 V20 验证证据（实施时生成）"
+      ],
+      "depends_on": [
+        "P8-007"
+      ]
+    },
+    {
+      "id": "P8-009",
+      "deliverables": [
+        "内存/磁盘/费用总账的实现/配置或规格变更",
+        "artifacts/benchmarks/<run-id>/ 中对应 V20 验证证据（实施时生成）"
+      ],
+      "depends_on": [
+        "P8-008"
+      ]
+    },
+    {
+      "id": "P8-010",
+      "deliverables": [
+        "长时soak与连续修改的实现/配置或规格变更",
+        "artifacts/benchmarks/<run-id>/ 中对应 V07, V17, V20 验证证据（实施时生成）"
+      ],
+      "depends_on": [
+        "P8-009"
+      ]
+    },
+    {
+      "id": "P8-011",
+      "deliverables": [
+        "端到端故障与恢复认证的实现/配置或规格变更",
+        "artifacts/benchmarks/<run-id>/ 中对应 V14, V17, V18 验证证据（实施时生成）"
+      ],
+      "depends_on": [
+        "P7-020",
+        "P8-007",
+        "P8-010"
+      ]
+    },
+    {
+      "id": "P8-012",
+      "deliverables": [
+        "MSRV与平台冷构建矩阵的实现/配置或规格变更",
+        "artifacts/benchmarks/<run-id>/ 中对应 V01, V21 验证证据（实施时生成）"
+      ],
+      "depends_on": [
+        "P8-011"
+      ]
+    },
+    {
+      "id": "P8-013",
+      "deliverables": [
+        "指标/门槛与失败退出最终认证的实现/配置或规格变更",
+        "artifacts/benchmarks/<run-id>/ 中对应 V03, V04, V20 验证证据（实施时生成）"
+      ],
+      "depends_on": [
+        "P8-012"
+      ]
+    },
+    {
+      "id": "P8-016",
+      "deliverables": [
+        "数据库/配置/包回滚演练的实现/配置或规格变更",
+        "artifacts/benchmarks/<run-id>/ 中对应 V13, V17, V21 验证证据（实施时生成）"
+      ],
+      "depends_on": [
+        "P7-020",
+        "P8-012",
+        "P8-013"
+      ]
+    }
+  ],
+  "existing_public_containers": [
+    {
+      "commit": "098a93cf6783887f1aed12466bc844b2c8d980dd",
+      "path": "artifacts/checkpoints/p8-round28-a217-20261009/round28-public-evidence.tar.gz",
+      "bytes": 1449625,
+      "filename": "round28-public-evidence.tar.gz",
+      "format": "USTAR + gzip; sorted targets, fixed zero ownership/timestamps, original regular-file modes",
+      "git_blob": "b562ece595677cbe773e474952615185a1fa9906",
+      "sha256": "f56f52e37382b04fb990798c5e81a5f737b40b40fbb626e3c60687d51ce68c06",
+      "local_inventory": "p8-db-lock-observation-integration/round28-public-evidence-inventory.json",
+      "inventory_path": "artifacts/checkpoints/p8-round28-a217-20261009/inventory.json"
+    },
+    {
+      "commit": "098a93cf6783887f1aed12466bc844b2c8d980dd",
+      "path": "artifacts/checkpoints/p8-round29-a217-20261009/round29-public-evidence.tar.gz",
+      "bytes": 284259,
+      "filename": "round29-public-evidence.tar.gz",
+      "format": "USTAR + gzip; sorted targets, fixed zero ownership/timestamps, original regular-file modes",
+      "git_blob": "a32879e3b42635bde5e2459f159cd3c0d1c85f24",
+      "sha256": "562f7855add368c77d4cf5c50813e7890bc183633316070680ca02ada20b47ae",
+      "local_inventory": "p8-db-lock-observation-integration/round29-public-evidence-inventory.json",
+      "inventory_path": "artifacts/checkpoints/p8-round29-a217-20261009/round29-public-evidence-inventory.json"
+    },
+    {
+      "commit": "098a93cf6783887f1aed12466bc844b2c8d980dd",
+      "path": "artifacts/checkpoints/p8-round30-a217-20261009/round30-public-evidence.tar.gz",
+      "bytes": 1990989,
+      "filename": "round30-public-evidence.tar.gz",
+      "format": "USTAR + gzip; sorted targets, fixed zero ownership/timestamps, original regular-file modes",
+      "git_blob": "ba11acc0bf9a7a0d210c2f266799989b50bb04b2",
+      "sha256": "ef44ae3b35cd5633ad0beae4475cb8b01ecd38523415432c7052c19b563a501f",
+      "local_inventory": "p8-db-lock-observation-integration/round30-public-evidence-inventory.json",
+      "inventory_path": "artifacts/checkpoints/p8-round30-a217-20261009/round30-public-evidence-inventory.json"
+    }
+  ],
+  "artifacts": [
+    {
+      "artifact_id": 11611743908,
+      "name": "p8-mixed-c1-3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "scope": "mixed-c1",
+      "run_id": 37908825814,
+      "source_commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "actual_execution_checkout": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "official_metadata_path": "original-C3ff-runtime/artifacts/11611743908/artifact-metadata.json",
+      "zip_bytes": 16564970,
+      "official_zip_digest": "sha256:6b8718eaba251bb71e77cd16fabb49a7e82cc5b68b79cbc0d4c811d5c9a4135b",
+      "created_at": "2026-10-09T11:10:27Z",
+      "expires_at": "2027-01-07T09:03:32Z",
+      "expired_as_captured": false,
+      "actions_locator": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11611743908",
+      "local_original_zip": "original-C3ff-runtime/artifacts/11611743908/11611743908.zip",
+      "local_zip_present_and_size_matches": true,
+      "zip_rehashed_in_this_task": false,
+      "acceptance_scope": "accepted_original_artifact_own_scope",
+      "review_records": [
+        {
+          "local_path": "original-C3ff-runtime/accepted/artifact-11611743908-3ffcefc3-independent-final/independent-review.json",
+          "bytes": 4745,
+          "sha256": "4796d4a34fab446ccacb15b6beefa26f8de7c4327953bf3c4b247e05616c99f9",
+          "git_blob": "8ab33b067321a619fe6f0e170b80c3f24b4e7191",
+          "published_locations": [
+            {
+              "commit": "098a93cf6783887f1aed12466bc844b2c8d980dd",
+              "container_path": "artifacts/checkpoints/p8-round30-a217-20261009/round30-public-evidence.tar.gz",
+              "container_git_blob": "ba11acc0bf9a7a0d210c2f266799989b50bb04b2",
+              "container_sha256": "ef44ae3b35cd5633ad0beae4475cb8b01ecd38523415432c7052c19b563a501f",
+              "member": "runtime/mixed-c1/replay/independent-review.json",
+              "member_bytes": 4745,
+              "member_sha256": "4796d4a34fab446ccacb15b6beefa26f8de7c4327953bf3c4b247e05616c99f9",
+              "member_git_blob": "8ab33b067321a619fe6f0e170b80c3f24b4e7191",
+              "binding_basis": "existing fully verified published container inventory; no container replay in this planning task"
+            }
+          ],
+          "publication_status": "published_in_fixed_git_container"
+        }
+      ],
+      "full_original_zip_durable_git_copy_confirmed": false,
+      "full_raw_custody_status": "Actions plus retained local ZIP; complete permanent copy not confirmed",
+      "proposed_benchmark_directory": "artifacts/benchmarks/37908825814/"
+    },
+    {
+      "artifact_id": 11612539681,
+      "name": "p8-mixed-c4-3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "scope": "mixed-c4",
+      "run_id": 37908825814,
+      "source_commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "actual_execution_checkout": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "official_metadata_path": "original-C3ff-runtime/artifacts/11612539681/artifact-metadata.json",
+      "zip_bytes": 16943374,
+      "official_zip_digest": "sha256:6d7e8f61bef70baea0d746e7e2fc87e0d026db107d289e8d9cbf7a8dfd4d57ea",
+      "created_at": "2026-10-09T11:26:20Z",
+      "expires_at": "2027-01-07T09:03:32Z",
+      "expired_as_captured": false,
+      "actions_locator": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11612539681",
+      "local_original_zip": "original-C3ff-runtime/artifacts/11612539681/11612539681.zip",
+      "local_zip_present_and_size_matches": true,
+      "zip_rehashed_in_this_task": false,
+      "acceptance_scope": "accepted_original_artifact_own_scope",
+      "review_records": [
+        {
+          "local_path": "original-C3ff-runtime/accepted/artifact-11612539681-3ffcefc3-independent-final/independent-review.json",
+          "bytes": 4747,
+          "sha256": "2b3414f730b0f5b918b4121a00a76418dbc0e49e307d496ac24b1ef8ff0f7c5e",
+          "git_blob": "525d57351e86a196ae99bb15f54fab702cb5794f",
+          "published_locations": [
+            {
+              "commit": "098a93cf6783887f1aed12466bc844b2c8d980dd",
+              "container_path": "artifacts/checkpoints/p8-round30-a217-20261009/round30-public-evidence.tar.gz",
+              "container_git_blob": "ba11acc0bf9a7a0d210c2f266799989b50bb04b2",
+              "container_sha256": "ef44ae3b35cd5633ad0beae4475cb8b01ecd38523415432c7052c19b563a501f",
+              "member": "runtime/mixed-c4/replay/independent-review.json",
+              "member_bytes": 4747,
+              "member_sha256": "2b3414f730b0f5b918b4121a00a76418dbc0e49e307d496ac24b1ef8ff0f7c5e",
+              "member_git_blob": "525d57351e86a196ae99bb15f54fab702cb5794f",
+              "binding_basis": "existing fully verified published container inventory; no container replay in this planning task"
+            }
+          ],
+          "publication_status": "published_in_fixed_git_container"
+        }
+      ],
+      "full_original_zip_durable_git_copy_confirmed": false,
+      "full_raw_custody_status": "Actions plus retained local ZIP; complete permanent copy not confirmed",
+      "proposed_benchmark_directory": "artifacts/benchmarks/37908825814/"
+    },
+    {
+      "artifact_id": 11612256751,
+      "name": "p8-mixed-c8-3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "scope": "mixed-c8",
+      "run_id": 37908825814,
+      "source_commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "actual_execution_checkout": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "official_metadata_path": "original-C3ff-runtime/artifacts/11612256751/artifact-metadata.json",
+      "zip_bytes": 16600500,
+      "official_zip_digest": "sha256:ae80133510856df3cf08cfd20c3e335caf53dff543aa2fb1ed65421b12eb2138",
+      "created_at": "2026-10-09T11:04:27Z",
+      "expires_at": "2027-01-07T09:03:32Z",
+      "expired_as_captured": false,
+      "actions_locator": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11612256751",
+      "local_original_zip": "original-C3ff-runtime/artifacts/11612256751/11612256751.zip",
+      "local_zip_present_and_size_matches": true,
+      "zip_rehashed_in_this_task": false,
+      "acceptance_scope": "accepted_original_artifact_own_scope",
+      "review_records": [
+        {
+          "local_path": "original-C3ff-runtime/accepted/artifact-11612256751-3ffcefc3-independent-final/independent-review.json",
+          "bytes": 4749,
+          "sha256": "733d508a6b3aa21340f8d9559198b4b5ba401fc98104412372b983317815eb19",
+          "git_blob": "b4e64c05d2fe2aedc30a544ae33372b81046dff2",
+          "published_locations": [
+            {
+              "commit": "098a93cf6783887f1aed12466bc844b2c8d980dd",
+              "container_path": "artifacts/checkpoints/p8-round30-a217-20261009/round30-public-evidence.tar.gz",
+              "container_git_blob": "ba11acc0bf9a7a0d210c2f266799989b50bb04b2",
+              "container_sha256": "ef44ae3b35cd5633ad0beae4475cb8b01ecd38523415432c7052c19b563a501f",
+              "member": "runtime/mixed-c8/replay/independent-review.json",
+              "member_bytes": 4749,
+              "member_sha256": "733d508a6b3aa21340f8d9559198b4b5ba401fc98104412372b983317815eb19",
+              "member_git_blob": "b4e64c05d2fe2aedc30a544ae33372b81046dff2",
+              "binding_basis": "existing fully verified published container inventory; no container replay in this planning task"
+            }
+          ],
+          "publication_status": "published_in_fixed_git_container"
+        }
+      ],
+      "full_original_zip_durable_git_copy_confirmed": false,
+      "full_raw_custody_status": "Actions plus retained local ZIP; complete permanent copy not confirmed",
+      "proposed_benchmark_directory": "artifacts/benchmarks/37908825814/"
+    },
+    {
+      "artifact_id": 11611524778,
+      "name": "p8-mixed-c16-3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "scope": "mixed-c16",
+      "run_id": 37908825814,
+      "source_commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "actual_execution_checkout": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "official_metadata_path": "original-C3ff-runtime/artifacts/11611524778/artifact-metadata.json",
+      "zip_bytes": 16365126,
+      "official_zip_digest": "sha256:1c62e498c2c15b5f67090f8e2ca4ee77a01c7c9c57ea3c8a00077fd113b5a2d6",
+      "created_at": "2026-10-09T11:15:07Z",
+      "expires_at": "2027-01-07T09:03:32Z",
+      "expired_as_captured": false,
+      "actions_locator": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11611524778",
+      "local_original_zip": "original-C3ff-runtime/artifacts/11611524778/11611524778.zip",
+      "local_zip_present_and_size_matches": true,
+      "zip_rehashed_in_this_task": false,
+      "acceptance_scope": "accepted_original_artifact_own_scope",
+      "review_records": [
+        {
+          "local_path": "original-C3ff-runtime/accepted/artifact-11611524778-3ffcefc3-independent-final/independent-review.json",
+          "bytes": 4756,
+          "sha256": "b64895f461d7d49ddc01858c70167bd1f28259558b8cc73a2e39af7630f02d98",
+          "git_blob": "4f2f309c8d4b138d6b34948fd38b8b89d402856a",
+          "published_locations": [
+            {
+              "commit": "098a93cf6783887f1aed12466bc844b2c8d980dd",
+              "container_path": "artifacts/checkpoints/p8-round30-a217-20261009/round30-public-evidence.tar.gz",
+              "container_git_blob": "ba11acc0bf9a7a0d210c2f266799989b50bb04b2",
+              "container_sha256": "ef44ae3b35cd5633ad0beae4475cb8b01ecd38523415432c7052c19b563a501f",
+              "member": "runtime/mixed-c16/replay/independent-review.json",
+              "member_bytes": 4756,
+              "member_sha256": "b64895f461d7d49ddc01858c70167bd1f28259558b8cc73a2e39af7630f02d98",
+              "member_git_blob": "4f2f309c8d4b138d6b34948fd38b8b89d402856a",
+              "binding_basis": "existing fully verified published container inventory; no container replay in this planning task"
+            }
+          ],
+          "publication_status": "published_in_fixed_git_container"
+        }
+      ],
+      "full_original_zip_durable_git_copy_confirmed": false,
+      "full_raw_custody_status": "Actions plus retained local ZIP; complete permanent copy not confirmed",
+      "proposed_benchmark_directory": "artifacts/benchmarks/37908825814/"
+    },
+    {
+      "artifact_id": 11613497404,
+      "name": "p8-soak-3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "scope": "soak",
+      "run_id": 37908825814,
+      "source_commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "actual_execution_checkout": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "official_metadata_path": "original-C3ff-runtime/artifacts/11613497404/artifact-metadata.json",
+      "zip_bytes": 50994781,
+      "official_zip_digest": "sha256:18a7e50472313bfcd1290810894e8ef3e9e0f18c476bd927e6a840ce8ecb8a1f",
+      "created_at": "2026-10-09T11:42:16Z",
+      "expires_at": "2027-01-07T09:03:32Z",
+      "expired_as_captured": false,
+      "actions_locator": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11613497404",
+      "local_original_zip": "original-C3ff-runtime/artifacts/11613497404/11613497404.zip",
+      "local_zip_present_and_size_matches": true,
+      "zip_rehashed_in_this_task": false,
+      "acceptance_scope": "accepted_original_artifact_own_scope",
+      "review_records": [
+        {
+          "local_path": "original-C3ff-runtime/accepted/artifact-11613497404-3ffcefc3-independent-final/independent-review.json",
+          "bytes": 7274,
+          "sha256": "6a6cc801c38a2a0ca6655b516f72a1ebffcb27b6b6bc6b0a83f18402a9565e39",
+          "git_blob": "c0b74bd688f260c172b84f6fd66e55c19f47d01b",
+          "published_locations": [],
+          "publication_status": "local_only_not_yet_confirmed_published"
+        }
+      ],
+      "full_original_zip_durable_git_copy_confirmed": false,
+      "full_raw_custody_status": "Actions plus retained local ZIP; complete permanent copy not confirmed",
+      "proposed_benchmark_directory": "artifacts/benchmarks/37908825814/"
+    },
+    {
+      "artifact_id": 11610619483,
+      "name": "p8-backfill-3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "scope": "controlled-backfill",
+      "run_id": 37908825814,
+      "source_commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "actual_execution_checkout": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "official_metadata_path": "original-C3ff-runtime/artifacts/11610619483/artifact-metadata.json",
+      "zip_bytes": 7835686,
+      "official_zip_digest": "sha256:eb07f5f3719018799dbe6bfd305e391be26b716872ed59cbb3bd0463fa1489b0",
+      "created_at": "2026-10-09T10:50:14Z",
+      "expires_at": "2027-01-07T09:03:32Z",
+      "expired_as_captured": false,
+      "actions_locator": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11610619483",
+      "local_original_zip": "original-C3ff-runtime/artifacts/11610619483/11610619483.zip",
+      "local_zip_present_and_size_matches": true,
+      "zip_rehashed_in_this_task": false,
+      "acceptance_scope": "accepted_original_artifact_own_scope",
+      "review_records": [
+        {
+          "local_path": "original-C3ff-runtime/accepted/backfill-11610619483-3ffcefc3-independent/independent-review.json",
+          "bytes": 12544,
+          "sha256": "9e0cd7c8d7d71e283bb2b3d719be1c95c4d9c00cbbf88b4512c457685f12258f",
+          "git_blob": "fd0ef8f0255d3da6c5de571010703440eff43914",
+          "published_locations": [
+            {
+              "commit": "098a93cf6783887f1aed12466bc844b2c8d980dd",
+              "container_path": "artifacts/checkpoints/p8-round29-a217-20261009/round29-public-evidence.tar.gz",
+              "container_git_blob": "a32879e3b42635bde5e2459f159cd3c0d1c85f24",
+              "container_sha256": "562f7855add368c77d4cf5c50813e7890bc183633316070680ca02ada20b47ae",
+              "member": "runtime/C-backfill/reviews/independent-review.json",
+              "member_bytes": 12544,
+              "member_sha256": "9e0cd7c8d7d71e283bb2b3d719be1c95c4d9c00cbbf88b4512c457685f12258f",
+              "member_git_blob": "fd0ef8f0255d3da6c5de571010703440eff43914",
+              "binding_basis": "existing fully verified published container inventory; no container replay in this planning task"
+            }
+          ],
+          "publication_status": "published_in_fixed_git_container"
+        }
+      ],
+      "full_original_zip_durable_git_copy_confirmed": false,
+      "full_raw_custody_status": "Actions plus retained local ZIP; complete permanent copy not confirmed",
+      "proposed_benchmark_directory": "artifacts/benchmarks/37908825814/"
+    },
+    {
+      "artifact_id": 11609403178,
+      "name": "p8-lifecycle-3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "scope": "lifecycle",
+      "run_id": 37908825715,
+      "source_commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "actual_execution_checkout": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "official_metadata_path": "original-C3ff-runtime/artifacts/11609403178/artifact-metadata.json",
+      "zip_bytes": 49230392,
+      "official_zip_digest": "sha256:33b0c0c362e7134a3e434224bf9aed200b8d469b59307aeee2afbc0f1009ba0e",
+      "created_at": "2026-10-09T10:10:25Z",
+      "expires_at": "2026-10-30T10:10:17Z",
+      "expired_as_captured": false,
+      "actions_locator": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11609403178",
+      "local_original_zip": "original-C3ff-runtime/artifacts/11609403178/11609403178.zip",
+      "local_zip_present_and_size_matches": true,
+      "zip_rehashed_in_this_task": false,
+      "acceptance_scope": "accepted_original_artifact_own_scope",
+      "review_records": [
+        {
+          "local_path": "original-C3ff-runtime/accepted/lifecycle-11609403178-3ffcefc3-independent/independent-review.json",
+          "bytes": 25308,
+          "sha256": "0f2917331521c0844c4d49b4c901050c8a83a1bba02b048f0c7f3129aaf3543f",
+          "git_blob": "9e360c19637c85a0b022e801270a337c741f0ea0",
+          "published_locations": [
+            {
+              "commit": "098a93cf6783887f1aed12466bc844b2c8d980dd",
+              "container_path": "artifacts/checkpoints/p8-round28-a217-20261009/round28-public-evidence.tar.gz",
+              "container_git_blob": "b562ece595677cbe773e474952615185a1fa9906",
+              "container_sha256": "f56f52e37382b04fb990798c5e81a5f737b40b40fbb626e3c60687d51ce68c06",
+              "member": "runtime/life-C/independent-review.json",
+              "member_bytes": 25308,
+              "member_sha256": "0f2917331521c0844c4d49b4c901050c8a83a1bba02b048f0c7f3129aaf3543f",
+              "member_git_blob": "9e360c19637c85a0b022e801270a337c741f0ea0",
+              "binding_basis": "existing fully verified published container inventory; no container replay in this planning task"
+            }
+          ],
+          "publication_status": "published_in_fixed_git_container"
+        }
+      ],
+      "full_original_zip_durable_git_copy_confirmed": false,
+      "full_raw_custody_status": "Actions plus retained local ZIP; complete permanent copy not confirmed",
+      "proposed_benchmark_directory": "artifacts/benchmarks/37908825715/"
+    },
+    {
+      "artifact_id": 11611995300,
+      "name": "p8-full-recovery-3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "scope": "recovery-and-version-pair",
+      "run_id": 37908825722,
+      "source_commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "actual_execution_checkout": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "official_metadata_path": "original-C3ff-runtime/artifacts/11611995300/artifact-metadata.json",
+      "zip_bytes": 121801440,
+      "official_zip_digest": "sha256:cedbfc80ae8df8ce29c4c8478535e2af855cda143a5dfa6454aeebeb4ea808e4",
+      "created_at": "2026-10-09T10:51:21Z",
+      "expires_at": "2027-01-07T09:03:32Z",
+      "expired_as_captured": false,
+      "actions_locator": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11611995300",
+      "local_original_zip": "original-C3ff-runtime/artifacts/11611995300/11611995300.zip",
+      "local_zip_present_and_size_matches": true,
+      "zip_rehashed_in_this_task": false,
+      "acceptance_scope": "accepted_original_artifact_own_scope",
+      "review_records": [
+        {
+          "local_path": "original-C3ff-runtime/accepted/recovery-11611995300-3ffcefc3-independent/recovery-C3ff-review.json",
+          "bytes": 15436,
+          "sha256": "cead9d468065c80158b4c30abe98ec542b43f45d8b2d204397c99d26b9ca0eb6",
+          "git_blob": "863f03ff471d3c1817110de08ea2688d5e62def6",
+          "published_locations": [
+            {
+              "commit": "098a93cf6783887f1aed12466bc844b2c8d980dd",
+              "container_path": "artifacts/checkpoints/p8-round29-a217-20261009/round29-public-evidence.tar.gz",
+              "container_git_blob": "a32879e3b42635bde5e2459f159cd3c0d1c85f24",
+              "container_sha256": "562f7855add368c77d4cf5c50813e7890bc183633316070680ca02ada20b47ae",
+              "member": "runtime/C-recovery/reviews/recovery-C3ff-review.json",
+              "member_bytes": 15436,
+              "member_sha256": "cead9d468065c80158b4c30abe98ec542b43f45d8b2d204397c99d26b9ca0eb6",
+              "member_git_blob": "863f03ff471d3c1817110de08ea2688d5e62def6",
+              "binding_basis": "existing fully verified published container inventory; no container replay in this planning task"
+            }
+          ],
+          "publication_status": "published_in_fixed_git_container"
+        },
+        {
+          "local_path": "original-C3ff-runtime/accepted/recovery-11611995300-3ffcefc3-independent/recovery-C3ff-011-review.json",
+          "bytes": 9097,
+          "sha256": "bdf214a68fe4c82af9fef3a6e84aea68e8520acb3379ced171b177f5622d909a",
+          "git_blob": "f4abc97ac9836b73290e75b2e7c7a0ff1c131152",
+          "published_locations": [
+            {
+              "commit": "098a93cf6783887f1aed12466bc844b2c8d980dd",
+              "container_path": "artifacts/checkpoints/p8-round29-a217-20261009/round29-public-evidence.tar.gz",
+              "container_git_blob": "a32879e3b42635bde5e2459f159cd3c0d1c85f24",
+              "container_sha256": "562f7855add368c77d4cf5c50813e7890bc183633316070680ca02ada20b47ae",
+              "member": "runtime/C-recovery/reviews/recovery-C3ff-011-review.json",
+              "member_bytes": 9097,
+              "member_sha256": "bdf214a68fe4c82af9fef3a6e84aea68e8520acb3379ced171b177f5622d909a",
+              "member_git_blob": "f4abc97ac9836b73290e75b2e7c7a0ff1c131152",
+              "binding_basis": "existing fully verified published container inventory; no container replay in this planning task"
+            }
+          ],
+          "publication_status": "published_in_fixed_git_container"
+        }
+      ],
+      "full_original_zip_durable_git_copy_confirmed": false,
+      "full_raw_custody_status": "Actions plus retained local ZIP; complete permanent copy not confirmed",
+      "proposed_benchmark_directory": "artifacts/benchmarks/37908825722/"
+    },
+    {
+      "artifact_id": 11608597487,
+      "name": "p8-gates-3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "scope": "failure-gates-six-cases",
+      "run_id": 37908826034,
+      "source_commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "actual_execution_checkout": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "official_metadata_path": "original-C3ff-platform-gates/zips/11608597487/artifact-metadata.json",
+      "zip_bytes": 33027724,
+      "official_zip_digest": "sha256:67b189e6890a20825e899e7b501a5358c153701af8290ffc8616d5340fb45f87",
+      "created_at": "2026-10-09T10:01:06Z",
+      "expires_at": "2027-01-07T09:03:33Z",
+      "expired_as_captured": false,
+      "actions_locator": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11608597487",
+      "local_original_zip": "original-C3ff-platform-gates/zips/11608597487/11608597487.zip",
+      "local_zip_present_and_size_matches": true,
+      "zip_rehashed_in_this_task": false,
+      "acceptance_scope": "accepted_original_artifact_own_scope",
+      "review_records": [
+        {
+          "local_path": "original-C3ff-platform-gates/gates-review/review.json",
+          "bytes": 12062,
+          "sha256": "0e3367c58365731ae5f6d6a9ca13b3052e1e79284cad01920203527ba361969e",
+          "git_blob": "c6e27fb944823c510cda0a2ec61be30a921bd0f9",
+          "published_locations": [
+            {
+              "commit": "098a93cf6783887f1aed12466bc844b2c8d980dd",
+              "container_path": "artifacts/checkpoints/p8-round28-a217-20261009/round28-public-evidence.tar.gz",
+              "container_git_blob": "b562ece595677cbe773e474952615185a1fa9906",
+              "container_sha256": "f56f52e37382b04fb990798c5e81a5f737b40b40fbb626e3c60687d51ce68c06",
+              "member": "platform-gates/platform-gates/gates-review/review.json",
+              "member_bytes": 12062,
+              "member_sha256": "0e3367c58365731ae5f6d6a9ca13b3052e1e79284cad01920203527ba361969e",
+              "member_git_blob": "c6e27fb944823c510cda0a2ec61be30a921bd0f9",
+              "binding_basis": "existing fully verified published container inventory; no container replay in this planning task"
+            }
+          ],
+          "publication_status": "published_in_fixed_git_container"
+        }
+      ],
+      "full_original_zip_durable_git_copy_confirmed": false,
+      "full_raw_custody_status": "Actions plus retained local ZIP; complete permanent copy not confirmed",
+      "proposed_benchmark_directory": "artifacts/benchmarks/37908826034/"
+    },
+    {
+      "artifact_id": 11609383875,
+      "name": "p8-platform-cell-macos-1.95-default-3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "scope": "platform-portable-cell",
+      "run_id": 37908825722,
+      "source_commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "actual_execution_checkout": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "official_metadata_path": "original-C3ff-platform-gates/zips/11609383875/artifact-metadata.json",
+      "zip_bytes": 8037941,
+      "official_zip_digest": "sha256:91edc8357bd2f58fd4292c1e637a587170cb9dc7ba697f795dd5c51812873116",
+      "created_at": "2026-10-09T10:12:03Z",
+      "expires_at": "2027-01-07T09:03:32Z",
+      "expired_as_captured": false,
+      "actions_locator": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11609383875",
+      "local_original_zip": "original-C3ff-platform-gates/zips/11609383875/11609383875.zip",
+      "local_zip_present_and_size_matches": true,
+      "zip_rehashed_in_this_task": false,
+      "acceptance_scope": "accepted_original_artifact_own_scope",
+      "review_records": [
+        {
+          "local_path": "original-C3ff-platform-gates/complete-eight-review/platform-C3ff-cell-review.json",
+          "bytes": 11433,
+          "sha256": "d8dba40033b5ebc5e0a47f6ca0e277646e38eb0ceedeb72a018d7ed7c3aa5e8b",
+          "git_blob": "1cc9ef234c0ac70e2287438ccc6aa2283321cfd0",
+          "published_locations": [],
+          "publication_status": "local_only_not_yet_confirmed_published"
+        }
+      ],
+      "full_original_zip_durable_git_copy_confirmed": false,
+      "full_raw_custody_status": "Actions plus retained local ZIP; complete permanent copy not confirmed",
+      "proposed_benchmark_directory": "artifacts/benchmarks/37908825722/"
+    },
+    {
+      "artifact_id": 11609723220,
+      "name": "p8-platform-raw-macos-1.95-default-3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "scope": "platform-full-raw",
+      "run_id": 37908825722,
+      "source_commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "actual_execution_checkout": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "official_metadata_path": "original-C3ff-platform-gates/zips/11609723220/artifact-metadata.json",
+      "zip_bytes": 8126202,
+      "official_zip_digest": "sha256:afa2445e4186b31bef9f54f29fe47f154f7b77e1b9229704b917c095c6255cf6",
+      "created_at": "2026-10-09T10:12:05Z",
+      "expires_at": "2027-01-07T09:03:32Z",
+      "expired_as_captured": false,
+      "actions_locator": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11609723220",
+      "local_original_zip": "original-C3ff-platform-gates/zips/11609723220/11609723220.zip",
+      "local_zip_present_and_size_matches": true,
+      "zip_rehashed_in_this_task": false,
+      "acceptance_scope": "accepted_original_artifact_own_scope",
+      "review_records": [
+        {
+          "local_path": "original-C3ff-platform-gates/complete-eight-review/platform-C3ff-cell-review.json",
+          "bytes": 11433,
+          "sha256": "d8dba40033b5ebc5e0a47f6ca0e277646e38eb0ceedeb72a018d7ed7c3aa5e8b",
+          "git_blob": "1cc9ef234c0ac70e2287438ccc6aa2283321cfd0",
+          "published_locations": [],
+          "publication_status": "local_only_not_yet_confirmed_published"
+        }
+      ],
+      "full_original_zip_durable_git_copy_confirmed": false,
+      "full_raw_custody_status": "Actions plus retained local ZIP; complete permanent copy not confirmed",
+      "proposed_benchmark_directory": "artifacts/benchmarks/37908825722/"
+    },
+    {
+      "artifact_id": 11609808293,
+      "name": "p8-platform-cell-macos-stable-default-3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "scope": "platform-portable-cell",
+      "run_id": 37908825722,
+      "source_commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "actual_execution_checkout": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "official_metadata_path": "original-C3ff-platform-gates/zips/11609808293/artifact-metadata.json",
+      "zip_bytes": 8361627,
+      "official_zip_digest": "sha256:cea726d7c61e7c81280b8221102d0f96494234620b3dbd87800d9193365e885e",
+      "created_at": "2026-10-09T10:12:33Z",
+      "expires_at": "2027-01-07T09:03:32Z",
+      "expired_as_captured": false,
+      "actions_locator": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11609808293",
+      "local_original_zip": "original-C3ff-platform-gates/zips/11609808293/11609808293.zip",
+      "local_zip_present_and_size_matches": true,
+      "zip_rehashed_in_this_task": false,
+      "acceptance_scope": "accepted_original_artifact_own_scope",
+      "review_records": [
+        {
+          "local_path": "original-C3ff-platform-gates/complete-eight-review/platform-C3ff-cell-review.json",
+          "bytes": 11433,
+          "sha256": "d8dba40033b5ebc5e0a47f6ca0e277646e38eb0ceedeb72a018d7ed7c3aa5e8b",
+          "git_blob": "1cc9ef234c0ac70e2287438ccc6aa2283321cfd0",
+          "published_locations": [],
+          "publication_status": "local_only_not_yet_confirmed_published"
+        }
+      ],
+      "full_original_zip_durable_git_copy_confirmed": false,
+      "full_raw_custody_status": "Actions plus retained local ZIP; complete permanent copy not confirmed",
+      "proposed_benchmark_directory": "artifacts/benchmarks/37908825722/"
+    },
+    {
+      "artifact_id": 11609853328,
+      "name": "p8-platform-raw-macos-stable-default-3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "scope": "platform-full-raw",
+      "run_id": 37908825722,
+      "source_commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "actual_execution_checkout": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "official_metadata_path": "original-C3ff-platform-gates/zips/11609853328/artifact-metadata.json",
+      "zip_bytes": 8449381,
+      "official_zip_digest": "sha256:c6960de65dbb04c5bb956214bd96cb196053b1bea8e6dd964203d9a144af2986",
+      "created_at": "2026-10-09T10:12:35Z",
+      "expires_at": "2027-01-07T09:03:32Z",
+      "expired_as_captured": false,
+      "actions_locator": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11609853328",
+      "local_original_zip": "original-C3ff-platform-gates/zips/11609853328/11609853328.zip",
+      "local_zip_present_and_size_matches": true,
+      "zip_rehashed_in_this_task": false,
+      "acceptance_scope": "accepted_original_artifact_own_scope",
+      "review_records": [
+        {
+          "local_path": "original-C3ff-platform-gates/complete-eight-review/platform-C3ff-cell-review.json",
+          "bytes": 11433,
+          "sha256": "d8dba40033b5ebc5e0a47f6ca0e277646e38eb0ceedeb72a018d7ed7c3aa5e8b",
+          "git_blob": "1cc9ef234c0ac70e2287438ccc6aa2283321cfd0",
+          "published_locations": [],
+          "publication_status": "local_only_not_yet_confirmed_published"
+        }
+      ],
+      "full_original_zip_durable_git_copy_confirmed": false,
+      "full_raw_custody_status": "Actions plus retained local ZIP; complete permanent copy not confirmed",
+      "proposed_benchmark_directory": "artifacts/benchmarks/37908825722/"
+    },
+    {
+      "artifact_id": 11610185903,
+      "name": "p8-platform-raw-macos-stable-semantic-3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "scope": "platform-full-raw",
+      "run_id": 37908825722,
+      "source_commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "actual_execution_checkout": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "official_metadata_path": "original-C3ff-platform-gates/zips/11610185903/artifact-metadata.json",
+      "zip_bytes": 8700816,
+      "official_zip_digest": "sha256:7039ac68aeee4d48cd40ffa79dbd9145e7a4ac85ef42aee07ca8ec6f16efdd6f",
+      "created_at": "2026-10-09T10:21:04Z",
+      "expires_at": "2027-01-07T09:03:32Z",
+      "expired_as_captured": false,
+      "actions_locator": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11610185903",
+      "local_original_zip": "original-C3ff-platform-gates/zips/11610185903/11610185903.zip",
+      "local_zip_present_and_size_matches": true,
+      "zip_rehashed_in_this_task": false,
+      "acceptance_scope": "accepted_original_artifact_own_scope",
+      "review_records": [
+        {
+          "local_path": "original-C3ff-platform-gates/complete-eight-review/platform-C3ff-cell-review.json",
+          "bytes": 11433,
+          "sha256": "d8dba40033b5ebc5e0a47f6ca0e277646e38eb0ceedeb72a018d7ed7c3aa5e8b",
+          "git_blob": "1cc9ef234c0ac70e2287438ccc6aa2283321cfd0",
+          "published_locations": [],
+          "publication_status": "local_only_not_yet_confirmed_published"
+        }
+      ],
+      "full_original_zip_durable_git_copy_confirmed": false,
+      "full_raw_custody_status": "Actions plus retained local ZIP; complete permanent copy not confirmed",
+      "proposed_benchmark_directory": "artifacts/benchmarks/37908825722/"
+    },
+    {
+      "artifact_id": 11610850143,
+      "name": "p8-platform-cell-macos-stable-semantic-3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "scope": "platform-portable-cell",
+      "run_id": 37908825722,
+      "source_commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "actual_execution_checkout": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "official_metadata_path": "original-C3ff-platform-gates/zips/11610850143/artifact-metadata.json",
+      "zip_bytes": 8613033,
+      "official_zip_digest": "sha256:dbb9bbd09280511c4aecc4832307acf0b58a3485ae52e6eeba7caf150b6052e4",
+      "created_at": "2026-10-09T10:21:02Z",
+      "expires_at": "2027-01-07T09:03:32Z",
+      "expired_as_captured": false,
+      "actions_locator": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11610850143",
+      "local_original_zip": "original-C3ff-platform-gates/zips/11610850143/11610850143.zip",
+      "local_zip_present_and_size_matches": true,
+      "zip_rehashed_in_this_task": false,
+      "acceptance_scope": "accepted_original_artifact_own_scope",
+      "review_records": [
+        {
+          "local_path": "original-C3ff-platform-gates/complete-eight-review/platform-C3ff-cell-review.json",
+          "bytes": 11433,
+          "sha256": "d8dba40033b5ebc5e0a47f6ca0e277646e38eb0ceedeb72a018d7ed7c3aa5e8b",
+          "git_blob": "1cc9ef234c0ac70e2287438ccc6aa2283321cfd0",
+          "published_locations": [],
+          "publication_status": "local_only_not_yet_confirmed_published"
+        }
+      ],
+      "full_original_zip_durable_git_copy_confirmed": false,
+      "full_raw_custody_status": "Actions plus retained local ZIP; complete permanent copy not confirmed",
+      "proposed_benchmark_directory": "artifacts/benchmarks/37908825722/"
+    },
+    {
+      "artifact_id": 11610971397,
+      "name": "p8-platform-cell-macos-1.95-semantic-3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "scope": "platform-portable-cell",
+      "run_id": 37908825722,
+      "source_commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "actual_execution_checkout": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "official_metadata_path": "original-C3ff-platform-gates/zips/11610971397/artifact-metadata.json",
+      "zip_bytes": 8278183,
+      "official_zip_digest": "sha256:a18336861a68eee003d8eea84bb39f5e197948c1a28f10186b2a16e2b10a192c",
+      "created_at": "2026-10-09T10:28:28Z",
+      "expires_at": "2027-01-07T09:03:32Z",
+      "expired_as_captured": false,
+      "actions_locator": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11610971397",
+      "local_original_zip": "original-C3ff-platform-gates/zips/11610971397/11610971397.zip",
+      "local_zip_present_and_size_matches": true,
+      "zip_rehashed_in_this_task": false,
+      "acceptance_scope": "accepted_original_artifact_own_scope",
+      "review_records": [
+        {
+          "local_path": "original-C3ff-platform-gates/complete-eight-review/platform-C3ff-cell-review.json",
+          "bytes": 11433,
+          "sha256": "d8dba40033b5ebc5e0a47f6ca0e277646e38eb0ceedeb72a018d7ed7c3aa5e8b",
+          "git_blob": "1cc9ef234c0ac70e2287438ccc6aa2283321cfd0",
+          "published_locations": [],
+          "publication_status": "local_only_not_yet_confirmed_published"
+        }
+      ],
+      "full_original_zip_durable_git_copy_confirmed": false,
+      "full_raw_custody_status": "Actions plus retained local ZIP; complete permanent copy not confirmed",
+      "proposed_benchmark_directory": "artifacts/benchmarks/37908825722/"
+    },
+    {
+      "artifact_id": 11611246104,
+      "name": "p8-platform-raw-macos-1.95-semantic-3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "scope": "platform-full-raw",
+      "run_id": 37908825722,
+      "source_commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "actual_execution_checkout": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "official_metadata_path": "original-C3ff-platform-gates/zips/11611246104/artifact-metadata.json",
+      "zip_bytes": 8366467,
+      "official_zip_digest": "sha256:5d85e73919d060ab80df0528f080a602110325de821488bcd087066e57f5cdbb",
+      "created_at": "2026-10-09T10:28:30Z",
+      "expires_at": "2027-01-07T09:03:32Z",
+      "expired_as_captured": false,
+      "actions_locator": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11611246104",
+      "local_original_zip": "original-C3ff-platform-gates/zips/11611246104/11611246104.zip",
+      "local_zip_present_and_size_matches": true,
+      "zip_rehashed_in_this_task": false,
+      "acceptance_scope": "accepted_original_artifact_own_scope",
+      "review_records": [
+        {
+          "local_path": "original-C3ff-platform-gates/complete-eight-review/platform-C3ff-cell-review.json",
+          "bytes": 11433,
+          "sha256": "d8dba40033b5ebc5e0a47f6ca0e277646e38eb0ceedeb72a018d7ed7c3aa5e8b",
+          "git_blob": "1cc9ef234c0ac70e2287438ccc6aa2283321cfd0",
+          "published_locations": [],
+          "publication_status": "local_only_not_yet_confirmed_published"
+        }
+      ],
+      "full_original_zip_durable_git_copy_confirmed": false,
+      "full_raw_custody_status": "Actions plus retained local ZIP; complete permanent copy not confirmed",
+      "proposed_benchmark_directory": "artifacts/benchmarks/37908825722/"
+    },
+    {
+      "artifact_id": 11612174906,
+      "name": "p8-platform-cell-linux-1.95-semantic-3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "scope": "platform-portable-cell",
+      "run_id": 37908825722,
+      "source_commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "actual_execution_checkout": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "official_metadata_path": "original-C3ff-platform-gates/zips/11612174906/artifact-metadata.json",
+      "zip_bytes": 9031835,
+      "official_zip_digest": "sha256:60b57be8cf0470c3357ab6ea9ff8738877394abf2fd7c6b22a5a84dfcc4945d7",
+      "created_at": "2026-10-09T11:18:07Z",
+      "expires_at": "2027-01-07T09:03:32Z",
+      "expired_as_captured": false,
+      "actions_locator": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11612174906",
+      "local_original_zip": "original-C3ff-platform-gates/zips/11612174906/11612174906.zip",
+      "local_zip_present_and_size_matches": true,
+      "zip_rehashed_in_this_task": false,
+      "acceptance_scope": "accepted_original_artifact_own_scope",
+      "review_records": [
+        {
+          "local_path": "original-C3ff-platform-gates/complete-eight-review/platform-C3ff-cell-review.json",
+          "bytes": 11433,
+          "sha256": "d8dba40033b5ebc5e0a47f6ca0e277646e38eb0ceedeb72a018d7ed7c3aa5e8b",
+          "git_blob": "1cc9ef234c0ac70e2287438ccc6aa2283321cfd0",
+          "published_locations": [],
+          "publication_status": "local_only_not_yet_confirmed_published"
+        }
+      ],
+      "full_original_zip_durable_git_copy_confirmed": false,
+      "full_raw_custody_status": "Actions plus retained local ZIP; complete permanent copy not confirmed",
+      "proposed_benchmark_directory": "artifacts/benchmarks/37908825722/"
+    },
+    {
+      "artifact_id": 11612296390,
+      "name": "p8-platform-cell-linux-stable-semantic-3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "scope": "platform-portable-cell",
+      "run_id": 37908825722,
+      "source_commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "actual_execution_checkout": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "official_metadata_path": "original-C3ff-platform-gates/zips/11612296390/artifact-metadata.json",
+      "zip_bytes": 8976904,
+      "official_zip_digest": "sha256:7823901a81d7d9fac4be71a12834a93d6110aec6c2f156f44ef0c0c450d11d54",
+      "created_at": "2026-10-09T11:02:25Z",
+      "expires_at": "2027-01-07T09:03:32Z",
+      "expired_as_captured": false,
+      "actions_locator": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11612296390",
+      "local_original_zip": "original-C3ff-platform-gates/zips/11612296390/11612296390.zip",
+      "local_zip_present_and_size_matches": true,
+      "zip_rehashed_in_this_task": false,
+      "acceptance_scope": "accepted_original_artifact_own_scope",
+      "review_records": [
+        {
+          "local_path": "original-C3ff-platform-gates/complete-eight-review/platform-C3ff-cell-review.json",
+          "bytes": 11433,
+          "sha256": "d8dba40033b5ebc5e0a47f6ca0e277646e38eb0ceedeb72a018d7ed7c3aa5e8b",
+          "git_blob": "1cc9ef234c0ac70e2287438ccc6aa2283321cfd0",
+          "published_locations": [],
+          "publication_status": "local_only_not_yet_confirmed_published"
+        }
+      ],
+      "full_original_zip_durable_git_copy_confirmed": false,
+      "full_raw_custody_status": "Actions plus retained local ZIP; complete permanent copy not confirmed",
+      "proposed_benchmark_directory": "artifacts/benchmarks/37908825722/"
+    },
+    {
+      "artifact_id": 11612451345,
+      "name": "p8-platform-raw-linux-stable-semantic-3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "scope": "platform-full-raw",
+      "run_id": 37908825722,
+      "source_commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "actual_execution_checkout": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "official_metadata_path": "original-C3ff-platform-gates/zips/11612451345/artifact-metadata.json",
+      "zip_bytes": 9064425,
+      "official_zip_digest": "sha256:3ebe09aafb695ec346418ef7a531f170fc024c67265c392bbac9cdea0092a02b",
+      "created_at": "2026-10-09T11:02:26Z",
+      "expires_at": "2027-01-07T09:03:32Z",
+      "expired_as_captured": false,
+      "actions_locator": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11612451345",
+      "local_original_zip": "original-C3ff-platform-gates/zips/11612451345/11612451345.zip",
+      "local_zip_present_and_size_matches": true,
+      "zip_rehashed_in_this_task": false,
+      "acceptance_scope": "accepted_original_artifact_own_scope",
+      "review_records": [
+        {
+          "local_path": "original-C3ff-platform-gates/complete-eight-review/platform-C3ff-cell-review.json",
+          "bytes": 11433,
+          "sha256": "d8dba40033b5ebc5e0a47f6ca0e277646e38eb0ceedeb72a018d7ed7c3aa5e8b",
+          "git_blob": "1cc9ef234c0ac70e2287438ccc6aa2283321cfd0",
+          "published_locations": [],
+          "publication_status": "local_only_not_yet_confirmed_published"
+        }
+      ],
+      "full_original_zip_durable_git_copy_confirmed": false,
+      "full_raw_custody_status": "Actions plus retained local ZIP; complete permanent copy not confirmed",
+      "proposed_benchmark_directory": "artifacts/benchmarks/37908825722/"
+    },
+    {
+      "artifact_id": 11612759454,
+      "name": "p8-platform-raw-linux-1.95-default-3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "scope": "platform-full-raw",
+      "run_id": 37908825722,
+      "source_commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "actual_execution_checkout": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "official_metadata_path": "original-C3ff-platform-gates/zips/11612759454/artifact-metadata.json",
+      "zip_bytes": 8865644,
+      "official_zip_digest": "sha256:c5754f9d3ec69a6dd15c41577263f7de6ddb6e095d19eaa08283778f1ab2af67",
+      "created_at": "2026-10-09T11:28:47Z",
+      "expires_at": "2027-01-07T09:03:32Z",
+      "expired_as_captured": false,
+      "actions_locator": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11612759454",
+      "local_original_zip": "original-C3ff-platform-gates/zips/11612759454/11612759454.zip",
+      "local_zip_present_and_size_matches": true,
+      "zip_rehashed_in_this_task": false,
+      "acceptance_scope": "accepted_original_artifact_own_scope",
+      "review_records": [
+        {
+          "local_path": "original-C3ff-platform-gates/complete-eight-review/platform-C3ff-cell-review.json",
+          "bytes": 11433,
+          "sha256": "d8dba40033b5ebc5e0a47f6ca0e277646e38eb0ceedeb72a018d7ed7c3aa5e8b",
+          "git_blob": "1cc9ef234c0ac70e2287438ccc6aa2283321cfd0",
+          "published_locations": [],
+          "publication_status": "local_only_not_yet_confirmed_published"
+        }
+      ],
+      "full_original_zip_durable_git_copy_confirmed": false,
+      "full_raw_custody_status": "Actions plus retained local ZIP; complete permanent copy not confirmed",
+      "proposed_benchmark_directory": "artifacts/benchmarks/37908825722/"
+    },
+    {
+      "artifact_id": 11612849803,
+      "name": "p8-platform-raw-linux-stable-default-3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "scope": "platform-full-raw",
+      "run_id": 37908825722,
+      "source_commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "actual_execution_checkout": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "official_metadata_path": "original-C3ff-platform-gates/zips/11612849803/artifact-metadata.json",
+      "zip_bytes": 8815264,
+      "official_zip_digest": "sha256:546ade1636b0c99a856cbc91259b5be6fa86502452f20c409250129e3ac25e50",
+      "created_at": "2026-10-09T11:40:00Z",
+      "expires_at": "2027-01-07T09:03:32Z",
+      "expired_as_captured": false,
+      "actions_locator": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11612849803",
+      "local_original_zip": "original-C3ff-platform-gates/zips/11612849803/11612849803.zip",
+      "local_zip_present_and_size_matches": true,
+      "zip_rehashed_in_this_task": false,
+      "acceptance_scope": "accepted_original_artifact_own_scope",
+      "review_records": [
+        {
+          "local_path": "original-C3ff-platform-gates/complete-eight-review/platform-C3ff-cell-review.json",
+          "bytes": 11433,
+          "sha256": "d8dba40033b5ebc5e0a47f6ca0e277646e38eb0ceedeb72a018d7ed7c3aa5e8b",
+          "git_blob": "1cc9ef234c0ac70e2287438ccc6aa2283321cfd0",
+          "published_locations": [],
+          "publication_status": "local_only_not_yet_confirmed_published"
+        }
+      ],
+      "full_original_zip_durable_git_copy_confirmed": false,
+      "full_raw_custody_status": "Actions plus retained local ZIP; complete permanent copy not confirmed",
+      "proposed_benchmark_directory": "artifacts/benchmarks/37908825722/"
+    },
+    {
+      "artifact_id": 11612935410,
+      "name": "p8-platform-raw-linux-1.95-semantic-3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "scope": "platform-full-raw",
+      "run_id": 37908825722,
+      "source_commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "actual_execution_checkout": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "official_metadata_path": "original-C3ff-platform-gates/zips/11612935410/artifact-metadata.json",
+      "zip_bytes": 9119846,
+      "official_zip_digest": "sha256:71a96a793f7dc056a7bfd4c920a031d46e77c231e5a9d1d4f30f48fdbcf7c6df",
+      "created_at": "2026-10-09T11:18:10Z",
+      "expires_at": "2027-01-07T09:03:32Z",
+      "expired_as_captured": false,
+      "actions_locator": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11612935410",
+      "local_original_zip": "original-C3ff-platform-gates/zips/11612935410/11612935410.zip",
+      "local_zip_present_and_size_matches": true,
+      "zip_rehashed_in_this_task": false,
+      "acceptance_scope": "accepted_original_artifact_own_scope",
+      "review_records": [
+        {
+          "local_path": "original-C3ff-platform-gates/complete-eight-review/platform-C3ff-cell-review.json",
+          "bytes": 11433,
+          "sha256": "d8dba40033b5ebc5e0a47f6ca0e277646e38eb0ceedeb72a018d7ed7c3aa5e8b",
+          "git_blob": "1cc9ef234c0ac70e2287438ccc6aa2283321cfd0",
+          "published_locations": [],
+          "publication_status": "local_only_not_yet_confirmed_published"
+        }
+      ],
+      "full_original_zip_durable_git_copy_confirmed": false,
+      "full_raw_custody_status": "Actions plus retained local ZIP; complete permanent copy not confirmed",
+      "proposed_benchmark_directory": "artifacts/benchmarks/37908825722/"
+    },
+    {
+      "artifact_id": 11612952575,
+      "name": "p8-platform-cell-linux-1.95-default-3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "scope": "platform-portable-cell",
+      "run_id": 37908825722,
+      "source_commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "actual_execution_checkout": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "official_metadata_path": "original-C3ff-platform-gates/zips/11612952575/artifact-metadata.json",
+      "zip_bytes": 8777661,
+      "official_zip_digest": "sha256:f34db922ae00c97b0a0d259289b68f7e5390bed29ab8c771f30733b1764c035a",
+      "created_at": "2026-10-09T11:28:45Z",
+      "expires_at": "2027-01-07T09:03:32Z",
+      "expired_as_captured": false,
+      "actions_locator": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11612952575",
+      "local_original_zip": "original-C3ff-platform-gates/zips/11612952575/11612952575.zip",
+      "local_zip_present_and_size_matches": true,
+      "zip_rehashed_in_this_task": false,
+      "acceptance_scope": "accepted_original_artifact_own_scope",
+      "review_records": [
+        {
+          "local_path": "original-C3ff-platform-gates/complete-eight-review/platform-C3ff-cell-review.json",
+          "bytes": 11433,
+          "sha256": "d8dba40033b5ebc5e0a47f6ca0e277646e38eb0ceedeb72a018d7ed7c3aa5e8b",
+          "git_blob": "1cc9ef234c0ac70e2287438ccc6aa2283321cfd0",
+          "published_locations": [],
+          "publication_status": "local_only_not_yet_confirmed_published"
+        }
+      ],
+      "full_original_zip_durable_git_copy_confirmed": false,
+      "full_raw_custody_status": "Actions plus retained local ZIP; complete permanent copy not confirmed",
+      "proposed_benchmark_directory": "artifacts/benchmarks/37908825722/"
+    },
+    {
+      "artifact_id": 11614026675,
+      "name": "p8-platform-cell-linux-stable-default-3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "scope": "platform-portable-cell",
+      "run_id": 37908825722,
+      "source_commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "actual_execution_checkout": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "official_metadata_path": "original-C3ff-platform-gates/zips/11614026675/artifact-metadata.json",
+      "zip_bytes": 8727770,
+      "official_zip_digest": "sha256:8b872926a757b66629ee43d3d43dee9bb8e12b4ea0c3d3ecc23ae9183ced5a24",
+      "created_at": "2026-10-09T11:39:58Z",
+      "expires_at": "2027-01-07T09:03:32Z",
+      "expired_as_captured": false,
+      "actions_locator": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11614026675",
+      "local_original_zip": "original-C3ff-platform-gates/zips/11614026675/11614026675.zip",
+      "local_zip_present_and_size_matches": true,
+      "zip_rehashed_in_this_task": false,
+      "acceptance_scope": "accepted_original_artifact_own_scope",
+      "review_records": [
+        {
+          "local_path": "original-C3ff-platform-gates/complete-eight-review/platform-C3ff-cell-review.json",
+          "bytes": 11433,
+          "sha256": "d8dba40033b5ebc5e0a47f6ca0e277646e38eb0ceedeb72a018d7ed7c3aa5e8b",
+          "git_blob": "1cc9ef234c0ac70e2287438ccc6aa2283321cfd0",
+          "published_locations": [],
+          "publication_status": "local_only_not_yet_confirmed_published"
+        }
+      ],
+      "full_original_zip_durable_git_copy_confirmed": false,
+      "full_raw_custody_status": "Actions plus retained local ZIP; complete permanent copy not confirmed",
+      "proposed_benchmark_directory": "artifacts/benchmarks/37908825722/"
+    },
+    {
+      "artifact_id": 11611029386,
+      "name": "p7-offline-default-3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "scope": "p7-default-regression",
+      "run_id": 37908825794,
+      "source_commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "actual_execution_checkout": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "official_metadata_path": "original-173-platform-gates/C3ff-ci/official-p7-artifacts-1791542987795.json",
+      "zip_bytes": 146327669,
+      "official_zip_digest": "sha256:1162c851408af3ba75f7a7e2eeb516b6d36f7262860f348a3089ccdb190e6cc8",
+      "created_at": "2026-10-09T10:45:52Z",
+      "expires_at": "2027-01-07T09:03:32Z",
+      "expired_as_captured": false,
+      "actions_locator": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11611029386",
+      "local_original_zip": null,
+      "local_zip_present_and_size_matches": false,
+      "zip_rehashed_in_this_task": false,
+      "acceptance_scope": "accepted_complete_original_job_logs_only; raw ZIP not independently replayed in this scope",
+      "review_records": [
+        {
+          "local_path": "original-173-platform-gates/C3ff-ci/C3ff-p7-default-independent-review.json",
+          "bytes": 15730,
+          "sha256": "3c256308baaa6ac0bd3e1a42d51c76c342002f6a59b0d268d78a45c7d12d1cd4",
+          "git_blob": "f913e54d6c93c8aa926b2d6fef3f3a12cd4a44bf",
+          "published_locations": [
+            {
+              "commit": "098a93cf6783887f1aed12466bc844b2c8d980dd",
+              "container_path": "artifacts/checkpoints/p8-round29-a217-20261009/round29-public-evidence.tar.gz",
+              "container_git_blob": "a32879e3b42635bde5e2459f159cd3c0d1c85f24",
+              "container_sha256": "562f7855add368c77d4cf5c50813e7890bc183633316070680ca02ada20b47ae",
+              "member": "platform-gates/ci/C3ff-p7-default-independent-review.json",
+              "member_bytes": 15730,
+              "member_sha256": "3c256308baaa6ac0bd3e1a42d51c76c342002f6a59b0d268d78a45c7d12d1cd4",
+              "member_git_blob": "f913e54d6c93c8aa926b2d6fef3f3a12cd4a44bf",
+              "binding_basis": "existing fully verified published container inventory; no container replay in this planning task"
+            }
+          ],
+          "publication_status": "published_in_fixed_git_container"
+        }
+      ],
+      "full_original_zip_durable_git_copy_confirmed": false,
+      "full_raw_custody_status": "Actions original artifact; no local intake or permanent complete copy confirmed in reviewed records",
+      "proposed_benchmark_directory": "artifacts/benchmarks/37908825794/"
+    },
+    {
+      "artifact_id": 11610460298,
+      "name": "p7-mechanism-3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "scope": "p7-mechanism-regression",
+      "run_id": 37908825794,
+      "source_commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "actual_execution_checkout": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "official_metadata_path": "original-173-platform-gates/C3ff-ci/official-p7-artifacts-1791542987795.json",
+      "zip_bytes": 99409421,
+      "official_zip_digest": "sha256:16741bdd4f81aeddb83d3399b33f22c893ba6c0d63c81bd60df9d913eb89158b",
+      "created_at": "2026-10-09T10:21:03Z",
+      "expires_at": "2027-01-07T09:03:32Z",
+      "expired_as_captured": false,
+      "actions_locator": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11610460298",
+      "local_original_zip": null,
+      "local_zip_present_and_size_matches": false,
+      "zip_rehashed_in_this_task": false,
+      "acceptance_scope": "accepted_complete_original_job_logs_only; raw ZIP not independently replayed in this scope",
+      "review_records": [
+        {
+          "local_path": "original-173-platform-gates/C3ff-ci/C3ff-p7-mechanism-independent-review.json",
+          "bytes": 8815,
+          "sha256": "eb34e29d1f4ad1d9b92a146c5fa3d1392bd25848c4557bc4007afbf58f5ee287",
+          "git_blob": "7366c960d246b88d5136d5b1e308c894ca2fc87c",
+          "published_locations": [
+            {
+              "commit": "098a93cf6783887f1aed12466bc844b2c8d980dd",
+              "container_path": "artifacts/checkpoints/p8-round28-a217-20261009/round28-public-evidence.tar.gz",
+              "container_git_blob": "b562ece595677cbe773e474952615185a1fa9906",
+              "container_sha256": "f56f52e37382b04fb990798c5e81a5f737b40b40fbb626e3c60687d51ce68c06",
+              "member": "platform-gates/ci/C3ff-p7-mechanism-independent-review.json",
+              "member_bytes": 8815,
+              "member_sha256": "eb34e29d1f4ad1d9b92a146c5fa3d1392bd25848c4557bc4007afbf58f5ee287",
+              "member_git_blob": "7366c960d246b88d5136d5b1e308c894ca2fc87c",
+              "binding_basis": "existing fully verified published container inventory; no container replay in this planning task"
+            }
+          ],
+          "publication_status": "published_in_fixed_git_container"
+        }
+      ],
+      "full_original_zip_durable_git_copy_confirmed": false,
+      "full_raw_custody_status": "Actions original artifact; no local intake or permanent complete copy confirmed in reviewed records",
+      "proposed_benchmark_directory": "artifacts/benchmarks/37908825794/"
+    },
+    {
+      "artifact_id": 11609274916,
+      "name": "p7-closeout-3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "scope": "p7-closeout-regression",
+      "run_id": 37908825794,
+      "source_commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "actual_execution_checkout": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "official_metadata_path": "original-173-platform-gates/C3ff-ci/official-p7-artifacts-1791542987795.json",
+      "zip_bytes": 20430104,
+      "official_zip_digest": "sha256:55419277f182423f4fd881ade8efaa6a2129d2d59ee6ec79dca699804ffa63d7",
+      "created_at": "2026-10-09T10:19:53Z",
+      "expires_at": "2027-01-07T09:03:32Z",
+      "expired_as_captured": false,
+      "actions_locator": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11609274916",
+      "local_original_zip": null,
+      "local_zip_present_and_size_matches": false,
+      "zip_rehashed_in_this_task": false,
+      "acceptance_scope": "accepted_complete_original_job_logs_only; raw ZIP not independently replayed in this scope",
+      "review_records": [
+        {
+          "local_path": "original-173-platform-gates/C3ff-ci/C3ff-p7-closeout-independent-review.json",
+          "bytes": 22695,
+          "sha256": "39425d1c4d8103998c89b9c5fecedaa9ec251fdb7918ccddbcf5bce364602343",
+          "git_blob": "53752796fe6f4c098dc0d53b6a45fdd427bcccb3",
+          "published_locations": [
+            {
+              "commit": "098a93cf6783887f1aed12466bc844b2c8d980dd",
+              "container_path": "artifacts/checkpoints/p8-round28-a217-20261009/round28-public-evidence.tar.gz",
+              "container_git_blob": "b562ece595677cbe773e474952615185a1fa9906",
+              "container_sha256": "f56f52e37382b04fb990798c5e81a5f737b40b40fbb626e3c60687d51ce68c06",
+              "member": "platform-gates/ci/C3ff-p7-closeout-independent-review.json",
+              "member_bytes": 22695,
+              "member_sha256": "39425d1c4d8103998c89b9c5fecedaa9ec251fdb7918ccddbcf5bce364602343",
+              "member_git_blob": "53752796fe6f4c098dc0d53b6a45fdd427bcccb3",
+              "binding_basis": "existing fully verified published container inventory; no container replay in this planning task"
+            }
+          ],
+          "publication_status": "published_in_fixed_git_container"
+        }
+      ],
+      "full_original_zip_durable_git_copy_confirmed": false,
+      "full_raw_custody_status": "Actions original artifact; no local intake or permanent complete copy confirmed in reviewed records",
+      "proposed_benchmark_directory": "artifacts/benchmarks/37908825794/"
+    },
+    {
+      "artifact_id": 11608968779,
+      "name": "p7-offline-semantic-3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "scope": "p7-semantic-regression",
+      "run_id": 37908825794,
+      "source_commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "actual_execution_checkout": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "official_metadata_path": "original-173-platform-gates/C3ff-ci/official-p7-artifacts-1791542987795.json",
+      "zip_bytes": 18399165,
+      "official_zip_digest": "sha256:d1cbb1dca3296d41b43175d46b8bf778ff67d6c64af288bb99c257de66b54568",
+      "created_at": "2026-10-09T10:10:30Z",
+      "expires_at": "2027-01-07T09:03:32Z",
+      "expired_as_captured": false,
+      "actions_locator": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11608968779",
+      "local_original_zip": null,
+      "local_zip_present_and_size_matches": false,
+      "zip_rehashed_in_this_task": false,
+      "acceptance_scope": "accepted_complete_original_job_logs_only; raw ZIP not independently replayed in this scope",
+      "review_records": [
+        {
+          "local_path": "original-173-platform-gates/C3ff-ci/C3ff-p7-semantic-independent-review.json",
+          "bytes": 6294,
+          "sha256": "e09cc4a90a1aded793b84cf948e366d8ce244db30160925a686cd296700ffd4e",
+          "git_blob": "1200b47744d7c9b143122e27c337bc3fde29c5ed",
+          "published_locations": [
+            {
+              "commit": "098a93cf6783887f1aed12466bc844b2c8d980dd",
+              "container_path": "artifacts/checkpoints/p8-round28-a217-20261009/round28-public-evidence.tar.gz",
+              "container_git_blob": "b562ece595677cbe773e474952615185a1fa9906",
+              "container_sha256": "f56f52e37382b04fb990798c5e81a5f737b40b40fbb626e3c60687d51ce68c06",
+              "member": "platform-gates/ci/C3ff-p7-semantic-independent-review.json",
+              "member_bytes": 6294,
+              "member_sha256": "e09cc4a90a1aded793b84cf948e366d8ce244db30160925a686cd296700ffd4e",
+              "member_git_blob": "1200b47744d7c9b143122e27c337bc3fde29c5ed",
+              "binding_basis": "existing fully verified published container inventory; no container replay in this planning task"
+            }
+          ],
+          "publication_status": "published_in_fixed_git_container"
+        }
+      ],
+      "full_original_zip_durable_git_copy_confirmed": false,
+      "full_raw_custody_status": "Actions original artifact; no local intake or permanent complete copy confirmed in reviewed records",
+      "proposed_benchmark_directory": "artifacts/benchmarks/37908825794/"
+    },
+    {
+      "artifact_id": 11608963674,
+      "name": "p7-engineering-54031d548d4199c84bc8ff5ea056adb26470f930",
+      "scope": "engineering_log_regression",
+      "run_id": 37908825783,
+      "source_commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "actual_execution_checkout": "54031d548d4199c84bc8ff5ea056adb26470f930",
+      "official_metadata_path": "original-C3ff-platform-gates/final-delivery-navigation-draft/official-engineering-artifacts.json",
+      "zip_bytes": 271344,
+      "official_zip_digest": "sha256:525609de6651159ac10e02c5959a992f4887284c0fe76ce62ff50fa3a773cadb",
+      "created_at": "2026-10-09T10:10:59Z",
+      "expires_at": "2027-01-07T09:03:32Z",
+      "expired_as_captured": false,
+      "actions_locator": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11608963674",
+      "local_original_zip": null,
+      "local_zip_present_and_size_matches": false,
+      "zip_rehashed_in_this_task": false,
+      "acceptance_scope": "accepted_complete_original_job_logs_only; raw ZIP not independently replayed in this scope",
+      "review_records": [
+        {
+          "local_path": "original-173-platform-gates/C3ff-ci/C3ff-engineering-and-first-platform-gates-log-review.json",
+          "bytes": 40860,
+          "sha256": "7737a5f64c4ae5d3268b800ddc3f93c16a1edf17344ceecf9bdee2cad70ec80c",
+          "git_blob": "fe81b2cd08381443ab762f385cc8b6af69b67dda",
+          "published_locations": [
+            {
+              "commit": "098a93cf6783887f1aed12466bc844b2c8d980dd",
+              "container_path": "artifacts/checkpoints/p8-round28-a217-20261009/round28-public-evidence.tar.gz",
+              "container_git_blob": "b562ece595677cbe773e474952615185a1fa9906",
+              "container_sha256": "f56f52e37382b04fb990798c5e81a5f737b40b40fbb626e3c60687d51ce68c06",
+              "member": "platform-gates/ci/C3ff-engineering-and-first-platform-gates-log-review.json",
+              "member_bytes": 40860,
+              "member_sha256": "7737a5f64c4ae5d3268b800ddc3f93c16a1edf17344ceecf9bdee2cad70ec80c",
+              "member_git_blob": "fe81b2cd08381443ab762f385cc8b6af69b67dda",
+              "binding_basis": "existing fully verified published container inventory; no container replay in this planning task"
+            }
+          ],
+          "publication_status": "published_in_fixed_git_container"
+        }
+      ],
+      "full_original_zip_durable_git_copy_confirmed": false,
+      "full_raw_custody_status": "Actions original artifact; no local intake or permanent complete copy confirmed in reviewed records",
+      "proposed_benchmark_directory": "artifacts/benchmarks/37908825783/"
+    }
+  ],
+  "totals": {
+    "original_artifact_count": 30,
+    "accepted_original_zip_count": 25,
+    "accepted_original_zip_bytes": 467676992,
+    "log_only_regression_artifact_count": 5,
+    "all_listed_official_original_zip_bytes": 752514695,
+    "earliest_recorded_expiry": "2026-10-30T10:10:17Z",
+    "latest_recorded_expiry": "2027-01-07T09:03:33Z"
+  },
+  "pending_official_collector": {
+    "run_id": 37908825722,
+    "job_id": 113802173447,
+    "last_observed_at": "2026-10-09T12:27:43.260Z",
+    "status": "queued",
+    "artifact_id": null,
+    "independent_eight_cell_review": {
+      "local_path": "original-C3ff-platform-gates/complete-eight-review/platform-C3ff-cell-review.json",
+      "bytes": 11433,
+      "sha256": "d8dba40033b5ebc5e0a47f6ca0e277646e38eb0ceedeb72a018d7ed7c3aa5e8b",
+      "git_blob": "1cc9ef234c0ac70e2287438ccc6aa2283321cfd0",
+      "published_locations": [],
+      "publication_status": "local_only_not_yet_confirmed_published"
+    },
+    "already_executed_original_collector_result": {
+      "local_path": "original-C3ff-platform-gates/complete-eight-review/independent-collected-matrix.json",
+      "bytes": 3899,
+      "sha256": "f093fe520784c76d5cf81c3c3dce1acff1d213dbd7361bc98119c668562fb98d",
+      "git_blob": "61323ece1b6f282c44c22c1b19311d211a6068ae",
+      "published_locations": [],
+      "publication_status": "local_only_not_yet_confirmed_published"
+    },
+    "next_action": "Fetch the single final official log/artifact after completion, compare exact summary with explicit source_root-only normalization; do not rerun the eight measurements."
+  },
+  "minimal_repository_navigation_proposal": [
+    {
+      "directory": "artifacts/benchmarks/37908825715/",
+      "files": [
+        "README.md",
+        "evidence-manifest.json"
+      ],
+      "content": "Exact source/run/profile/artifact identity, accepted report locators, immutable published container/member hashes, raw custody/expiry, restoration command locator and scoped limitations. Copy small original JSON only if the original deliverable requires the physical filename; never recalculate statistics."
+    },
+    {
+      "directory": "artifacts/benchmarks/37908825722/",
+      "files": [
+        "README.md",
+        "evidence-manifest.json"
+      ],
+      "content": "Exact source/run/profile/artifact identity, accepted report locators, immutable published container/member hashes, raw custody/expiry, restoration command locator and scoped limitations. Copy small original JSON only if the original deliverable requires the physical filename; never recalculate statistics."
+    },
+    {
+      "directory": "artifacts/benchmarks/37908825783/",
+      "files": [
+        "README.md",
+        "evidence-manifest.json"
+      ],
+      "content": "Exact source/run/profile/artifact identity, accepted report locators, immutable published container/member hashes, raw custody/expiry, restoration command locator and scoped limitations. Copy small original JSON only if the original deliverable requires the physical filename; never recalculate statistics."
+    },
+    {
+      "directory": "artifacts/benchmarks/37908825794/",
+      "files": [
+        "README.md",
+        "evidence-manifest.json"
+      ],
+      "content": "Exact source/run/profile/artifact identity, accepted report locators, immutable published container/member hashes, raw custody/expiry, restoration command locator and scoped limitations. Copy small original JSON only if the original deliverable requires the physical filename; never recalculate statistics."
+    },
+    {
+      "directory": "artifacts/benchmarks/37908825814/",
+      "files": [
+        "README.md",
+        "evidence-manifest.json"
+      ],
+      "content": "Exact source/run/profile/artifact identity, accepted report locators, immutable published container/member hashes, raw custody/expiry, restoration command locator and scoped limitations. Copy small original JSON only if the original deliverable requires the physical filename; never recalculate statistics."
+    },
+    {
+      "directory": "artifacts/benchmarks/37908826034/",
+      "files": [
+        "README.md",
+        "evidence-manifest.json"
+      ],
+      "content": "Exact source/run/profile/artifact identity, accepted report locators, immutable published container/member hashes, raw custody/expiry, restoration command locator and scoped limitations. Copy small original JSON only if the original deliverable requires the physical filename; never recalculate statistics."
+    },
+    {
+      "directory": "artifacts/benchmarks/37910924354/",
+      "files": [
+        "README.md",
+        "evidence-manifest.json"
+      ],
+      "content": "Exact source/run/profile/artifact identity, accepted report locators, immutable published container/member hashes, raw custody/expiry, restoration command locator and scoped limitations. Copy small original JSON only if the original deliverable requires the physical filename; never recalculate statistics."
+    }
+  ],
+  "minimal_remaining_delivery_actions": [
+    "Append R31 soak, eighth-cell, full independent collector and eventual official collector log/summary reports to the single final evidence delivery; preserve R28-R30 historical cutoffs and R30 append-only time erratum.",
+    "Choose one permanent storage location for each required complete raw original exactly once. The least transformative option is retaining current compressed original ZIP bytes, using ordered bounded Git parts under one originals namespace if Git delivery is chosen. Bind part offsets/lengths/hash and the whole original official size/SHA; keep executable/SQLite/wire/fixtures/receipts intact. A repository release attachment with an immutable digest-bound locator is an alternative custody choice, not a new acceptance gate.",
+    "Do not repackage approximately twenty thousand already-verified raw members or duplicate native binaries into each benchmark directory. Benchmark manifests should reference the one canonical complete original plus existing report containers.",
+    "For four P7 artifacts and engineering artifact, retain the already-accepted full original logs and exact source identity now. If complete raw retention is selected, obtain each still-Actions-only ZIP once before the recorded expiry; this custody action does not retroactively claim independent ZIP replay or add a new native test.",
+    "Publish exact run-directory navigation after the raw publication operation is actually complete; until then every planned location stays publication_pending and complete_raw_delivery stays false.",
+    "Later scale shards/aggregate and LG feature-on acquisition observations remain separate sources/profiles. Append their real output after actual acceptance; do not borrow old E/173 samples, default C timing for LG, or source admission as execution credit.",
+    "Root performs final measured-source applicability and original hard-dependency closure, normal final-source regression and raw restoration/publication checks in its existing plan; this inventory does not introduce a unified-head/full-workspace-Mac/G8/live gate."
+  ],
+  "important_boundaries": [
+    "Published R28 contains a derived relocated lifecycle replay-input tar; it is not the complete original lifecycle ZIP and cannot establish whole-raw custody.",
+    "Published R30 nested large-original-records tar contains selected evidence records; its contents do not make any full original ZIP durable.",
+    "Full-raw permanent-copy absence means not confirmed by the reviewed custody records and fixed public subtrees; no repository-wide binary search was performed.",
+    "Official metadata expiry is copied from the actual captured metadata, not inferred from a retention policy; present availability can change before that date.",
+    "C platform acceptance covers actual selected fresh-target builds and stdio; specific OS SDK version was not recorded and this is not eight complete workspace test suites.",
+    "C recovery remains the accepted controlled faults/version-pair scope, with original not_run/cost-null/release boundaries. Gate inconclusive/invalid/failure cases stay their original results.",
+    "C soak is one genuine hour with actual serial workload peak1, not four saturated one-hour experiments; the lock attribution supplement is the separately bound LG profile.",
+    "No private-transfer captures or file IDs/signed transfer values are included in this draft."
+  ],
+  "current_raw_publication_complete": false
+}

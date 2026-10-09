@@ -1,0 +1,123 @@
+{
+  "actual_controls": {
+    "cleanup": "Only the newly created RAM test files and directory removed after exact inventory comparison",
+    "corrupt_chunk": "one bit changed in owned RAM chunk; nonzero/digest mismatch; no final output or partial remains",
+    "existing_output": "nonzero/FileExistsError; complete existing output identity unchanged",
+    "original_inputs": "original ZIP, manifest, both scripts and catalog identical before/after/final",
+    "success_restore": "exit0, 7,835,686 bytes and SHA equal original, streamed byte-for-byte comparison equal"
+  },
+  "blocking_findings": [],
+  "catalog_small_index_checks": {
+    "all_manifest_size_and_sha256_match_catalog": true,
+    "all_offsets_and_totals_match": true,
+    "artifacts": 25,
+    "ordered_chunk_occurrences": 236,
+    "original_zip_bytes": 467676992,
+    "rehash_all_25_original_zips": false,
+    "unique_chunk_count": 236,
+    "whole_25_check_provenance": "Root original prepare execution; reviewer reran only the selected 7,835,686-byte original transport control."
+  },
+  "conclusion": "accepted_scoped",
+  "created_at": "2026-10-09T12:57:20.588024+00:00",
+  "evidence": [
+    {
+      "bytes": 13066,
+      "git_blob": "e2e252f96f5d679eea7dcbf30dc97df898d49002",
+      "path": "/workspace/scratch/a217aaae3bde/p8-original-artifact-custody/independent-review/execution-and-cleanup.json",
+      "sha256": "2fee2c9a854cfe90c5a2a1be1e584cd7cb0ee8bd2b23ecea220ab6a2d4843ce2"
+    },
+    {
+      "bytes": 3304,
+      "git_blob": "7b1768a129d6863c936310252c5ad3b3169ece48",
+      "path": "/workspace/scratch/a217aaae3bde/p8-original-artifact-custody/independent-review/cleanup-candidate.json",
+      "sha256": "9f507d13962daf2ddfb38d0c04da5a13e617d09dc74581fa056ffc062db56496"
+    },
+    {
+      "bytes": 256,
+      "git_blob": "7bf8a3d2bd47db452224f8102ec5fec7b77a349b",
+      "path": "/workspace/scratch/a217aaae3bde/p8-original-artifact-custody/independent-review/success.stdout",
+      "sha256": "09b8e8c5973090bf5da5799713f5e65a9b61dcf8a87c0cc66097168618232e0a"
+    },
+    {
+      "bytes": 0,
+      "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "path": "/workspace/scratch/a217aaae3bde/p8-original-artifact-custody/independent-review/success.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 0,
+      "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "path": "/workspace/scratch/a217aaae3bde/p8-original-artifact-custody/independent-review/existing-output-rejected.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 726,
+      "git_blob": "dea1fe000c788f009987c6b25c00c69c94f15527",
+      "path": "/workspace/scratch/a217aaae3bde/p8-original-artifact-custody/independent-review/existing-output-rejected.stderr",
+      "sha256": "ce9deb48104f42c01f7fbbddb5db2e76a0487764ba5b32c79e00535706354fcf"
+    },
+    {
+      "bytes": 0,
+      "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "path": "/workspace/scratch/a217aaae3bde/p8-original-artifact-custody/independent-review/corrupt-chunk-rejected.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 659,
+      "git_blob": "fcb1ff6e6c6acb1ca40a708331dc1f8d184e379d",
+      "path": "/workspace/scratch/a217aaae3bde/p8-original-artifact-custody/independent-review/corrupt-chunk-rejected.stderr",
+      "sha256": "a8cc75b929c22db009da8215a7f68dd37206f183c79630c77672e98eb3bb9e1b"
+    },
+    {
+      "bytes": 7262,
+      "git_blob": "14ebffd3b75c18b797fc616a5d171b2c1861590b",
+      "path": "/workspace/scratch/a217aaae3bde/p8-original-artifact-custody/review_restore_once.py",
+      "sha256": "e7966e9f5b74a3f1c2ef336827d6ddad2a0265288ffe92a933b143451c785c7c"
+    }
+  ],
+  "limits": {
+    "formal_done": 163,
+    "formal_remaining": 29,
+    "native_execution": false,
+    "remote_tree_custody_verified": false,
+    "task_completion_changed": false
+  },
+  "reviewed_inputs": [
+    {
+      "bytes": 6352,
+      "git_blob": "7bbd6aaee8428ec73924e2144348e7effb20b413",
+      "path": "/workspace/scratch/a217aaae3bde/p8-original-artifact-custody/prepare_custody.py",
+      "sha256": "1e9b7e88ea8d19b071af257722d65df25e193979f1fadf8b7753b6f6c1043854"
+    },
+    {
+      "bytes": 4339,
+      "git_blob": "b4972957fa531e3ad64fe131a075700f8e3e0ff2",
+      "path": "/workspace/scratch/a217aaae3bde/p8-original-artifact-custody/restore_original_zip.py",
+      "sha256": "bbc91e5734b33050b02216d79afb5d4a58197a360ac5c997860a20c04c3ce632"
+    },
+    {
+      "bytes": 10856,
+      "git_blob": "40c9d162418cc5e7e9fd90c149237452cfc2c6f5",
+      "path": "/workspace/scratch/a217aaae3bde/p8-original-artifact-custody/catalog-planned.json",
+      "sha256": "fb4e16c835a42f05bf1cd125abedc9b7e8b4cc3d08301d1207f7de4198f63167"
+    },
+    {
+      "bytes": 3398,
+      "git_blob": "da9f4c80c6da898c1c5041a80c038bdf746c4ff7",
+      "path": "/workspace/scratch/a217aaae3bde/p8-original-artifact-custody/manifests/11610619483.json",
+      "sha256": "a366af3cd86835f03fcc935e45e895b1320b1b12338651602d9036e8b6b5ed11"
+    }
+  ],
+  "reviewer": "/root/runtime_closeout",
+  "schema": "original-actions-zip-custody-independent-review-v1",
+  "scope": "Transport byte preservation and restore safety for the frozen scripts; not new native execution, benchmark acceptance or published-tree completeness.",
+  "static_findings": [
+    "prepare reads each selected original without extracting it, checks official whole ZIP size and SHA256, checks inode/mtime/size stability, and partitions the exact stream into ordered 2 MiB chunks with SHA256 and Git blob SHA1.",
+    "prepare uses exclusive creation of its manifests/catalog/private plan; public per-artifact metadata retains original source/run/acceptance scope and planned publication boundary.",
+    "restore requires expected schema and whole SHA, contiguous ordered chunks, positive sizes, relative chunks paths without traversal, and resolved regular files inside the chunks directory.",
+    "restore hashes the actual copied bytes against each chunk size/SHA256/GitOID and then the whole original ZIP; it does not unpack or reserialize ZIP members.",
+    "restore refuses preexisting output (including dangling symlink); exclusive partial creation does not truncate an existing partial; final os.link is non-overwriting even if output appears after the initial existence check; failed owned partial is removed.",
+    "The bytes/mode checks concern custody files and exact ZIP content. This is not a claim that restoration preserves the original filesystem inode, timestamp or mode of the ZIP file.",
+    "No network, token handling, benchmark invocation, archive extraction or Cargo execution exists in restore. This review assumes the selected fixed verified custody tree is not concurrently rewritten by another writer."
+  ]
+}

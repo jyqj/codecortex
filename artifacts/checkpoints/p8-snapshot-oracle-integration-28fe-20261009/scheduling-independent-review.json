@@ -1,0 +1,76 @@
+{
+  "schema": "p8-scale-measure-concurrency-static-review-v1",
+  "reviewed_at": "2026-10-09 07:27:54 UTC",
+  "reviewer": "runtime_review",
+  "verdict": "accepted_scoped_static",
+  "scope": "Only the maximum number of concurrently scheduled measure jobs for a new fixed-source study before its first attempt; no original TODO acceptance or runtime/performance certification.",
+  "base": {
+    "commit": "7b1fc54485bfda1b00f5e316617052900b99fb63",
+    "path": ".github/workflows/p8-scale.yml",
+    "bytes": 8621,
+    "sha256": "4258476dd37d8af223aaa7ad45d7c97d7298be1ba4ec5ffd9af9949785ed8f3d"
+  },
+  "candidate": {
+    "git_blob": "f667b72d7abc63c6aa06f92e453a3e2d14b505d7",
+    "bytes": 8621,
+    "sha256": "4c5e7a9b59a39edfb5628dc1ef60fde4345a3a658d424087925f0b331de98378"
+  },
+  "checks": {
+    "original_sha_matches": true,
+    "candidate_sha_matches": true,
+    "single_original_occurrence": true,
+    "exact_single_replace": true,
+    "same_line_count": true,
+    "exact_diff": [
+      {
+        "line": 114,
+        "before": "      max-parallel: 10",
+        "after": "      max-parallel: 20"
+      }
+    ]
+  },
+  "unchanged_contract": [
+    "Five rep-0 preflight cells; preflight max-parallel 5.",
+    "All preflight successes required before 145 measure cells (five scales x shards 1..29).",
+    "All 150 cells, 1500 samples, 30 original global repetitions, original seed and all phases/full-control/15-table parity.",
+    "18,000,000 ms native deadline; 350 minute per-cell job timeout; original evidence, closure, capacity and host-observation budgets.",
+    "Original per-worker parser concurrency, binary/build identity, source checkout binding, artifact preservation, failure statuses and aggregate predicates."
+  ],
+  "contract_basis": [
+    {
+      "path": "docs/roadmap/code-index-v2/P8-SCALE.md",
+      "lines": "250-281",
+      "finding": "Environment stratification and complete 5+145 population/budgets are mandatory; 10 is not specified as an acceptance limit; same full SHA for build/preflight/measure/aggregate."
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "lines": "171-189",
+      "finding": "Defines profile sampling and product C=1/4/8/16, not an Actions matrix cap of 10."
+    },
+    {
+      "path": "scripts/p8_scale_matrix.py",
+      "lines": "337-354; 861-943",
+      "finding": "Registered plan, completeness, source/binary and environment predicates are unchanged; no max-parallel predicate."
+    },
+    {
+      "path": "scripts/tests/test_p8_scale_matrix.py",
+      "lines": "289-305; 374-420",
+      "finding": "Original completeness/duplicate/capacity/stratification controls remain unchanged; no tests require relaxing to allow a scheduler cap of 20."
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/tasks.json",
+      "tasks": [
+        "P8-005",
+        "P8-006"
+      ],
+      "finding": "Full scale, attributable phases, complete closure/full parity and prior regressions required; no Actions cap of 10."
+    }
+  ],
+  "limits": [
+    "20 is a scheduling upper bound, not evidence of account quota, twenty actual concurrent jobs, or twofold throughput.",
+    "Must enter the existing validation/source proof and be fixed before the new study's first run.",
+    "Cannot modify/relabel prior A23/D0 runs, receipts, samples or failed attempts.",
+    "No test, rustfmt, compile, native workload or Actions execution performed by this review.",
+    "Static workflow review only; original 29 remaining TODOs unchanged."
+  ]
+}

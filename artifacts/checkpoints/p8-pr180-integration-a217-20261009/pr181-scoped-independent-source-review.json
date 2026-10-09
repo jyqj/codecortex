@@ -1,0 +1,118 @@
+{
+  "actual_changes": {
+    "base_to_initial_product": [
+      "M\tcrates/cc-index/src/dispatch_synthesis/interface_dispatch.rs",
+      "A\tcrates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs",
+      "M\tcrates/cc-index/src/indexer_phases/snapshot.rs",
+      "A\tcrates/cc-index/tests/full_snapshot_empty_config.rs"
+    ],
+    "guard_changed_paths": 2,
+    "initial_to_corrected_product": [
+      "M\tcrates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs"
+    ],
+    "review_new_archive_paths": 37
+  },
+  "actual_git_inventory_counts": {
+    "historical_BASE_delta": 45,
+    "product": 1091,
+    "validation": 139
+  },
+  "actual_parent_chain": [
+    "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529 98fe910f22eb92f8d9f9c8a8043492ba45dc997c",
+    "98fe910f22eb92f8d9f9c8a8043492ba45dc997c b4fef72211e5967f4fba729d25d0ca2958094fd5",
+    "b4fef72211e5967f4fba729d25d0ca2958094fd5 0fe5f110a3c1c0fd39e83031fc935d3e7cfe1114",
+    "0fe5f110a3c1c0fd39e83031fc935d3e7cfe1114 bd4693351149a443bd0054a37508c53f74ed7b52"
+  ],
+  "base": "bd4693351149a443bd0054a37508c53f74ed7b52",
+  "findings": [
+    {
+      "basis": "Signature, scanning and typed-config filtering still precede the branch. Previously resolve_config_links iterated zero tokens, returned zero links, and build_config_link_units_from_snapshot returned Ok(empty) before any per-config filesystem reads. The new branch skips pure symbol/path cloning and lookup construction only. Nonempty tokens use the same original functions and immutable inputs.",
+      "result": "No blocker found",
+      "topic": "empty config tokens"
+    },
+    {
+      "basis": "The branch is not an early return: timestamp, filtered raw-token cache, signature, metadata writes, full snapshot replacement and graph baseline remain on the common path. Incremental gated resolution is unchanged. Scan errors still propagate before the branch.",
+      "result": "No blocker found",
+      "topic": "persistence and errors"
+    },
+    {
+      "basis": "Original CALL typed read/prior CALL overlay/no-call return remains first; all symbol rows are typed and decoded before interface check; implements typed read remains after nonempty interface membership. Schema symbol_uid TEXT UNIQUE and NULL exclusion make membership derived from decoded rows equivalent to membership derived from the prior UID map. Empty UIDs remain excluded. Empty implements rows skip map allocations but still return deletion of old interface_dispatch edges.",
+      "result": "No blocker found under the existing persisted schema contract",
+      "topic": "interface dispatch"
+    },
+    {
+      "basis": "Lookup-map construction loops, name/container resolution, ordered per-call traversal, cap, synthesized edge attributes, self-edge exclusion and dedup remain unchanged. Earlier deltas overlay CALL edges only; existing PassContext explicitly excludes semantic overlays and current prior passes do not synthesize implements.",
+      "result": "Preserved by direct source comparison",
+      "topic": "positive dispatch semantics"
+    },
+    {
+      "basis": "Two real full-index config controls cover stale link replacement, empty cache metadata, subsequent incremental relinking and typed TS alias behavior. Eight SQLite interface controls cover disabled/no-call/no-interface/empty-implements cleanup, malformed read order, prior-call overlay and cap. Three later expected-error .err().expect conversions to expect_err are test-only; production bytes unchanged.",
+      "result": "Reviewed source, not executed by this reviewer",
+      "topic": "new controls"
+    },
+    {
+      "basis": "PR181 is based on bd469. Its complete snapshot.rs still invokes txn.write_file_data; current integrated d96 invokes txn.write_file_data_for_rebuild. Only apply the reviewed token-preparation hunks to the integrated version and retain the FTS entrypoint. Whole-branch adoption would also regress unrelated integrated resolver/statistics/FTS paths.",
+      "result": "Do not copy the complete snapshot.rs from PR181",
+      "topic": "combination hazard"
+    }
+  ],
+  "historical_execution_boundary": {
+    "all_compilation_or_native_commands_executed_by_this_reviewer": [],
+    "observed_published_receipt": "final-product-checks/receipt.json at exact PR181 head",
+    "original_targeted_test_identity": "Earlier interface execution at local 6ffce3 and correction/local publication bridges remain separate; no target CI logs or native raw replay were performed here.",
+    "reported_clippy_exit": 0,
+    "reported_fmt_exit": 0,
+    "reported_source_equal_before_after": true,
+    "reported_workspace_exit": 101,
+    "reported_workspace_failure": "Unchanged live_child_snapshot_is_attributed_monotonic_and_disappears; this review does not establish the namespace diagnosis or waive the failure."
+  },
+  "integration_instructions": [
+    "Keep current integration source as base; do not replace its registry/review with PR181 registry.",
+    "Apply exact interface_dispatch production delta and its corrected new test module together; add full_snapshot_empty_config test.",
+    "Apply only removal of eager config cloning and new empty/nonempty token branch in snapshot.rs; preserve current FTS write_file_data_for_rebuild line and other integrated changes.",
+    "Regenerate the current product inventory/independent review/pins and run applicable current-source regression checks through normal CI before admitting the combined execution. Do not reuse old native samples as new-source samples."
+  ],
+  "integration_target": "d96e55338ae6980834ad5e6c21b7c2de1b5e1184",
+  "performance_claim": "None. Avoided allocations are source-visible; no measured benefit or attribution to prior 100k failures is established.",
+  "recorded_at_utc": "2026-10-09T08:30:54.660911+00:00",
+  "reviewed_files": [
+    {
+      "bytes": 11716,
+      "git_blob": "8d230b0a463bd53ab21e80e56af9d7fc9d3a0a2d",
+      "path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch.rs",
+      "sha256": "d2fa652cff62511546ad36d67bb402fa9a307ef060223fb12610ef31da69084a"
+    },
+    {
+      "bytes": 9704,
+      "git_blob": "d1888e13cb6bc1e4748cf372209b9686a705a1da",
+      "path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs",
+      "sha256": "1647126f382e4fed5e47b42780e08348d8239432eefc7c2012efa628df3c7c41"
+    },
+    {
+      "bytes": 10476,
+      "git_blob": "b1db699f6597d8a948e3797e153a75fe8f5b07de",
+      "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+      "sha256": "f5aba522582adc5f206ab2c3a8a2de2217e0ea99058928396ab0bc473c55b2e5"
+    },
+    {
+      "bytes": 3850,
+      "git_blob": "c900883bd45b427a605330b6ce4ac359f99506ef",
+      "path": "crates/cc-index/tests/full_snapshot_empty_config.rs",
+      "sha256": "fc5e8b7f4e8f8b8e3c1245ffcf724e79905413c203ccb298374cb8297a32b4ed"
+    }
+  ],
+  "reviewer": "/root/scale_closeout",
+  "schema": "pr181-scoped-independent-source-review-v1",
+  "source": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529",
+  "task_boundary": {
+    "candidate_sample_credit": 0,
+    "done": 163,
+    "newly_completed": 0,
+    "original_scale_run_unmodified": 37896198208,
+    "remaining": 29,
+    "source_275e_accepted_samples": 32,
+    "source_275e_accepted_shards": 3
+  },
+  "tree": "87e746f47d4ea8c1a6b06cb29e180fc7bbd78137",
+  "verdict": "accepted_scoped_for_local_integration_of_reviewed_hunks"
+}

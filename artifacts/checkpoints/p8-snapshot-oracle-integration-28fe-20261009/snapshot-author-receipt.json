@@ -1,0 +1,177 @@
+{
+  "schema": "p8-full-snapshot-resolution-dependency-batching-candidate-v1",
+  "author": "/root/acceptance_review",
+  "status": "prepared_only_awaiting_independent_review_and_execution",
+  "repository": "jyqj/codecortex",
+  "base": {
+    "commit": "7b1fc54485bfda1b00f5e316617052900b99fb63",
+    "tree": "2c492ccc4028468d4f11d51af678d75495492176",
+    "role": "PR176 G fixed source"
+  },
+  "allowed_scope": {
+    "product": "Only full snapshot dependency INSERT statements, using the existing snapshot-only flag and transaction.",
+    "not_changed": [
+      "schema and indexes",
+      "incremental dependency insertion selection",
+      "dependency normalization/validation/deduplication",
+      "manifest payload/digest and payload byte rejection",
+      "file/table order",
+      "document/symbol IDs, ordinals or FTS",
+      "transaction ownership, commit, rollback, epoch/CAS and rebuild swap",
+      "native workload/limits/source registry/task status",
+      "other agent's oracle files"
+    ]
+  },
+  "source_files": [
+    {
+      "path": "crates/cc-db/src/index_db_multi_insert.rs",
+      "base_blob": "539b9d19f1034a8cfd918090b1b48dacc177494c",
+      "base_bytes": 29410,
+      "base_sha256": "b621f633f231a98af42b6ead8c300956ad96ff1544bbbc392c3743b2e3038101",
+      "candidate_blob": "8bd7d944d93a9a3c0660d0b1755d05cd90727948",
+      "candidate_bytes": 30022,
+      "candidate_sha256": "dfe605426d4401904b2b4e731f24f73d03fe62aaf6bb39b28c951b1f22ccff72"
+    },
+    {
+      "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+      "base_blob": "2188f67d83d44b49c3015598c7001d231fd22428",
+      "base_bytes": 13172,
+      "base_sha256": "e159376159f0f6f250ba4a6d328bde503c4e272ccd11f75a326bb24f85a89a0f",
+      "candidate_blob": "35b709285974446ad050a19964693e6270b8bd6f",
+      "candidate_bytes": 19016,
+      "candidate_sha256": "193e97be8c5b663c61766badab61f72dd29ccf3fda67bb3f4859d196b44764a3"
+    },
+    {
+      "path": "crates/cc-db/src/resolution_dependency_store.rs",
+      "base_blob": "6e90d4e85aae79d73d5d59b8defbd39d02c61097",
+      "base_bytes": 10207,
+      "base_sha256": "7afc688e8b6314f2f5373db35b38deb84f23feec88bcfb11210041fa9cdd29e4",
+      "candidate_blob": "97d3d9519fe10ed7cd30b9783164348998c02abc",
+      "candidate_bytes": 10939,
+      "candidate_sha256": "c37a7c44ed1aa5c2897fcb387eee5fb1007a60cb53c0de4abc6488dafde9ebbf"
+    },
+    {
+      "path": "crates/cc-db/src/public_surface_store.rs",
+      "base_blob": "df522a327e68a820699ce21f4c5b9880f48d519c",
+      "base_bytes": 8537,
+      "base_sha256": "35c5b03670b3a2ed7add767f66ea46b4a7cd265dfffa3a77f81f04a8ed8d4650",
+      "candidate_blob": "d0fa4c622876197bbb8c14b7d94f0d8ab3e1f318",
+      "candidate_bytes": 8957,
+      "candidate_sha256": "76d8f7bb89f99abf5cbb4b75e0ccb486720e187e9b46014b5bccde439bdb95e5"
+    },
+    {
+      "path": "crates/cc-db/src/index_db_write_batch.rs",
+      "base_blob": "2758481da50748be45f9c35a35832d2f2bc9b851",
+      "base_bytes": 56106,
+      "base_sha256": "8968b406f5c8f513489ace72bfc0077233484db687c97a92dbc13704d2e6fb7a",
+      "candidate_blob": "f1c7d161db2d3d09a3f30c5917490ec18338041d",
+      "candidate_bytes": 56246,
+      "candidate_sha256": "62832b8bb77011b0c2afd9d83599ac840aeb5473b631ffb6f0470e64d48fb569"
+    },
+    {
+      "path": "crates/cc-db/tests/p2b_resolution_store.rs",
+      "base_blob": "babd9caa60308b9f9dda8d34770eb1fefd4d48d9",
+      "base_bytes": 8252,
+      "base_sha256": "ac2f7d6ceed1130161d18ba22bb6c8ecf1d6982eb48a7ca15af5951721d80772",
+      "candidate_blob": "4d0e690939c510f172cee713e8d532aba411b981",
+      "candidate_bytes": 14473,
+      "candidate_sha256": "0a107c65f6039b976f2416e4859eb93641701d84d28c0c6a7114bbe24fc79f5b"
+    }
+  ],
+  "patch": {
+    "git_blob": "0c43ff00f7edeed82bd37a93fb16f5772f814e89",
+    "bytes": 19511,
+    "sha256": "0f8b1eea965fbce63b6802d4ba899ff766c32cb42b473404f7a950dc88a2b7f7",
+    "execution": "Not applied with git; all candidate source files are separately byte-exact Git blobs."
+  },
+  "original_call_chain": [
+    "SnapshotWriteTxn::write_file_data -> IndexDb::insert_snapshot_file_data_precompressed -> insert_file_data_impl(..., snapshot_leaf_batches=true)",
+    "All existing public/config/deferred/incremental entrypoints continue snapshot_leaf_batches=false or unchanged public_surface::insert_on / resolution_dependency_store::replace_on.",
+    "Full path now public_surface::insert_snapshot_on -> unchanged shared surface preparation/INSERT -> resolution_dependency_store::replace_snapshot_on.",
+    "replace_with preserves original clone -> normalize -> validate -> serialize -> payload bound -> DELETE dependencies -> INSERT OR REPLACE manifest -> dependency insertion.",
+    "Only normalized dependency cardinality>=8 and snapshot flagtrue select the new bounded dependency binder; smaller sets retain the original prepare_cached/execute loop."
+  ],
+  "implementation": {
+    "existing_buffer": "index_db_snapshot_insert::bounded_rows",
+    "buffer_adjustment": "Accept IntoIterator<Item=&T> instead of only &[T], so a normalized BTreeSet is borrowed directly without collecting all dependency references. Existing slice callers, byte accounting, flush order and 64/64KiB constants retain their behavior.",
+    "maximum_buffer_rows": 64,
+    "maximum_ordinary_buffer_bound_bytes": 65536,
+    "oversize_legal_row": "Original no-extra-rejection behavior: a single row larger than the batching byte bound is inserted alone.",
+    "bound_bytes": "Actual repeated file_path UTF8 bytes + DependencyKind::as_str bytes + dependency.key UTF8 bytes through the existing payload_bytes helper; no serialized-size guess.",
+    "sql": "INSERT INTO resolution_dependencies(file_path,kind,key) VALUES",
+    "tier_rows": [
+      64,
+      8,
+      1
+    ],
+    "columns": 3,
+    "maximum_sql_parameters": 192,
+    "conflict_clause": "Plain INSERT, unchanged. No OR IGNORE or OR REPLACE was added for dependency rows.",
+    "order": "Borrow the normalized manifest BTreeSet in its exact existing order. Multi-VALUES preserves row order and no row is held across a file boundary.",
+    "cache": "Reuse index_db_multi_insert::multi_insert; at most the existing three SQL arities for this table.",
+    "no_bypassed_checks": true
+  },
+  "static_author_checks": {
+    "all_six_candidate_blobs_official_readback_exact": true,
+    "original_resolution_manifest_preparation_through_manifest_insert_exact_bytes_preserved": true,
+    "original_public_surface_preparation_through_insert_exact_bytes_preserved": true,
+    "no_new_module_or_native_input_path": true,
+    "rustfmt": false,
+    "syntax_compile": false,
+    "cargo_tests": false,
+    "native_perf": false,
+    "interpretation": "These are source/transport checks, not passing Rust tests or source admission."
+  },
+  "new_controls": [
+    {
+      "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+      "name": "resolution_snapshot_batches_match_original_order_and_statement_work",
+      "coverage": "Compare original per-row SQL to new bounded helper at0/1/7/8/9/63/64/65/73/129/4096 inputs, all7 kinds, Unicode and duplicate-set insertion; compare actual rowid+allcolumns after every file; compare SQLite StatementStatus::Run rather than wall time."
+    },
+    {
+      "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+      "name": "resolution_snapshot_byte_windows_keep_legal_large_rows_single",
+      "coverage": "4096-byte dependency keys force byte-limited windows; a SQL file_path value exceeding64KiB keeps3 legal rows as3 single-row statements rather than rejecting them."
+    },
+    {
+      "path": "crates/cc-db/tests/p2b_resolution_store.rs",
+      "name": "snapshot_dependency_manifest_and_rows_match_original_full_writer",
+      "coverage": "Use real rebuild_with_temp_db original per-file writer versus SnapshotWriteTxn on0/1/7/8/9/63/64/65/73 files; compare dependency rowids/order, manifest payload/digest, public surfaces and normalized duplicate records; generation increments and subsequent live incremental replacement preserved."
+    },
+    {
+      "path": "crates/cc-db/tests/p2b_resolution_store.rs",
+      "name": "snapshot_dependency_failure_keeps_live_rows_and_generation_like_original",
+      "coverage": "Real temp/WAL rebuild: fail dependency key70 after earlier file and earlier windows; separately version999 validation failure. Compare original/new returned errors and unchanged live generation, files and full dependency/manifest/surface rows."
+    }
+  ],
+  "test_commands_planned_not_executed": [
+    "cargo +1.95.0 fmt --all -- --check",
+    "cargo +1.95.0 test --locked -p cc-db --lib index_db_snapshot_insert::tests",
+    "cargo +1.95.0 test --locked -p cc-db --test p2b_resolution_store"
+  ],
+  "error_boundary": {
+    "committed_state": "The production rebuild callback propagates failure; execute_temp_db_staging_build retains its existing transaction drop/cleanup before swap. No partial dependency or manifest is accepted.",
+    "unfinished_statement_prefix": "A failing multi-row statement can have a different uncommitted intra-statement prefix from separate INSERTs before the enclosing transaction is discarded. The candidate does not claim these prefixes are equal or authorize ignoring an error and committing.",
+    "direct_writer": "No claim of physical rollback under journal_mode=OFF; its existing failure propagation/staging lifecycle are not changed. The new failure tests exercise the existing WAL/temp transaction seam.",
+    "validation_failure": "No validation or payload rejection was moved after the original DELETE or manifest write."
+  },
+  "evidence_and_performance_boundary": {
+    "original_50k_rows": 959611,
+    "interpretation": "This original cold resolution_dependencies row count motivates inspection only; no per-table timing proves this table is the slowest or predicts any speedup.",
+    "prior_phase_report_blob": "13b4fc2576cc7bac371d789706a0dfa191daea32",
+    "performance_claim": null
+  },
+  "independent_review": "Pending root/recovery_audit; author has not approved own candidate.",
+  "remote_actions": {
+    "created_unreferenced_blobs_only": true,
+    "created_commit": false,
+    "changed_ref": false,
+    "triggered_run": false
+  },
+  "task_ledger": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "newly_completed": 0
+  }
+}

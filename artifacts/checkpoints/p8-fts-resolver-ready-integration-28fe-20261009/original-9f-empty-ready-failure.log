@@ -1,0 +1,1562 @@
+﻿2026-10-09T07:01:52.9502797Z Current runner version: '2.337.0'
+2026-10-09T07:01:52.9527338Z ##[group]Runner Image Provisioner
+2026-10-09T07:01:52.9528269Z Hosted Compute Agent
+2026-10-09T07:01:52.9528990Z Version: 20261002.596
+2026-10-09T07:01:52.9529724Z Commit: c3d12f3313a95f25162a1503be624f3b0617f8c0
+2026-10-09T07:01:52.9530769Z Build Date: 2026-10-02T22:28:27Z
+2026-10-09T07:01:52.9531527Z Worker ID: {7a543ef2-09b4-4a12-b025-f36729661bf8}
+2026-10-09T07:01:52.9532284Z Region: eastus2
+2026-10-09T07:01:52.9532967Z Cloud: Azure
+2026-10-09T07:01:52.9533553Z ##[endgroup]
+2026-10-09T07:01:52.9535079Z ##[group]Operating System
+2026-10-09T07:01:52.9535858Z Ubuntu
+2026-10-09T07:01:52.9536434Z 24.04.5
+2026-10-09T07:01:52.9537060Z LTS
+2026-10-09T07:01:52.9537684Z ##[endgroup]
+2026-10-09T07:01:52.9538277Z ##[group]Runner Image
+2026-10-09T07:01:52.9539002Z Image: ubuntu-24.04
+2026-10-09T07:01:52.9539615Z Version: 20261004.327.1
+2026-10-09T07:01:52.9541606Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-09T07:01:52.9543280Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327
+2026-10-09T07:01:52.9544392Z ##[endgroup]
+2026-10-09T07:01:52.9545543Z ##[group]GITHUB_TOKEN Permissions
+2026-10-09T07:01:52.9547785Z Contents: read
+2026-10-09T07:01:52.9548498Z Metadata: read
+2026-10-09T07:01:52.9549197Z ##[endgroup]
+2026-10-09T07:01:52.9551584Z Secret source: Actions
+2026-10-09T07:01:52.9552690Z Cache mode: write
+2026-10-09T07:01:52.9553805Z Prepare workflow directory
+2026-10-09T07:01:52.9943833Z Prepare all required actions
+2026-10-09T07:01:52.9992283Z Getting action download info
+2026-10-09T07:01:53.2414224Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-09T07:01:53.3721671Z Download action repository 'dtolnay/rust-toolchain@1.95.0' (SHA:1d64bbcee8ef0c191a54710c227fd268a0d5014b)
+2026-10-09T07:01:53.4894739Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-10-09T07:01:53.7663977Z Complete job name: closeout
+2026-10-09T07:01:53.8445939Z ##[group]Run actions/checkout@v4
+2026-10-09T07:01:53.8446817Z with:
+2026-10-09T07:01:53.8447287Z   ref: 9f7b16f0758eb79f306cf44605b84550f02de441
+2026-10-09T07:01:53.8447894Z   repository: jyqj/codecortex
+2026-10-09T07:01:53.8451880Z   token: ***
+2026-10-09T07:01:53.8452321Z   ssh-strict: true
+2026-10-09T07:01:53.8452757Z   ssh-user: git
+2026-10-09T07:01:53.8453205Z   persist-credentials: true
+2026-10-09T07:01:53.8453690Z   clean: true
+2026-10-09T07:01:53.8454131Z   sparse-checkout-cone-mode: true
+2026-10-09T07:01:53.8454648Z   fetch-depth: 1
+2026-10-09T07:01:53.8455080Z   fetch-tags: false
+2026-10-09T07:01:53.8455521Z   show-progress: true
+2026-10-09T07:01:53.8455981Z   lfs: false
+2026-10-09T07:01:53.8456396Z   submodules: false
+2026-10-09T07:01:53.8456846Z   set-safe-directory: true
+2026-10-09T07:01:53.8457351Z   allow-unsafe-pr-checkout: false
+2026-10-09T07:01:53.8458118Z env:
+2026-10-09T07:01:53.8458559Z   CARGO_TERM_COLOR: never
+2026-10-09T07:01:53.8459089Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T07:01:53.8459591Z   CARGO_INCREMENTAL: 0
+2026-10-09T07:01:53.8460063Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-10-09T07:01:53.8460805Z   CARGO_PROFILE_TEST_DEBUG: 0
+2026-10-09T07:01:53.8461299Z   CARGO_BUILD_JOBS: 2
+2026-10-09T07:01:53.8461757Z   RUSTFLAGS: -D warnings
+2026-10-09T07:01:53.8462215Z ##[endgroup]
+2026-10-09T07:01:53.9472938Z Syncing repository: jyqj/codecortex
+2026-10-09T07:01:53.9474976Z ##[group]Getting Git version info
+2026-10-09T07:01:53.9475743Z Working directory is '/home/runner/work/codecortex/codecortex'
+2026-10-09T07:01:53.9476801Z [command]/usr/bin/git version
+2026-10-09T07:01:54.0833336Z git version 2.55.0
+2026-10-09T07:01:54.0855881Z ##[endgroup]
+2026-10-09T07:01:54.0869968Z Temporarily overriding HOME='/home/runner/work/_temp/b53644a8-f01e-4655-831e-d630b3821e52' before making global git config changes
+2026-10-09T07:01:54.0871999Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-09T07:01:54.0876536Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/codecortex/codecortex
+2026-10-09T07:01:54.1148663Z Deleting the contents of '/home/runner/work/codecortex/codecortex'
+2026-10-09T07:01:54.1152601Z ##[group]Initializing the repository
+2026-10-09T07:01:54.1156657Z [command]/usr/bin/git init /home/runner/work/codecortex/codecortex
+2026-10-09T07:01:54.1724682Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-09T07:01:54.1726346Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-09T07:01:54.1727883Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-09T07:01:54.1729099Z hint: call:
+2026-10-09T07:01:54.1729757Z hint:
+2026-10-09T07:01:54.1730794Z hint: 	git config --global init.defaultBranch <name>
+2026-10-09T07:01:54.1799044Z hint:
+2026-10-09T07:01:54.1800528Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-09T07:01:54.1802257Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-09T07:01:54.1803609Z hint:
+2026-10-09T07:01:54.1804435Z hint: 	git branch -m <name>
+2026-10-09T07:01:54.1805308Z hint:
+2026-10-09T07:01:54.1806446Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-09T07:01:54.1808308Z Initialized empty Git repository in /home/runner/work/codecortex/codecortex/.git/
+2026-10-09T07:01:54.1811391Z [command]/usr/bin/git remote add origin https://github.com/jyqj/codecortex
+2026-10-09T07:01:54.2093146Z ##[endgroup]
+2026-10-09T07:01:54.2094687Z ##[group]Disabling automatic garbage collection
+2026-10-09T07:01:54.2096241Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-09T07:01:54.2125815Z ##[endgroup]
+2026-10-09T07:01:54.2126981Z ##[group]Setting up auth
+2026-10-09T07:01:54.2132326Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T07:01:54.2162423Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T07:01:54.4402896Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T07:01:54.4422140Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T07:01:54.4658937Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T07:01:54.4691762Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T07:01:54.4910041Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-09T07:01:54.4945967Z ##[endgroup]
+2026-10-09T07:01:54.4947788Z ##[group]Fetching the repository
+2026-10-09T07:01:54.4955339Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin 9f7b16f0758eb79f306cf44605b84550f02de441
+2026-10-09T07:02:13.6444753Z From https://github.com/jyqj/codecortex
+2026-10-09T07:02:13.6446314Z  * branch            9f7b16f0758eb79f306cf44605b84550f02de441 -> FETCH_HEAD
+2026-10-09T07:02:13.6449762Z ##[endgroup]
+2026-10-09T07:02:13.6450927Z ##[group]Determining the checkout info
+2026-10-09T07:02:13.6452343Z ##[endgroup]
+2026-10-09T07:02:13.6458697Z [command]/usr/bin/git sparse-checkout disable
+2026-10-09T07:02:13.6649708Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-09T07:02:13.6679551Z ##[group]Checking out the ref
+2026-10-09T07:02:13.6683954Z [command]/usr/bin/git checkout --progress --force 9f7b16f0758eb79f306cf44605b84550f02de441
+2026-10-09T07:02:14.6932419Z Updating files:  48% (11071/22596)
+2026-10-09T07:02:14.7638525Z Updating files:  49% (11073/22596)
+2026-10-09T07:02:14.7991598Z Updating files:  50% (11298/22596)
+2026-10-09T07:02:14.8243018Z Updating files:  51% (11524/22596)
+2026-10-09T07:02:14.8674943Z Updating files:  52% (11750/22596)
+2026-10-09T07:02:14.9062445Z Updating files:  53% (11976/22596)
+2026-10-09T07:02:14.9268126Z Updating files:  54% (12202/22596)
+2026-10-09T07:02:14.9418750Z Updating files:  55% (12428/22596)
+2026-10-09T07:02:14.9523362Z Updating files:  56% (12654/22596)
+2026-10-09T07:02:14.9773668Z Updating files:  57% (12880/22596)
+2026-10-09T07:02:14.9910157Z Updating files:  58% (13106/22596)
+2026-10-09T07:02:15.0008611Z Updating files:  59% (13332/22596)
+2026-10-09T07:02:15.0130522Z Updating files:  60% (13558/22596)
+2026-10-09T07:02:15.0225247Z Updating files:  61% (13784/22596)
+2026-10-09T07:02:15.0327704Z Updating files:  62% (14010/22596)
+2026-10-09T07:02:15.0429829Z Updating files:  63% (14236/22596)
+2026-10-09T07:02:15.0529148Z Updating files:  64% (14462/22596)
+2026-10-09T07:02:15.0620060Z Updating files:  65% (14688/22596)
+2026-10-09T07:02:15.0710022Z Updating files:  66% (14914/22596)
+2026-10-09T07:02:15.0823369Z Updating files:  67% (15140/22596)
+2026-10-09T07:02:15.0958973Z Updating files:  68% (15366/22596)
+2026-10-09T07:02:15.1149361Z Updating files:  69% (15592/22596)
+2026-10-09T07:02:15.1595306Z Updating files:  70% (15818/22596)
+2026-10-09T07:02:15.1889820Z Updating files:  71% (16044/22596)
+2026-10-09T07:02:15.2519715Z Updating files:  72% (16270/22596)
+2026-10-09T07:02:15.3125969Z Updating files:  73% (16496/22596)
+2026-10-09T07:02:15.5467757Z Updating files:  74% (16722/22596)
+2026-10-09T07:02:15.6048678Z Updating files:  75% (16947/22596)
+2026-10-09T07:02:15.6231208Z Updating files:  76% (17173/22596)
+2026-10-09T07:02:15.6514300Z Updating files:  77% (17399/22596)
+2026-10-09T07:02:15.6759532Z Updating files:  78% (17625/22596)
+2026-10-09T07:02:15.6921254Z Updating files:  79% (17851/22596)
+2026-10-09T07:02:15.7069362Z Updating files:  79% (17912/22596)
+2026-10-09T07:02:15.7347542Z Updating files:  80% (18077/22596)
+2026-10-09T07:02:15.7507575Z Updating files:  81% (18303/22596)
+2026-10-09T07:02:15.7692853Z Updating files:  82% (18529/22596)
+2026-10-09T07:02:15.8422749Z Updating files:  83% (18755/22596)
+2026-10-09T07:02:15.9289616Z Updating files:  84% (18981/22596)
+2026-10-09T07:02:15.9991028Z Updating files:  85% (19207/22596)
+2026-10-09T07:02:16.1212865Z Updating files:  86% (19433/22596)
+2026-10-09T07:02:16.1701243Z Updating files:  87% (19659/22596)
+2026-10-09T07:02:16.1870634Z Updating files:  88% (19885/22596)
+2026-10-09T07:02:16.1973309Z Updating files:  89% (20111/22596)
+2026-10-09T07:02:16.2170461Z Updating files:  90% (20337/22596)
+2026-10-09T07:02:16.2519585Z Updating files:  91% (20563/22596)
+2026-10-09T07:02:16.7013332Z Updating files:  92% (20789/22596)
+2026-10-09T07:02:16.8936915Z Updating files:  92% (20936/22596)
+2026-10-09T07:02:16.9146822Z Updating files:  93% (21015/22596)
+2026-10-09T07:02:16.9314828Z Updating files:  94% (21241/22596)
+2026-10-09T07:02:16.9491370Z Updating files:  95% (21467/22596)
+2026-10-09T07:02:16.9674875Z Updating files:  96% (21693/22596)
+2026-10-09T07:02:16.9881648Z Updating files:  97% (21919/22596)
+2026-10-09T07:02:17.0042219Z Updating files:  98% (22145/22596)
+2026-10-09T07:02:17.0300408Z Updating files:  99% (22371/22596)
+2026-10-09T07:02:17.0301622Z Updating files: 100% (22596/22596)
+2026-10-09T07:02:17.0302215Z Updating files: 100% (22596/22596), done.
+2026-10-09T07:02:17.0555423Z Note: switching to '9f7b16f0758eb79f306cf44605b84550f02de441'.
+2026-10-09T07:02:17.0556122Z 
+2026-10-09T07:02:17.0556454Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-09T07:02:17.0557249Z changes and commit them, and you can discard any commits you make in this
+2026-10-09T07:02:17.0558032Z state without impacting any branches by switching back to a branch.
+2026-10-09T07:02:17.0558505Z 
+2026-10-09T07:02:17.0558765Z If you want to create a new branch to retain commits you create, you may
+2026-10-09T07:02:17.0559233Z do so (now or later) by using -c with the switch command. Example:
+2026-10-09T07:02:17.0559838Z 
+2026-10-09T07:02:17.0559965Z   git switch -c <new-branch-name>
+2026-10-09T07:02:17.0560145Z 
+2026-10-09T07:02:17.0560256Z Or undo this operation with:
+2026-10-09T07:02:17.0560637Z 
+2026-10-09T07:02:17.0560732Z   git switch -
+2026-10-09T07:02:17.0560854Z 
+2026-10-09T07:02:17.0561076Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-09T07:02:17.0561399Z 
+2026-10-09T07:02:17.0561648Z HEAD is now at 9f7b16f chore(p8): bind independently reviewed combined engineering source
+2026-10-09T07:02:17.0700121Z ##[endgroup]
+2026-10-09T07:02:17.0744636Z [command]/usr/bin/git log -1 --format=%H
+2026-10-09T07:02:17.0766771Z 9f7b16f0758eb79f306cf44605b84550f02de441
+2026-10-09T07:02:17.1106954Z ##[group]Run dtolnay/rust-toolchain@1.95.0
+2026-10-09T07:02:17.1107269Z with:
+2026-10-09T07:02:17.1107451Z env:
+2026-10-09T07:02:17.1107638Z   CARGO_TERM_COLOR: never
+2026-10-09T07:02:17.1107893Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T07:02:17.1108139Z   CARGO_INCREMENTAL: 0
+2026-10-09T07:02:17.1108380Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-10-09T07:02:17.1108613Z   CARGO_PROFILE_TEST_DEBUG: 0
+2026-10-09T07:02:17.1108848Z   CARGO_BUILD_JOBS: 2
+2026-10-09T07:02:17.1109065Z   RUSTFLAGS: -D warnings
+2026-10-09T07:02:17.1109290Z ##[endgroup]
+2026-10-09T07:02:17.1171145Z ##[start-action display=Parse toolchain version;id=__dtolnay_rust-toolchain.parse]
+2026-10-09T07:02:17.1227340Z ##[group]Run if [[ -z $toolchain ]]; then
+2026-10-09T07:02:17.1227731Z [36;1mif [[ -z $toolchain ]]; then[0m
+2026-10-09T07:02:17.1228352Z [36;1m  # GitHub does not enforce `required: true` inputs itself. https://github.com/actions/runner/issues/1070[0m
+2026-10-09T07:02:17.1228999Z [36;1m  echo "'toolchain' is a required input" >&2[0m
+2026-10-09T07:02:17.1229301Z [36;1m  exit 1[0m
+2026-10-09T07:02:17.1229642Z [36;1melif [[ $toolchain =~ ^stable' '[0-9]+' '(year|month|week|day)s?' 'ago$ ]]; then[0m
+2026-10-09T07:02:17.1230059Z [36;1m  if [[ Linux == macOS ]]; then[0m
+2026-10-09T07:02:17.1230822Z [36;1m    echo "toolchain=1.$((($(date -v-$(sed 's/stable \([0-9]*\) \(.\).*/\1\2/' <<< $toolchain) +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT[0m
+2026-10-09T07:02:17.1231333Z [36;1m  else[0m
+2026-10-09T07:02:17.1231737Z [36;1m    echo "toolchain=1.$((($(date --date "${toolchain#stable }" +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT[0m
+2026-10-09T07:02:17.1232182Z [36;1m  fi[0m
+2026-10-09T07:02:17.1232476Z [36;1melif [[ $toolchain =~ ^stable' 'minus' '[0-9]+' 'releases?$ ]]; then[0m
+2026-10-09T07:02:17.1232997Z [36;1m  echo "toolchain=1.$((($(date +%s)/60/60/24-16569)/7/6-${toolchain//[^0-9]/}))" >> $GITHUB_OUTPUT[0m
+2026-10-09T07:02:17.1233451Z [36;1melif [[ $toolchain =~ ^1\.[0-9]+$ ]]; then[0m
+2026-10-09T07:02:17.1233970Z [36;1m  echo "toolchain=1.$((i=${toolchain#1.}, c=($(date +%s)/60/60/24-16569)/7/6, i+9*i*(10*i<=c)+90*i*(100*i<=c)))" >> $GITHUB_OUTPUT[0m
+2026-10-09T07:02:17.1234458Z [36;1melse[0m
+2026-10-09T07:02:17.1234654Z [36;1m  delimiter=EOF[0m
+2026-10-09T07:02:17.1234966Z [36;1m  while [[ $toolchain == *$delimiter* ]]; do delimiter+=_; done[0m
+2026-10-09T07:02:17.1235461Z [36;1m  printf 'toolchain<<%s\n%s\n%s\n' "$delimiter" "$toolchain" "$delimiter" >> $GITHUB_OUTPUT[0m
+2026-10-09T07:02:17.1235869Z [36;1mfi[0m
+2026-10-09T07:02:17.2533866Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T07:02:17.2534240Z env:
+2026-10-09T07:02:17.2534455Z   CARGO_TERM_COLOR: never
+2026-10-09T07:02:17.2534724Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T07:02:17.2534983Z   CARGO_INCREMENTAL: 0
+2026-10-09T07:02:17.2535221Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-10-09T07:02:17.2535480Z   CARGO_PROFILE_TEST_DEBUG: 0
+2026-10-09T07:02:17.2535732Z   CARGO_BUILD_JOBS: 2
+2026-10-09T07:02:17.2535983Z   RUSTFLAGS: -D warnings
+2026-10-09T07:02:17.2536217Z   toolchain: 1.95.0
+2026-10-09T07:02:17.2536427Z ##[endgroup]
+2026-10-09T07:02:17.2666836Z ##[end-action id=__dtolnay_rust-toolchain.parse;outcome=success;conclusion=success;duration_ms=149]
+2026-10-09T07:02:17.2671732Z ##[start-action display=Set $CARGO_HOME;id=__dtolnay_rust-toolchain.__run]
+2026-10-09T07:02:17.2702869Z ##[group]Run echo CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV
+2026-10-09T07:02:17.2703335Z [36;1mecho CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV[0m
+2026-10-09T07:02:17.2759544Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T07:02:17.2759880Z env:
+2026-10-09T07:02:17.2760077Z   CARGO_TERM_COLOR: never
+2026-10-09T07:02:17.2760536Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T07:02:17.2760811Z   CARGO_INCREMENTAL: 0
+2026-10-09T07:02:17.2761033Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-10-09T07:02:17.2761283Z   CARGO_PROFILE_TEST_DEBUG: 0
+2026-10-09T07:02:17.2761511Z   CARGO_BUILD_JOBS: 2
+2026-10-09T07:02:17.2761926Z   RUSTFLAGS: -D warnings
+2026-10-09T07:02:17.2762154Z ##[endgroup]
+2026-10-09T07:02:17.2844694Z ##[end-action id=__dtolnay_rust-toolchain.__run;outcome=success;conclusion=success;duration_ms=17]
+2026-10-09T07:02:17.2846895Z ##[start-action display=Install rustup if needed;id=__dtolnay_rust-toolchain.__run_2]
+2026-10-09T07:02:17.2874364Z ##[group]Run if ! command -v rustup &>/dev/null; then
+2026-10-09T07:02:17.2874722Z [36;1mif ! command -v rustup &>/dev/null; then[0m
+2026-10-09T07:02:17.2875479Z [36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://sh.rustup.rs | sh -s -- --default-toolchain none -y[0m
+2026-10-09T07:02:17.2876217Z [36;1m  echo "$CARGO_HOME/bin" >> $GITHUB_PATH[0m
+2026-10-09T07:02:17.2876496Z [36;1mfi[0m
+2026-10-09T07:02:17.2931963Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T07:02:17.2932302Z env:
+2026-10-09T07:02:17.2932505Z   CARGO_TERM_COLOR: never
+2026-10-09T07:02:17.2932767Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T07:02:17.2933015Z   CARGO_INCREMENTAL: 0
+2026-10-09T07:02:17.2933237Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-10-09T07:02:17.2933481Z   CARGO_PROFILE_TEST_DEBUG: 0
+2026-10-09T07:02:17.2933720Z   CARGO_BUILD_JOBS: 2
+2026-10-09T07:02:17.2933942Z   RUSTFLAGS: -D warnings
+2026-10-09T07:02:17.2934187Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:02:17.2934428Z ##[endgroup]
+2026-10-09T07:02:17.3015059Z ##[end-action id=__dtolnay_rust-toolchain.__run_2;outcome=success;conclusion=success;duration_ms=16]
+2026-10-09T07:02:17.3017287Z ##[start-action display=Install rustup if needed on windows;id=__dtolnay_rust-toolchain.__run_3]
+2026-10-09T07:02:17.3023841Z ##[end-action id=__dtolnay_rust-toolchain.__run_3;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-10-09T07:02:17.3036838Z ##[start-action display=rustup toolchain install 1.95.0;id=__dtolnay_rust-toolchain.__run_4]
+2026-10-09T07:02:17.3058119Z ##[group]Run set -f  # split targets and components on commas and whitespace, without glob expansion
+2026-10-09T07:02:17.3058786Z [36;1mset -f  # split targets and components on commas and whitespace, without glob expansion[0m
+2026-10-09T07:02:17.3059227Z [36;1mflags=()[0m
+2026-10-09T07:02:17.3059509Z [36;1mfor t in ${targets//,/ }; do flags+=(--target "$t"); done[0m
+2026-10-09T07:02:17.3059927Z [36;1mfor c in ${components//,/ }; do flags+=(--component "$c"); done[0m
+2026-10-09T07:02:17.3060730Z [36;1mif [[ $toolchain == nightly && -n $components ]]; then flags+=(--allow-downgrade); fi[0m
+2026-10-09T07:02:17.3061180Z [36;1mlog=$(mktemp)[0m
+2026-10-09T07:02:17.3061410Z [36;1mtrap 'rm -f "$log"' EXIT[0m
+2026-10-09T07:02:17.3061665Z [36;1mfor attempt in 1 2 3 4 5; do[0m
+2026-10-09T07:02:17.3062232Z [36;1m  if rustup toolchain install "$toolchain" "${flags[@]}" --profile minimal --no-self-update --force-non-host 2>&1 | tee "$log"; then[0m
+2026-10-09T07:02:17.3062792Z [36;1m    break[0m
+2026-10-09T07:02:17.3062984Z [36;1m  else[0m
+2026-10-09T07:02:17.3063187Z [36;1m    status=$?[0m
+2026-10-09T07:02:17.3063392Z [36;1m  fi[0m
+2026-10-09T07:02:17.3063674Z [36;1m  if [[ $attempt == 5 ]] || ! grep -Fq 'checksum failed for ' "$log" \[0m
+2026-10-09T07:02:17.3064221Z [36;1m      || ! grep -Fq 'this is likely due to an ongoing update of the official release server' "$log"; then[0m
+2026-10-09T07:02:17.3064843Z [36;1m    exit "$status"[0m
+2026-10-09T07:02:17.3065063Z [36;1m  fi[0m
+2026-10-09T07:02:17.3065422Z [36;1m  echo "Retrying rustup toolchain install in 30 seconds (retry $attempt of 4)" >&2[0m
+2026-10-09T07:02:17.3065838Z [36;1m  sleep 30[0m
+2026-10-09T07:02:17.3066037Z [36;1mdone[0m
+2026-10-09T07:02:17.3121573Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T07:02:17.3121919Z env:
+2026-10-09T07:02:17.3122123Z   CARGO_TERM_COLOR: never
+2026-10-09T07:02:17.3122377Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T07:02:17.3122627Z   CARGO_INCREMENTAL: 0
+2026-10-09T07:02:17.3122849Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-10-09T07:02:17.3123255Z   CARGO_PROFILE_TEST_DEBUG: 0
+2026-10-09T07:02:17.3123497Z   CARGO_BUILD_JOBS: 2
+2026-10-09T07:02:17.3123708Z   RUSTFLAGS: -D warnings
+2026-10-09T07:02:17.3123940Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:02:17.3124182Z   toolchain: 1.95.0
+2026-10-09T07:02:17.3124378Z   targets: 
+2026-10-09T07:02:17.3124631Z   components: 
+2026-10-09T07:02:17.3145512Z   RUSTUP_PERMIT_COPY_RENAME: 1
+2026-10-09T07:02:17.3145785Z ##[endgroup]
+2026-10-09T07:02:17.8956841Z info: syncing channel updates for 1.95.0-x86_64-unknown-linux-gnu
+2026-10-09T07:02:18.2045311Z info: latest update on 2026-04-16 for version 1.95.0 (59807616e 2026-04-14)
+2026-10-09T07:02:18.2045782Z info: downloading 3 components
+2026-10-09T07:02:25.6302239Z 
+2026-10-09T07:02:25.6383908Z   1.95.0-x86_64-unknown-linux-gnu installed - rustc 1.95.0 (59807616e 2026-04-14)
+2026-10-09T07:02:25.6384400Z 
+2026-10-09T07:02:25.6739454Z ##[end-action id=__dtolnay_rust-toolchain.__run_4;outcome=success;conclusion=success;duration_ms=8370]
+2026-10-09T07:02:25.6752518Z ##[start-action display=rustup default 1.95.0;id=__dtolnay_rust-toolchain.__run_5]
+2026-10-09T07:02:25.6788328Z ##[group]Run rustup default "$toolchain" --force-non-host
+2026-10-09T07:02:25.6788997Z [36;1mrustup default "$toolchain" --force-non-host[0m
+2026-10-09T07:02:25.6873282Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T07:02:25.6873848Z env:
+2026-10-09T07:02:25.6874169Z   CARGO_TERM_COLOR: never
+2026-10-09T07:02:25.6874567Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T07:02:25.6874970Z   CARGO_INCREMENTAL: 0
+2026-10-09T07:02:25.6875333Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-10-09T07:02:25.6875728Z   CARGO_PROFILE_TEST_DEBUG: 0
+2026-10-09T07:02:25.6876117Z   CARGO_BUILD_JOBS: 2
+2026-10-09T07:02:25.6876467Z   RUSTFLAGS: -D warnings
+2026-10-09T07:02:25.6876851Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:02:25.6877258Z   toolchain: 1.95.0
+2026-10-09T07:02:25.6877606Z ##[endgroup]
+2026-10-09T07:02:25.7423980Z info: using existing install for 1.95.0-x86_64-unknown-linux-gnu
+2026-10-09T07:02:25.7827730Z info: default toolchain set to 1.95.0-x86_64-unknown-linux-gnu
+2026-10-09T07:02:25.7831111Z 
+2026-10-09T07:02:25.7899086Z   1.95.0-x86_64-unknown-linux-gnu unchanged - rustc 1.95.0 (59807616e 2026-04-14)
+2026-10-09T07:02:25.7899764Z 
+2026-10-09T07:02:25.7916070Z ##[end-action id=__dtolnay_rust-toolchain.__run_5;outcome=success;conclusion=success;duration_ms=116]
+2026-10-09T07:02:25.7919894Z ##[start-action display=Create cachekey;id=__dtolnay_rust-toolchain.rustc-version]
+2026-10-09T07:02:25.8587651Z ##[group]Run DATE=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')
+2026-10-09T07:02:25.8588702Z [36;1mDATE=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')[0m
+2026-10-09T07:02:25.8589550Z [36;1mHASH=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-hash: //p')[0m
+2026-10-09T07:02:25.8590208Z [36;1mecho "cachekey=$(echo $DATE$HASH | head -c12)" >> $GITHUB_OUTPUT[0m
+2026-10-09T07:02:25.8651410Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T07:02:25.8651751Z env:
+2026-10-09T07:02:25.8651949Z   CARGO_TERM_COLOR: never
+2026-10-09T07:02:25.8652200Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T07:02:25.8652623Z   CARGO_INCREMENTAL: 0
+2026-10-09T07:02:25.8652848Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-10-09T07:02:25.8653081Z   CARGO_PROFILE_TEST_DEBUG: 0
+2026-10-09T07:02:25.8653322Z   CARGO_BUILD_JOBS: 2
+2026-10-09T07:02:25.8653538Z   RUSTFLAGS: -D warnings
+2026-10-09T07:02:25.8653770Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:02:25.8654013Z   toolchain: 1.95.0
+2026-10-09T07:02:25.8654217Z ##[endgroup]
+2026-10-09T07:02:25.9179955Z ##[end-action id=__dtolnay_rust-toolchain.rustc-version;outcome=success;conclusion=success;duration_ms=125]
+2026-10-09T07:02:25.9184513Z ##[start-action display=Disable incremental compilation;id=__dtolnay_rust-toolchain.__run_6]
+2026-10-09T07:02:25.9276280Z ##[group]Run if [ -z "${CARGO_INCREMENTAL+set}" ]; then
+2026-10-09T07:02:25.9276677Z [36;1mif [ -z "${CARGO_INCREMENTAL+set}" ]; then[0m
+2026-10-09T07:02:25.9277006Z [36;1m  echo CARGO_INCREMENTAL=0 >> $GITHUB_ENV[0m
+2026-10-09T07:02:25.9277281Z [36;1mfi[0m
+2026-10-09T07:02:25.9344022Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T07:02:25.9344399Z env:
+2026-10-09T07:02:25.9344591Z   CARGO_TERM_COLOR: never
+2026-10-09T07:02:25.9344845Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T07:02:25.9345099Z   CARGO_INCREMENTAL: 0
+2026-10-09T07:02:25.9345333Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-10-09T07:02:25.9345590Z   CARGO_PROFILE_TEST_DEBUG: 0
+2026-10-09T07:02:25.9345825Z   CARGO_BUILD_JOBS: 2
+2026-10-09T07:02:25.9346055Z   RUSTFLAGS: -D warnings
+2026-10-09T07:02:25.9346292Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:02:25.9346537Z ##[endgroup]
+2026-10-09T07:02:25.9656685Z ##[end-action id=__dtolnay_rust-toolchain.__run_6;outcome=success;conclusion=success;duration_ms=47]
+2026-10-09T07:02:25.9658936Z ##[start-action display=Enable colors in Cargo output;id=__dtolnay_rust-toolchain.__run_7]
+2026-10-09T07:02:26.2267897Z ##[group]Run if [ -z "${CARGO_TERM_COLOR+set}" ]; then
+2026-10-09T07:02:26.2268380Z [36;1mif [ -z "${CARGO_TERM_COLOR+set}" ]; then[0m
+2026-10-09T07:02:26.2268816Z [36;1m  echo CARGO_TERM_COLOR=always >> $GITHUB_ENV[0m
+2026-10-09T07:02:26.2269191Z [36;1mfi[0m
+2026-10-09T07:02:26.2328839Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T07:02:26.2329185Z env:
+2026-10-09T07:02:26.2329384Z   CARGO_TERM_COLOR: never
+2026-10-09T07:02:26.2329636Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T07:02:26.2329899Z   CARGO_INCREMENTAL: 0
+2026-10-09T07:02:26.2330131Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-10-09T07:02:26.2330651Z   CARGO_PROFILE_TEST_DEBUG: 0
+2026-10-09T07:02:26.2330968Z   CARGO_BUILD_JOBS: 2
+2026-10-09T07:02:26.2331192Z   RUSTFLAGS: -D warnings
+2026-10-09T07:02:26.2331424Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:02:26.2331672Z ##[endgroup]
+2026-10-09T07:02:26.2412211Z ##[end-action id=__dtolnay_rust-toolchain.__run_7;outcome=success;conclusion=success;duration_ms=275]
+2026-10-09T07:02:26.2415519Z ##[start-action display=Enable Cargo sparse registry;id=__dtolnay_rust-toolchain.__run_8]
+2026-10-09T07:02:26.2746869Z ##[group]Run # implemented in 1.66, stabilized in 1.68, made default in 1.70
+2026-10-09T07:02:26.2747399Z [36;1m# implemented in 1.66, stabilized in 1.68, made default in 1.70[0m
+2026-10-09T07:02:26.2748139Z [36;1mif [ -z "${CARGO_REGISTRIES_CRATES_IO_PROTOCOL+set}" -o -f "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol ]; then[0m
+2026-10-09T07:02:26.2748921Z [36;1m  if rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.6[89]\.'; then[0m
+2026-10-09T07:02:26.2749544Z [36;1m    touch "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol || true[0m
+2026-10-09T07:02:26.2750123Z [36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse >> $GITHUB_ENV[0m
+2026-10-09T07:02:26.2751104Z [36;1m  elif rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.6[67]\.'; then[0m
+2026-10-09T07:02:26.2751717Z [36;1m    touch "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol || true[0m
+2026-10-09T07:02:26.2752240Z [36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=git >> $GITHUB_ENV[0m
+2026-10-09T07:02:26.2752747Z [36;1m  fi[0m
+2026-10-09T07:02:26.2752939Z [36;1mfi[0m
+2026-10-09T07:02:26.2806359Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T07:02:26.2806697Z env:
+2026-10-09T07:02:26.2806894Z   CARGO_TERM_COLOR: never
+2026-10-09T07:02:26.2807142Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T07:02:26.2807384Z   CARGO_INCREMENTAL: 0
+2026-10-09T07:02:26.2807603Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-10-09T07:02:26.2807839Z   CARGO_PROFILE_TEST_DEBUG: 0
+2026-10-09T07:02:26.2808065Z   CARGO_BUILD_JOBS: 2
+2026-10-09T07:02:26.2808278Z   RUSTFLAGS: -D warnings
+2026-10-09T07:02:26.2808512Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:02:26.2808753Z   toolchain: 1.95.0
+2026-10-09T07:02:26.2809103Z ##[endgroup]
+2026-10-09T07:02:26.3114818Z ##[end-action id=__dtolnay_rust-toolchain.__run_8;outcome=success;conclusion=success;duration_ms=69]
+2026-10-09T07:02:26.3118679Z ##[start-action display=Work around spurious network errors in curl 8.0;id=__dtolnay_rust-toolchain.__run_9]
+2026-10-09T07:02:26.3379969Z ##[group]Run # https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation
+2026-10-09T07:02:26.3381089Z [36;1m# https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation[0m
+2026-10-09T07:02:26.3381750Z [36;1mif rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.7[01]\.'; then[0m
+2026-10-09T07:02:26.3382233Z [36;1m  echo CARGO_HTTP_MULTIPLEXING=false >> $GITHUB_ENV[0m
+2026-10-09T07:02:26.3382545Z [36;1mfi[0m
+2026-10-09T07:02:26.3442904Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T07:02:26.3443254Z env:
+2026-10-09T07:02:26.3443461Z   CARGO_TERM_COLOR: never
+2026-10-09T07:02:26.3443743Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T07:02:26.3443994Z   CARGO_INCREMENTAL: 0
+2026-10-09T07:02:26.3444220Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-10-09T07:02:26.3444463Z   CARGO_PROFILE_TEST_DEBUG: 0
+2026-10-09T07:02:26.3444708Z   CARGO_BUILD_JOBS: 2
+2026-10-09T07:02:26.3444935Z   RUSTFLAGS: -D warnings
+2026-10-09T07:02:26.3445182Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:02:26.3445430Z   toolchain: 1.95.0
+2026-10-09T07:02:26.3445634Z ##[endgroup]
+2026-10-09T07:02:26.3637709Z ##[end-action id=__dtolnay_rust-toolchain.__run_9;outcome=success;conclusion=success;duration_ms=51]
+2026-10-09T07:02:26.3641993Z ##[start-action display=rustc +1.95.0 --version --verbose;id=__dtolnay_rust-toolchain.__run_10]
+2026-10-09T07:02:26.4328383Z ##[group]Run rustc +"$toolchain" --version --verbose
+2026-10-09T07:02:26.4328758Z [36;1mrustc +"$toolchain" --version --verbose[0m
+2026-10-09T07:02:26.4385563Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T07:02:26.4385898Z env:
+2026-10-09T07:02:26.4386105Z   CARGO_TERM_COLOR: never
+2026-10-09T07:02:26.4386354Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T07:02:26.4386603Z   CARGO_INCREMENTAL: 0
+2026-10-09T07:02:26.4386827Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-10-09T07:02:26.4387065Z   CARGO_PROFILE_TEST_DEBUG: 0
+2026-10-09T07:02:26.4387294Z   CARGO_BUILD_JOBS: 2
+2026-10-09T07:02:26.4387516Z   RUSTFLAGS: -D warnings
+2026-10-09T07:02:26.4387748Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:02:26.4387986Z   toolchain: 1.95.0
+2026-10-09T07:02:26.4388185Z ##[endgroup]
+2026-10-09T07:02:26.4564732Z rustc 1.95.0 (59807616e 2026-04-14)
+2026-10-09T07:02:26.4565658Z binary: rustc
+2026-10-09T07:02:26.4566682Z commit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860
+2026-10-09T07:02:26.4567484Z commit-date: 2026-04-14
+2026-10-09T07:02:26.4568193Z host: x86_64-unknown-linux-gnu
+2026-10-09T07:02:26.4568864Z release: 1.95.0
+2026-10-09T07:02:26.4569487Z LLVM version: 22.1.2
+2026-10-09T07:02:26.4586845Z ##[end-action id=__dtolnay_rust-toolchain.__run_10;outcome=success;conclusion=success;duration_ms=94]
+2026-10-09T07:02:26.4822301Z ##[group]Run mkdir -p "$RUNNER_TEMP/p7-closeout"
+2026-10-09T07:02:26.4822712Z [36;1mmkdir -p "$RUNNER_TEMP/p7-closeout"[0m
+2026-10-09T07:02:26.4823140Z [36;1mecho "CARGO_TARGET_DIR=$RUNNER_TEMP/p7-closeout-target" >> "$GITHUB_ENV"[0m
+2026-10-09T07:02:26.4823709Z [36;1mpython3 - <<'PY'[0m
+2026-10-09T07:02:26.4823951Z [36;1mimport os, pathlib, sys[0m
+2026-10-09T07:02:26.4824221Z [36;1msys.path.insert(0, 'scripts')[0m
+2026-10-09T07:02:26.4824583Z [36;1mfrom p7_build_identity import json_bytes, source_snapshot[0m
+2026-10-09T07:02:26.4825030Z [36;1mout = pathlib.Path(os.environ['RUNNER_TEMP']) / 'p7-closeout'[0m
+2026-10-09T07:02:26.4825563Z [36;1m(out / 'source-before.json').write_bytes(json_bytes(source_snapshot(pathlib.Path.cwd())))[0m
+2026-10-09T07:02:26.4826013Z [36;1mPY[0m
+2026-10-09T07:02:26.4886738Z shell: /usr/bin/bash -e {0}
+2026-10-09T07:02:26.4886986Z env:
+2026-10-09T07:02:26.4887179Z   CARGO_TERM_COLOR: never
+2026-10-09T07:02:26.4887468Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T07:02:26.4887714Z   CARGO_INCREMENTAL: 0
+2026-10-09T07:02:26.4887930Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-10-09T07:02:26.4888161Z   CARGO_PROFILE_TEST_DEBUG: 0
+2026-10-09T07:02:26.4888392Z   CARGO_BUILD_JOBS: 2
+2026-10-09T07:02:26.4888611Z   RUSTFLAGS: -D warnings
+2026-10-09T07:02:26.4888856Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:02:26.4889102Z ##[endgroup]
+2026-10-09T07:02:26.7792680Z ##[group]Run set -o pipefail
+2026-10-09T07:02:26.7792993Z [36;1mset -o pipefail[0m
+2026-10-09T07:02:26.7793304Z [36;1mcargo test -p cc-db --locked --lib -- --nocapture \[0m
+2026-10-09T07:02:26.7793734Z [36;1m  2>&1 | tee "$RUNNER_TEMP/p7-closeout/db-rebuild-faults.log"[0m
+2026-10-09T07:02:26.7794237Z [36;1mcargo test -p cc-db --locked --test semantic_rebuild --test semantic_recovery \[0m
+2026-10-09T07:02:26.7794839Z [36;1m  --test semantic_publish --test semantic_lease --test semantic_queue -- --nocapture \[0m
+2026-10-09T07:02:26.7795357Z [36;1m  2>&1 | tee "$RUNNER_TEMP/p7-closeout/db-lifecycle.log"[0m
+2026-10-09T07:02:26.7795799Z [36;1mcargo test -p cc-semantic --locked --all-targets -- --nocapture \[0m
+2026-10-09T07:02:26.7796268Z [36;1m  2>&1 | tee "$RUNNER_TEMP/p7-closeout/semantic-fault-matrix.log"[0m
+2026-10-09T07:02:26.7856913Z shell: /usr/bin/bash -e {0}
+2026-10-09T07:02:26.7857182Z env:
+2026-10-09T07:02:26.7857378Z   CARGO_TERM_COLOR: never
+2026-10-09T07:02:26.7857664Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T07:02:26.7857927Z   CARGO_INCREMENTAL: 0
+2026-10-09T07:02:26.7858153Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-10-09T07:02:26.7858386Z   CARGO_PROFILE_TEST_DEBUG: 0
+2026-10-09T07:02:26.7858613Z   CARGO_BUILD_JOBS: 2
+2026-10-09T07:02:26.7858826Z   RUSTFLAGS: -D warnings
+2026-10-09T07:02:26.7859063Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:02:26.7859386Z   CARGO_TARGET_DIR: /home/runner/work/_temp/p7-closeout-target
+2026-10-09T07:02:26.7859725Z ##[endgroup]
+2026-10-09T07:02:26.8322060Z     Updating crates.io index
+2026-10-09T07:02:27.5015321Z  Downloading crates ...
+2026-10-09T07:02:27.5871079Z   Downloaded arrayref v0.3.9
+2026-10-09T07:02:27.5946996Z   Downloaded cfg-if v1.0.4
+2026-10-09T07:02:27.5967986Z   Downloaded autocfg v1.5.0
+2026-10-09T07:02:27.5991132Z   Downloaded chacha20 v0.10.2
+2026-10-09T07:02:27.6017485Z   Downloaded cpufeatures v0.3.0
+2026-10-09T07:02:27.6034160Z   Downloaded bitflags v2.11.0
+2026-10-09T07:02:27.6083060Z   Downloaded cc v1.2.58
+2026-10-09T07:02:27.6114654Z   Downloaded arrayvec v0.7.6
+2026-10-09T07:02:27.6193686Z   Downloaded errno v0.3.14
+2026-10-09T07:02:27.6212759Z   Downloaded constant_time_eq v0.4.2
+2026-10-09T07:02:27.6235741Z   Downloaded zstd-safe v7.2.4
+2026-10-09T07:02:27.6259207Z   Downloaded zstd v0.13.3
+2026-10-09T07:02:27.6291504Z   Downloaded aho-corasick v1.1.4
+2026-10-09T07:02:27.6348436Z   Downloaded r2d2_sqlite v0.35.0
+2026-10-09T07:02:27.6361791Z   Downloaded thiserror-impl v2.0.18
+2026-10-09T07:02:27.6377330Z   Downloaded scopeguard v1.2.0
+2026-10-09T07:02:27.6389728Z   Downloaded fastrand v2.3.0
+2026-10-09T07:02:27.6406232Z   Downloaded zmij v1.0.21
+2026-10-09T07:02:27.6424722Z   Downloaded once_cell v1.21.4
+2026-10-09T07:02:27.6451943Z   Downloaded uuid v1.23.0
+2026-10-09T07:02:27.6482703Z   Downloaded pkg-config v0.3.32
+2026-10-09T07:02:27.6502210Z   Downloaded tracing-attributes v0.1.31
+2026-10-09T07:02:27.6529833Z   Downloaded r2d2 v0.8.10
+2026-10-09T07:02:27.6546060Z   Downloaded quote v1.0.45
+2026-10-09T07:02:27.6577714Z   Downloaded smallvec v1.15.1
+2026-10-09T07:02:27.6600676Z   Downloaded parking_lot v0.12.5
+2026-10-09T07:02:27.6627538Z   Downloaded tempfile v3.27.0
+2026-10-09T07:02:27.6658694Z   Downloaded unicode-ident v1.0.24
+2026-10-09T07:02:27.6689189Z   Downloaded tracing-core v0.1.36
+2026-10-09T07:02:27.6722985Z   Downloaded serde_core v1.0.228
+2026-10-09T07:02:27.6754860Z   Downloaded serde v1.0.228
+2026-10-09T07:02:27.6795821Z   Downloaded rand v0.10.3
+2026-10-09T07:02:27.6839314Z   Downloaded memchr v2.8.0
+2026-10-09T07:02:27.6898863Z   Downloaded serde_json v1.0.149
+2026-10-09T07:02:27.6975692Z   Downloaded hashbrown v0.17.1
+2026-10-09T07:02:27.7031565Z   Downloaded regex v1.12.3
+2026-10-09T07:02:27.7086865Z   Downloaded rusqlite v0.40.1
+2026-10-09T07:02:27.7158379Z   Downloaded num-traits v0.2.19
+2026-10-09T07:02:27.7187986Z   Downloaded vcpkg v0.2.15
+2026-10-09T07:02:27.7732965Z   Downloaded chrono v0.4.44
+2026-10-09T07:02:27.7801029Z   Downloaded syn v2.0.117
+2026-10-09T07:02:27.7907553Z   Downloaded log v0.4.29
+2026-10-09T07:02:27.7933182Z   Downloaded getrandom v0.4.2
+2026-10-09T07:02:27.7973345Z   Downloaded serde_derive v1.0.228
+2026-10-09T07:02:27.8005896Z   Downloaded proc-macro2 v1.0.106
+2026-10-09T07:02:27.8039189Z   Downloaded parking_lot_core v0.9.12
+2026-10-09T07:02:27.8062472Z   Downloaded regex-syntax v0.8.10
+2026-10-09T07:02:27.8131021Z   Downloaded jobserver v0.1.34
+2026-10-09T07:02:27.8153444Z   Downloaded iana-time-zone v0.1.65
+2026-10-09T07:02:27.8183561Z   Downloaded tracing v0.1.44
+2026-10-09T07:02:27.8342861Z   Downloaded rustix v1.1.4
+2026-10-09T07:02:27.8620992Z   Downloaded hashlink v0.12.1
+2026-10-09T07:02:27.8641882Z   Downloaded rand_core v0.10.0
+2026-10-09T07:02:27.8662097Z   Downloaded foldhash v0.2.0
+2026-10-09T07:02:27.8676062Z   Downloaded find-msvc-tools v0.1.9
+2026-10-09T07:02:27.8693490Z   Downloaded lock_api v0.4.14
+2026-10-09T07:02:27.8707211Z   Downloaded fallible-iterator v0.3.0
+2026-10-09T07:02:27.8721905Z   Downloaded thiserror v2.0.18
+2026-10-09T07:02:27.8790450Z   Downloaded shlex v1.3.0
+2026-10-09T07:02:27.8804227Z   Downloaded regex-automata v0.4.14
+2026-10-09T07:02:27.8942714Z   Downloaded scheduled-thread-pool v0.2.7
+2026-10-09T07:02:27.8955145Z   Downloaded pin-project-lite v0.2.17
+2026-10-09T07:02:27.9015827Z   Downloaded blake3 v1.8.4
+2026-10-09T07:02:27.9097620Z   Downloaded itoa v1.0.18
+2026-10-09T07:02:27.9113318Z   Downloaded fallible-streaming-iterator v0.1.9
+2026-10-09T07:02:27.9124151Z   Downloaded zstd-sys v2.0.16+zstd.1.5.7
+2026-10-09T07:02:27.9287006Z   Downloaded libc v0.2.183
+2026-10-09T07:02:27.9903829Z   Downloaded linux-raw-sys v0.12.1
+2026-10-09T07:02:28.0548569Z   Downloaded libsqlite3-sys v0.38.1
+2026-10-09T07:02:28.1414126Z    Compiling libc v0.2.183
+2026-10-09T07:02:28.1414622Z    Compiling find-msvc-tools v0.1.9
+2026-10-09T07:02:28.2497579Z    Compiling shlex v1.3.0
+2026-10-09T07:02:28.3224414Z    Compiling cfg-if v1.0.4
+2026-10-09T07:02:28.3395129Z    Compiling proc-macro2 v1.0.106
+2026-10-09T07:02:28.5666632Z    Compiling pkg-config v0.3.32
+2026-10-09T07:02:28.8510217Z    Compiling unicode-ident v1.0.24
+2026-10-09T07:02:28.8888090Z    Compiling quote v1.0.45
+2026-10-09T07:02:29.0421117Z    Compiling jobserver v0.1.34
+2026-10-09T07:02:29.2137302Z    Compiling cc v1.2.58
+2026-10-09T07:02:29.4495851Z    Compiling syn v2.0.117
+2026-10-09T07:02:30.1281780Z    Compiling serde_core v1.0.228
+2026-10-09T07:02:30.2243853Z    Compiling smallvec v1.15.1
+2026-10-09T07:02:30.3188588Z    Compiling cpufeatures v0.3.0
+2026-10-09T07:02:30.3396125Z    Compiling getrandom v0.4.2
+2026-10-09T07:02:30.4065873Z    Compiling rand_core v0.10.0
+2026-10-09T07:02:30.4641989Z    Compiling parking_lot_core v0.9.12
+2026-10-09T07:02:30.5511074Z    Compiling zstd-sys v2.0.16+zstd.1.5.7
+2026-10-09T07:02:30.6752548Z    Compiling vcpkg v0.2.15
+2026-10-09T07:02:31.0590630Z    Compiling scopeguard v1.2.0
+2026-10-09T07:02:31.0846559Z    Compiling memchr v2.8.0
+2026-10-09T07:02:31.4546714Z    Compiling lock_api v0.4.14
+2026-10-09T07:02:31.5653890Z    Compiling libsqlite3-sys v0.38.1
+2026-10-09T07:02:33.7845637Z    Compiling foldhash v0.2.0
+2026-10-09T07:02:33.8406558Z    Compiling once_cell v1.21.4
+2026-10-09T07:02:33.9244325Z    Compiling zmij v1.0.21
+2026-10-09T07:02:34.0025650Z    Compiling bitflags v2.11.0
+2026-10-09T07:02:34.1013451Z    Compiling autocfg v1.5.0
+2026-10-09T07:02:34.2940038Z    Compiling serde v1.0.228
+2026-10-09T07:02:34.4012214Z    Compiling num-traits v0.2.19
+2026-10-09T07:02:34.4610905Z    Compiling hashbrown v0.17.1
+2026-10-09T07:02:34.7939540Z    Compiling parking_lot v0.12.5
+2026-10-09T07:02:34.9780817Z    Compiling serde_derive v1.0.228
+2026-10-09T07:02:50.0262831Z    Compiling chacha20 v0.10.2
+2026-10-09T07:02:50.0963155Z    Compiling blake3 v1.8.4
+2026-10-09T07:02:50.1443965Z    Compiling zstd-safe v7.2.4
+2026-10-09T07:02:50.1991858Z    Compiling rustix v1.1.4
+2026-10-09T07:02:50.2082414Z    Compiling serde_json v1.0.149
+2026-10-09T07:02:50.2614432Z    Compiling thiserror v2.0.18
+2026-10-09T07:02:50.4126813Z    Compiling rand v0.10.3
+2026-10-09T07:02:50.9319642Z    Compiling scheduled-thread-pool v0.2.7
+2026-10-09T07:02:51.0352255Z    Compiling hashlink v0.12.1
+2026-10-09T07:02:51.2671647Z    Compiling tracing-core v0.1.36
+2026-10-09T07:02:51.3466283Z    Compiling thiserror-impl v2.0.18
+2026-10-09T07:02:51.5569349Z    Compiling tracing-attributes v0.1.31
+2026-10-09T07:02:52.0326056Z    Compiling aho-corasick v1.1.4
+2026-10-09T07:02:52.2447294Z    Compiling itoa v1.0.18
+2026-10-09T07:02:52.3139350Z    Compiling regex-syntax v0.8.10
+2026-10-09T07:02:53.1227584Z    Compiling linux-raw-sys v0.12.1
+2026-10-09T07:02:53.3077072Z    Compiling fallible-iterator v0.3.0
+2026-10-09T07:02:53.4934121Z    Compiling constant_time_eq v0.4.2
+2026-10-09T07:02:53.5545475Z    Compiling log v0.4.29
+2026-10-09T07:02:53.6289965Z    Compiling arrayvec v0.7.6
+2026-10-09T07:02:53.7192940Z    Compiling pin-project-lite v0.2.17
+2026-10-09T07:02:53.7455612Z    Compiling arrayref v0.3.9
+2026-10-09T07:02:53.7648911Z    Compiling fallible-streaming-iterator v0.1.9
+2026-10-09T07:02:53.8195542Z    Compiling rusqlite v0.40.1
+2026-10-09T07:02:54.1123953Z    Compiling tracing v0.1.44
+2026-10-09T07:02:54.2151116Z    Compiling r2d2 v0.8.10
+2026-10-09T07:02:54.3026726Z    Compiling regex-automata v0.4.14
+2026-10-09T07:02:56.6885444Z    Compiling uuid v1.23.0
+2026-10-09T07:02:56.7097858Z    Compiling iana-time-zone v0.1.65
+2026-10-09T07:02:56.8069036Z    Compiling fastrand v2.3.0
+2026-10-09T07:02:56.8768722Z    Compiling r2d2_sqlite v0.35.0
+2026-10-09T07:02:56.9085233Z    Compiling tempfile v3.27.0
+2026-10-09T07:02:56.9311887Z    Compiling chrono v0.4.44
+2026-10-09T07:02:57.1101481Z    Compiling zstd v0.13.3
+2026-10-09T07:02:57.2463219Z    Compiling cc-model v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-model)
+2026-10-09T07:02:57.8437264Z    Compiling regex v1.12.3
+2026-10-09T07:03:01.5416882Z    Compiling cc-db v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-db)
+2026-10-09T07:03:06.3560043Z     Finished `test` profile [unoptimized] target(s) in 39.55s
+2026-10-09T07:03:06.4108195Z      Running unittests src/lib.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/cc_db-2eef7e697a99d03b)
+2026-10-09T07:03:06.4142501Z 
+2026-10-09T07:03:06.4142872Z running 205 tests
+2026-10-09T07:03:06.4227588Z test capability_read::tests::missing_count_table_errors_are_not_zero_or_a_partial_ready_snapshot ... ok
+2026-10-09T07:03:06.4229629Z test capability_read::tests::unsupported_error_and_undefined_identity_results_are_never_unmoved ... ok
+2026-10-09T07:03:06.4255875Z test capability_read::tests::normal_rename_checks_the_actual_open_file_without_rebuild_or_wal ... ok
+2026-10-09T07:03:06.4778668Z test capability_read::tests::unwired_read_skips_semantic_counts_and_does_not_write ... ok
+2026-10-09T07:03:06.4821186Z test direct_writer::tests::direct_writer_creates_valid_db ... ok
+2026-10-09T07:03:06.4853245Z test capability_read::tests::incarnation_validation_rejects_in_place_replacement_but_not_epoch_churn ... ok
+2026-10-09T07:03:06.4868165Z test direct_writer::tests::direct_writer_write_fn_error_propagates ... ok
+2026-10-09T07:03:06.4869042Z test direct_writer::tests::drop_index_stmts_match_create_set ... ok
+2026-10-09T07:03:06.4869805Z test direct_writer::tests::extract_index_stmts ... ok
+2026-10-09T07:03:06.4874473Z test capability_read::tests::all_fields_keep_the_pinned_snapshot_across_a_committed_publication ... ok
+2026-10-09T07:03:06.4894157Z test direct_writer::tests::direct_writer_handles_fts_tables ... ok
+2026-10-09T07:03:06.4895855Z test direct_writer::tests::split_sql_handles_comments_and_strings ... ok
+2026-10-09T07:03:06.4914256Z test direct_writer::tests::sqlite_boundaries_preserve_triggers_quotes_comments_and_tail ... ok
+2026-10-09T07:03:06.4925224Z test direct_writer::tests::full_schema_preserves_seed_views_triggers_and_defers_explicit_indexes ... ok
+2026-10-09T07:03:06.4958203Z test direct_writer::tests::schema_and_deferred_unique_errors_propagate_without_dropping_input ... ok
+2026-10-09T07:03:06.5058218Z test direct_writer::tests::direct_writer_bulk_insert_perf ... ok
+2026-10-09T07:03:06.5416626Z test epoch_rules::tests::auxiliary_commit_advances_no_clock ... ok
+2026-10-09T07:03:06.5419913Z test epoch_rules::tests::effect_set_membership_and_union_are_exact ... ok
+2026-10-09T07:03:06.5474129Z test epoch_rules::tests::boost_http_edge_confidence_bumps_evidence_clock ... ok
+2026-10-09T07:03:06.5515665Z test epoch_rules::tests::combined_index_and_semantic_commit_bumps_each_exactly_once ... ok
+2026-10-09T07:03:06.5517704Z test epoch_rules::tests::lookup_covers_known_tables_and_rejects_metadata ... ok
+2026-10-09T07:03:06.6044836Z test epoch_rules::tests::empty_effect_set_commits_without_touching_any_clock ... ok
+2026-10-09T07:03:06.6064911Z test epoch_rules::tests::declared_clock_matches_observed_bump_for_every_table ... ok
+2026-10-09T07:03:06.6084442Z test epoch_rules::tests::evidence_method_family_bumps_evidence_only ... ok
+2026-10-09T07:03:06.6239763Z test epoch_rules::tests::semantic_effect_starts_the_clock_from_none_to_one ... ok
+2026-10-09T07:03:06.6658567Z test epoch_rules::tests::unit_of_work_commit_bumps_index_exactly_once ... ok
+2026-10-09T07:03:06.6791322Z test file_state_cache::tests::cache_hit_shares_the_same_allocation ... ok
+2026-10-09T07:03:06.6799978Z test fts::tests::camel_case_split ... ok
+2026-10-09T07:03:06.6806835Z test fts::tests::expand_query ... ok
+2026-10-09T07:03:06.6826473Z test fts::tests::expand_query_snake_case ... ok
+2026-10-09T07:03:06.6853882Z test fts::tests::fts_sanitize_basic ... ok
+2026-10-09T07:03:06.6965740Z test file_state_cache::tests::foreign_files_writer_invalidates_then_rewarns ... ok
+2026-10-09T07:03:06.7030780Z test file_state_cache::tests::batch_delta_matches_direct_load ... ok
+2026-10-09T07:03:06.7048432Z test index_db::tests::chunk_text_encoding_reads_plain_and_zstd ... ok
+2026-10-09T07:03:06.7376437Z test file_state_cache::tests::held_snapshot_is_immutable_across_batches ... ok
+2026-10-09T07:03:06.7839664Z test index_db::tests::app_maintained_fts_rowids_align_with_base_tables ... ok
+2026-10-09T07:03:06.8384920Z test index_db::tests::empty_file_state ... ok
+2026-10-09T07:03:07.0404951Z test index_db::tests::direct_rebuild_callback_and_index_errors_leave_live_database_unchanged ... ok
+2026-10-09T07:03:07.0786397Z test index_db::tests::full_rebuild_advances_both_epochs_past_previous_values ... ok
+2026-10-09T07:03:07.1106877Z test index_db::tests::generation_starts_at_zero_and_index_writes_bump_index_epoch ... ok
+2026-10-09T07:03:07.1432999Z test index_db::tests::http_call_cross_service_chain ... ok
+2026-10-09T07:03:07.1682587Z test index_db::tests::batched_fts_deletes_cover_all_paths_across_chunk_boundary ... ok
+2026-10-09T07:03:07.1687524Z test index_db::tests::mismatch_rebuild_stress_loop ... ignored
+2026-10-09T07:03:07.1986574Z test index_db::tests::metadata_round_trip ... ok
+2026-10-09T07:03:07.2195676Z test index_db::tests::open_creates_schema ... ok
+2026-10-09T07:03:07.2773238Z test index_db::tests::read_pool_connections_reject_writes ... ok
+2026-10-09T07:03:07.3416925Z test index_db::tests::precompressed_chunk_payloads_match_in_transaction_compression ... ok
+2026-10-09T07:03:07.3515399Z test index_db::tests::direct_rebuild_canonical_schema_matches_normal_temp_path ... ok
+2026-10-09T07:03:07.4011142Z test index_db::tests::resolver_seed_symbols_excludes_requested_files ... ok
+2026-10-09T07:03:07.4128626Z test index_db::tests::replace_in_place_keeps_test_edges_removal_cascades ... ok
+2026-10-09T07:03:07.4396134Z test index_db::tests::route_edge_resolution_provenance_round_trips ... ok
+2026-10-09T07:03:07.4862290Z test index_db::tests::rebuild_generation_exceeds_writes_committed_during_rebuild ... ok
+2026-10-09T07:03:07.5094483Z test index_db::tests::schema_mismatch_rebuild_advances_generation_past_old_values ... ok
+2026-10-09T07:03:07.5343390Z test index_db::tests::test_find_symbol_safe_with_injection_string ... ok
+2026-10-09T07:03:07.5524809Z test index_db::tests::test_find_symbol_safe_with_null_byte ... ok
+2026-10-09T07:03:07.5729392Z test index_db::tests::test_find_symbol_safe_with_unicode_injection ... ok
+2026-10-09T07:03:07.5948212Z test index_db::tests::test_find_symbol_safe_with_union_injection ... ok
+2026-10-09T07:03:07.6171313Z test index_db::tests::test_metadata_safe_with_injection_key ... ok
+2026-10-09T07:03:07.6380576Z test index_db_arch::tests::test_adr_crud ... ok
+2026-10-09T07:03:07.6580207Z test index_db_arch::tests::test_adr_upsert_conflict ... ok
+2026-10-09T07:03:07.6755529Z test index_db_arch::tests::test_architecture_entry_points ... ok
+2026-10-09T07:03:07.6910950Z test index_db_arch::tests::test_architecture_languages ... ok
+2026-10-09T07:03:07.6912199Z test index_db_arch::tests::test_extract_package_from_path ... ok
+2026-10-09T07:03:07.7048285Z test index_db_arch::tests::test_architecture_routes ... ok
+2026-10-09T07:03:07.7211458Z test index_db_edges::tests::evidence_writes_bump_only_evidence_epoch ... ok
+2026-10-09T07:03:07.7493227Z test index_db_edges::tests::full_rebuild_matches_incremental_like_semantics ... ok
+2026-10-09T07:03:07.7535258Z test index_db_edges::tests::http_edge_match_prefers_method_then_falls_back_to_path ... ok
+2026-10-09T07:03:07.7845320Z test index_db_edges::tests::postprocess_writes_bump_index_epoch ... ok
+2026-10-09T07:03:07.7893909Z test index_db_edges::tests::route_id_for_normalized_path_returns_first_match ... ok
+2026-10-09T07:03:07.8150025Z test index_db_edges::tests::test_co_change_edges_roundtrip ... ok
+2026-10-09T07:03:07.8242063Z test index_db_edges::tests::test_dispatch_sites_roundtrip ... ok
+2026-10-09T07:03:07.8474737Z test index_db_edges::tests::test_rebuild_test_edges_for_files ... ok
+2026-10-09T07:03:07.8556987Z test index_db_edges::tests::test_runtime_evidence_lifecycle ... ok
+2026-10-09T07:03:07.8561581Z test index_db_edges::tests::test_stem_to_base_clean ... ok
+2026-10-09T07:03:07.8805593Z test index_db_edges::tests::test_semantic_edges_roundtrip ... ok
+2026-10-09T07:03:07.8892234Z test index_db_frontier::tests::test_http_calls_by_caller_uid ... ok
+2026-10-09T07:03:07.9209384Z test index_db_frontier::tests::test_route_nodes_by_normalized_path ... ok
+2026-10-09T07:03:07.9297324Z test index_db_frontier::tests::test_route_rows_by_path ... ok
+2026-10-09T07:03:07.9667203Z test index_db_graph::tests::test_caller_callee_rows ... ok
+2026-10-09T07:03:07.9735910Z test index_db_graph::tests::step_error_after_side_connection_drop_is_err_not_empty_ok ... ok
+2026-10-09T07:03:08.0053014Z test index_db_graph::tests::test_find_symbols_by_names_and_kinds_matches_single ... ok
+2026-10-09T07:03:08.0138299Z test index_db_graph::tests::test_caller_callee_rows_by_uids_match_single_uid_queries ... ok
+2026-10-09T07:03:08.0389149Z test index_db_graph::tests::test_get_export_fingerprints_batch_matches_single ... ok
+2026-10-09T07:03:08.0465724Z test index_db_graph::tests::test_get_export_fingerprints_empty_input ... ok
+2026-10-09T07:03:08.0752651Z test index_db_graph::tests::test_reexport_targets_for_files ... ok
+2026-10-09T07:03:08.0802391Z test index_db_graph::tests::test_reexport_targets_for_files_empty_input ... ok
+2026-10-09T07:03:08.1075375Z test index_db_graph::tests::test_symbol_degree_details ... ok
+2026-10-09T07:03:08.1178687Z test index_db_graph::tests::test_symbol_degree_details_batch_matches_single ... ok
+2026-10-09T07:03:08.1433040Z test index_db_graph::tests::test_symbols_covering ... ok
+2026-10-09T07:03:08.1552289Z test index_db_graph::tests::test_update_communities ... ok
+2026-10-09T07:03:08.1787891Z test index_db_graph_read::tests::async_consumer_rows_match_topic_in_name_or_properties ... ok
+2026-10-09T07:03:08.1885601Z test index_db_graph_read::tests::call_edge_provenance_counts_breakdowns ... ok
+2026-10-09T07:03:08.2107060Z test index_db_graph_read::tests::callees_with_nonself_callers_excludes_self_loops ... ok
+2026-10-09T07:03:08.2193586Z test index_db_graph_read::tests::child_symbol_outline_rows_ordered_by_start_line ... ok
+2026-10-09T07:03:08.2423391Z test index_db_graph_read::tests::community_adjacency_pairs_cross_community_only ... ok
+2026-10-09T07:03:08.2521760Z test index_db_graph_read::tests::cross_file_call_file_pairs_skip_same_file_edges ... ok
+2026-10-09T07:03:08.2788100Z test index_db_graph_read::tests::dead_code_symbol_scan_applies_scope_like_filter ... ok
+2026-10-09T07:03:08.2899589Z test index_db_graph_read::tests::direct_importers_exclude_self_and_respect_limit ... ok
+2026-10-09T07:03:08.3132091Z test index_db_graph_read::tests::env_access_rows_filter_by_key_and_file_patterns ... ok
+2026-10-09T07:03:08.3229406Z test index_db_graph_read::tests::file_import_pairs_returns_only_resolved_distinct_pairs ... ok
+2026-10-09T07:03:08.3457809Z test index_db_graph_read::tests::import_witness_rows_keeps_import_string ... ok
+2026-10-09T07:03:08.3552838Z test index_db_graph_read::tests::importers_of_paths_batches_into_single_query ... ok
+2026-10-09T07:03:08.3775440Z test index_db_graph_read::tests::param_counts_for_uids_maps_null_to_none ... ok
+2026-10-09T07:03:08.3885931Z test index_db_graph_read::tests::reverse_callers_applies_confidence_and_limit ... ok
+2026-10-09T07:03:08.4106225Z test index_db_graph_read::tests::route_handler_rows_filters_by_path_substring ... ok
+2026-10-09T07:03:08.4232235Z test index_db_graph_read::tests::service_binding_rows_match_nodes_routes_and_edges ... ok
+2026-10-09T07:03:08.4452760Z test index_db_graph_read::tests::suggested_test_files_distinct_and_ordered ... ok
+2026-10-09T07:03:08.4593071Z test index_db_graph_read::tests::symbol_kind_counts_orders_by_frequency ... ok
+2026-10-09T07:03:08.4756817Z test index_db_graph_read::tests::symbol_names_for_uids_skips_missing ... ok
+2026-10-09T07:03:08.4904220Z test index_db_graph_read::tests::symbol_ref_containers_for_targets_returns_uid_container_pairs ... ok
+2026-10-09T07:03:08.5095625Z test index_db_graph_read::tests::symbol_source_candidates_rank_exact_before_fuzzy ... ok
+2026-10-09T07:03:08.5241433Z test index_db_graph_read::tests::symbols_lite_in_files_skips_files_not_requested_and_uidless ... ok
+2026-10-09T07:03:08.5428134Z test index_db_query::tests::count_table_rows_counts_and_errors_on_missing_table ... ok
+2026-10-09T07:03:08.5562051Z test index_db_query::tests::read_pool_supports_explicit_read_transaction ... ok
+2026-10-09T07:03:08.5745311Z test index_db_query::tests::test_file_summary ... ok
+2026-10-09T07:03:08.5902511Z test index_db_query::tests::test_file_symbols ... ok
+2026-10-09T07:03:08.6088105Z test index_db_query::tests::test_find_symbol_exact_and_like ... ok
+2026-10-09T07:03:08.6247451Z test index_db_query::tests::test_query_json ... ok
+2026-10-09T07:03:08.7697131Z test index_db_rebuild::fault_tests::failed_writer_reopen_leaves_no_writable_ghost_or_stale_read_pool ... ok
+2026-10-09T07:03:08.8944132Z {"foreign_key_errors":0,"integrity":"ok","point":"sidecars-removed","recovered":true,"seed":163}
+2026-10-09T07:03:09.0175979Z {"foreign_key_errors":0,"integrity":"ok","point":"renamed","recovered":true,"seed":163}
+2026-10-09T07:03:09.1445242Z {"foreign_key_errors":0,"integrity":"ok","point":"sidecars-removed","recovered":true,"seed":167}
+2026-10-09T07:03:09.2752788Z {"foreign_key_errors":0,"integrity":"ok","point":"renamed","recovered":true,"seed":167}
+2026-10-09T07:03:09.4015933Z {"foreign_key_errors":0,"integrity":"ok","point":"sidecars-removed","recovered":true,"seed":173}
+2026-10-09T07:03:09.5281009Z {"foreign_key_errors":0,"integrity":"ok","point":"renamed","recovered":true,"seed":173}
+2026-10-09T07:03:09.5289923Z test index_db_rebuild::fault_tests::owned_process_kill_between_sidecar_cleanup_rename_and_reopen_preserves_database ... ok
+2026-10-09T07:03:09.5291333Z test index_db_rebuild::fault_tests::rebuild_swap_child ... ignored, child entry; executed by the owning test with a private temporary database
+2026-10-09T07:03:09.6477071Z test index_db_rebuild::fault_tests::writer_mutex_spans_rename_reopen_and_connection_installation ... ok
+2026-10-09T07:03:09.6709702Z test index_db_retrieval::tests::chunk_rows_by_ids_empty_input ... ok
+2026-10-09T07:03:09.6927226Z test index_db_retrieval::tests::chunk_rows_by_ids_fetches_batch ... ok
+2026-10-09T07:03:09.7153745Z test index_db_retrieval::tests::chunk_rows_by_ids_rejects_unverified_cached_text ... ok
+2026-10-09T07:03:09.7630138Z test index_db_retrieval::tests::chunk_rows_by_ids_spans_multiple_in_batches ... ok
+2026-10-09T07:03:09.7864264Z test index_db_retrieval::tests::chunk_spans_for_files_groups_by_file ... ok
+2026-10-09T07:03:09.8119730Z test index_db_retrieval::tests::fts_chunk_candidates_applies_scope_and_limit ... ok
+2026-10-09T07:03:09.8364914Z test index_db_retrieval::tests::fts_file_summaries_applies_prefix_and_limit ... ok
+2026-10-09T07:03:09.8609883Z test index_db_retrieval::tests::fts_file_summaries_empty_for_no_match ... ok
+2026-10-09T07:03:09.8841420Z test index_db_retrieval::tests::fts_file_summaries_orders_by_bm25 ... ok
+2026-10-09T07:03:09.9076860Z test index_db_retrieval::tests::fts_file_summaries_prefix_treats_underscore_as_literal ... ok
+2026-10-09T07:03:09.9328804Z test index_db_retrieval::tests::path_token_file_hits_many_substring_match_per_token ... ok
+2026-10-09T07:03:09.9583563Z test index_db_retrieval::tests::path_token_file_hits_many_treats_underscore_as_literal ... ok
+2026-10-09T07:03:09.9831566Z test index_db_retrieval::tests::recent_indexed_files_newest_first ... ok
+2026-10-09T07:03:10.0067983Z test index_db_retrieval::tests::scan_chunks_for_grep_recency_order_early_stop_and_prefix_escaping ... ok
+2026-10-09T07:03:10.0309990Z test index_db_retrieval::tests::symbol_seed_hits_exact_first_and_skips_null_uid ... ok
+2026-10-09T07:03:10.0553287Z test index_db_retrieval::tests::symbol_seed_hits_mixed_case_token_exact_first ... ok
+2026-10-09T07:03:10.0787810Z test index_db_retrieval::tests::symbol_seed_hits_treats_underscore_as_literal ... ok
+2026-10-09T07:03:10.1038382Z test index_db_retrieval::tests::symbol_token_hits_many_exact_name_first_per_token ... ok
+2026-10-09T07:03:10.1274914Z test index_db_retrieval::tests::symbol_token_hits_many_prefixed_keeps_exact_name_first_ordering ... ok
+2026-10-09T07:03:10.1513506Z test index_db_retrieval::tests::symbol_token_hits_many_treats_underscore_as_literal ... ok
+2026-10-09T07:03:10.1763424Z test index_db_retrieval::tests::symbol_uids_by_exact_names_matches_only_listed_names ... ok
+2026-10-09T07:03:10.2152354Z test index_db_snapshot_insert::snapshot_fts_tests::autocommit_keeps_original_partial_failure_and_immediate_mirrors ... ok
+2026-10-09T07:03:10.2629141Z test index_db_snapshot_insert::snapshot_fts_tests::checked_capacity_and_near_maximum_rowids_use_original_fallback ... ok
+2026-10-09T07:03:10.5754870Z test index_db_snapshot_insert::snapshot_fts_tests::late_failure_rolls_back_flushed_windows_and_preserves_live_generation ... ok
+2026-10-09T07:03:10.6988145Z P8_FTS_MAX_ROWID_CONTROL={"observations":[{"explain":[[0,"Init",0,15,0,null],[1,"Null",0,1,2,null],[2,"OpenRead",0,9,0,"0"],[3,"Last",0,9,0,null],[4,"Rowid",0,3,0,null],[5,"CollSeq",0,0,0,"BINARY-8"],[6,"AggStep",0,3,2,"max(1)"],[7,"Goto",0,9,0,null],[8,"Prev",0,4,0,null],[9,"AggFinal",2,1,0,"max(1)"],[10,"SCopy",2,4,0,null],[11,"NotNull",4,13,0,null],[12,"Integer",0,4,0,null],[13,"ResultRow",4,1,0,null],[14,"Halt",0,0,0,null],[15,"Transaction",0,0,210,"0"],[16,"Goto",0,1,0,null]],"max_fullscan_steps":0,"maximum":0,"rows":0,"sum_fullscan_steps":0,"table":"files"},{"explain":[[0,"Init",0,15,0,null],[1,"Null",0,1,2,null],[2,"OpenRead",0,81,0,"0"],[3,"Last",0,9,0,null],[4,"Rowid",0,3,0,null],[5,"CollSeq",0,0,0,"BINARY-8"],[6,"AggStep",0,3,2,"max(1)"],[7,"Goto",0,9,0,null],[8,"Prev",0,4,0,null],[9,"AggFinal",2,1,0,"max(1)"],[10,"SCopy",2,4,0,null],[11,"NotNull",4,13,0,null],[12,"Integer",0,4,0,null],[13,"ResultRow",4,1,0,null],[14,"Halt",0,0,0,null],[15,"Transaction",0,0,210,"0"],[16,"Goto",0,1,0,null]],"max_fullscan_steps":0,"maximum":0,"rows":0,"sum_fullscan_steps":0,"table":"literal_index"},{"explain":[[0,"Init",0,15,0,null],[1,"Null",0,1,2,null],[2,"OpenRead",0,9,0,"0"],[3,"Last",0,9,0,null],[4,"Rowid",0,3,0,null],[5,"CollSeq",0,0,0,"BINARY-8"],[6,"AggStep",0,3,2,"max(1)"],[7,"Goto",0,9,0,null],[8,"Prev",0,4,0,null],[9,"AggFinal",2,1,0,"max(1)"],[10,"SCopy",2,4,0,null],[11,"NotNull",4,13,0,null],[12,"Integer",0,4,0,null],[13,"ResultRow",4,1,0,null],[14,"Halt",0,0,0,null],[15,"Transaction",0,0,210,"0"],[16,"Goto",0,1,0,null]],"max_fullscan_steps":0,"maximum":1,"rows":1,"sum_fullscan_steps":0,"table":"files"},{"explain":[[0,"Init",0,15,0,null],[1,"Null",0,1,2,null],[2,"OpenRead",0,81,0,"0"],[3,"Last",0,9,0,null],[4,"Rowid",0,3,0,null],[5,"CollSeq",0,0,0,"BINARY-8"],[6,"AggStep",0,3,2,"max(1)"],[7,"Goto",0,9,0,null],[8,"Prev",0,4,0,null],[9,"AggFinal",2,1,0,"max(1)"],[10,"SCopy",2,4,0,null],[11,"NotNull",4,13,0,null],[12,"Integer",0,4,0,null],[13,"ResultRow",4,1,0,null],[14,"Halt",0,0,0,null],[15,"Transaction",0,0,210,"0"],[16,"Goto",0,1,0,null]],"max_fullscan_steps":0,"maximum":1,"rows":1,"sum_fullscan_steps":0,"table":"literal_index"},{"explain":[[0,"Init",0,15,0,null],[1,"Null",0,1,2,null],[2,"OpenRead",0,9,0,"0"],[3,"Last",0,9,0,null],[4,"Rowid",0,3,0,null],[5,"CollSeq",0,0,0,"BINARY-8"],[6,"AggStep",0,3,2,"max(1)"],[7,"Goto",0,9,0,null],[8,"Prev",0,4,0,null],[9,"AggFinal",2,1,0,"max(1)"],[10,"SCopy",2,4,0,null],[11,"NotNull",4,13,0,null],[12,"Integer",0,4,0,null],[13,"ResultRow",4,1,0,null],[14,"Halt",0,0,0,null],[15,"Transaction",0,0,210,"0"],[16,"Goto",0,1,0,null]],"max_fullscan_steps":0,"maximum":257,"rows":257,"sum_fullscan_steps":256,"table":"files"},{"explain":[[0,"Init",0,15,0,null],[1,"Null",0,1,2,null],[2,"OpenRead",0,81,0,"0"],[3,"Last",0,9,0,null],[4,"Rowid",0,3,0,null],[5,"CollSeq",0,0,0,"BINARY-8"],[6,"AggStep",0,3,2,"max(1)"],[7,"Goto",0,9,0,null],[8,"Prev",0,4,0,null],[9,"AggFinal",2,1,0,"max(1)"],[10,"SCopy",2,4,0,null],[11,"NotNull",4,13,0,null],[12,"Integer",0,4,0,null],[13,"ResultRow",4,1,0,null],[14,"Halt",0,0,0,null],[15,"Transaction",0,0,210,"0"],[16,"Goto",0,1,0,null]],"max_fullscan_steps":0,"maximum":257,"rows":257,"sum_fullscan_steps":256,"table":"literal_index"}],"timing_measurement":false}
+2026-10-09T07:03:10.6997419Z test index_db_snapshot_insert::snapshot_fts_tests::max_rowid_boundaries_use_tail_lookup_with_a_real_scan_control ... ok
+2026-10-09T07:03:10.8426474Z test index_db_snapshot_insert::snapshot_fts_tests::noncanonical_or_temp_schema_falls_back_without_losing_mirrors ... ok
+2026-10-09T07:03:10.9578746Z P8_FTS_FLUSH_FULL={"actual_mapped_error":"database error: database or disk is full","direct_writer_physical_rollback_claim":false,"freelist_count":0,"max_page_count":541,"page_count_before_flush":541,"page_size":4096,"public_end_to_end_injection":false,"scope":"private flush plus actual temp rebuild owner","summary_bytes":1835008}
+2026-10-09T07:03:10.9770720Z test index_db_snapshot_insert::snapshot_fts_tests::private_fts_flush_full_error_abandons_actual_rebuild_without_publication ... ok
+2026-10-09T07:03:11.0160280Z test index_db_snapshot_insert::snapshot_fts_tests::public_entry_preserves_partial_state_when_caller_commits_after_error ... ok
+2026-10-09T07:03:11.1976610Z snapshot FTS diagnostic: original mirror runs=514 candidate=4; query_plan=["SEARCH literal_index USING INTEGER PRIMARY KEY (rowid>? AND rowid<?)"]
+2026-10-09T07:03:11.1989437Z test index_db_snapshot_insert::snapshot_fts_tests::rowid_range_uses_primary_key_and_reduces_mirror_statement_runs ... ok
+2026-10-09T07:03:12.4274243Z test index_db::tests::live_checkpoint_busy_preserves_committed_wal_and_refuses_replacement ... ok
+2026-10-09T07:03:12.4277746Z test index_db_snapshot_insert::tests::bound_payload_measures_sql_values_and_keeps_large_rows_legal ... ok
+2026-10-09T07:03:12.4279127Z test index_db_snapshot_insert::tests::failed_window_stops_before_later_rows_or_tables ... ok
+2026-10-09T07:03:12.4323964Z actual SQLite statement runs: original=73, snapshot=3
+2026-10-09T07:03:12.4338032Z test index_db_snapshot_insert::tests::semantic_leaf_batches_reduce_actual_sqlite_statement_runs ... ok
+2026-10-09T07:03:12.4524310Z test index_migrate::tests::fresh_db_initializes_schema ... ok
+2026-10-09T07:03:12.5011224Z test index_migrate::tests::legacy_parse_and_resolution_versions_require_rebuild ... ok
+2026-10-09T07:03:12.5152384Z test index_migrate::tests::matching_version_returns_up_to_date ... ok
+2026-10-09T07:03:12.5451418Z test index_migrate::tests::non_adjacent_versions_keep_rebuild_on_mismatch ... ok
+2026-10-09T07:03:12.5599886Z test index_migrate::tests::old_version_returns_mismatch ... ok
+2026-10-09T07:03:12.5608082Z test read_generation::tests::identity_and_epoch_corruption_never_become_zero_generation ... ok
+2026-10-09T07:03:12.6213797Z test read_generation::tests::persisted_identity_survives_reopen_and_differs_at_equal_epochs ... ok
+2026-10-09T07:03:12.6494277Z test index_db::tests::staging_checkpoint_busy_preserves_wal_and_refuses_replacement ... ok
+2026-10-09T07:03:12.6612568Z test index_db_snapshot_insert::snapshot_fts_tests::windows_preserve_all_rows_fts_search_and_cross_path_survivors ... ok
+2026-10-09T07:03:12.7006895Z test seed_symbol_cache::tests::batch_duplicate_uid_folds_like_sql ... ok
+2026-10-09T07:03:12.7015275Z test seed_symbol_cache::tests::build_respects_capacity_cap ... ok
+2026-10-09T07:03:12.7162978Z test seed_symbol_cache::tests::batch_delta_matches_direct_load ... ok
+2026-10-09T07:03:12.7170883Z test seed_symbol_cache::tests::materialize_orders_and_excludes ... ok
+2026-10-09T07:03:12.7171997Z test seed_symbol_cache::tests::projection_strips_non_seed_fields ... ok
+2026-10-09T07:03:12.7429222Z test semantic_coverage::tests::coverage_reads_are_pure_and_zero_limit_is_rejected ... ok
+2026-10-09T07:03:12.7471490Z test seed_symbol_cache::tests::foreign_symbol_writer_invalidates_then_rewarns ... ok
+2026-10-09T07:03:12.7768909Z test semantic_coverage::tests::foreign_space_rows_never_count_as_published ... ok
+2026-10-09T07:03:12.7770084Z test semantic_coverage::tests::failed_counts_only_active_space_failures ... ok
+2026-10-09T07:03:12.7941387Z test read_generation::tests::staged_rebuild_gets_fresh_persistent_identity ... ok
+2026-10-09T07:03:12.8132259Z test semantic_coverage::tests::full_coverage_reports_no_gap_and_no_reason ... ok
+2026-10-09T07:03:12.8164151Z test semantic_coverage::tests::partial_coverage_reports_the_gap_and_the_uncovered_list ... ok
+2026-10-09T07:03:12.8285203Z test semantic_coverage::tests::stale_counts_live_tasks_lagging_the_base_manifest ... ok
+2026-10-09T07:03:12.8441532Z test semantic_coverage::tests::uncovered_projects_authoritative_language_without_dropping_missing_files ... ok
+2026-10-09T07:03:12.8455416Z test semantic_coverage::tests::unwired_semantic_reports_zero_coverage_without_inflating ... ok
+2026-10-09T07:03:12.8545819Z test semantic_coverage::tests::zero_eligible_is_explained_by_documents_and_encoding ... ok
+2026-10-09T07:03:12.8718268Z test semantic_gc_reads::tests::exact_ref_mark_is_reflexive_and_checksum_scoped ... ok
+2026-10-09T07:03:12.8779897Z test semantic_gc_reads::tests::live_task_mark_covers_pending_and_claimed_but_not_terminal_states ... ok
+2026-10-09T07:03:12.8860794Z test semantic_gc_reads::tests::pair_mark_holds_across_spec_and_checksum_and_spaces_are_separate ... ok
+2026-10-09T07:03:12.9057845Z test semantic_manifest_reads::tests::deleted_document_cascades_out_of_the_candidate_stream ... ok
+2026-10-09T07:03:12.9089580Z test semantic_manifest_reads::tests::empty_space_scans_empty_and_zero_batch_is_rejected ... ok
+2026-10-09T07:03:12.9111455Z test semantic_manifest_reads::tests::published_row_reads_the_single_current_publication_whatever_space ... ok
+2026-10-09T07:03:12.9357534Z test semantic_manifest_reads::tests::scan_joins_language_and_carries_provenance_columns ... ok
+2026-10-09T07:03:12.9394885Z test semantic_manifest_reads::tests::scan_is_keyset_paginated_and_ordered ... ok
+2026-10-09T07:03:12.9408179Z test semantic_manifest_reads::tests::scan_is_space_isolated_at_the_load_layer ... ok
+2026-10-09T07:03:12.9824419Z test signature_agg::tests::empty_batch_initializes_missing_baseline ... ok
+2026-10-09T07:03:12.9825645Z test signature_agg::tests::row_agg_add_remove_round_trips ... ok
+2026-10-09T07:03:12.9829202Z test signature_agg::tests::row_agg_distinguishes_duplicate_multisets ... ok
+2026-10-09T07:03:12.9835469Z test signature_agg::tests::serialize_round_trips_and_rejects_other_versions ... ok
+2026-10-09T07:03:12.9938189Z test signature_agg::tests::file_scoped_writers_converge ... ok
+2026-10-09T07:03:13.0167478Z test signature_agg::tests::incremental_batch_add_modify_remove_converges ... ok
+2026-10-09T07:03:13.0169506Z test sql_util::tests::escape_like_escapes_wildcards_and_backslash ... ok
+2026-10-09T07:03:13.0418952Z test signature_agg::tests::synthetic_call_edge_lifecycle_converges ... ok
+2026-10-09T07:03:13.0508276Z test signature_agg::tests::unit_of_work_synthesis_writes_converge ... ok
+2026-10-09T07:03:13.0690802Z test unit_of_work::tests::commit_applies_all_writes_and_bumps_epoch_once ... ok
+2026-10-09T07:03:13.0921137Z test unit_of_work::tests::commit_with_evidence_bumps_evidence_only ... ok
+2026-10-09T07:03:13.1029144Z test unit_of_work::tests::commit_with_index_and_semantic_bumps_both_exactly_once ... ok
+2026-10-09T07:03:13.1174271Z test unit_of_work::tests::default_commit_keeps_index_only_semantics_and_semantic_absent ... ok
+2026-10-09T07:03:13.1453632Z test unit_of_work::tests::drop_without_commit_rolls_back_and_leaves_epoch_untouched ... ok
+2026-10-09T07:03:13.1486954Z test unit_of_work::tests::repeat_ack_without_visible_change_does_not_bump_semantic_epoch ... ok
+2026-10-09T07:03:38.7586059Z test index_db_rebuild::fault_tests::failed_read_pool_reopen_leaves_no_partially_installed_writer_or_stale_reads ... ok
+2026-10-09T07:03:38.7589531Z 
+2026-10-09T07:03:38.7597968Z test result: ok. 203 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 32.34s
+2026-10-09T07:03:38.7598731Z 
+2026-10-09T07:03:38.8816002Z    Compiling cc-db v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-db)
+2026-10-09T07:03:43.4465570Z     Finished `test` profile [unoptimized] target(s) in 4.65s
+2026-10-09T07:03:43.4530610Z      Running tests/semantic_lease.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/semantic_lease-676a1229dc1a789c)
+2026-10-09T07:03:43.4545813Z 
+2026-10-09T07:03:43.4545977Z running 9 tests
+2026-10-09T07:03:43.4981343Z test fresh_token_per_attempt_and_old_token_dead_on_retry ... ok
+2026-10-09T07:03:43.4999739Z test claim_skips_future_and_serves_oldest_with_identity ... ok
+2026-10-09T07:03:43.5012325Z test expired_lease_reclaimed_then_old_owner_fenced_out ... ok
+2026-10-09T07:03:43.5317830Z test heartbeat_renews_and_lost_lease_heartbeats_fail ... ok
+2026-10-09T07:03:43.5342474Z test retry_exhaustion_dead_letters_to_failed ... ok
+2026-10-09T07:03:43.5714256Z test wrong_token_and_owner_mismatch_are_fenced ... ok
+2026-10-09T07:03:43.5724395Z test superseded_task_unclaimable_and_unackable ... ok
+2026-10-09T07:03:43.5757093Z test lease_lifecycle_is_auxiliary_zero_epoch_bumps ... ok
+2026-10-09T07:03:43.6244060Z test concurrent_claim_exactly_one_winner ... ok
+2026-10-09T07:03:43.6244779Z 
+2026-10-09T07:03:43.6245196Z test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+2026-10-09T07:03:43.6245782Z 
+2026-10-09T07:03:43.6253141Z      Running tests/semantic_publish.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/semantic_publish-6f82743710f49e35)
+2026-10-09T07:03:43.6267259Z 
+2026-10-09T07:03:43.6267444Z running 11 tests
+2026-10-09T07:03:43.6700632Z test deleted_document_is_fenced_out ... ok
+2026-10-09T07:03:43.6767303Z test expired_reclaimed_lease_fences_the_old_publish ... ok
+2026-10-09T07:03:43.7114877Z test facade_rejection_commits_retry_without_any_epoch_bump ... ok
+2026-10-09T07:03:43.7126332Z test duplicate_ack_of_identical_content_acks_without_bumping ... ok
+2026-10-09T07:03:43.7328163Z test lost_lease_is_fenced_out_without_touching_anything ... ok
+2026-10-09T07:03:43.7562056Z test non_active_space_is_fenced_out ... ok
+2026-10-09T07:03:43.7635710Z test input_digest_mismatch_is_fenced_out ... ok
+2026-10-09T07:03:43.7750336Z test rejection_retries_with_backoff_then_dead_letters_on_exhaustion ... ok
+2026-10-09T07:03:43.7847413Z test publish_cas_happy_path_bumps_semantic_exactly_once ... ok
+2026-10-09T07:03:43.7931075Z test stale_doc_version_cannot_attach_to_a_newer_document ... ok
+2026-10-09T07:03:43.7957197Z test stale_incarnation_is_fenced_out ... ok
+2026-10-09T07:03:43.7957530Z 
+2026-10-09T07:03:43.7957815Z test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+2026-10-09T07:03:43.7958208Z 
+2026-10-09T07:03:43.7968374Z      Running tests/semantic_queue.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/semantic_queue-96d8a3edb7135e72)
+2026-10-09T07:03:43.7982453Z 
+2026-10-09T07:03:43.7982748Z running 3 tests
+2026-10-09T07:03:43.8538494Z test facade_reclaim_returns_only_expired_leases_to_pending ... ok
+2026-10-09T07:03:43.8619311Z test facade_claim_renew_and_retry_keep_the_fenced_semantics ... ok
+2026-10-09T07:03:43.8889565Z test claim_fairness_doc_rotation_serves_the_least_recently_touched_doc_first ... ok
+2026-10-09T07:03:43.8890190Z 
+2026-10-09T07:03:43.8890814Z test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+2026-10-09T07:03:43.8891237Z 
+2026-10-09T07:03:43.8901824Z      Running tests/semantic_rebuild.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/semantic_rebuild-94800efd5648e559)
+2026-10-09T07:03:43.8915464Z 
+2026-10-09T07:03:43.8915634Z running 3 tests
+2026-10-09T07:03:43.9718381Z test enqueue_semantic_rebuild_plan_requeues_desired_set_and_bumps_semantic_once_per_change ... ok
+2026-10-09T07:03:44.0768653Z test rebuild_epoch_vector_advances_and_semantic_epoch_starts_absent ... ok
+2026-10-09T07:03:44.0821744Z test pre_swap_process_is_fenced_out_of_publish_and_claim_after_the_swap ... ok
+2026-10-09T07:03:44.0831158Z 
+2026-10-09T07:03:44.0831597Z test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.19s
+2026-10-09T07:03:44.0832212Z 
+2026-10-09T07:03:44.0835375Z      Running tests/semantic_recovery.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/semantic_recovery-b63d07614d786d93)
+2026-10-09T07:03:44.0850762Z 
+2026-10-09T07:03:44.0850976Z running 4 tests
+2026-10-09T07:03:44.1707785Z test hand_back_primitive_fences_and_never_consumes_an_attempt ... ok
+2026-10-09T07:03:44.1739247Z test bounded_reclaim_pages_through_expired_leases_and_reports_exhaustion ... ok
+2026-10-09T07:03:44.1743824Z test dead_letter_census_counts_only_the_active_space_failures ... ok
+2026-10-09T07:03:44.1782077Z test desired_set_bounded_keyset_pagination_matches_the_unbounded_projection ... ok
+2026-10-09T07:03:44.1782530Z 
+2026-10-09T07:03:44.1782797Z test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+2026-10-09T07:03:44.1783166Z 
+2026-10-09T07:03:44.2859465Z    Compiling bitflags v2.11.0
+2026-10-09T07:03:44.3439970Z    Compiling rusqlite v0.40.1
+2026-10-09T07:03:44.9577305Z    Compiling r2d2_sqlite v0.35.0
+2026-10-09T07:03:45.0094817Z    Compiling cc-db v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-db)
+2026-10-09T07:03:47.3757810Z    Compiling cc-semantic v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-semantic)
+2026-10-09T07:03:54.9876922Z     Finished `test` profile [unoptimized] target(s) in 10.79s
+2026-10-09T07:03:54.9968823Z      Running unittests src/lib.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/cc_semantic-3358fe9e174616a0)
+2026-10-09T07:03:54.9984535Z 
+2026-10-09T07:03:54.9984869Z running 237 tests
+2026-10-09T07:03:54.9990695Z test admission::policy_adoption_tests::busy_adoption_refuses_and_old_permit_releases_before_retry ... ok
+2026-10-09T07:03:54.9993768Z test admission::policy_adoption_tests::idle_adoption_keeps_core_cooldown_and_policy_is_once_only ... ok
+2026-10-09T07:03:54.9995199Z test admission::policy_adoption_tests::residual_waiters_grants_and_project_counts_each_prevent_adoption ... ok
+2026-10-09T07:03:55.0001357Z test admission::tests::adapter_receives_planned_batches_unsplit_in_request_order ... ok
+2026-10-09T07:03:55.0002828Z test admission::policy_adoption_tests::concurrent_explicit_init_equal_caps_succeed_and_different_caps_conflict ... ok
+2026-10-09T07:03:55.0004323Z test admission::tests::aggregate_splits_by_space_and_time_window ... ok
+2026-10-09T07:03:55.0005428Z test admission::tests::aggregation_sums_outcomes_costs_and_tokens ... ok
+2026-10-09T07:03:55.0006503Z test admission::tests::budget_construction_from_capability_rejects_zero_bytes_bound ... ok
+2026-10-09T07:03:55.0008397Z test admission::tests::cache_reuse_hits_are_counted_and_bill_nothing ... ok
+2026-10-09T07:03:55.0009793Z test admission::tests::cost_budget_refuses_at_the_cap_before_any_call ... ok
+2026-10-09T07:03:55.0011216Z test admission::tests::degenerate_gate_limits_are_rejected_with_named_reasons ... ok
+2026-10-09T07:03:55.0012362Z test admission::tests::digest_binding_and_provider_order_survive_planning ... ok
+2026-10-09T07:03:55.0013351Z test admission::tests::duplicate_risk_needs_a_retry_and_unknown_reported_usage ... ok
+2026-10-09T07:03:55.0014269Z test admission::tests::empty_input_is_skipped_explicitly ... ok
+2026-10-09T07:03:55.0015094Z test admission::tests::empty_project_identity_is_refused ... ok
+2026-10-09T07:03:55.0015982Z test admission::tests::empty_set_yields_nothing_and_single_item_yields_one_batch ... ok
+2026-10-09T07:03:55.0016965Z test admission::tests::estimator_matches_the_declared_bytes_div_ceil_4_v1 ... ok
+2026-10-09T07:03:55.0018408Z test admission::tests::every_planned_batch_respects_every_budget_bound ... ok
+2026-10-09T07:03:55.0020829Z test admission::tests::exact_limits_pass_and_one_over_is_skipped ... ok
+2026-10-09T07:03:55.0058847Z test admission::policy_adoption_tests::concurrent_adoption_and_acquire_have_one_linearization_boundary ... ok
+2026-10-09T07:03:55.0059732Z test admission::tests::foreign_tokenizer_is_refused_not_approximated_silently ... ok
+2026-10-09T07:03:55.2497217Z test admission::tests::acquire_times_out_explicitly_when_capacity_is_held ... ok
+2026-10-09T07:03:55.2498948Z test admission::tests::from_capability_bounds_flow_through_planning ... ok
+2026-10-09T07:03:55.2501205Z test admission::tests::from_provider_config_maps_the_semantic_keys ... ok
+2026-10-09T07:03:55.2504694Z test admission::tests::admission_wait_never_spans_a_db_transaction ... ok
+2026-10-09T07:03:55.2510067Z test admission::tests::frozen_input_byte_bound_is_a_backstop_against_a_loose_budget ... ok
+2026-10-09T07:03:55.2562427Z test admission::tests::fresh_callers_cannot_barge_ahead_of_the_waiting_queue ... ok
+2026-10-09T07:03:55.2628009Z test admission::tests::fair_queue_serves_fifo_and_skips_a_blocked_head ... ok
+2026-10-09T07:03:55.2629431Z test admission::tests::greedy_fill_matches_the_hand_computed_plan_and_preserves_order ... ok
+2026-10-09T07:03:55.2630941Z test admission::tests::ledger_is_bounded_evicts_oldest_but_keeps_lifetime_totals ... ok
+2026-10-09T07:03:55.2632156Z test admission::tests::missing_usage_is_unknown_and_never_zero_filled ... ok
+2026-10-09T07:03:55.3109747Z test admission::tests::gate_is_send_sync_and_shareable_across_threads ... ok
+2026-10-09T07:03:55.3112098Z test admission::tests::permissive_gate_never_makes_anyone_wait ... ok
+2026-10-09T07:03:55.3113930Z test admission::tests::planning_is_deterministic_same_input_same_cut ... ok
+2026-10-09T07:03:55.3115782Z test admission::tests::query_path_plans_query_inputs_with_the_same_cut ... ok
+2026-10-09T07:03:55.3434691Z test admission::tests::per_project_cap_binds_independently_of_global_capacity ... ok
+2026-10-09T07:03:55.3468288Z test admission::tests::global_cap_bounds_total_concurrent_permits_across_projects ... ok
+2026-10-09T07:03:55.3471112Z test admission::tests::single_project_cannot_starve_the_others ... ok
+2026-10-09T07:03:55.3472687Z test admission::tests::skipped_items_never_reach_batches_and_carry_structured_reasons ... ok
+2026-10-09T07:03:55.3474151Z test admission::tests::snapshot_reflects_liveness_fairness_and_pause ... ok
+2026-10-09T07:03:55.3474789Z test admission::tests::zero_bound_budgets_are_rejected ... ok
+2026-10-09T07:03:55.3485250Z test cache::cache_read_bounds_tests::bounded_reader_never_waits_for_unbounded_stream_eof ... ok
+2026-10-09T07:03:55.3517377Z test admission::tests::gated_batch_flow_limits_global_concurrency_and_keeps_projects_moving ... ok
+2026-10-09T07:03:55.3541282Z test cache::cache_read_bounds_tests::file_growth_after_first_read_is_bounded_without_a_stat_assumption ... ok
+2026-10-09T07:03:55.3562250Z test cache::cache_read_bounds_tests::enormous_sparse_files_and_untrusted_dimension_are_corrupt ... ok
+2026-10-09T07:03:55.3592938Z test cache::cache_read_bounds_tests::metadata_budget_boundary_and_one_extra_byte ... ok
+2026-10-09T07:03:55.3596845Z test cache::cache_read_bounds_tests::incomplete_objects_remain_misses_even_if_the_other_file_is_oversized ... ok
+2026-10-09T07:03:55.3598178Z test cache::cache_read_bounds_tests::short_reads_interruption_and_io_errors_keep_their_meaning ... ok
+2026-10-09T07:03:55.3653617Z test cache::cache_read_bounds_tests::payload_extra_byte_and_every_truncation_are_corrupt ... ok
+2026-10-09T07:03:55.3701349Z test cache::decoding_boundary_tests::little_endian_bits_and_partial_payload_rejection_are_preserved ... ok
+2026-10-09T07:03:55.3707013Z test capability::tests::a_verdict_cannot_be_filed_under_a_foreign_space ... ok
+2026-10-09T07:03:55.3708344Z test capability::tests::adapter_embeds_after_capability_probe_over_the_same_mock_chain ... ok
+2026-10-09T07:03:55.3709461Z test capability::tests::batch_count_mismatch_is_unavailable_not_a_mismatch ... ok
+2026-10-09T07:03:55.3715971Z test capability::tests::batch_items_outside_the_probe_protocol_bound_are_rejected ... ok
+2026-10-09T07:03:55.3717200Z test cache::cache_read_bounds_tests::valid_maximum_dimension_and_worst_json_escaped_model_round_trip ... ok
+2026-10-09T07:03:55.3718432Z test capability::tests::cached_verdicts_avoid_the_transport_and_failures_are_never_cached ... ok
+2026-10-09T07:03:55.3719692Z test capability::tests::capability_dimension_mismatch_is_a_config_error ... ok
+2026-10-09T07:03:55.3721117Z test capability::tests::capability_matching_space_and_specs_passes ... ok
+2026-10-09T07:03:55.3722054Z test capability::tests::capability_model_mismatch_is_a_config_error ... ok
+2026-10-09T07:03:55.3723068Z test capability::tests::dimension_probe_configurable_sends_the_dimensions_field ... ok
+2026-10-09T07:03:55.3724080Z test capability::tests::disabled_config_is_rejected_by_resolve ... ok
+2026-10-09T07:03:55.3725344Z test capability::tests::dimensions_unsupported_maps_to_the_typed_verdict_via_the_control_probe ... ok
+2026-10-09T07:03:55.3726604Z test capability::tests::instruction_without_support_is_rejected_on_both_paths ... ok
+2026-10-09T07:03:55.3727598Z test capability::tests::fixed_mode_probe_omits_the_dimensions_field ... ok
+2026-10-09T07:03:55.3728600Z test capability::tests::missing_float_encoding_support_is_a_config_error ... ok
+2026-10-09T07:03:55.3729646Z test capability::tests::missing_required_fields_name_their_config_keys ... ok
+2026-10-09T07:03:55.3730724Z test capability::tests::probe_errors_never_leak_the_api_key ... ok
+2026-10-09T07:03:55.3731505Z test capability::tests::model_echo_mismatch_is_a_mismatch ... ok
+2026-10-09T07:03:55.3732343Z test capability::tests::prober_rejects_bad_endpoints_as_config_errors ... ok
+2026-10-09T07:03:55.3733311Z test capability::tests::resolve_provider_builds_a_space_with_the_frozen_identity ... ok
+2026-10-09T07:03:55.3734411Z test capability::tests::spec_max_tokens_above_the_model_limit_is_rejected_on_both_paths ... ok
+2026-10-09T07:03:55.3738096Z test capability::tests::probe_request_bodies_are_exactly_the_declared_egress_surface ... ok
+2026-10-09T07:03:55.3738990Z test capability::tests::specs_bound_to_a_foreign_space_are_rejected ... ok
+2026-10-09T07:03:55.3739626Z test capability::tests::unknown_metric_mode_and_format_strings_are_rejected_not_swallowed ... ok
+2026-10-09T07:03:55.3740308Z test capability::tests::transport_failures_map_to_unavailable_with_the_provider_taxonomy ... ok
+2026-10-09T07:03:55.3741675Z test degrade::tests::budgeted_provider_gates_reembeds_and_never_calls_through_when_exhausted ... ok
+2026-10-09T07:03:55.3746006Z test capability::tests::wrong_dimension_in_the_response_is_a_mismatch ... ok
+2026-10-09T07:03:55.3746694Z test degrade::tests::ledger_tracks_corruption_budget_and_visibility ... ok
+2026-10-09T07:03:55.3757239Z test degrade::tests::quarantine_is_none_when_the_object_is_already_gone ... ok
+2026-10-09T07:03:55.3762738Z test error::tests::invalid_input_maps_to_invalid_params ... ok
+2026-10-09T07:03:55.3774966Z test degrade::tests::quarantine_moves_both_halves_and_writes_a_diagnostic_report ... ok
+2026-10-09T07:03:55.3776507Z test gc::concurrency_tests::mutation_child ... ignored, child entry; executed by the owning process with a private fixture
+2026-10-09T07:03:55.4208040Z test gc::concurrency_tests::killed_mutation_owner_releases_cross_process_lock ... ok
+2026-10-09T07:03:55.4687783Z test gc::concurrency_tests::publisher_keeps_namespace_lease_between_verified_bytes_and_manifest_cas ... ok
+2026-10-09T07:03:55.4691281Z test policy::tests::a_missing_body_field_fails_the_audit ... ok
+2026-10-09T07:03:55.4691956Z 
+2026-10-09T07:03:55.4693034Z thread 'policy::tests::adapter_constructor_refuses_transport_without_network_opt_in' (5471) panicked at crates/cc-semantic/src/providers/openai_compatible.rs:369:13:
+2026-10-09T07:03:55.4694986Z OpenAiCompatibleConfig: a transport may not be assembled without the explicit network opt-in (semantic.network_opt_in, P7-007 default no-network)
+2026-10-09T07:03:55.4696550Z note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+2026-10-09T07:03:55.4697736Z test policy::tests::adapter_constructor_refuses_transport_without_network_opt_in ... ok
+2026-10-09T07:03:55.4698718Z test policy::tests::an_extra_body_field_fails_the_audit_and_names_the_field ... ok
+2026-10-09T07:03:55.4701152Z test policy::tests::audit_rejects_a_zero_timeout ... ok
+2026-10-09T07:03:55.4704174Z test policy::tests::audit_rejects_http_destinations_unless_http_is_opted_in ... ok
+2026-10-09T07:03:55.4705248Z test policy::tests::credential_material_may_only_travel_in_the_authorization_header ... ok
+2026-10-09T07:03:55.4706320Z test policy::tests::disabled_default_provider_still_constructs_and_fails_closed ... ok
+2026-10-09T07:03:55.4707326Z test policy::tests::embed_request_egress_surface_is_exactly_the_declaration ... ok
+2026-10-09T07:03:55.4708345Z test policy::tests::env_reference_resolves_from_the_lookup_and_debug_stays_redacted ... ok
+2026-10-09T07:03:55.4709382Z test policy::tests::errors_that_embed_a_key_value_are_redacted_by_redact_for_log ... ok
+2026-10-09T07:03:55.4710742Z test policy::tests::every_resolution_failure_names_the_reference_and_never_echoes_values ... ok
+2026-10-09T07:03:55.4711835Z test policy::tests::file_reference_resolves_and_trims_trailing_newlines ... ok
+2026-10-09T07:03:55.4712704Z test policy::tests::gate_refuses_opted_in_but_missing_transport ... ok
+2026-10-09T07:03:55.4713600Z test policy::tests::gate_refuses_transport_assembly_without_network_opt_in ... ok
+2026-10-09T07:03:55.4714555Z test policy::tests::gate_rejects_http_endpoints_unless_allow_http_is_set ... ok
+2026-10-09T07:03:55.4715588Z test policy::tests::gate_with_default_policy_and_no_transport_is_the_normal_disabled_path ... ok
+2026-10-09T07:03:55.4716577Z test policy::tests::guard_passes_https_2xx_through_unchanged ... ok
+2026-10-09T07:03:55.4717508Z test policy::tests::guard_rejects_a_zero_timeout_before_the_inner_transport_is_touched ... ok
+2026-10-09T07:03:55.4718617Z test policy::tests::guard_rejects_http_requests_before_the_inner_transport_is_touched ... ok
+2026-10-09T07:03:55.4719800Z test policy::tests::the_header_surface_is_audited ... ok
+2026-10-09T07:03:55.4720951Z test ports::tests::embed_documents_preserves_batch_order_and_count ... ok
+2026-10-09T07:03:55.4721791Z test ports::tests::embed_queries_maps_one_output_per_query ... ok
+2026-10-09T07:03:55.4722586Z test ports::tests::input_constructors_bind_digest_to_exact_bytes ... ok
+2026-10-09T07:03:55.4723345Z test ports::tests::port_is_object_safe_and_send_sync ... ok
+2026-10-09T07:03:55.4724102Z test ports::tests::provider_error_variants_are_distinguishable ... ok
+2026-10-09T07:03:55.4724994Z test providers::fake::tests::armed_fault_without_error_defaults_to_server_error ... ok
+2026-10-09T07:03:55.4725937Z test providers::fake::tests::batch_order_is_preserved_on_both_paths ... ok
+2026-10-09T07:03:55.4726815Z test providers::fake::tests::config_defaults_are_naturally_successful ... ok
+2026-10-09T07:03:55.4727713Z test admission::tests::rate_limited_pause_fails_fast_then_expires ... ok
+2026-10-09T07:03:55.4728606Z test providers::fake::tests::different_digests_yield_different_vectors ... ok
+2026-10-09T07:03:55.4729786Z test providers::fake::tests::document_and_query_paths_are_domain_separated ... ok
+2026-10-09T07:03:55.4753602Z test providers::fake::tests::embed_put_get_roundtrip_is_bitwise_lossless ... ok
+2026-10-09T07:03:55.4754575Z test providers::fake::tests::empty_batch_returns_empty_success ... ok
+2026-10-09T07:03:55.4755781Z test providers::fake::tests::fault_fires_after_n_calls_with_the_configured_error ... ok
+2026-10-09T07:03:55.4757352Z test providers::fake::tests::full_provider_error_matrix_is_injectable_and_distinguishable ... ok
+2026-10-09T07:03:55.4758809Z test providers::fake::tests::minimum_and_odd_dimensions_preserve_complete_v1_golden_bits ... ok
+2026-10-09T07:03:55.4760920Z test providers::fake::tests::model_id_and_dimension_are_part_of_the_derivation ... ok
+2026-10-09T07:03:55.4762820Z test providers::fake::tests::same_digest_yields_bit_identical_vectors_across_calls_and_instances ... ok
+2026-10-09T07:03:55.4763982Z test providers::fake::tests::space_contract_dimension_and_identity_hold ... ok
+2026-10-09T07:03:55.4765991Z test providers::fake::tests::v1_pipeline_is_bitwise_reproducible_golden ... ok
+2026-10-09T07:03:55.4767129Z test providers::fake::tests::vectors_are_unit_length_for_the_frozen_cosine_metric ... ok
+2026-10-09T07:03:55.4768717Z test providers::fake::tests::zero_vector_injection_is_rejected_by_the_output_gate ... ok
+2026-10-09T07:03:55.4770957Z test providers::openai_compatible::tests::a_suspended_gate_stops_the_loop_instead_of_parking ... ok
+2026-10-09T07:03:55.4777841Z test providers::fake::tests::delay_is_applied_per_call ... ok
+2026-10-09T07:03:55.4780072Z test providers::openai_compatible::tests::api_key_is_redacted_in_debug_and_never_in_error_messages ... ok
+2026-10-09T07:03:55.4781477Z test providers::openai_compatible::tests::auth_error_is_not_retried_and_trips_the_long_open_window ... ok
+2026-10-09T07:03:55.4782399Z test providers::openai_compatible::tests::backoff_is_exponential_capped_and_jitter_only_shrinks ... ok
+2026-10-09T07:03:55.4785289Z test providers::openai_compatible::tests::breadth_bomb_dies_at_the_count_gate_before_decoding_entries ... ok
+2026-10-09T07:03:55.4800939Z test providers::openai_compatible::tests::breaker_and_retrying_provider_are_send_sync_shareable ... ok
+2026-10-09T07:03:55.4802258Z test providers::openai_compatible::tests::breaker_rejection_records_an_uncertain_receipt_without_provider_contact ... ok
+2026-10-09T07:03:55.4803066Z test providers::openai_compatible::tests::budget_admission_boundary_is_visible_in_the_receipt_chain ... ok
+2026-10-09T07:03:55.4804125Z test providers::openai_compatible::tests::consecutive_failures_open_the_circuit_which_fails_fast_without_provider_contact ... ok
+2026-10-09T07:03:55.4805536Z test providers::openai_compatible::tests::cost_budget_refuses_before_the_call_and_records_the_refusal ... ok
+2026-10-09T07:03:55.4806298Z test providers::openai_compatible::tests::cost_cap_ends_the_sequence ... ok
+2026-10-09T07:03:55.4807054Z test providers::openai_compatible::tests::count_mismatch_is_rejected ... ok
+2026-10-09T07:03:55.4807692Z test providers::openai_compatible::tests::deeply_nested_json_is_rejected_by_the_depth_limit ... ok
+2026-10-09T07:03:55.4814095Z test providers::openai_compatible::tests::dimension_mismatch_is_rejected ... ok
+2026-10-09T07:03:55.4816185Z test providers::openai_compatible::tests::disabled_breaker_never_opens_and_neutral_outcomes_change_nothing ... ok
+2026-10-09T07:03:55.4818587Z test providers::openai_compatible::tests::disabled_policy_makes_exactly_one_attempt ... ok
+2026-10-09T07:03:55.4822089Z test providers::openai_compatible::tests::duplicate_index_is_rejected ... ok
+2026-10-09T07:03:55.4824201Z test providers::openai_compatible::tests::each_call_gets_a_fresh_sequence_budget_layering ... ok
+2026-10-09T07:03:55.4831036Z test providers::openai_compatible::tests::adapter_is_interchangeable_with_fake_provider_on_the_port_and_in_the_cache_loop ... ok
+2026-10-09T07:03:55.4835160Z test providers::openai_compatible::tests::empty_batch_is_a_no_op_without_attempts_or_breaker_contact ... ok
+2026-10-09T07:03:55.4839408Z test providers::openai_compatible::tests::embedding_must_be_a_numeric_array_not_a_string_or_object ... ok
+2026-10-09T07:03:55.4841423Z test providers::openai_compatible::tests::empty_batch_records_no_receipt ... ok
+2026-10-09T07:03:55.4842609Z test providers::openai_compatible::tests::empty_batch_short_circuits_without_transport_or_disabled_error ... ok
+2026-10-09T07:03:55.4843949Z test providers::openai_compatible::tests::empty_success_response_is_rejected_when_batch_is_nonempty ... ok
+2026-10-09T07:03:55.4845570Z test providers::openai_compatible::tests::every_attempt_of_a_retry_sequence_leaves_a_complete_receipt ... ok
+2026-10-09T07:03:55.4847179Z test providers::openai_compatible::tests::fractional_negative_and_string_indices_are_rejected ... ok
+2026-10-09T07:03:55.4848550Z test providers::openai_compatible::tests::half_open_probe_failure_reopens_for_a_fresh_window ... ok
+2026-10-09T07:03:55.4849943Z test providers::openai_compatible::tests::half_open_probe_meeting_a_budget_refusal_does_not_retain_the_probe_slot ... ok
+2026-10-09T07:03:55.4852737Z test providers::openai_compatible::tests::http_401_and_403_map_to_auth_error ... ok
+2026-10-09T07:03:55.4854561Z test providers::openai_compatible::tests::http_429_maps_to_rate_limited_with_retry_after ... ok
+2026-10-09T07:03:55.4858175Z test providers::openai_compatible::tests::error_vectors_never_reach_the_artifact_cache ... ok
+2026-10-09T07:03:55.4870768Z test providers::openai_compatible::tests::http_429_without_retry_after_uses_the_fallback ... ok
+2026-10-09T07:03:55.4874783Z test providers::openai_compatible::tests::http_5xx_maps_to_server_error ... ok
+2026-10-09T07:03:55.4875741Z 
+2026-10-09T07:03:55.4876906Z thread 'providers::openai_compatible::tests::invalid_endpoint_is_rejected_eagerly' (5551) panicked at crates/cc-semantic/src/providers/openai_compatible.rs:359:9:
+2026-10-09T07:03:55.4878680Z OpenAiCompatibleConfig endpoint must be an http(s) URL
+2026-10-09T07:03:55.4879826Z test providers::openai_compatible::tests::invalid_endpoint_is_rejected_eagerly ... ok
+2026-10-09T07:03:55.4881772Z test providers::openai_compatible::tests::missing_data_array_and_malformed_json_are_rejected ... ok
+2026-10-09T07:03:55.4883436Z test providers::openai_compatible::tests::invalid_policy_combinations_are_rejected_with_named_reasons ... ok
+2026-10-09T07:03:55.4885131Z test providers::openai_compatible::tests::model_mismatch_is_rejected ... ok
+2026-10-09T07:03:55.4886490Z test providers::openai_compatible::tests::model_echo_is_required_and_must_be_a_string ... ok
+2026-10-09T07:03:55.4888043Z test providers::openai_compatible::tests::negative_zero_vector_is_rejected ... ok
+2026-10-09T07:03:55.4889397Z test providers::openai_compatible::tests::no_transport_is_fail_closed_disabled ... ok
+2026-10-09T07:03:55.4891003Z test providers::openai_compatible::tests::non_numeric_component_is_rejected ... ok
+2026-10-09T07:03:55.4892679Z test providers::openai_compatible::tests::non_retryable_errors_pass_through_without_a_second_call ... ok
+2026-10-09T07:03:55.4894618Z test providers::openai_compatible::tests::non_utf8_input_is_rejected_before_any_transport_call ... ok
+2026-10-09T07:03:55.4896369Z test providers::openai_compatible::tests::norm_policy_accept_is_the_default_and_admits_unnormalized_vectors ... ok
+2026-10-09T07:03:55.4897442Z 
+2026-10-09T07:03:55.4898762Z thread 'providers::openai_compatible::tests::norm_policy_is_validated_eagerly' (5565) panicked at crates/cc-semantic/src/providers/openai_compatible.rs:351:39:
+2026-10-09T07:03:55.4901787Z OpenAiCompatibleConfig norm_policy must be a finite non-negative ordered range: InvalidParams("NormPolicy::RejectOutside bounds must be finite, non-negative and ordered (min <= max), got [1, 0.5]")
+2026-10-09T07:03:55.4903639Z 
+2026-10-09T07:03:55.4904754Z thread 'providers::openai_compatible::tests::norm_policy_is_validated_eagerly' (5565) panicked at crates/cc-semantic/src/providers/openai_compatible.rs:351:39:
+2026-10-09T07:03:55.4907642Z OpenAiCompatibleConfig norm_policy must be a finite non-negative ordered range: InvalidParams("NormPolicy::RejectOutside bounds must be finite, non-negative and ordered (min <= max), got [-1, 1]")
+2026-10-09T07:03:55.4909546Z 
+2026-10-09T07:03:55.4911066Z thread 'providers::openai_compatible::tests::norm_policy_is_validated_eagerly' (5565) panicked at crates/cc-semantic/src/providers/openai_compatible.rs:351:39:
+2026-10-09T07:03:55.4913547Z OpenAiCompatibleConfig norm_policy must be a finite non-negative ordered range: InvalidParams("NormPolicy::RejectOutside bounds must be finite, non-negative and ordered (min <= max), got [0, NaN]")
+2026-10-09T07:03:55.4915744Z test providers::openai_compatible::tests::norm_policy_is_validated_eagerly ... ok
+2026-10-09T07:03:55.4917340Z test providers::openai_compatible::tests::open_window_elapsed_lazily_becomes_half_open_with_a_single_probe_slot ... ok
+2026-10-09T07:03:55.4919145Z test providers::openai_compatible::tests::norm_policy_rejects_vectors_outside_the_configured_range ... ok
+2026-10-09T07:03:55.4921446Z test providers::openai_compatible::tests::other_http_4xx_maps_to_non_retryable_invalid_input_without_body_echo ... ok
+2026-10-09T07:03:55.4923380Z test providers::openai_compatible::tests::provider_error_envelope_diagnostics_exclude_the_free_form_message ... ok
+2026-10-09T07:03:55.4925191Z test providers::openai_compatible::tests::oversized_response_body_is_rejected_before_json_parsing ... ok
+2026-10-09T07:03:55.4926694Z test providers::openai_compatible::tests::query_path_uses_the_same_request_shape ... ok
+2026-10-09T07:03:55.4928017Z test providers::openai_compatible::tests::receipt_duration_is_measured_on_the_injected_clock ... ok
+2026-10-09T07:03:55.4929848Z test providers::openai_compatible::tests::receipts_never_contain_input_text_or_credentials ... ok
+2026-10-09T07:03:55.4932320Z test providers::openai_compatible::tests::redirect_informational_and_unknown_statuses_follow_http_semantics ... ok
+2026-10-09T07:03:55.4933315Z test providers::openai_compatible::tests::request_carries_model_input_order_and_bearer_auth ... ok
+2026-10-09T07:03:55.4934038Z test providers::openai_compatible::tests::response_vectors_are_reordered_by_index_to_batch_order ... ok
+2026-10-09T07:03:55.4934720Z test providers::openai_compatible::tests::retry_budget_exhaustion_returns_the_last_error ... ok
+2026-10-09T07:03:55.4935606Z test providers::openai_compatible::tests::retryable_server_errors_are_retried_within_the_bound ... ok
+2026-10-09T07:03:55.4936445Z test providers::openai_compatible::tests::success_resets_the_consecutive_failure_count ... ok
+2026-10-09T07:03:55.4937054Z test providers::openai_compatible::tests::success_responses_require_a_json_content_type ... ok
+2026-10-09T07:03:55.4937724Z test providers::openai_compatible::tests::timeout_attempts_carry_the_uncertain_marker_and_duplicate_risk ... ok
+2026-10-09T07:03:55.4938439Z test providers::openai_compatible::tests::total_deadline_ends_the_sequence_before_the_attempt_bound ... ok
+2026-10-09T07:03:55.4939085Z test providers::openai_compatible::tests::trailing_slash_on_endpoint_is_trimmed ... ok
+2026-10-09T07:03:55.4939907Z test providers::openai_compatible::tests::transport_errors_map_to_timeout_cancelled_and_server_error ... ok
+2026-10-09T07:03:55.4940799Z test providers::openai_compatible::tests::usage_field_must_be_an_object_when_present ... ok
+2026-10-09T07:03:55.4941817Z test providers::openai_compatible::tests::validation_errors_never_carry_request_or_response_payloads ... ok
+2026-10-09T07:03:55.4942614Z test providers::openai_compatible::tests::without_respecting_retry_after_the_backoff_is_exponential ... ok
+2026-10-09T07:03:55.4943264Z test providers::openai_compatible::tests::zero_vector_and_nan_responses_are_rejected ... ok
+2026-10-09T07:03:55.4943899Z test space_switch::tests::spec_json_digest_pairing_is_stable_across_reconstruction ... ok
+2026-10-09T07:03:55.4944922Z test space_switch::tests::spec_json_is_canonical_struct_serialization_and_stable ... ok
+2026-10-09T07:03:55.4945490Z test spec::tests::bad_encoding_spec_fields_are_rejected ... ok
+2026-10-09T07:03:55.4945868Z test spec::tests::bad_model_ids_are_rejected ... ok
+2026-10-09T07:03:55.4946368Z test spec::tests::cosine_is_the_only_admitted_metric ... ok
+2026-10-09T07:03:55.4946772Z test spec::tests::digest_is_stable_across_reconstruction ... ok
+2026-10-09T07:03:55.4947318Z test spec::tests::digests_are_opaque_and_distinct_by_construction ... ok
+2026-10-09T07:03:55.4947742Z test spec::tests::foreign_spec_versions_are_rejected ... ok
+2026-10-09T07:03:55.4948114Z test spec::tests::invalid_input_bytes_are_rejected ... ok
+2026-10-09T07:03:55.4948689Z test spec::tests::query_only_change_never_touches_the_document_spec_digest ... ok
+2026-10-09T07:03:55.4949329Z test spec::tests::same_dimension_different_model_is_a_different_space ... ok
+2026-10-09T07:03:55.4949791Z test spec::tests::same_model_same_dimension_is_same_space ... ok
+2026-10-09T07:03:55.4950177Z test spec::tests::valid_boundary_values_pass ... ok
+2026-10-09T07:03:55.4951085Z test spec::tests::zero_and_oversized_dimensions_are_rejected ... ok
+2026-10-09T07:03:55.4951780Z test tests::handle_is_a_zero_sized_marker ... ok
+2026-10-09T07:03:55.4952433Z test types::tests::digest_display_matches_inner_string ... ok
+2026-10-09T07:03:55.4952965Z test types::tests::input_digests_are_deterministic_and_distinct ... ok
+2026-10-09T07:03:55.4953563Z test types::tests::input_digests_reject_invalid_bytes ... ok
+2026-10-09T07:03:55.4954161Z test admission::tests::repeated_rate_limit_reports_extend_the_pause_never_shorten_it ... ok
+2026-10-09T07:03:55.5035611Z test vector::exact::tests::controlled_scan_discards_accumulated_top_k_on_cancellation ... ok
+2026-10-09T07:03:55.5156079Z test vector::exact::tests::batch_loads_never_exceed_the_bounded_batch_knob ... ok
+2026-10-09T07:03:55.5175675Z test providers::openai_compatible::tests::rate_limited_waits_retry_after_feeds_the_gate_and_resumes_after_expiry ... ok
+2026-10-09T07:03:55.5220824Z test vector::exact::tests::controlled_scan_preserves_legacy_filter_top_k_and_score_bits ... ok
+2026-10-09T07:03:55.5232378Z test vector::exact::tests::controlled_scan_rejects_cancelled_and_expired_requests_before_loading ... ok
+2026-10-09T07:03:55.5289588Z test vector::exact::tests::degenerate_inputs_are_rejected_or_yield_empty ... ok
+2026-10-09T07:03:55.5294324Z test vector::exact::tests::deleted_or_corrupt_cache_objects_degrade_without_failing ... ok
+2026-10-09T07:03:55.5337284Z test vector::exact::tests::empty_and_single_element_boundaries ... ok
+2026-10-09T07:03:55.5365368Z test vector::exact::tests::equal_scores_tie_break_on_doc_key_ascending ... ok
+2026-10-09T07:03:55.5415833Z test vector::exact::tests::fake_provider_embed_cache_search_hits_its_own_documents ... ok
+2026-10-09T07:03:55.5435602Z test vector::exact::tests::filter_none_admits_every_candidate ... ok
+2026-10-09T07:03:55.5440832Z test vector::exact::tests::foreign_space_and_foreign_ref_rows_never_score ... ok
+2026-10-09T07:03:55.5560175Z test vector::exact::tests::hand_computed_cosine_gold_and_ordering ... ok
+2026-10-09T07:03:55.5589515Z test vector::exact::tests::metric_dispatch_is_cosine_per_the_frozen_spec ... ok
+2026-10-09T07:03:55.5623525Z test vector::exact::tests::missing_language_row_matches_no_language_filter ... ok
+2026-10-09T07:03:55.5719500Z test vector::exact::tests::prefix_file_paths_and_languages_intersect_before_top_k ... ok
+2026-10-09T07:03:55.5758327Z test gc::concurrency_tests::namespace_lock_spans_mark_and_unlink_before_concurrent_publish ... ok
+2026-10-09T07:03:55.5802674Z test vector::exact::tests::read_coverage_counts_eligible_gaps_and_resets_for_excluded_rows ... ok
+2026-10-09T07:03:55.6289977Z test vector::exact::tests::result_is_independent_of_batch_splitting ... ok
+2026-10-09T07:03:55.6291751Z test vector::exact::tests::some_empty_scope_short_circuits_without_loading_candidates ... ok
+2026-10-09T07:03:55.6296793Z test vector::exact::tests::controlled_scan_observes_deadline_after_an_uninterruptible_batch_read ... ok
+2026-10-09T07:03:55.6314923Z test vector::exact::tests::repeated_runs_are_bitwise_deterministic ... ok
+2026-10-09T07:03:55.6376723Z test vector::exact::tests::knn_matches_naive_reference_on_deterministic_corpus ... ok
+2026-10-09T07:03:55.6377356Z 
+2026-10-09T07:03:55.6377949Z test result: ok. 236 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.64s
+2026-10-09T07:03:55.6378528Z 
+2026-10-09T07:03:55.6389337Z      Running tests/artifact_cache.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/artifact_cache-01d3e549f6ceb24f)
+2026-10-09T07:03:55.6400908Z 
+2026-10-09T07:03:55.6401056Z running 17 tests
+2026-10-09T07:03:55.6406630Z test cache_root_resolution_branches ... ok
+2026-10-09T07:03:55.6430817Z test different_spaces_never_cross_hit ... ok
+2026-10-09T07:03:55.6435346Z test invalid_vectors_are_rejected_before_touching_the_cache ... ok
+2026-10-09T07:03:55.6445642Z test corrupt_payload_is_detected_and_discard_degrades_to_miss ... ok
+2026-10-09T07:03:55.6463837Z test meta_contains_only_the_documented_fields ... ok
+2026-10-09T07:03:55.6466474Z test namespace_key_is_stable_distinct_and_path_safe ... ok
+2026-10-09T07:03:55.6467641Z test namespace_validation_rejects_unsafe_names ... ok
+2026-10-09T07:03:55.6502549Z test namespaces_are_isolated ... ok
+2026-10-09T07:03:55.6517735Z test artifact_ref_is_stable_and_content_scoped ... ok
+2026-10-09T07:03:55.6520073Z test process_env_override_reaches_resolve_cache_root ... ok
+2026-10-09T07:03:55.6532134Z test meta_tampering_is_detected_as_corrupt ... ok
+2026-10-09T07:03:55.6536002Z test open_creates_nothing_and_put_lays_out_the_brief_layout ... ok
+2026-10-09T07:03:55.6547207Z test read_write_roundtrip_is_lossless ... ok
+2026-10-09T07:03:55.6551163Z test same_input_hits_across_independent_cache_instances ... ok
+2026-10-09T07:03:55.6564746Z test rewrite_of_existing_object_is_idempotent_and_stable ... ok
+2026-10-09T07:03:55.6582399Z test spec_change_routes_to_a_new_object ... ok
+2026-10-09T07:03:55.6587835Z test concurrent_puts_of_the_same_key_race_safely ... ok
+2026-10-09T07:03:55.6588239Z 
+2026-10-09T07:03:55.6588602Z test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+2026-10-09T07:03:55.6588998Z 
+2026-10-09T07:03:55.6591333Z      Running tests/attempt_lease_contract.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/attempt_lease_contract-4054cbbad720cca8)
+2026-10-09T07:03:55.6604065Z 
+2026-10-09T07:03:55.6604241Z running 1 test
+2026-10-09T07:03:55.8564199Z TOKEN_ORACLE width=4 mode=expired-unreclaimed old_published=4 old_lease_lost=0 replacements_published=0
+2026-10-09T07:03:56.0531297Z TOKEN_ORACLE width=4 mode=reclaimed old_published=0 old_lease_lost=4 replacements_published=0
+2026-10-09T07:03:56.2558481Z TOKEN_ORACLE width=4 mode=replacement-token old_published=0 old_lease_lost=4 replacements_published=4
+2026-10-09T07:03:56.2599792Z test expiry_reclaim_and_replacement_token_publication_contract ... ok
+2026-10-09T07:03:56.2600132Z 
+2026-10-09T07:03:56.2600663Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.60s
+2026-10-09T07:03:56.2601122Z 
+2026-10-09T07:03:56.2609290Z      Running tests/bounded_parallel.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/bounded_parallel-4b92edd868e5d949)
+2026-10-09T07:03:56.2624054Z 
+2026-10-09T07:03:56.2624237Z running 13 tests
+2026-10-09T07:03:56.2653506Z test frozen_input_byte_budget_is_not_increased_by_pipeline ... ok
+2026-10-09T07:03:56.3706979Z test closed_lifecycle_during_handled_retry_still_stops_claims ... ok
+2026-10-09T07:03:56.4502373Z bounded partial drain initial_ready=1 normal_enqueued=1 claimed=2 completed=2 ready_stranded=0 empty_claim_budget=0
+2026-10-09T07:03:56.4535901Z test normal_enqueue_during_one_inflight_attempt_is_drained_despite_peer_empty_claim ... ok
+2026-10-09T07:03:56.5176914Z close joined=4 provider_peak=4 started_attempts=4 subsequent_claims=0
+2026-10-09T07:03:56.5201009Z test all_four_parallel_errors_propagate_after_join_and_retry_each_independent_token ... ok
+2026-10-09T07:03:56.5279858Z test close_joins_four_started_attempts_and_restores_pending_with_spent_attempts ... ok
+2026-10-09T07:03:56.5527756Z test ordinary_document_edit_fences_old_attempt_while_neighbor_publishes ... ok
+2026-10-09T07:03:56.6439972Z retry progress width=0 shared_claims=16+4 unique_tokens=20 retried=1 ready_stranded=0
+2026-10-09T07:03:56.7475233Z test ordinary_provider_failure_retries_within_the_shared_finite_budget ... ok
+2026-10-09T07:03:56.7477927Z test slow_provider_beyond_lease_cannot_publish_and_old_tokens_cannot_ack ... ignored, parent ruling: stronger strict-clock policy is not the existing token-fencing contract; original failed result retained in checkpoint
+2026-10-09T07:03:56.7711678Z test ordinary_space_switch_fences_started_publications_and_stops_claiming_new_space ... ok
+2026-10-09T07:03:56.9544437Z test pipeline_width_is_capped_by_small_claim_budget ... ok
+2026-10-09T07:03:56.9846559Z test unstarted_cancel_does_not_consume_attempt_and_preclosed_has_zero_calls ... ok
+2026-10-09T07:03:57.0298609Z retry progress width=1 shared_claims=16+4 unique_tokens=20 retried=1 ready_stranded=0
+2026-10-09T07:03:57.1111605Z bounded width=0 provider_peak=1 claims=16 unique_tokens=16 done=16 pending=24
+2026-10-09T07:03:57.2273946Z retry progress width=2 shared_claims=16+4 unique_tokens=20 retried=1 ready_stranded=0
+2026-10-09T07:03:57.3719791Z bounded width=1 provider_peak=1 claims=16 unique_tokens=16 done=16 pending=24
+2026-10-09T07:03:57.4056364Z retry progress width=4 shared_claims=16+4 unique_tokens=20 retried=1 ready_stranded=0
+2026-10-09T07:03:57.4096989Z test handled_retry_keeps_shared_budget_and_independent_tokens ... ok
+2026-10-09T07:03:57.5658019Z bounded width=2 provider_peak=4 claims=16 unique_tokens=16 done=16 pending=24
+2026-10-09T07:03:57.7517659Z bounded width=4 provider_peak=4 claims=16 unique_tokens=16 done=16 pending=24
+2026-10-09T07:03:57.9331582Z bounded width=18446744073709551615 provider_peak=4 claims=16 unique_tokens=16 done=16 pending=24
+2026-10-09T07:03:57.9356549Z test width_zero_and_one_are_serial_two_and_larger_are_bounded_and_fifo_budget_is_shared ... ok
+2026-10-09T07:03:57.9361004Z 
+2026-10-09T07:03:57.9380955Z test result: ok. 12 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.67s
+2026-10-09T07:03:57.9381376Z 
+2026-10-09T07:03:57.9382688Z      Running tests/crash_independent_review.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/crash_independent_review-7430f146cfca9b98)
+2026-10-09T07:03:57.9397445Z 
+2026-10-09T07:03:57.9397628Z running 2 tests
+2026-10-09T07:03:57.9401139Z test independent_child ... ignored, child entry; invoked only by the owning parent with an isolated directory
+2026-10-09T07:04:13.2987147Z 
+2026-10-09T07:04:13.2988257Z thread 'independently_observed_sigkill_boundaries' (5841) panicked at crates/cc-semantic/tests/crash_independent_review.rs:229:18:
+2026-10-09T07:04:13.2989450Z called `Result::unwrap()` on an `Err` value: ParseIntError { kind: Empty }
+2026-10-09T07:04:13.2990189Z note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+2026-10-09T07:04:13.2996739Z test independently_observed_sigkill_boundaries ... FAILED
+2026-10-09T07:04:13.2997469Z 
+2026-10-09T07:04:13.2998193Z failures:
+2026-10-09T07:04:13.2998399Z 
+2026-10-09T07:04:13.2998562Z failures:
+2026-10-09T07:04:13.2998974Z     independently_observed_sigkill_boundaries
+2026-10-09T07:04:13.2999323Z 
+2026-10-09T07:04:13.2999828Z test result: FAILED. 0 passed; 1 failed; 1 ignored; 0 measured; 0 filtered out; finished in 15.36s
+2026-10-09T07:04:13.3000633Z 
+2026-10-09T07:04:13.3013427Z error: test failed, to rerun pass `-p cc-semantic --test crash_independent_review`
+2026-10-09T07:04:13.3059538Z ##[error]Process completed with exit code 101.
+2026-10-09T07:04:13.3114756Z ##[group]Run set -o pipefail
+2026-10-09T07:04:13.3115136Z [36;1mset -o pipefail[0m
+2026-10-09T07:04:13.3115532Z [36;1mcargo build -p cc-server --bin codecortex --features semantic-http --locked \[0m
+2026-10-09T07:04:13.3116004Z [36;1m  --message-format=json-render-diagnostics \[0m
+2026-10-09T07:04:13.3116392Z [36;1m  > "$RUNNER_TEMP/p7-closeout/http-product-build.jsonl" \[0m
+2026-10-09T07:04:13.3116825Z [36;1m  2> "$RUNNER_TEMP/p7-closeout/http-product-build.stderr.log"[0m
+2026-10-09T07:04:13.3117401Z [36;1msha256sum "$CARGO_TARGET_DIR/debug/codecortex" > "$RUNNER_TEMP/p7-closeout/http-product.sha256"[0m
+2026-10-09T07:04:13.3117881Z [36;1mpython3 - <<'PY'[0m
+2026-10-09T07:04:13.3118163Z [36;1mimport hashlib, json, os, pathlib, shutil, sys[0m
+2026-10-09T07:04:13.3118486Z [36;1msys.path.insert(0, 'scripts')[0m
+2026-10-09T07:04:13.3118793Z [36;1mfrom p7_build_identity import source_snapshot[0m
+2026-10-09T07:04:13.3119100Z [36;1mroot = pathlib.Path.cwd()[0m
+2026-10-09T07:04:13.3119467Z [36;1mout = pathlib.Path(os.environ['RUNNER_TEMP']) / 'p7-closeout'[0m
+2026-10-09T07:04:13.3119899Z [36;1mbefore = json.loads((out / 'source-before.json').read_text())[0m
+2026-10-09T07:04:13.3120254Z [36;1mafter = source_snapshot(root)[0m
+2026-10-09T07:04:13.3120973Z [36;1massert before == after, 'HTTP product source changed during compilation'[0m
+2026-10-09T07:04:13.3121543Z [36;1mrows = [json.loads(x) for x in (out / 'http-product-build.jsonl').read_text().splitlines()][0m
+2026-10-09T07:04:13.3122087Z [36;1mrows = [x for x in rows if x.get('reason') == 'compiler-artifact'[0m
+2026-10-09T07:04:13.3122509Z [36;1m        and x.get('target', {}).get('name') == 'codecortex'[0m
+2026-10-09T07:04:13.3122958Z [36;1m        and x.get('target', {}).get('kind') == ['bin'] and x.get('executable')][0m
+2026-10-09T07:04:13.3123433Z [36;1massert len(rows) == 1 and 'semantic-http' in rows[0]['features'], rows[0m
+2026-10-09T07:04:13.3123802Z [36;1martifact = rows[0][0m
+2026-10-09T07:04:13.3124243Z [36;1massert pathlib.Path(artifact['manifest_path']).resolve() == root / 'crates/cc-server/Cargo.toml'[0m
+2026-10-09T07:04:13.3124911Z [36;1massert pathlib.Path(artifact['target']['src_path']).resolve() == root / 'crates/cc-server/src/main.rs'[0m
+2026-10-09T07:04:13.3125675Z [36;1massert pathlib.Path(artifact['executable']).resolve().is_relative_to(pathlib.Path(os.environ['CARGO_TARGET_DIR']).resolve())[0m
+2026-10-09T07:04:13.3126426Z [36;1massert artifact['profile']['opt_level'] == '0' and artifact['profile']['debug_assertions'] is True[0m
+2026-10-09T07:04:13.3126918Z [36;1massert artifact['profile']['test'] is False[0m
+2026-10-09T07:04:13.3127230Z [36;1mbinary = out / 'http-codecortex'[0m
+2026-10-09T07:04:13.3127536Z [36;1mshutil.copy2(rows[0]['executable'], binary)[0m
+2026-10-09T07:04:13.3127902Z [36;1mdigest = hashlib.sha256(binary.read_bytes()).hexdigest()[0m
+2026-10-09T07:04:13.3128424Z [36;1massert digest == hashlib.sha256(pathlib.Path(rows[0]['executable']).read_bytes()).hexdigest()[0m
+2026-10-09T07:04:13.3129108Z [36;1mdriver = root / 'artifacts/checkpoints/p7-gate-lifecycle-independent-20261003/lifecycle_stdio.py'[0m
+2026-10-09T07:04:13.3129687Z [36;1mdriver_sha256 = hashlib.sha256(driver.read_bytes()).hexdigest()[0m
+2026-10-09T07:04:13.3130768Z [36;1massert not driver.is_symlink() and driver_sha256 == '39630b6be2bba3319584af74521863ef5d53a4e7fd723de8c3a454b29e34259c', 'original lifecycle driver changed'[0m
+2026-10-09T07:04:13.3131754Z [36;1mreceipt = {'binary_path': str(binary), 'binary_sha256': digest,[0m
+2026-10-09T07:04:13.3132246Z [36;1m           'lifecycle_driver': str(driver), 'lifecycle_driver_sha256': driver_sha256,[0m
+2026-10-09T07:04:13.3132715Z [36;1m           'build_exit_code': 0, 'cargo_artifact': rows[0],[0m
+2026-10-09T07:04:13.3133085Z [36;1m           'source_before': before, 'source_after': after,[0m
+2026-10-09T07:04:13.3133760Z [36;1m           'cargo_log_sha256': hashlib.sha256((out / 'http-product-build.jsonl').read_bytes()).hexdigest()}[0m
+2026-10-09T07:04:13.3134396Z [36;1m(out / 'http-build-receipt.json').write_text(json.dumps(receipt, indent=2) + '\n')[0m
+2026-10-09T07:04:13.3134802Z [36;1mPY[0m
+2026-10-09T07:04:13.3135203Z [36;1mpython3 artifacts/checkpoints/p7-gate-lifecycle-independent-20261003/lifecycle_stdio.py \[0m
+2026-10-09T07:04:13.3135831Z [36;1m  "$RUNNER_TEMP/p7-closeout/http-codecortex" "$RUNNER_TEMP/p7-closeout/lifecycle" \[0m
+2026-10-09T07:04:13.3136317Z [36;1m  2>&1 | tee "$RUNNER_TEMP/p7-closeout/lifecycle.log"[0m
+2026-10-09T07:04:13.3136648Z [36;1mpython3 - <<'PY_AFTER_LIFECYCLE'[0m
+2026-10-09T07:04:13.3136935Z [36;1mimport hashlib, json, os, pathlib[0m
+2026-10-09T07:04:13.3137461Z [36;1mreceipt = json.loads((pathlib.Path(os.environ['RUNNER_TEMP']) / 'p7-closeout/http-build-receipt.json').read_text())[0m
+2026-10-09T07:04:13.3138045Z [36;1mdriver = pathlib.Path(receipt['lifecycle_driver'])[0m
+2026-10-09T07:04:13.3138646Z [36;1massert not driver.is_symlink() and hashlib.sha256(driver.read_bytes()).hexdigest() == receipt['lifecycle_driver_sha256'][0m
+2026-10-09T07:04:13.3139190Z [36;1mPY_AFTER_LIFECYCLE[0m
+2026-10-09T07:04:13.3199519Z shell: /usr/bin/bash -e {0}
+2026-10-09T07:04:13.3199767Z env:
+2026-10-09T07:04:13.3199958Z   CARGO_TERM_COLOR: never
+2026-10-09T07:04:13.3200207Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T07:04:13.3200712Z   CARGO_INCREMENTAL: 0
+2026-10-09T07:04:13.3200948Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-10-09T07:04:13.3201190Z   CARGO_PROFILE_TEST_DEBUG: 0
+2026-10-09T07:04:13.3201416Z   CARGO_BUILD_JOBS: 2
+2026-10-09T07:04:13.3201626Z   RUSTFLAGS: -D warnings
+2026-10-09T07:04:13.3201852Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:04:13.3202169Z   CARGO_TARGET_DIR: /home/runner/work/_temp/p7-closeout-target
+2026-10-09T07:04:13.3202495Z ##[endgroup]
+2026-10-09T07:06:15.7096841Z ##[group]Run set -o pipefail
+2026-10-09T07:06:15.7097176Z [36;1mset -o pipefail[0m
+2026-10-09T07:06:15.7097465Z [36;1mpython3 scripts/p7_fault_lifecycle_stdio.py \[0m
+2026-10-09T07:06:15.7097854Z [36;1m  --binary "$RUNNER_TEMP/p7-closeout/http-codecortex" \[0m
+2026-10-09T07:06:15.7098317Z [36;1m  --build-receipt "$RUNNER_TEMP/p7-closeout/http-build-receipt.json" \[0m
+2026-10-09T07:06:15.7098769Z [36;1m  --output "$RUNNER_TEMP/p7-closeout/fault-lifecycle" \[0m
+2026-10-09T07:06:15.7099164Z [36;1m  2>&1 | tee "$RUNNER_TEMP/p7-closeout/fault-lifecycle.log"[0m
+2026-10-09T07:06:15.7159180Z shell: /usr/bin/bash -e {0}
+2026-10-09T07:06:15.7159435Z env:
+2026-10-09T07:06:15.7159628Z   CARGO_TERM_COLOR: never
+2026-10-09T07:06:15.7159876Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T07:06:15.7160115Z   CARGO_INCREMENTAL: 0
+2026-10-09T07:06:15.7160551Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-10-09T07:06:15.7160793Z   CARGO_PROFILE_TEST_DEBUG: 0
+2026-10-09T07:06:15.7161059Z   CARGO_BUILD_JOBS: 2
+2026-10-09T07:06:15.7161271Z   RUSTFLAGS: -D warnings
+2026-10-09T07:06:15.7161495Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:06:15.7161810Z   CARGO_TARGET_DIR: /home/runner/work/_temp/p7-closeout-target
+2026-10-09T07:06:15.7162136Z ##[endgroup]
+2026-10-09T07:06:16.0587959Z {"sequence": 29, "kind": "phase", "unix_time": 1791529576.0573144, "monotonic": 610.423286141, "seed": 197, "phase": "initial_ready", "status": {"consistency": "point_in_time", "default_effective_strategy": "local", "default_query_state": "available_with_per_query_checks", "default_strategy": "local", "dense_desired": 2, "dense_published": 2, "dense_reason": null, "dense_state": "ready", "diagnostic_sources": {"build": "BuildExplain on index response", "graph": "GraphExplain on query response", "lanes": "evidence_summary.retrieval.lanes or lane_receipts", "packing": "evidence_summary.packing", "selection": "evidence_summary.selection", "semantic": "evidence_summary.retrieval.semantic (dense lane receipt projection)", "source": "evidence_summary.source_freshness"}, "execution": {"async_admitted": 0, "async_in_flight": 0, "async_limit": 8, "completed": 0, "cpu_admitted": 0, "cpu_in_flight": 0, "cpu_limit": 4, "queue_limit": 32, "rejected": 0}, "execution_scope": "process_shared_not_project_local", "generation": {"evidence_epoch": 0, "incarnation": [189, 108, 119, 121, 23, 95, 48, 110, 69, 55, 155, 218, 126, 236, 190, 221], "index_epoch": 6, "semantic_epoch": 3}, "generation_scope": "observed_database_snapshot", "identity_validation": "checked_at_observation_boundary", "index_state": "available", "local_state": "available", "pin_scope": "owned_query_views_including_inflight_clones_not_request_count", "query_coverage": {"scope": "per_query_not_global", "state": "not_measured"}, "query_encoding": {"configured_opt_in": false, "network_authorized": false, "reason": "query_network_opt_in_required", "request_scope": "nonlocal_nonempty_only"}, "query_pins": 0, "resolution_freshness": {"basis_epoch": null, "complete": true, "completed_files": 0, "index_epoch": 6, "reason": null, "retry": null, "root_count": 0, "scope": "observed_resolution_invalidations", "status": "ready"}, "semantic_active_space": "ed440eb63afe9b72d2043bdbbaa18c076be5f64adfaf8f7451de21e639778e00", "semantic_failed": 0, "semantic_pending": 0, "semantic_state": "ready", "service_state_scope": "process_observed_separately", "spec": "retrieval-capabilities-v2"}, "observed_document_posts": 2, "cache": {"namespace-2325d3d04404941425eebf766dce289a3df63ca485d84d74f0af17c011128738/ed440eb63afe9b72d2043bdbbaa18c076be5f64adfaf8f7451de21e639778e00/95b65f67d78940edfb618e272ef7232f0fd12e96e8498a3dbfc6017ba1e8aed2/cf5b2884d98bb43c07ba71eef2c5c6dd0df7c3fee82eb6c3cda22ae79426b91a/cf5b2884d98bb43c07ba71eef2c5c6dd0df7c3fee82eb6c3cda22ae79426b91a.bin": {"sha256": "434b26042aff3fb844a4c4c6be0d81a079b0ce84cfb8190679024404e5dc4822", "bytes": 8}, "namespace-2325d3d04404941425eebf766dce289a3df63ca485d84d74f0af17c011128738/ed440eb63afe9b72d2043bdbbaa18c076be5f64adfaf8f7451de21e639778e00/9616603e6126c1e65ce81d432579ae0f8c3d974cbfd12d5569ad67365cd45181/cf5b2884d98bb43c07ba71eef2c5c6dd0df7c3fee82eb6c3cda22ae79426b91a/cf5b2884d98bb43c07ba71eef2c5c6dd0df7c3fee82eb6c3cda22ae79426b91a.bin": {"sha256": "434b26042aff3fb844a4c4c6be0d81a079b0ce84cfb8190679024404e5dc4822", "bytes": 8}}}
+2026-10-09T07:06:16.1506780Z {"sequence": 44, "kind": "phase", "unix_time": 1791529576.1495433, "monotonic": 610.515515292, "seed": 197, "phase": "clean_restart_zero_document_calls", "status": {"consistency": "point_in_time", "default_effective_strategy": "local", "default_query_state": "available_with_per_query_checks", "default_strategy": "local", "dense_desired": 2, "dense_published": 2, "dense_reason": null, "dense_state": "ready", "diagnostic_sources": {"build": "BuildExplain on index response", "graph": "GraphExplain on query response", "lanes": "evidence_summary.retrieval.lanes or lane_receipts", "packing": "evidence_summary.packing", "selection": "evidence_summary.selection", "semantic": "evidence_summary.retrieval.semantic (dense lane receipt projection)", "source": "evidence_summary.source_freshness"}, "execution": {"async_admitted": 0, "async_in_flight": 0, "async_limit": 8, "completed": 0, "cpu_admitted": 0, "cpu_in_flight": 0, "cpu_limit": 4, "queue_limit": 32, "rejected": 0}, "execution_scope": "process_shared_not_project_local", "generation": {"evidence_epoch": 0, "incarnation": [189, 108, 119, 121, 23, 95, 48, 110, 69, 55, 155, 218, 126, 236, 190, 221], "index_epoch": 6, "semantic_epoch": 3}, "generation_scope": "observed_database_snapshot", "identity_validation": "checked_at_observation_boundary", "index_state": "available", "local_state": "available", "pin_scope": "owned_query_views_including_inflight_clones_not_request_count", "query_coverage": {"scope": "per_query_not_global", "state": "not_measured"}, "query_encoding": {"configured_opt_in": false, "network_authorized": false, "reason": "query_network_opt_in_required", "request_scope": "nonlocal_nonempty_only"}, "query_pins": 0, "resolution_freshness": {"basis_epoch": null, "complete": true, "completed_files": 0, "index_epoch": 6, "reason": null, "retry": null, "root_count": 0, "scope": "observed_resolution_invalidations", "status": "ready"}, "semantic_active_space": "ed440eb63afe9b72d2043bdbbaa18c076be5f64adfaf8f7451de21e639778e00", "semantic_failed": 0, "semantic_pending": 0, "semantic_state": "ready", "service_state_scope": "process_observed_separately", "spec": "retrieval-capabilities-v2"}, "observed_document_posts": 2, "document_posts_delta": 0}
+2026-10-09T07:06:16.1515343Z {"sequence": 45, "kind": "phase", "unix_time": 1791529576.1496642, "monotonic": 610.515636099, "seed": 197, "phase": "age_real_cache", "started_at": 1791529576.1496596, "deadline": 1791529577.3496587}
+2026-10-09T07:06:17.5858438Z {"sequence": 64, "kind": "phase", "unix_time": 1791529577.5842896, "monotonic": 611.95026163, "seed": 197, "phase": "rebuild_delete_http500_pending_and_automatic_gc", "status": {"consistency": "point_in_time", "default_effective_strategy": "local", "default_query_state": "available_with_per_query_checks", "default_strategy": "local", "dense_desired": 1, "dense_published": 0, "dense_reason": "semantic_coverage_uncovered", "dense_state": "partial", "diagnostic_sources": {"build": "BuildExplain on index response", "graph": "GraphExplain on query response", "lanes": "evidence_summary.retrieval.lanes or lane_receipts", "packing": "evidence_summary.packing", "selection": "evidence_summary.selection", "semantic": "evidence_summary.retrieval.semantic (dense lane receipt projection)", "source": "evidence_summary.source_freshness"}, "execution": {"async_admitted": 0, "async_in_flight": 0, "async_limit": 8, "completed": 12, "cpu_admitted": 0, "cpu_in_flight": 0, "cpu_limit": 4, "queue_limit": 32, "rejected": 0}, "execution_scope": "process_shared_not_project_local", "generation": {"evidence_epoch": 1, "incarnation": [228, 198, 77, 249, 41, 30, 219, 124, 33, 155, 61, 33, 3, 194, 114, 198], "index_epoch": 11, "semantic_epoch": 1}, "generation_scope": "observed_database_snapshot", "identity_validation": "checked_at_observation_boundary", "index_state": "available", "local_state": "available", "pin_scope": "owned_query_views_including_inflight_clones_not_request_count", "query_coverage": {"scope": "per_query_not_global", "state": "not_measured"}, "query_encoding": {"configured_opt_in": false, "network_authorized": false, "reason": "query_network_opt_in_required", "request_scope": "nonlocal_nonempty_only"}, "query_pins": 0, "resolution_freshness": {"basis_epoch": null, "complete": true, "completed_files": 0, "index_epoch": 11, "reason": null, "retry": null, "root_count": 0, "scope": "observed_resolution_invalidations", "status": "ready"}, "semantic_active_space": "ed440eb63afe9b72d2043bdbbaa18c076be5f64adfaf8f7451de21e639778e00", "semantic_failed": 0, "semantic_pending": 1, "semantic_state": "backfilling", "service_state_scope": "process_observed_separately", "spec": "retrieval-capabilities-v2"}, "observed_document_posts": 3, "outbox": [{"task_id": 1, "doc_key": "ab9caebcc2c76b7a68d17bad2bb1f0703df378a2373be3216ea9713410d31915", "doc_version": "bdf993ed479f1970e2c1305106fdbf130d6f7ba44614e73f7c60d816cf4280a2", "input_digest": "e38248b618d8aa8a7e180d843daa201798ccf1337f764fba21c58990a30dc41e", "space_id": "ed440eb63afe9b72d2043bdbbaa18c076be5f64adfaf8f7451de21e639778e00", "op": "embed", "state": "pending", "attempt_count": 1, "lease_token": null, "lease_expires_at": null, "claim_owner": null, "available_at": 1791529607.4938846, "last_error": "provider server error", "created_at": "2026-10-09T07:06:17.490924597+00:00", "updated_at": "2026-10-09T07:06:17.493884563+00:00"}], "original_cache_removed": ["namespace-2325d3d04404941425eebf766dce289a3df63ca485d84d74f0af17c011128738/ed440eb63afe9b72d2043bdbbaa18c076be5f64adfaf8f7451de21e639778e00/95b65f67d78940edfb618e272ef7232f0fd12e96e8498a3dbfc6017ba1e8aed2/cf5b2884d98bb43c07ba71eef2c5c6dd0df7c3fee82eb6c3cda22ae79426b91a/cf5b2884d98bb43c07ba71eef2c5c6dd0df7c3fee82eb6c3cda22ae79426b91a.bin", "namespace-2325d3d04404941425eebf766dce289a3df63ca485d84d74f0af17c011128738/ed440eb63afe9b72d2043bdbbaa18c076be5f64adfaf8f7451de21e639778e00/9616603e6126c1e65ce81d432579ae0f8c3d974cbfd12d5569ad67365cd45181/cf5b2884d98bb43c07ba71eef2c5c6dd0df7c3fee82eb6c3cda22ae79426b91a/cf5b2884d98bb43c07ba71eef2c5c6dd0df7c3fee82eb6c3cda22ae79426b91a.bin"], "cache_after_gc": {}, "retry_at": 1791529607.4938846}
+2026-10-09T07:06:17.5873348Z {"sequence": 65, "kind": "phase", "unix_time": 1791529577.5844185, "monotonic": 611.950390491, "seed": 197, "phase": "unchanged_30_second_backoff", "started_at": 1791529577.5844157, "deadline": 1791529607.5438845}
+2026-10-09T07:06:47.5888358Z {"sequence": 152, "kind": "phase", "unix_time": 1791529607.5884337, "monotonic": 641.954405704, "seed": 197, "phase": "real_lease_expiry_after_sigkill", "started_at": 1791529607.5884295, "deadline": 1791529609.6068242}
+2026-10-09T07:06:49.7376708Z {"sequence": 189, "kind": "phase", "unix_time": 1791529609.7358243, "monotonic": 644.101796386, "seed": 197, "phase": "sigkill_lease_reclaimed_ready", "status": {"consistency": "point_in_time", "default_effective_strategy": "local", "default_query_state": "available_with_per_query_checks", "default_strategy": "local", "dense_desired": 1, "dense_published": 1, "dense_reason": null, "dense_state": "ready", "diagnostic_sources": {"build": "BuildExplain on index response", "graph": "GraphExplain on query response", "lanes": "evidence_summary.retrieval.lanes or lane_receipts", "packing": "evidence_summary.packing", "selection": "evidence_summary.selection", "semantic": "evidence_summary.retrieval.semantic (dense lane receipt projection)", "source": "evidence_summary.source_freshness"}, "execution": {"async_admitted": 0, "async_in_flight": 0, "async_limit": 8, "completed": 12, "cpu_admitted": 0, "cpu_in_flight": 0, "cpu_limit": 4, "queue_limit": 32, "rejected": 0}, "execution_scope": "process_shared_not_project_local", "generation": {"evidence_epoch": 1, "incarnation": [228, 198, 77, 249, 41, 30, 219, 124, 33, 155, 61, 33, 3, 194, 114, 198], "index_epoch": 11, "semantic_epoch": 2}, "generation_scope": "observed_database_snapshot", "identity_validation": "checked_at_observation_boundary", "index_state": "available", "local_state": "available", "pin_scope": "owned_query_views_including_inflight_clones_not_request_count", "query_coverage": {"scope": "per_query_not_global", "state": "not_measured"}, "query_encoding": {"configured_opt_in": false, "network_authorized": false, "reason": "query_network_opt_in_required", "request_scope": "nonlocal_nonempty_only"}, "query_pins": 0, "resolution_freshness": {"basis_epoch": null, "complete": true, "completed_files": 0, "index_epoch": 11, "reason": null, "retry": null, "root_count": 0, "scope": "observed_resolution_invalidations", "status": "ready"}, "semantic_active_space": "ed440eb63afe9b72d2043bdbbaa18c076be5f64adfaf8f7451de21e639778e00", "semantic_failed": 0, "semantic_pending": 0, "semantic_state": "ready", "service_state_scope": "process_observed_separately", "spec": "retrieval-capabilities-v2"}, "observed_document_posts": 5, "kill_time": 1791529607.5844703, "lease_deadline": 1791529609.5568242, "document_posts_delta": 1, "crash_attempt_billing": "unknown; response had not been consumed", "outbox": {"outbox": [{"task_id": 1, "doc_key": "ab9caebcc2c76b7a68d17bad2bb1f0703df378a2373be3216ea9713410d31915", "doc_version": "bdf993ed479f1970e2c1305106fdbf130d6f7ba44614e73f7c60d816cf4280a2", "input_digest": "e38248b618d8aa8a7e180d843daa201798ccf1337f764fba21c58990a30dc41e", "space_id": "ed440eb63afe9b72d2043bdbbaa18c076be5f64adfaf8f7451de21e639778e00", "op": "embed", "state": "done", "attempt_count": 3, "lease_token": "90c9a23b9e1df44418893b5dbcd0bdfc", "lease_expires_at": 1791529611.6384435, "claim_owner": "post-index", "available_at": 1791529609.637508, "last_error": null, "created_at": "2026-10-09T07:06:17.490924597+00:00", "updated_at": "2026-10-09T07:06:49+00:00"}], "manifest": [{"doc_key": "ab9caebcc2c76b7a68d17bad2bb1f0703df378a2373be3216ea9713410d31915", "doc_version": "bdf993ed479f1970e2c1305106fdbf130d6f7ba44614e73f7c60d816cf4280a2", "file_path": "keep.rs", "encoding_key": "a9d63c93374872ffa7fc4eed0e2f8889a8275a51dc45ffdcda8a8ab5df1fdf9f", "input_digest": "e38248b618d8aa8a7e180d843daa201798ccf1337f764fba21c58990a30dc41e", "space_id": "ed440eb63afe9b72d2043bdbbaa18c076be5f64adfaf8f7451de21e639778e00", "artifact_ref": "cas.v1:2325d3d04404941425eebf766dce289a3df63ca485d84d74f0af17c011128738:ed440eb63afe9b72d2043bdbbaa18c076be5f64adfaf8f7451de21e639778e00:e38248b618d8aa8a7e180d843daa201798ccf1337f764fba21c58990a30dc41e:cf5b2884d98bb43c07ba71eef2c5c6dd0df7c3fee82eb6c3cda22ae79426b91a:c3e45a3480d5b57ee4201f473659669f83ccec77851a5243a927aafcd139f2f3", "published_at": "2026-10-09T07:06:49+00:00", "published_incarnation": "e4c64df9291edb7c219b3d2103c272c6"}]}}
+2026-10-09T07:06:49.8720860Z {"sequence": 222, "kind": "phase", "unix_time": 1791529609.8708918, "monotonic": 644.236863802, "seed": 197, "phase": "final_restart_cache_reuse_and_read_only_status", "status": {"consistency": "point_in_time", "default_effective_strategy": "local", "default_query_state": "available_with_per_query_checks", "default_strategy": "local", "dense_desired": 1, "dense_published": 1, "dense_reason": null, "dense_state": "ready", "diagnostic_sources": {"build": "BuildExplain on index response", "graph": "GraphExplain on query response", "lanes": "evidence_summary.retrieval.lanes or lane_receipts", "packing": "evidence_summary.packing", "selection": "evidence_summary.selection", "semantic": "evidence_summary.retrieval.semantic (dense lane receipt projection)", "source": "evidence_summary.source_freshness"}, "execution": {"async_admitted": 0, "async_in_flight": 0, "async_limit": 8, "completed": 12, "cpu_admitted": 0, "cpu_in_flight": 0, "cpu_limit": 4, "queue_limit": 32, "rejected": 0}, "execution_scope": "process_shared_not_project_local", "generation": {"evidence_epoch": 1, "incarnation": [228, 198, 77, 249, 41, 30, 219, 124, 33, 155, 61, 33, 3, 194, 114, 198], "index_epoch": 11, "semantic_epoch": 2}, "generation_scope": "observed_database_snapshot", "identity_validation": "checked_at_observation_boundary", "index_state": "available", "local_state": "available", "pin_scope": "owned_query_views_including_inflight_clones_not_request_count", "query_coverage": {"scope": "per_query_not_global", "state": "not_measured"}, "query_encoding": {"configured_opt_in": false, "network_authorized": false, "reason": "query_network_opt_in_required", "request_scope": "nonlocal_nonempty_only"}, "query_pins": 0, "resolution_freshness": {"basis_epoch": null, "complete": true, "completed_files": 0, "index_epoch": 11, "reason": null, "retry": null, "root_count": 0, "scope": "observed_resolution_invalidations", "status": "ready"}, "semantic_active_space": "ed440eb63afe9b72d2043bdbbaa18c076be5f64adfaf8f7451de21e639778e00", "semantic_failed": 0, "semantic_pending": 0, "semantic_state": "ready", "service_state_scope": "process_observed_separately", "spec": "retrieval-capabilities-v2"}, "observed_document_posts": 5, "document_posts_delta": 0, "cache": {"namespace-2325d3d04404941425eebf766dce289a3df63ca485d84d74f0af17c011128738/ed440eb63afe9b72d2043bdbbaa18c076be5f64adfaf8f7451de21e639778e00/e38248b618d8aa8a7e180d843daa201798ccf1337f764fba21c58990a30dc41e/cf5b2884d98bb43c07ba71eef2c5c6dd0df7c3fee82eb6c3cda22ae79426b91a/cf5b2884d98bb43c07ba71eef2c5c6dd0df7c3fee82eb6c3cda22ae79426b91a.bin": {"sha256": "434b26042aff3fb844a4c4c6be0d81a079b0ce84cfb8190679024404e5dc4822", "bytes": 8}}}
+2026-10-09T07:06:50.2787740Z {"sequence": 253, "kind": "phase", "unix_time": 1791529610.2773898, "monotonic": 644.643361824, "seed": 199, "phase": "initial_ready", "status": {"consistency": "point_in_time", "default_effective_strategy": "local", "default_query_state": "available_with_per_query_checks", "default_strategy": "local", "dense_desired": 2, "dense_published": 2, "dense_reason": null, "dense_state": "ready", "diagnostic_sources": {"build": "BuildExplain on index response", "graph": "GraphExplain on query response", "lanes": "evidence_summary.retrieval.lanes or lane_receipts", "packing": "evidence_summary.packing", "selection": "evidence_summary.selection", "semantic": "evidence_summary.retrieval.semantic (dense lane receipt projection)", "source": "evidence_summary.source_freshness"}, "execution": {"async_admitted": 0, "async_in_flight": 0, "async_limit": 8, "completed": 0, "cpu_admitted": 0, "cpu_in_flight": 0, "cpu_limit": 4, "queue_limit": 32, "rejected": 0}, "execution_scope": "process_shared_not_project_local", "generation": {"evidence_epoch": 0, "incarnation": [101, 249, 97, 61, 46, 245, 21, 44, 88, 52, 138, 136, 35, 47, 138, 99], "index_epoch": 6, "semantic_epoch": 3}, "generation_scope": "observed_database_snapshot", "identity_validation": "checked_at_observation_boundary", "index_state": "available", "local_state": "available", "pin_scope": "owned_query_views_including_inflight_clones_not_request_count", "query_coverage": {"scope": "per_query_not_global", "state": "not_measured"}, "query_encoding": {"configured_opt_in": false, "network_authorized": false, "reason": "query_network_opt_in_required", "request_scope": "nonlocal_nonempty_only"}, "query_pins": 0, "resolution_freshness": {"basis_epoch": null, "complete": true, "completed_files": 0, "index_epoch": 6, "reason": null, "retry": null, "root_count": 0, "scope": "observed_resolution_invalidations", "status": "ready"}, "semantic_active_space": "4a0340cd60e3c011169ec62e1e4a373376c6ce3c8e23e5b196ee77e71f914477", "semantic_failed": 0, "semantic_pending": 0, "semantic_state": "ready", "service_state_scope": "process_observed_separately", "spec": "retrieval-capabilities-v2"}, "observed_document_posts": 2, "cache": {"namespace-d2b61ba3911148c6fc9cd19e89b9cff3a86077b213beb307ba0734daa186cc80/4a0340cd60e3c011169ec62e1e4a373376c6ce3c8e23e5b196ee77e71f914477/4cb0c746822bd0dfb3b4c416fc94e60bd074bec40647bdaf3430a9ea97c50760/9392210a60af2437fd6f8c9991021c1d0ef10964fac50ade948bbbaa09f952f4/9392210a60af2437fd6f8c9991021c1d0ef10964fac50ade948bbbaa09f952f4.bin": {"sha256": "434b26042aff3fb844a4c4c6be0d81a079b0ce84cfb8190679024404e5dc4822", "bytes": 8}, "namespace-d2b61ba3911148c6fc9cd19e89b9cff3a86077b213beb307ba0734daa186cc80/4a0340cd60e3c011169ec62e1e4a373376c6ce3c8e23e5b196ee77e71f914477/72896e723dc4d0a856a4f38c8c11f1a8685036ee241114e8658a4e12a960605f/9392210a60af2437fd6f8c9991021c1d0ef10964fac50ade948bbbaa09f952f4/9392210a60af2437fd6f8c9991021c1d0ef10964fac50ade948bbbaa09f952f4.bin": {"sha256": "434b26042aff3fb844a4c4c6be0d81a079b0ce84cfb8190679024404e5dc4822", "bytes": 8}}}
+2026-10-09T07:06:50.3694570Z {"sequence": 268, "kind": "phase", "unix_time": 1791529610.3684642, "monotonic": 644.734435998, "seed": 199, "phase": "clean_restart_zero_document_calls", "status": {"consistency": "point_in_time", "default_effective_strategy": "local", "default_query_state": "available_with_per_query_checks", "default_strategy": "local", "dense_desired": 2, "dense_published": 2, "dense_reason": null, "dense_state": "ready", "diagnostic_sources": {"build": "BuildExplain on index response", "graph": "GraphExplain on query response", "lanes": "evidence_summary.retrieval.lanes or lane_receipts", "packing": "evidence_summary.packing", "selection": "evidence_summary.selection", "semantic": "evidence_summary.retrieval.semantic (dense lane receipt projection)", "source": "evidence_summary.source_freshness"}, "execution": {"async_admitted": 0, "async_in_flight": 0, "async_limit": 8, "completed": 0, "cpu_admitted": 0, "cpu_in_flight": 0, "cpu_limit": 4, "queue_limit": 32, "rejected": 0}, "execution_scope": "process_shared_not_project_local", "generation": {"evidence_epoch": 0, "incarnation": [101, 249, 97, 61, 46, 245, 21, 44, 88, 52, 138, 136, 35, 47, 138, 99], "index_epoch": 6, "semantic_epoch": 3}, "generation_scope": "observed_database_snapshot", "identity_validation": "checked_at_observation_boundary", "index_state": "available", "local_state": "available", "pin_scope": "owned_query_views_including_inflight_clones_not_request_count", "query_coverage": {"scope": "per_query_not_global", "state": "not_measured"}, "query_encoding": {"configured_opt_in": false, "network_authorized": false, "reason": "query_network_opt_in_required", "request_scope": "nonlocal_nonempty_only"}, "query_pins": 0, "resolution_freshness": {"basis_epoch": null, "complete": true, "completed_files": 0, "index_epoch": 6, "reason": null, "retry": null, "root_count": 0, "scope": "observed_resolution_invalidations", "status": "ready"}, "semantic_active_space": "4a0340cd60e3c011169ec62e1e4a373376c6ce3c8e23e5b196ee77e71f914477", "semantic_failed": 0, "semantic_pending": 0, "semantic_state": "ready", "service_state_scope": "process_observed_separately", "spec": "retrieval-capabilities-v2"}, "observed_document_posts": 2, "document_posts_delta": 0}
+2026-10-09T07:06:50.3702481Z {"sequence": 269, "kind": "phase", "unix_time": 1791529610.3685808, "monotonic": 644.734552827, "seed": 199, "phase": "age_real_cache", "started_at": 1791529610.3685782, "deadline": 1791529611.5685773}
+2026-10-09T07:06:51.8011054Z {"sequence": 288, "kind": "phase", "unix_time": 1791529611.7990873, "monotonic": 646.165059482, "seed": 199, "phase": "rebuild_delete_http500_pending_and_automatic_gc", "status": {"consistency": "point_in_time", "default_effective_strategy": "local", "default_query_state": "available_with_per_query_checks", "default_strategy": "local", "dense_desired": 1, "dense_published": 0, "dense_reason": "semantic_coverage_uncovered", "dense_state": "partial", "diagnostic_sources": {"build": "BuildExplain on index response", "graph": "GraphExplain on query response", "lanes": "evidence_summary.retrieval.lanes or lane_receipts", "packing": "evidence_summary.packing", "selection": "evidence_summary.selection", "semantic": "evidence_summary.retrieval.semantic (dense lane receipt projection)", "source": "evidence_summary.source_freshness"}, "execution": {"async_admitted": 0, "async_in_flight": 0, "async_limit": 8, "completed": 12, "cpu_admitted": 0, "cpu_in_flight": 0, "cpu_limit": 4, "queue_limit": 32, "rejected": 0}, "execution_scope": "process_shared_not_project_local", "generation": {"evidence_epoch": 1, "incarnation": [98, 187, 210, 44, 198, 155, 227, 174, 7, 251, 60, 194, 136, 253, 242, 59], "index_epoch": 11, "semantic_epoch": 1}, "generation_scope": "observed_database_snapshot", "identity_validation": "checked_at_observation_boundary", "index_state": "available", "local_state": "available", "pin_scope": "owned_query_views_including_inflight_clones_not_request_count", "query_coverage": {"scope": "per_query_not_global", "state": "not_measured"}, "query_encoding": {"configured_opt_in": false, "network_authorized": false, "reason": "query_network_opt_in_required", "request_scope": "nonlocal_nonempty_only"}, "query_pins": 0, "resolution_freshness": {"basis_epoch": null, "complete": true, "completed_files": 0, "index_epoch": 11, "reason": null, "retry": null, "root_count": 0, "scope": "observed_resolution_invalidations", "status": "ready"}, "semantic_active_space": "4a0340cd60e3c011169ec62e1e4a373376c6ce3c8e23e5b196ee77e71f914477", "semantic_failed": 0, "semantic_pending": 1, "semantic_state": "backfilling", "service_state_scope": "process_observed_separately", "spec": "retrieval-capabilities-v2"}, "observed_document_posts": 3, "outbox": [{"task_id": 1, "doc_key": "081b00733cb3e05dd1f895b4b7c07c652b895f2e89a8defc8eb1ca36402f102e", "doc_version": "c985adfd98df81c8be22eb994bc181e8049937e1e5127df7777ce4713a688f07", "input_digest": "0d2231fe16139874b5b678925568a0ead51def9b80822926fecfa761f3667f4d", "space_id": "4a0340cd60e3c011169ec62e1e4a373376c6ce3c8e23e5b196ee77e71f914477", "op": "embed", "state": "pending", "attempt_count": 1, "lease_token": null, "lease_expires_at": null, "claim_owner": null, "available_at": 1791529641.7083814, "last_error": "provider server error", "created_at": "2026-10-09T07:06:51.705462933+00:00", "updated_at": "2026-10-09T07:06:51.708381414+00:00"}], "original_cache_removed": ["namespace-d2b61ba3911148c6fc9cd19e89b9cff3a86077b213beb307ba0734daa186cc80/4a0340cd60e3c011169ec62e1e4a373376c6ce3c8e23e5b196ee77e71f914477/4cb0c746822bd0dfb3b4c416fc94e60bd074bec40647bdaf3430a9ea97c50760/9392210a60af2437fd6f8c9991021c1d0ef10964fac50ade948bbbaa09f952f4/9392210a60af2437fd6f8c9991021c1d0ef10964fac50ade948bbbaa09f952f4.bin", "namespace-d2b61ba3911148c6fc9cd19e89b9cff3a86077b213beb307ba0734daa186cc80/4a0340cd60e3c011169ec62e1e4a373376c6ce3c8e23e5b196ee77e71f914477/72896e723dc4d0a856a4f38c8c11f1a8685036ee241114e8658a4e12a960605f/9392210a60af2437fd6f8c9991021c1d0ef10964fac50ade948bbbaa09f952f4/9392210a60af2437fd6f8c9991021c1d0ef10964fac50ade948bbbaa09f952f4.bin"], "cache_after_gc": {}, "retry_at": 1791529641.7083814}
+2026-10-09T07:06:51.8028411Z {"sequence": 289, "kind": "phase", "unix_time": 1791529611.799222, "monotonic": 646.165194064, "seed": 199, "phase": "unchanged_30_second_backoff", "started_at": 1791529611.7992194, "deadline": 1791529641.7583814}
+2026-10-09T07:07:21.8038640Z {"sequence": 376, "kind": "phase", "unix_time": 1791529641.8034713, "monotonic": 676.169443414, "seed": 199, "phase": "real_lease_expiry_after_sigkill", "started_at": 1791529641.8034685, "deadline": 1791529643.8226502}
+2026-10-09T07:07:23.9564427Z {"sequence": 413, "kind": "phase", "unix_time": 1791529643.9547648, "monotonic": 678.32073666, "seed": 199, "phase": "sigkill_lease_reclaimed_ready", "status": {"consistency": "point_in_time", "default_effective_strategy": "local", "default_query_state": "available_with_per_query_checks", "default_strategy": "local", "dense_desired": 1, "dense_published": 1, "dense_reason": null, "dense_state": "ready", "diagnostic_sources": {"build": "BuildExplain on index response", "graph": "GraphExplain on query response", "lanes": "evidence_summary.retrieval.lanes or lane_receipts", "packing": "evidence_summary.packing", "selection": "evidence_summary.selection", "semantic": "evidence_summary.retrieval.semantic (dense lane receipt projection)", "source": "evidence_summary.source_freshness"}, "execution": {"async_admitted": 0, "async_in_flight": 0, "async_limit": 8, "completed": 12, "cpu_admitted": 0, "cpu_in_flight": 0, "cpu_limit": 4, "queue_limit": 32, "rejected": 0}, "execution_scope": "process_shared_not_project_local", "generation": {"evidence_epoch": 1, "incarnation": [98, 187, 210, 44, 198, 155, 227, 174, 7, 251, 60, 194, 136, 253, 242, 59], "index_epoch": 11, "semantic_epoch": 2}, "generation_scope": "observed_database_snapshot", "identity_validation": "checked_at_observation_boundary", "index_state": "available", "local_state": "available", "pin_scope": "owned_query_views_including_inflight_clones_not_request_count", "query_coverage": {"scope": "per_query_not_global", "state": "not_measured"}, "query_encoding": {"configured_opt_in": false, "network_authorized": false, "reason": "query_network_opt_in_required", "request_scope": "nonlocal_nonempty_only"}, "query_pins": 0, "resolution_freshness": {"basis_epoch": null, "complete": true, "completed_files": 0, "index_epoch": 11, "reason": null, "retry": null, "root_count": 0, "scope": "observed_resolution_invalidations", "status": "ready"}, "semantic_active_space": "4a0340cd60e3c011169ec62e1e4a373376c6ce3c8e23e5b196ee77e71f914477", "semantic_failed": 0, "semantic_pending": 0, "semantic_state": "ready", "service_state_scope": "process_observed_separately", "spec": "retrieval-capabilities-v2"}, "observed_document_posts": 5, "kill_time": 1791529641.799652, "lease_deadline": 1791529643.7726502, "document_posts_delta": 1, "crash_attempt_billing": "unknown; response had not been consumed", "outbox": {"outbox": [{"task_id": 1, "doc_key": "081b00733cb3e05dd1f895b4b7c07c652b895f2e89a8defc8eb1ca36402f102e", "doc_version": "c985adfd98df81c8be22eb994bc181e8049937e1e5127df7777ce4713a688f07", "input_digest": "0d2231fe16139874b5b678925568a0ead51def9b80822926fecfa761f3667f4d", "space_id": "4a0340cd60e3c011169ec62e1e4a373376c6ce3c8e23e5b196ee77e71f914477", "op": "embed", "state": "done", "attempt_count": 3, "lease_token": "8d9fbf8fe3e680eee09ac732ea64e23c", "lease_expires_at": 1791529645.8540127, "claim_owner": "post-index", "available_at": 1791529643.85313, "last_error": null, "created_at": "2026-10-09T07:06:51.705462933+00:00", "updated_at": "2026-10-09T07:07:23+00:00"}], "manifest": [{"doc_key": "081b00733cb3e05dd1f895b4b7c07c652b895f2e89a8defc8eb1ca36402f102e", "doc_version": "c985adfd98df81c8be22eb994bc181e8049937e1e5127df7777ce4713a688f07", "file_path": "keep.rs", "encoding_key": "ea75602918e001a45fd13ed10d2428661f42e95d2af75c1f7b1108ecd74cc4eb", "input_digest": "0d2231fe16139874b5b678925568a0ead51def9b80822926fecfa761f3667f4d", "space_id": "4a0340cd60e3c011169ec62e1e4a373376c6ce3c8e23e5b196ee77e71f914477", "artifact_ref": "cas.v1:d2b61ba3911148c6fc9cd19e89b9cff3a86077b213beb307ba0734daa186cc80:4a0340cd60e3c011169ec62e1e4a373376c6ce3c8e23e5b196ee77e71f914477:0d2231fe16139874b5b678925568a0ead51def9b80822926fecfa761f3667f4d:9392210a60af2437fd6f8c9991021c1d0ef10964fac50ade948bbbaa09f952f4:c3e45a3480d5b57ee4201f473659669f83ccec77851a5243a927aafcd139f2f3", "published_at": "2026-10-09T07:07:23+00:00", "published_incarnation": "62bbd22cc69be3ae07fb3cc288fdf23b"}]}}
+2026-10-09T07:07:24.0936311Z {"sequence": 446, "kind": "phase", "unix_time": 1791529644.0923848, "monotonic": 678.458356705, "seed": 199, "phase": "final_restart_cache_reuse_and_read_only_status", "status": {"consistency": "point_in_time", "default_effective_strategy": "local", "default_query_state": "available_with_per_query_checks", "default_strategy": "local", "dense_desired": 1, "dense_published": 1, "dense_reason": null, "dense_state": "ready", "diagnostic_sources": {"build": "BuildExplain on index response", "graph": "GraphExplain on query response", "lanes": "evidence_summary.retrieval.lanes or lane_receipts", "packing": "evidence_summary.packing", "selection": "evidence_summary.selection", "semantic": "evidence_summary.retrieval.semantic (dense lane receipt projection)", "source": "evidence_summary.source_freshness"}, "execution": {"async_admitted": 0, "async_in_flight": 0, "async_limit": 8, "completed": 12, "cpu_admitted": 0, "cpu_in_flight": 0, "cpu_limit": 4, "queue_limit": 32, "rejected": 0}, "execution_scope": "process_shared_not_project_local", "generation": {"evidence_epoch": 1, "incarnation": [98, 187, 210, 44, 198, 155, 227, 174, 7, 251, 60, 194, 136, 253, 242, 59], "index_epoch": 11, "semantic_epoch": 2}, "generation_scope": "observed_database_snapshot", "identity_validation": "checked_at_observation_boundary", "index_state": "available", "local_state": "available", "pin_scope": "owned_query_views_including_inflight_clones_not_request_count", "query_coverage": {"scope": "per_query_not_global", "state": "not_measured"}, "query_encoding": {"configured_opt_in": false, "network_authorized": false, "reason": "query_network_opt_in_required", "request_scope": "nonlocal_nonempty_only"}, "query_pins": 0, "resolution_freshness": {"basis_epoch": null, "complete": true, "completed_files": 0, "index_epoch": 11, "reason": null, "retry": null, "root_count": 0, "scope": "observed_resolution_invalidations", "status": "ready"}, "semantic_active_space": "4a0340cd60e3c011169ec62e1e4a373376c6ce3c8e23e5b196ee77e71f914477", "semantic_failed": 0, "semantic_pending": 0, "semantic_state": "ready", "service_state_scope": "process_observed_separately", "spec": "retrieval-capabilities-v2"}, "observed_document_posts": 5, "document_posts_delta": 0, "cache": {"namespace-d2b61ba3911148c6fc9cd19e89b9cff3a86077b213beb307ba0734daa186cc80/4a0340cd60e3c011169ec62e1e4a373376c6ce3c8e23e5b196ee77e71f914477/0d2231fe16139874b5b678925568a0ead51def9b80822926fecfa761f3667f4d/9392210a60af2437fd6f8c9991021c1d0ef10964fac50ade948bbbaa09f952f4/9392210a60af2437fd6f8c9991021c1d0ef10964fac50ade948bbbaa09f952f4.bin": {"sha256": "434b26042aff3fb844a4c4c6be0d81a079b0ce84cfb8190679024404e5dc4822", "bytes": 8}}}
+2026-10-09T07:07:24.4948451Z {"sequence": 477, "kind": "phase", "unix_time": 1791529644.4932857, "monotonic": 678.859257517, "seed": 211, "phase": "initial_ready", "status": {"consistency": "point_in_time", "default_effective_strategy": "local", "default_query_state": "available_with_per_query_checks", "default_strategy": "local", "dense_desired": 2, "dense_published": 2, "dense_reason": null, "dense_state": "ready", "diagnostic_sources": {"build": "BuildExplain on index response", "graph": "GraphExplain on query response", "lanes": "evidence_summary.retrieval.lanes or lane_receipts", "packing": "evidence_summary.packing", "selection": "evidence_summary.selection", "semantic": "evidence_summary.retrieval.semantic (dense lane receipt projection)", "source": "evidence_summary.source_freshness"}, "execution": {"async_admitted": 0, "async_in_flight": 0, "async_limit": 8, "completed": 0, "cpu_admitted": 0, "cpu_in_flight": 0, "cpu_limit": 4, "queue_limit": 32, "rejected": 0}, "execution_scope": "process_shared_not_project_local", "generation": {"evidence_epoch": 0, "incarnation": [2, 163, 161, 13, 54, 209, 130, 86, 148, 47, 251, 164, 216, 8, 11, 40], "index_epoch": 6, "semantic_epoch": 3}, "generation_scope": "observed_database_snapshot", "identity_validation": "checked_at_observation_boundary", "index_state": "available", "local_state": "available", "pin_scope": "owned_query_views_including_inflight_clones_not_request_count", "query_coverage": {"scope": "per_query_not_global", "state": "not_measured"}, "query_encoding": {"configured_opt_in": false, "network_authorized": false, "reason": "query_network_opt_in_required", "request_scope": "nonlocal_nonempty_only"}, "query_pins": 0, "resolution_freshness": {"basis_epoch": null, "complete": true, "completed_files": 0, "index_epoch": 6, "reason": null, "retry": null, "root_count": 0, "scope": "observed_resolution_invalidations", "status": "ready"}, "semantic_active_space": "412a7cd90bedcbd65a5921b04ba43f51535c9f99edaa8e4e47f2d229002515db", "semantic_failed": 0, "semantic_pending": 0, "semantic_state": "ready", "service_state_scope": "process_observed_separately", "spec": "retrieval-capabilities-v2"}, "observed_document_posts": 2, "cache": {"namespace-6492eb82f2bcb5bccd1d5190366c27674575b8353fdb85219a4fe144ec0a22f1/412a7cd90bedcbd65a5921b04ba43f51535c9f99edaa8e4e47f2d229002515db/77044f1c187be6d151f89ca8183575512dee1e342fd34f801b25c953262131f9/6c81f6da2b29439e4203ecc19a3606edbd8421bce60f87ffc5902c77f1abf177/6c81f6da2b29439e4203ecc19a3606edbd8421bce60f87ffc5902c77f1abf177.bin": {"sha256": "434b26042aff3fb844a4c4c6be0d81a079b0ce84cfb8190679024404e5dc4822", "bytes": 8}, "namespace-6492eb82f2bcb5bccd1d5190366c27674575b8353fdb85219a4fe144ec0a22f1/412a7cd90bedcbd65a5921b04ba43f51535c9f99edaa8e4e47f2d229002515db/f0235d3867a63981ac5b6963fa532c0231c38997a045ee679ff4b0de9d5977f0/6c81f6da2b29439e4203ecc19a3606edbd8421bce60f87ffc5902c77f1abf177/6c81f6da2b29439e4203ecc19a3606edbd8421bce60f87ffc5902c77f1abf177.bin": {"sha256": "434b26042aff3fb844a4c4c6be0d81a079b0ce84cfb8190679024404e5dc4822", "bytes": 8}}}
+2026-10-09T07:07:24.5848408Z {"sequence": 492, "kind": "phase", "unix_time": 1791529644.5837247, "monotonic": 678.949696834, "seed": 211, "phase": "clean_restart_zero_document_calls", "status": {"consistency": "point_in_time", "default_effective_strategy": "local", "default_query_state": "available_with_per_query_checks", "default_strategy": "local", "dense_desired": 2, "dense_published": 2, "dense_reason": null, "dense_state": "ready", "diagnostic_sources": {"build": "BuildExplain on index response", "graph": "GraphExplain on query response", "lanes": "evidence_summary.retrieval.lanes or lane_receipts", "packing": "evidence_summary.packing", "selection": "evidence_summary.selection", "semantic": "evidence_summary.retrieval.semantic (dense lane receipt projection)", "source": "evidence_summary.source_freshness"}, "execution": {"async_admitted": 0, "async_in_flight": 0, "async_limit": 8, "completed": 0, "cpu_admitted": 0, "cpu_in_flight": 0, "cpu_limit": 4, "queue_limit": 32, "rejected": 0}, "execution_scope": "process_shared_not_project_local", "generation": {"evidence_epoch": 0, "incarnation": [2, 163, 161, 13, 54, 209, 130, 86, 148, 47, 251, 164, 216, 8, 11, 40], "index_epoch": 6, "semantic_epoch": 3}, "generation_scope": "observed_database_snapshot", "identity_validation": "checked_at_observation_boundary", "index_state": "available", "local_state": "available", "pin_scope": "owned_query_views_including_inflight_clones_not_request_count", "query_coverage": {"scope": "per_query_not_global", "state": "not_measured"}, "query_encoding": {"configured_opt_in": false, "network_authorized": false, "reason": "query_network_opt_in_required", "request_scope": "nonlocal_nonempty_only"}, "query_pins": 0, "resolution_freshness": {"basis_epoch": null, "complete": true, "completed_files": 0, "index_epoch": 6, "reason": null, "retry": null, "root_count": 0, "scope": "observed_resolution_invalidations", "status": "ready"}, "semantic_active_space": "412a7cd90bedcbd65a5921b04ba43f51535c9f99edaa8e4e47f2d229002515db", "semantic_failed": 0, "semantic_pending": 0, "semantic_state": "ready", "service_state_scope": "process_observed_separately", "spec": "retrieval-capabilities-v2"}, "observed_document_posts": 2, "document_posts_delta": 0}
+2026-10-09T07:07:24.5856634Z {"sequence": 493, "kind": "phase", "unix_time": 1791529644.5838408, "monotonic": 678.949812811, "seed": 211, "phase": "age_real_cache", "started_at": 1791529644.5838382, "deadline": 1791529645.783837}
+2026-10-09T07:07:26.0119509Z {"sequence": 512, "kind": "phase", "unix_time": 1791529646.0101852, "monotonic": 680.376157359, "seed": 211, "phase": "rebuild_delete_http500_pending_and_automatic_gc", "status": {"consistency": "point_in_time", "default_effective_strategy": "local", "default_query_state": "available_with_per_query_checks", "default_strategy": "local", "dense_desired": 1, "dense_published": 0, "dense_reason": "semantic_coverage_uncovered", "dense_state": "partial", "diagnostic_sources": {"build": "BuildExplain on index response", "graph": "GraphExplain on query response", "lanes": "evidence_summary.retrieval.lanes or lane_receipts", "packing": "evidence_summary.packing", "selection": "evidence_summary.selection", "semantic": "evidence_summary.retrieval.semantic (dense lane receipt projection)", "source": "evidence_summary.source_freshness"}, "execution": {"async_admitted": 0, "async_in_flight": 0, "async_limit": 8, "completed": 12, "cpu_admitted": 0, "cpu_in_flight": 0, "cpu_limit": 4, "queue_limit": 32, "rejected": 0}, "execution_scope": "process_shared_not_project_local", "generation": {"evidence_epoch": 1, "incarnation": [86, 150, 181, 47, 11, 221, 202, 123, 1, 14, 135, 47, 206, 187, 189, 81], "index_epoch": 11, "semantic_epoch": 1}, "generation_scope": "observed_database_snapshot", "identity_validation": "checked_at_observation_boundary", "index_state": "available", "local_state": "available", "pin_scope": "owned_query_views_including_inflight_clones_not_request_count", "query_coverage": {"scope": "per_query_not_global", "state": "not_measured"}, "query_encoding": {"configured_opt_in": false, "network_authorized": false, "reason": "query_network_opt_in_required", "request_scope": "nonlocal_nonempty_only"}, "query_pins": 0, "resolution_freshness": {"basis_epoch": null, "complete": true, "completed_files": 0, "index_epoch": 11, "reason": null, "retry": null, "root_count": 0, "scope": "observed_resolution_invalidations", "status": "ready"}, "semantic_active_space": "412a7cd90bedcbd65a5921b04ba43f51535c9f99edaa8e4e47f2d229002515db", "semantic_failed": 0, "semantic_pending": 1, "semantic_state": "backfilling", "service_state_scope": "process_observed_separately", "spec": "retrieval-capabilities-v2"}, "observed_document_posts": 3, "outbox": [{"task_id": 1, "doc_key": "517c8b49c2f6906e42bb489084db1ac2fa2db51acb8382a4335152d361b513be", "doc_version": "d6a852d1fcce5946969bcd0f552bc5f04bd6c4bcfba5e4c76e1e133e3fdcc58d", "input_digest": "f632ee925c200c3e2dc2854134f06369e2f0694dafa796cead0f81468d7e68a7", "space_id": "412a7cd90bedcbd65a5921b04ba43f51535c9f99edaa8e4e47f2d229002515db", "op": "embed", "state": "pending", "attempt_count": 1, "lease_token": null, "lease_expires_at": null, "claim_owner": null, "available_at": 1791529675.9201407, "last_error": "provider server error", "created_at": "2026-10-09T07:07:25.917195559+00:00", "updated_at": "2026-10-09T07:07:25.920140743+00:00"}], "original_cache_removed": ["namespace-6492eb82f2bcb5bccd1d5190366c27674575b8353fdb85219a4fe144ec0a22f1/412a7cd90bedcbd65a5921b04ba43f51535c9f99edaa8e4e47f2d229002515db/77044f1c187be6d151f89ca8183575512dee1e342fd34f801b25c953262131f9/6c81f6da2b29439e4203ecc19a3606edbd8421bce60f87ffc5902c77f1abf177/6c81f6da2b29439e4203ecc19a3606edbd8421bce60f87ffc5902c77f1abf177.bin", "namespace-6492eb82f2bcb5bccd1d5190366c27674575b8353fdb85219a4fe144ec0a22f1/412a7cd90bedcbd65a5921b04ba43f51535c9f99edaa8e4e47f2d229002515db/f0235d3867a63981ac5b6963fa532c0231c38997a045ee679ff4b0de9d5977f0/6c81f6da2b29439e4203ecc19a3606edbd8421bce60f87ffc5902c77f1abf177/6c81f6da2b29439e4203ecc19a3606edbd8421bce60f87ffc5902c77f1abf177.bin"], "cache_after_gc": {}, "retry_at": 1791529675.9201407}
+2026-10-09T07:07:26.0137034Z {"sequence": 513, "kind": "phase", "unix_time": 1791529646.0103412, "monotonic": 680.376313091, "seed": 211, "phase": "unchanged_30_second_backoff", "started_at": 1791529646.0103362, "deadline": 1791529675.9701407}
+2026-10-09T07:07:56.0147231Z {"sequence": 600, "kind": "phase", "unix_time": 1791529676.0143187, "monotonic": 710.380290662, "seed": 211, "phase": "real_lease_expiry_after_sigkill", "started_at": 1791529676.0143144, "deadline": 1791529678.0334728}
+2026-10-09T07:07:58.1654086Z {"sequence": 637, "kind": "phase", "unix_time": 1791529678.1634808, "monotonic": 712.529452845, "seed": 211, "phase": "sigkill_lease_reclaimed_ready", "status": {"consistency": "point_in_time", "default_effective_strategy": "local", "default_query_state": "available_with_per_query_checks", "default_strategy": "local", "dense_desired": 1, "dense_published": 1, "dense_reason": null, "dense_state": "ready", "diagnostic_sources": {"build": "BuildExplain on index response", "graph": "GraphExplain on query response", "lanes": "evidence_summary.retrieval.lanes or lane_receipts", "packing": "evidence_summary.packing", "selection": "evidence_summary.selection", "semantic": "evidence_summary.retrieval.semantic (dense lane receipt projection)", "source": "evidence_summary.source_freshness"}, "execution": {"async_admitted": 0, "async_in_flight": 0, "async_limit": 8, "completed": 12, "cpu_admitted": 0, "cpu_in_flight": 0, "cpu_limit": 4, "queue_limit": 32, "rejected": 0}, "execution_scope": "process_shared_not_project_local", "generation": {"evidence_epoch": 1, "incarnation": [86, 150, 181, 47, 11, 221, 202, 123, 1, 14, 135, 47, 206, 187, 189, 81], "index_epoch": 11, "semantic_epoch": 2}, "generation_scope": "observed_database_snapshot", "identity_validation": "checked_at_observation_boundary", "index_state": "available", "local_state": "available", "pin_scope": "owned_query_views_including_inflight_clones_not_request_count", "query_coverage": {"scope": "per_query_not_global", "state": "not_measured"}, "query_encoding": {"configured_opt_in": false, "network_authorized": false, "reason": "query_network_opt_in_required", "request_scope": "nonlocal_nonempty_only"}, "query_pins": 0, "resolution_freshness": {"basis_epoch": null, "complete": true, "completed_files": 0, "index_epoch": 11, "reason": null, "retry": null, "root_count": 0, "scope": "observed_resolution_invalidations", "status": "ready"}, "semantic_active_space": "412a7cd90bedcbd65a5921b04ba43f51535c9f99edaa8e4e47f2d229002515db", "semantic_failed": 0, "semantic_pending": 0, "semantic_state": "ready", "service_state_scope": "process_observed_separately", "spec": "retrieval-capabilities-v2"}, "observed_document_posts": 5, "kill_time": 1791529676.0105023, "lease_deadline": 1791529677.9834728, "document_posts_delta": 1, "crash_attempt_billing": "unknown; response had not been consumed", "outbox": {"outbox": [{"task_id": 1, "doc_key": "517c8b49c2f6906e42bb489084db1ac2fa2db51acb8382a4335152d361b513be", "doc_version": "d6a852d1fcce5946969bcd0f552bc5f04bd6c4bcfba5e4c76e1e133e3fdcc58d", "input_digest": "f632ee925c200c3e2dc2854134f06369e2f0694dafa796cead0f81468d7e68a7", "space_id": "412a7cd90bedcbd65a5921b04ba43f51535c9f99edaa8e4e47f2d229002515db", "op": "embed", "state": "done", "attempt_count": 3, "lease_token": "6016807871c05041e96e0c41e339859e", "lease_expires_at": 1791529680.0654893, "claim_owner": "post-index", "available_at": 1791529678.0645788, "last_error": null, "created_at": "2026-10-09T07:07:25.917195559+00:00", "updated_at": "2026-10-09T07:07:58+00:00"}], "manifest": [{"doc_key": "517c8b49c2f6906e42bb489084db1ac2fa2db51acb8382a4335152d361b513be", "doc_version": "d6a852d1fcce5946969bcd0f552bc5f04bd6c4bcfba5e4c76e1e133e3fdcc58d", "file_path": "keep.rs", "encoding_key": "6e8b3023315cc150ddc6b0c9b161794f69d756b73d1ec077ea44ae55b6a888f0", "input_digest": "f632ee925c200c3e2dc2854134f06369e2f0694dafa796cead0f81468d7e68a7", "space_id": "412a7cd90bedcbd65a5921b04ba43f51535c9f99edaa8e4e47f2d229002515db", "artifact_ref": "cas.v1:6492eb82f2bcb5bccd1d5190366c27674575b8353fdb85219a4fe144ec0a22f1:412a7cd90bedcbd65a5921b04ba43f51535c9f99edaa8e4e47f2d229002515db:f632ee925c200c3e2dc2854134f06369e2f0694dafa796cead0f81468d7e68a7:6c81f6da2b29439e4203ecc19a3606edbd8421bce60f87ffc5902c77f1abf177:c3e45a3480d5b57ee4201f473659669f83ccec77851a5243a927aafcd139f2f3", "published_at": "2026-10-09T07:07:58+00:00", "published_incarnation": "5696b52f0bddca7b010e872fcebbbd51"}]}}
+2026-10-09T07:07:58.2982541Z {"sequence": 670, "kind": "phase", "unix_time": 1791529678.2969656, "monotonic": 712.662937721, "seed": 211, "phase": "final_restart_cache_reuse_and_read_only_status", "status": {"consistency": "point_in_time", "default_effective_strategy": "local", "default_query_state": "available_with_per_query_checks", "default_strategy": "local", "dense_desired": 1, "dense_published": 1, "dense_reason": null, "dense_state": "ready", "diagnostic_sources": {"build": "BuildExplain on index response", "graph": "GraphExplain on query response", "lanes": "evidence_summary.retrieval.lanes or lane_receipts", "packing": "evidence_summary.packing", "selection": "evidence_summary.selection", "semantic": "evidence_summary.retrieval.semantic (dense lane receipt projection)", "source": "evidence_summary.source_freshness"}, "execution": {"async_admitted": 0, "async_in_flight": 0, "async_limit": 8, "completed": 12, "cpu_admitted": 0, "cpu_in_flight": 0, "cpu_limit": 4, "queue_limit": 32, "rejected": 0}, "execution_scope": "process_shared_not_project_local", "generation": {"evidence_epoch": 1, "incarnation": [86, 150, 181, 47, 11, 221, 202, 123, 1, 14, 135, 47, 206, 187, 189, 81], "index_epoch": 11, "semantic_epoch": 2}, "generation_scope": "observed_database_snapshot", "identity_validation": "checked_at_observation_boundary", "index_state": "available", "local_state": "available", "pin_scope": "owned_query_views_including_inflight_clones_not_request_count", "query_coverage": {"scope": "per_query_not_global", "state": "not_measured"}, "query_encoding": {"configured_opt_in": false, "network_authorized": false, "reason": "query_network_opt_in_required", "request_scope": "nonlocal_nonempty_only"}, "query_pins": 0, "resolution_freshness": {"basis_epoch": null, "complete": true, "completed_files": 0, "index_epoch": 11, "reason": null, "retry": null, "root_count": 0, "scope": "observed_resolution_invalidations", "status": "ready"}, "semantic_active_space": "412a7cd90bedcbd65a5921b04ba43f51535c9f99edaa8e4e47f2d229002515db", "semantic_failed": 0, "semantic_pending": 0, "semantic_state": "ready", "service_state_scope": "process_observed_separately", "spec": "retrieval-capabilities-v2"}, "observed_document_posts": 5, "document_posts_delta": 0, "cache": {"namespace-6492eb82f2bcb5bccd1d5190366c27674575b8353fdb85219a4fe144ec0a22f1/412a7cd90bedcbd65a5921b04ba43f51535c9f99edaa8e4e47f2d229002515db/f632ee925c200c3e2dc2854134f06369e2f0694dafa796cead0f81468d7e68a7/6c81f6da2b29439e4203ecc19a3606edbd8421bce60f87ffc5902c77f1abf177/6c81f6da2b29439e4203ecc19a3606edbd8421bce60f87ffc5902c77f1abf177.bin": {"sha256": "434b26042aff3fb844a4c4c6be0d81a079b0ce84cfb8190679024404e5dc4822", "bytes": 8}}}
+2026-10-09T07:07:58.6268355Z {"passed": true, "output": "/home/runner/work/_temp/p7-closeout/fault-lifecycle", "error": null}
+2026-10-09T07:07:58.6419119Z ##[group]Run set -o pipefail
+2026-10-09T07:07:58.6419680Z [36;1mset -o pipefail[0m
+2026-10-09T07:07:58.6420163Z [36;1mcargo test -p cc-eval --locked --lib \[0m
+2026-10-09T07:07:58.6421593Z [36;1m  self_usage_has_direct_identity_and_monotonic_cpu_without_procfs_lookup -- --nocapture \[0m
+2026-10-09T07:07:58.6422560Z [36;1m  2>&1 | tee "$RUNNER_TEMP/p7-closeout/self-resources.log"[0m
+2026-10-09T07:07:58.6423289Z [36;1mcargo test -p cc-eval --features semantic --locked \[0m
+2026-10-09T07:07:58.6424182Z [36;1m  --test p7_worker_contention --test semantic_lifecycle --test p7_strategy_ablation \[0m
+2026-10-09T07:07:58.6425165Z [36;1m  -- --nocapture 2>&1 | tee "$RUNNER_TEMP/p7-closeout/worker-strategy.log"[0m
+2026-10-09T07:07:58.6486904Z shell: /usr/bin/bash -e {0}
+2026-10-09T07:07:58.6487149Z env:
+2026-10-09T07:07:58.6487344Z   CARGO_TERM_COLOR: never
+2026-10-09T07:07:58.6487599Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T07:07:58.6487854Z   CARGO_INCREMENTAL: 0
+2026-10-09T07:07:58.6488124Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-10-09T07:07:58.6488365Z   CARGO_PROFILE_TEST_DEBUG: 0
+2026-10-09T07:07:58.6488599Z   CARGO_BUILD_JOBS: 2
+2026-10-09T07:07:58.6488813Z   RUSTFLAGS: -D warnings
+2026-10-09T07:07:58.6489045Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:07:58.6489363Z   CARGO_TARGET_DIR: /home/runner/work/_temp/p7-closeout-target
+2026-10-09T07:07:58.6489905Z   CODECORTEX_WORKER_CONTENTION_EVIDENCE_DIR: /home/runner/work/_temp/p7-closeout/worker-contention
+2026-10-09T07:07:58.6490555Z ##[endgroup]
+2026-10-09T07:07:58.7411989Z  Downloading crates ...
+2026-10-09T07:07:58.9888552Z   Downloaded digest v0.10.7
+2026-10-09T07:07:58.9915548Z   Downloaded cpufeatures v0.2.17
+2026-10-09T07:07:58.9928343Z   Downloaded crypto-common v0.1.7
+2026-10-09T07:07:58.9938310Z   Downloaded version_check v0.9.5
+2026-10-09T07:07:58.9952412Z   Downloaded generic-array v0.14.7
+2026-10-09T07:07:58.9967125Z   Downloaded sha2 v0.10.9
+2026-10-09T07:07:58.9993740Z   Downloaded block-buffer v0.10.4
+2026-10-09T07:07:59.0084907Z   Downloaded typenum v1.20.1
+2026-10-09T07:07:59.0450927Z    Compiling libc v0.2.183
+2026-10-09T07:07:59.0495689Z    Compiling futures-channel v0.3.32
+2026-10-09T07:07:59.1746941Z    Compiling version_check v0.9.5
+2026-10-09T07:07:59.3232507Z    Compiling futures-util v0.3.32
+2026-10-09T07:08:00.0073160Z    Compiling parking_lot_core v0.9.12
+2026-10-09T07:08:00.1125072Z    Compiling parking_lot v0.12.5
+2026-10-09T07:08:00.2966212Z    Compiling errno v0.3.14
+2026-10-09T07:08:00.3432282Z    Compiling mio v1.2.0
+2026-10-09T07:08:00.5852279Z    Compiling getrandom v0.4.2
+2026-10-09T07:08:00.6640705Z    Compiling signal-hook-registry v1.4.8
+2026-10-09T07:08:00.7746434Z    Compiling socket2 v0.6.3
+2026-10-09T07:08:00.9221291Z    Compiling rand v0.10.3
+2026-10-09T07:08:01.0277906Z    Compiling tokio v1.50.0
+2026-10-09T07:08:01.3004801Z    Compiling scheduled-thread-pool v0.2.7
+2026-10-09T07:08:01.4034394Z    Compiling generic-array v0.14.7
+2026-10-09T07:08:01.4505916Z    Compiling cfg_aliases v0.2.1
+2026-10-09T07:08:01.4696586Z    Compiling rusqlite v0.40.1
+2026-10-09T07:08:02.3155174Z    Compiling nix v0.31.2
+2026-10-09T07:08:02.4615776Z    Compiling cc-model v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-model)
+2026-10-09T07:08:04.5786777Z    Compiling r2d2 v0.8.10
+2026-10-09T07:08:04.6607537Z    Compiling uuid v1.23.0
+2026-10-09T07:08:04.8344199Z    Compiling typenum v1.20.1
+2026-10-09T07:08:05.5393746Z    Compiling r2d2_sqlite v0.35.0
+2026-10-09T07:08:05.5933978Z    Compiling futures-executor v0.3.32
+2026-10-09T07:08:05.6914781Z    Compiling futures v0.3.32
+2026-10-09T07:08:06.6781116Z    Compiling cc-db v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-db)
+2026-10-09T07:08:07.1441496Z    Compiling inotify-sys v0.1.8
+2026-10-09T07:08:07.1750010Z    Compiling rmcp v2.2.0
+2026-10-09T07:08:07.2524517Z    Compiling dirs-sys v0.4.1
+2026-10-09T07:08:07.3569395Z    Compiling inotify v0.11.5
+2026-10-09T07:08:07.5574244Z    Compiling cc-parsers v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-parsers)
+2026-10-09T07:08:09.5333530Z    Compiling process-wrap v9.1.0
+2026-10-09T07:08:09.8194804Z    Compiling crypto-common v0.1.7
+2026-10-09T07:08:09.8554098Z    Compiling block-buffer v0.10.4
+2026-10-09T07:08:09.8992205Z    Compiling tokio-stream v0.1.18
+2026-10-09T07:08:10.1181077Z    Compiling tokio-util v0.7.18
+2026-10-09T07:08:10.6081624Z    Compiling notify-types v2.1.0
+2026-10-09T07:08:11.9302893Z    Compiling tracing-subscriber v0.3.23
+2026-10-09T07:08:13.0901998Z    Compiling notify v8.2.0
+2026-10-09T07:08:13.5814161Z    Compiling digest v0.10.7
+2026-10-09T07:08:13.6644932Z    Compiling cc-index v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-index)
+2026-10-09T07:08:15.8624874Z    Compiling cc-search v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-search)
+2026-10-09T07:08:18.5622881Z    Compiling dirs v5.0.1
+2026-10-09T07:08:18.5932349Z    Compiling cpufeatures v0.2.17
+2026-10-09T07:08:18.6121182Z    Compiling sha2 v0.10.9
+2026-10-09T07:08:18.7902508Z    Compiling tempfile v3.27.0
+2026-10-09T07:08:18.9874481Z    Compiling cc-server v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-server)
+2026-10-09T07:08:24.0577991Z    Compiling cc-eval v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-eval)
+2026-10-09T07:08:30.2775174Z     Finished `test` profile [unoptimized] target(s) in 31.61s
+2026-10-09T07:08:30.2901264Z      Running unittests src/lib.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/cc_eval-2d0767e51ab47614)
+2026-10-09T07:08:30.2926456Z 
+2026-10-09T07:08:30.2926744Z running 1 test
+2026-10-09T07:08:30.3233101Z test benchmark::sampler::process_probe_tests::self_usage_has_direct_identity_and_monotonic_cpu_without_procfs_lookup ... ok
+2026-10-09T07:08:30.3234137Z 
+2026-10-09T07:08:30.3234652Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 64 filtered out; finished in 0.03s
+2026-10-09T07:08:30.3235382Z 
+2026-10-09T07:08:30.4760031Z    Compiling cc-semantic v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-semantic)
+2026-10-09T07:08:31.1631633Z    Compiling cc-server v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-server)
+2026-10-09T07:08:34.3292349Z    Compiling cc-eval v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-eval)
+2026-10-09T07:08:44.7268500Z     Finished `test` profile [unoptimized] target(s) in 14.39s
+2026-10-09T07:08:44.7412089Z      Running tests/p7_strategy_ablation.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/p7_strategy_ablation-59241313312391fa)
+2026-10-09T07:08:44.7429084Z 
+2026-10-09T07:08:44.7429471Z running 8 tests
+2026-10-09T07:08:44.7436422Z test actual_stdio_local_and_auto_have_equal_effective_budget_and_verified_source ... ignored, requires explicit current product path and SHA256; mechanism smoke, no quality certification
+2026-10-09T07:08:44.7438539Z test configuration_rejects_implicit_network_remote_endpoint_and_fake_dense_name ... ok
+2026-10-09T07:08:44.7451853Z test paired_effects_use_family_units_and_do_not_label_fake_scores_as_quality ... ok
+2026-10-09T07:08:44.7453752Z test readiness_requires_checked_space_and_real_dense_coverage_not_file_count ... ok
+2026-10-09T07:08:44.7467967Z test public_budget_checks_policy_final_bytes_and_numeric_scope_without_rewriting_partial ... ok
+2026-10-09T07:08:44.7471665Z test equal_top_k_does_not_hide_different_output_cap_or_hard_scope ... ok
+2026-10-09T07:08:44.7474916Z test strategy_rejection_keeps_original_public_response_and_replay_cannot_self_authorize ... ok
+2026-10-09T07:08:44.7564001Z test pending_dense_readiness_is_bounded_and_close_still_releases_client ... ok
+2026-10-09T07:08:44.7564574Z 
+2026-10-09T07:08:44.7564990Z test result: ok. 7 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.01s
+2026-10-09T07:08:44.7565621Z 
+2026-10-09T07:08:44.7568118Z      Running tests/p7_worker_contention.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/p7_worker_contention-37ece17b77e4f8ce)
+2026-10-09T07:08:44.7588568Z 
+2026-10-09T07:08:44.7588755Z running 1 test
+2026-10-09T07:08:50.3503613Z test real_slow_backfill_preserves_local_progress_and_records_every_request ... ok
+2026-10-09T07:08:50.3504541Z 
+2026-10-09T07:08:50.3522067Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.59s
+2026-10-09T07:08:50.3522804Z 
+2026-10-09T07:08:50.3537055Z      Running tests/semantic_lifecycle.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/semantic_lifecycle-e5cb99574c0cfbc6)
+2026-10-09T07:08:50.3557662Z 
+2026-10-09T07:08:50.3557816Z running 2 tests
+2026-10-09T07:08:51.0412344Z test partial_backfill_allows_real_local_query_mutation_delete_and_cancel ... ok
+2026-10-09T07:08:51.0897100Z test partial_backfill_allows_model_switch_and_new_space_progress ... ok
+2026-10-09T07:08:51.0920844Z 
+2026-10-09T07:08:51.0921430Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.73s
+2026-10-09T07:08:51.0921818Z 
+2026-10-09T07:08:51.1016741Z ##[group]Run python3 - <<'PY'
+2026-10-09T07:08:51.1017075Z [36;1mpython3 - <<'PY'[0m
+2026-10-09T07:08:51.1017325Z [36;1mimport json, os, pathlib, sys[0m
+2026-10-09T07:08:51.1017626Z [36;1msys.path.insert(0, 'scripts')[0m
+2026-10-09T07:08:51.1017974Z [36;1mfrom p7_build_identity import json_bytes, source_snapshot[0m
+2026-10-09T07:08:51.1018417Z [36;1mout = pathlib.Path(os.environ['RUNNER_TEMP']) / 'p7-closeout'[0m
+2026-10-09T07:08:51.1018815Z [36;1mafter = source_snapshot(pathlib.Path.cwd())[0m
+2026-10-09T07:08:51.1019207Z [36;1m(out / 'source-after.json').write_bytes(json_bytes(after))[0m
+2026-10-09T07:08:51.1019653Z [36;1massert json.loads((out / 'source-before.json').read_text()) == after[0m
+2026-10-09T07:08:51.1020017Z [36;1mPY[0m
+2026-10-09T07:08:51.1079799Z shell: /usr/bin/bash -e {0}
+2026-10-09T07:08:51.1080040Z env:
+2026-10-09T07:08:51.1080229Z   CARGO_TERM_COLOR: never
+2026-10-09T07:08:51.1080746Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T07:08:51.1081021Z   CARGO_INCREMENTAL: 0
+2026-10-09T07:08:51.1081235Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-10-09T07:08:51.1081461Z   CARGO_PROFILE_TEST_DEBUG: 0
+2026-10-09T07:08:51.1081685Z   CARGO_BUILD_JOBS: 2
+2026-10-09T07:08:51.1081888Z   RUSTFLAGS: -D warnings
+2026-10-09T07:08:51.1082119Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:08:51.1082432Z   CARGO_TARGET_DIR: /home/runner/work/_temp/p7-closeout-target
+2026-10-09T07:08:51.1082756Z ##[endgroup]
+2026-10-09T07:08:51.4118153Z ##[group]Run actions/upload-artifact@v4
+2026-10-09T07:08:51.4118677Z with:
+2026-10-09T07:08:51.4119149Z   name: p7-closeout-9f7b16f0758eb79f306cf44605b84550f02de441
+2026-10-09T07:08:51.4119791Z   path: /home/runner/work/_temp/p7-closeout
+2026-10-09T07:08:51.4120576Z   include-hidden-files: true
+2026-10-09T07:08:51.4121041Z   if-no-files-found: error
+2026-10-09T07:08:51.4121473Z   compression-level: 6
+2026-10-09T07:08:51.4121875Z   overwrite: false
+2026-10-09T07:08:51.4122232Z env:
+2026-10-09T07:08:51.4122569Z   CARGO_TERM_COLOR: never
+2026-10-09T07:08:51.4123014Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T07:08:51.4123462Z   CARGO_INCREMENTAL: 0
+2026-10-09T07:08:51.4123849Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-10-09T07:08:51.4124298Z   CARGO_PROFILE_TEST_DEBUG: 0
+2026-10-09T07:08:51.4124701Z   CARGO_BUILD_JOBS: 2
+2026-10-09T07:08:51.4125067Z   RUSTFLAGS: -D warnings
+2026-10-09T07:08:51.4125467Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T07:08:51.4126058Z   CARGO_TARGET_DIR: /home/runner/work/_temp/p7-closeout-target
+2026-10-09T07:08:51.4126652Z ##[endgroup]
+2026-10-09T07:08:51.5791644Z (node:11165) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-09T07:08:51.5792508Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-09T07:08:51.6051979Z With the provided path, there will be 90 files uploaded
+2026-10-09T07:08:51.6056967Z Artifact name is valid!
+2026-10-09T07:08:51.6057572Z Root directory input is valid!
+2026-10-09T07:08:51.8284524Z Beginning upload of artifact content to blob storage
+2026-10-09T07:08:52.7402818Z (node:11165) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-09T07:08:53.0079998Z Uploaded bytes 8388608
+2026-10-09T07:08:54.0406009Z Uploaded bytes 16777216
+2026-10-09T07:08:54.2706822Z Uploaded bytes 20319656
+2026-10-09T07:08:54.2906025Z Finished uploading artifact content to blob storage!
+2026-10-09T07:08:54.2909537Z SHA256 digest of uploaded artifact zip is b7f7437b71491d8ab3aa83fa6d2688d6910aacc724df3c69e7ab7e5d56590606
+2026-10-09T07:08:54.2911930Z Finalizing artifact upload
+2026-10-09T07:08:54.5428078Z Artifact p7-closeout-9f7b16f0758eb79f306cf44605b84550f02de441.zip successfully finalized. Artifact ID 11601205855
+2026-10-09T07:08:54.5430037Z Artifact p7-closeout-9f7b16f0758eb79f306cf44605b84550f02de441 has been successfully uploaded! Final size is 20319656 bytes. Artifact ID is 11601205855
+2026-10-09T07:08:54.5437011Z Artifact download URL: https://github.com/jyqj/codecortex/actions/runs/37896539239/artifacts/11601205855
+2026-10-09T07:08:54.5648316Z Post job cleanup.
+2026-10-09T07:08:54.6470334Z [command]/usr/bin/git version
+2026-10-09T07:08:54.6507474Z git version 2.55.0
+2026-10-09T07:08:54.6544734Z Temporarily overriding HOME='/home/runner/work/_temp/114e0083-89c1-4f0f-954f-ed334b5bfbb6' before making global git config changes
+2026-10-09T07:08:54.6545668Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-09T07:08:54.6549930Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/codecortex/codecortex
+2026-10-09T07:08:54.6585097Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T07:08:54.6642865Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T07:08:54.6881835Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T07:08:54.6904465Z http.https://github.com/.extraheader
+2026-10-09T07:08:54.6914514Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-09T07:08:54.6946560Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T07:08:54.7184746Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T07:08:54.7214893Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T07:08:54.7579223Z Cleaning up orphan processes
+2026-10-09T07:08:54.7836606Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

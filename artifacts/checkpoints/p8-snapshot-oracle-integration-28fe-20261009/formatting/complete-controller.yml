@@ -1,0 +1,73 @@
+name: P8 reviewed candidate formatting only
+
+on:
+  push:
+    branches: [audit/p8-candidate-format-complete-28fe-20261009]
+
+permissions:
+  contents: read
+
+jobs:
+  format:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 2104f9b5ad68a8002ff06127a7ff15c37e0eb821
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - name: Check original formatter and export exact formatting result
+        env:
+          EXPECTED_SOURCE: 2104f9b5ad68a8002ff06127a7ff15c37e0eb821
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib, subprocess
+          root = pathlib.Path(os.environ["GITHUB_WORKSPACE"])
+          out = pathlib.Path(os.environ["RUNNER_TEMP"]) / "p8-candidate-format"
+          out.mkdir()
+          paths = ["crates/cc-db/src/index_db_multi_insert.rs","crates/cc-db/src/index_db_snapshot_insert.rs","crates/cc-db/src/resolution_dependency_store.rs","crates/cc-db/src/public_surface_store.rs","crates/cc-db/src/index_db_write_batch.rs","crates/cc-db/tests/p2b_resolution_store.rs","crates/cc-eval/src/benchmark/oracle.rs","crates/cc-eval/src/benchmark/oracle/streaming.rs"]
+          source = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+          if source != os.environ["EXPECTED_SOURCE"]:
+              raise SystemExit("source mismatch")
+          identity = {"source": source, "run_id": os.environ["GITHUB_RUN_ID"], "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"]}
+          (out / "start-identity.json").write_text(json.dumps(identity, indent=2, sort_keys=True) + "\n")
+          if identity["run_attempt"] != "1":
+              raise SystemExit("this formatter controller permits its original attempt only")
+          before = {p: (root / p).read_bytes() for p in paths}
+          toolchain = subprocess.check_output(["rustfmt", "--version"], text=True)
+          check = subprocess.run(["cargo", "fmt", "--all", "--", "--check"], cwd=root, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+          (out / "original-format-check.log").write_bytes(check.stdout)
+          print(check.stdout.decode("utf-8", errors="replace"), end="")
+          applied = subprocess.run(["cargo", "fmt", "--all"], cwd=root, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+          (out / "format-apply.log").write_bytes(applied.stdout)
+          patch = subprocess.check_output(["git", "diff", "--binary"], cwd=root)
+          (out / "original-rustfmt.patch").write_bytes(patch)
+          changed = subprocess.check_output(["git", "diff", "--name-only"], cwd=root, text=True).splitlines()
+          if not set(changed) <= set(paths):
+              raise SystemExit("formatter changed an unexpected source path")
+          def describe(raw):
+              return {"bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest(),
+                      "git_blob": hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()}
+          files = {p: {"before": describe(before[p]), "after": describe((root / p).read_bytes()),
+                       "content": (root / p).read_text()} for p in paths}
+          receipt = {"source": source, "rustfmt": toolchain.strip(), "original_check_exit_code": check.returncode,
+                     "formatter_exit_code": applied.returncode, "source_files": files, "changed_paths": changed,
+                     "execution_scope": "formatter_only_no_compile_test_or_benchmark", "TODO_closed": 0}
+          (out / "formatting-result.json").write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n")
+          print(json.dumps({k: v for k, v in receipt.items() if k != "source_files"}, sort_keys=True))
+          print("changed_files=" + json.dumps(changed))
+          print("formatted_file_metadata=" + json.dumps({p: {k: v for k, v in info.items() if k != "content"} for p, info in files.items()}, sort_keys=True))
+          print("ORIGINAL_RUSTFMT_PATCH_BEGIN")
+          print(patch.decode("utf-8"), end="")
+          print("ORIGINAL_RUSTFMT_PATCH_END")
+          raise SystemExit(check.returncode or applied.returncode)
+          PY
+      - name: Preserve original formatter outcome and exact patch
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-candidate-format-${{ github.run_id }}
+          path: ${{ runner.temp }}/p8-candidate-format
+          if-no-files-found: error

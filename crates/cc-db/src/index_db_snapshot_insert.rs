@@ -1,7 +1,8 @@
 //! Full-snapshot leaf inserts bounded within one file and one original table loop.
 //!
-//! No row survives into another file/table. Parent inserts, FTS mirrors, document
+//! No leaf row survives into another file/table. Parent inserts, document
 //! validation and identity survivor checks remain in their original positions.
+//! The snapshot-only FTS helper below mirrors bounded file windows by rowid.
 //! Existing incremental binders execute each bounded window using their unchanged
 //! 64/8/1 tiers, conflict clauses and parameter order.
 use crate::index_db::IndexDb;
@@ -15,6 +16,136 @@ use rusqlite::{
 const MAX_ROWS: usize = 64;
 const MAX_BOUND_BYTES: usize = 64 * 1024;
 
+type SchemaDefinition = (String, String, String, Option<String>);
+
+fn non_index_schema(conn: &Connection) -> CcResult<Vec<SchemaDefinition>> {
+    let mut statement = conn
+        .prepare("SELECT type,name,tbl_name,sql FROM main.sqlite_schema WHERE type <> 'index' ORDER BY type,name,tbl_name,sql")
+        .map_err(db_err)?;
+    let rows = statement
+        .query_map([], |row| {
+            Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?))
+        })
+        .map_err(db_err)?;
+    rows.collect::<rusqlite::Result<Vec<_>>>().map_err(db_err)
+}
+
+/// Compare the actual connection against a fresh canonical schema made by the
+/// same SQLite library. Ignore only indexes (staging deliberately drops them).
+/// Unexpected tables, views, triggers, FK definitions or TEMP objects retain
+/// the old per-row path; a name-only trigger check would not be sufficient.
+pub(crate) fn can_defer_snapshot_fts(conn: &Connection) -> CcResult<bool> {
+    if conn.is_autocommit() {
+        return Ok(false);
+    }
+    let temporary_objects: i64 = conn
+        .query_row("SELECT count(*) FROM sqlite_temp_schema", [], |row| {
+            row.get(0)
+        })
+        .map_err(db_err)?;
+    if temporary_objects != 0 {
+        return Ok(false);
+    }
+    static CANONICAL: std::sync::OnceLock<Result<Vec<SchemaDefinition>, String>> =
+        std::sync::OnceLock::new();
+    let expected = CANONICAL.get_or_init(|| {
+        let reference = Connection::open_in_memory().map_err(|error| error.to_string())?;
+        reference
+            .execute_batch(crate::index_migrate::FULL_SCHEMA_SQL)
+            .map_err(|error| error.to_string())?;
+        non_index_schema(&reference).map_err(|error| error.to_string())
+    });
+    let expected = expected
+        .as_ref()
+        .map_err(|error| CcError::Database(format!("snapshot schema reference: {error}")))?;
+    Ok(non_index_schema(conn)? == *expected)
+}
+
+/// One bounded snapshot window. The canonical index schema never deletes or
+/// replaces files/literal_index during per-file insertion; both use implicit
+/// rowids. Keep this private to that write path, not incremental replacements.
+pub(crate) struct SnapshotFtsWindow {
+    files_before: i64,
+    literals_before: i64,
+}
+
+fn has_rowid_capacity(before: i64, candidates: usize) -> bool {
+    i64::try_from(candidates)
+        .ok()
+        .and_then(|count| before.checked_add(count))
+        .is_some_and(|after| after < i64::MAX)
+}
+
+impl SnapshotFtsWindow {
+    pub(crate) fn begin(
+        conn: &Connection,
+        files: &[crate::index_db::FileWriteUnit],
+    ) -> CcResult<Option<Self>> {
+        // The public seam can also wrap an autocommit connection. Preserve its
+        // original per-file visibility and failure behavior in that case.
+        if conn.is_autocommit() || files.is_empty() {
+            return Ok(None);
+        }
+        let Some(literal_candidates) = files.iter().try_fold(0usize, |count, file| {
+            count.checked_add(file.outcome.literal_index.len())
+        }) else {
+            return Ok(None);
+        };
+        let files_before = conn
+            .query_row("SELECT coalesce(max(rowid),0) FROM files", [], |row| {
+                row.get(0)
+            })
+            .map_err(db_err)?;
+        let literals_before = conn
+            .query_row(
+                "SELECT coalesce(max(rowid),0) FROM literal_index",
+                [],
+                |row| row.get(0),
+            )
+            .map_err(db_err)?;
+        // Count every attempted literal, including potential OR IGNORE
+        // conflicts. Never reach SQLite's random-rowid fallback at i64::MAX.
+        if !has_rowid_capacity(files_before, files.len())
+            || !has_rowid_capacity(literals_before, literal_candidates)
+        {
+            return Ok(None);
+        }
+        Ok(Some(Self {
+            files_before,
+            literals_before,
+        }))
+    }
+
+    pub(crate) fn flush(self, conn: &Connection) -> CcResult<()> {
+        let files_after: i64 = conn
+            .query_row("SELECT coalesce(max(rowid),0) FROM files", [], |row| {
+                row.get(0)
+            })
+            .map_err(db_err)?;
+        let literals_after: i64 = conn
+            .query_row(
+                "SELECT coalesce(max(rowid),0) FROM literal_index",
+                [],
+                |row| row.get(0),
+            )
+            .map_err(db_err)?;
+        // The rowid B-tree survives staging's secondary-index removal.
+        // Selecting actual new rows preserves OR IGNORE winners even when a
+        // literal belongs to a file inserted in a previous window.
+        IndexDb::execute_cached(
+            conn,
+            "INSERT INTO files_fts(rowid,file_path,summary,content_excerpt) SELECT rowid,file_path,summary,content_excerpt FROM files WHERE rowid > ?1 AND rowid <= ?2 ORDER BY rowid",
+            rusqlite::params![self.files_before, files_after],
+        )?;
+        IndexDb::execute_cached(
+            conn,
+            "INSERT INTO literal_fts(rowid,literal_id,file_path,literal,literal_kind) SELECT rowid,literal_id,file_path,literal,literal_kind FROM literal_index WHERE rowid > ?1 AND rowid <= ?2 ORDER BY rowid",
+            rusqlite::params![self.literals_before, literals_after],
+        )?;
+        Ok(())
+    }
+}
+
 fn value_bytes(value: ValueRef<'_>) -> usize {
     match value {
         ValueRef::Null => 0,
@@ -23,8 +154,8 @@ fn value_bytes(value: ValueRef<'_>) -> usize {
     }
 }
 
-// Bound the actual bound-value payload, not a JSON estimate. These six model
-// rows bind only primitive/optional values; borrowed text stays borrowed.
+// Bound the actual bound-value payload, not a JSON estimate. The model rows
+// bind only primitive/optional values; borrowed text stays borrowed.
 // SQLite's own statement/index allocations are not an RSS bound.
 fn payload_bytes(values: &[&dyn ToSql]) -> CcResult<usize> {
     values.iter().try_fold(0usize, |total, value| {
@@ -41,15 +172,16 @@ fn payload_bytes(values: &[&dyn ToSql]) -> CcResult<usize> {
     })
 }
 
-fn bounded_rows<T>(
-    rows: &[T],
+fn bounded_rows<'a, T: 'a>(
+    rows: impl IntoIterator<Item = &'a T>,
     size: impl Fn(&T) -> CcResult<usize>,
     write: impl Fn(&[&T]) -> CcResult<()>,
 ) -> CcResult<()> {
-    if rows.is_empty() {
+    let rows = rows.into_iter();
+    if rows.size_hint().1 == Some(0) {
         return Ok(());
     }
-    let mut pending = Vec::with_capacity(MAX_ROWS.min(rows.len()));
+    let mut pending = Vec::with_capacity(MAX_ROWS.min(rows.size_hint().0));
     let mut bytes = 0usize;
     for row in rows {
         let row_bytes = size(row)?;
@@ -72,6 +204,26 @@ fn bounded_rows<T>(
         write(&pending)?;
     }
     Ok(())
+}
+
+/// Borrow the normalized BTreeSet directly; do not collect the whole file or
+/// carry rows across file boundaries. Large legal rows keep the single-row path.
+pub(crate) fn resolution_dependencies(
+    conn: &Connection,
+    file_path: &str,
+    rows: &std::collections::BTreeSet<cc_model::resolution::ResolutionDependency>,
+) -> CcResult<()> {
+    bounded_rows(
+        rows,
+        |dependency| {
+            payload_bytes(rusqlite::params![
+                file_path,
+                dependency.kind.as_str(),
+                &dependency.key,
+            ])
+        },
+        |batch| IndexDb::insert_resolution_dependencies_multi(conn, file_path, batch),
+    )
 }
 
 pub(crate) fn symbols(conn: &Connection, rows: &[cc_model::symbol::SymbolRecord]) -> CcResult<()> {
@@ -269,6 +421,10 @@ pub(crate) fn dispatch_sites(
 }
 
 #[cfg(test)]
+#[path = "snapshot_fts_tests.rs"]
+mod snapshot_fts_tests;
+
+#[cfg(test)]
 mod tests {
     use super::*;
     use rusqlite::StatementStatus;
@@ -400,5 +556,127 @@ mod tests {
                 .unwrap()
         };
         assert_eq!(read(&old), read(&new));
+    }
+
+    fn dependency_test_db() -> Connection {
+        let conn = Connection::open_in_memory().unwrap();
+        conn.set_prepared_statement_cache_capacity(64);
+        conn.execute_batch(
+            "CREATE TABLE resolution_dependencies(
+                file_path TEXT NOT NULL,kind TEXT NOT NULL,key TEXT NOT NULL,
+                PRIMARY KEY(file_path,kind,key));",
+        )
+        .unwrap();
+        conn
+    }
+
+    fn dependency_rows(conn: &Connection) -> Vec<(i64, String, String, String)> {
+        let mut statement = conn
+            .prepare("SELECT rowid,file_path,kind,key FROM resolution_dependencies ORDER BY rowid")
+            .unwrap();
+        statement
+            .query_map([], |row| {
+                Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?))
+            })
+            .unwrap()
+            .collect::<rusqlite::Result<Vec<_>>>()
+            .unwrap()
+    }
+
+    fn dependency_insert_runs(conn: &Connection) -> i32 {
+        [64, 8, 1]
+            .into_iter()
+            .map(|n| {
+                let sql = format!(
+                    "INSERT INTO resolution_dependencies(file_path,kind,key) VALUES{}",
+                    vec!["(?,?,?)"; n].join(",")
+                );
+                conn.prepare_cached(&sql)
+                    .unwrap()
+                    .get_status(StatementStatus::Run)
+            })
+            .sum()
+    }
+
+    #[test]
+    fn resolution_snapshot_batches_match_original_order_and_statement_work() {
+        use cc_model::resolution::{DependencyKind, ResolutionDependency};
+        use std::collections::BTreeSet;
+
+        const ORIGINAL: &str =
+            "INSERT INTO resolution_dependencies(file_path,kind,key) VALUES(?1,?2,?3)";
+        let old = dependency_test_db();
+        let new = dependency_test_db();
+        let mut expected_rows = 0usize;
+        for count in [0usize, 1, 7, 8, 9, 63, 64, 65, 73, 129, 4096] {
+            let path = format!("file-{count}.py");
+            let mut dependencies = BTreeSet::new();
+            for n in (0..count).rev() {
+                let kind = match n % 7 {
+                    0 => DependencyKind::TargetSurface,
+                    1 => DependencyKind::NameBucket,
+                    2 => DependencyKind::MissingPath,
+                    3 => DependencyKind::ModuleConfig,
+                    4 => DependencyKind::PackageFiles,
+                    5 => DependencyKind::SymbolInventory,
+                    _ => DependencyKind::FileInventory,
+                };
+                let dependency = ResolutionDependency::new(kind, format!("键-{n:05}"));
+                dependencies.insert(dependency.clone());
+                dependencies.insert(dependency);
+            }
+            expected_rows += dependencies.len();
+            for dependency in &dependencies {
+                IndexDb::execute_cached(
+                    &old,
+                    ORIGINAL,
+                    rusqlite::params![path, dependency.kind.as_str(), dependency.key],
+                )
+                .unwrap();
+            }
+            resolution_dependencies(&new, &path, &dependencies).unwrap();
+            assert_eq!(dependency_rows(&old), dependency_rows(&new));
+        }
+        let old_runs = old
+            .prepare_cached(ORIGINAL)
+            .unwrap()
+            .get_status(StatementStatus::Run);
+        let new_runs = dependency_insert_runs(&new);
+        assert_eq!(old_runs, expected_rows as i32);
+        assert!(new_runs > 0 && new_runs < old_runs);
+        eprintln!("resolution INSERT runs: original={old_runs}, snapshot={new_runs}");
+    }
+
+    #[test]
+    fn resolution_snapshot_byte_windows_keep_legal_large_rows_single() {
+        use cc_model::resolution::{DependencyKind, ResolutionDependency};
+        use std::collections::BTreeSet;
+
+        let db = dependency_test_db();
+        // Each legal 4096-byte key counts its repeated file and kind bindings,
+        // so this window is byte-limited before the 64-row cap.
+        let dependencies: BTreeSet<_> = (0..64)
+            .map(|n| {
+                ResolutionDependency::new(
+                    DependencyKind::NameBucket,
+                    format!("{n:04}{}", "x".repeat(4092)),
+                )
+            })
+            .collect();
+        let before = dependency_insert_runs(&db);
+        resolution_dependencies(&db, "bytes.py", &dependencies).unwrap();
+        assert!(dependency_insert_runs(&db) - before > 1);
+        assert_eq!(dependency_rows(&db).len(), dependencies.len());
+
+        // The existing byte bound limits batching, not acceptance of a bound
+        // value. This helper receives SQL values, not filesystem paths.
+        let large_file_value = "p".repeat(MAX_BOUND_BYTES + 1);
+        let three: BTreeSet<_> = dependencies.into_iter().take(3).collect();
+        let before = dependency_insert_runs(&db);
+        resolution_dependencies(&db, &large_file_value, &three).unwrap();
+        assert_eq!(dependency_insert_runs(&db) - before, 3);
+        let rows = dependency_rows(&db);
+        assert_eq!(rows.len(), 67);
+        assert!(rows[64..].iter().all(|row| row.1 == large_file_value));
     }
 }

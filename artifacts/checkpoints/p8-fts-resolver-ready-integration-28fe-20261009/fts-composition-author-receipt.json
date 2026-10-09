@@ -1,0 +1,141 @@
+{
+  "schema": "p8-FTS-on-PR180-exact-composition-author-receipt-v1",
+  "author": "/root/acceptance_review",
+  "independent_reviewer_requested": "/root/runtime_review",
+  "frozen_utc": "2026-10-09 08:02:04 UTC",
+  "base": {
+    "commit": "ee467290785a4c8906d11d6d8764d2f1b4b92241",
+    "pr": 180
+  },
+  "donor": {
+    "first_FTS_head": "9f7b16f0758eb79f306cf44605b84550f02de441",
+    "current_head": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+    "five_FTS_paths_unchanged_across_followup": true,
+    "prior_independent_source_review": "cb1f74ebd38c5e96b7bff984f2d82830b8cb6561",
+    "prior_finite_comparison_review": "044ed0fdc9a92020c1602841d8fd2f6583645e9d"
+  },
+  "decision": "Root explicitly elected a one-time final composition before its first full study: use actual statement-work reduction and unchanged semantic contract, without claiming wall-time/RSS improvement or A23 100k causation. This author receipt prepares only the five FTS paths, not PR179 or the separately reviewed ready fixture.",
+  "mode": "100644",
+  "files": [
+    {
+      "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+      "base_blob": "9829e095d8e2310a4d3373c77a5184166a32f686",
+      "donor_blob": "c4eee424e815aafce896379387fb894d99d490e6",
+      "candidate_blob": "9cd3320336e1ee9eeeb8b279d0a97448f61a4563",
+      "candidate_bytes": 24457,
+      "candidate_sha256": "949fdaf5015703e4f55950c42cca28fcc527defc52c195894ed19bb5f125590b",
+      "donor_identical": false
+    },
+    {
+      "path": "crates/cc-db/src/index_db_write_batch.rs",
+      "base_blob": "f1c7d161db2d3d09a3f30c5917490ec18338041d",
+      "donor_blob": "32ed0414d16321032a45aa6b8f0a5333da7acf81",
+      "candidate_blob": "c732fab2d5cc62209a89317f42a5a4adc4edf0fb",
+      "candidate_bytes": 56654,
+      "candidate_sha256": "f9961e718523a83db99f6ce0911aceae3465a9ddd511f8b752d8a98fea43964c",
+      "donor_identical": false
+    },
+    {
+      "path": "crates/cc-db/src/snapshot_write_txn.rs",
+      "base_blob": "20dc6ffc60d2a63320b56d1bd8e010e2937ffe26",
+      "donor_blob": "e850a30b549fcd1f0bda38fb2900d61add6db029",
+      "candidate_blob": "e850a30b549fcd1f0bda38fb2900d61add6db029",
+      "candidate_bytes": 9084,
+      "candidate_sha256": "7c941b0e7fca4c48ec0c8b44ee81108a2c201e0b28ab7a69f285dbc329eb446f",
+      "donor_identical": true
+    },
+    {
+      "path": "crates/cc-db/src/snapshot_fts_tests.rs",
+      "base_blob": null,
+      "donor_blob": "c7cf6e2d7fd61a1e6a33aad772c3c0530484d0b8",
+      "candidate_blob": "c7cf6e2d7fd61a1e6a33aad772c3c0530484d0b8",
+      "candidate_bytes": 22068,
+      "candidate_sha256": "c0454c8325a0691cc9caa0b2d9d99e017483b56991fd76dabde371869bfe428d",
+      "donor_identical": true
+    },
+    {
+      "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+      "base_blob": "f54e02421b71259abd6c2b3b1e0ab6de48f7c883",
+      "donor_blob": "7aefc0bb357b97df3c8ba45257d2b45509f3e483",
+      "candidate_blob": "7aefc0bb357b97df3c8ba45257d2b45509f3e483",
+      "candidate_bytes": 10144,
+      "candidate_sha256": "bca23a73b0a2de0ca38f9593fbb526b69a7acc138b9ec8a680001fb79e666e9e",
+      "donor_identical": true
+    }
+  ],
+  "exact_operations": [
+    {
+      "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+      "operation": "Start from actual 180 blob9829e095d8e2310a4d3373c77a5184166a32f686; replace only the two-line top comment with donor's three-line accurate scope; before fn value_bytes insert exact donor type SchemaDefinition-through-SnapshotFtsWindow block; before original cfg(test)mod tests insert donor's snapshot_fts_tests module.",
+      "added_helper": {
+        "bytes": 5267,
+        "sha256": "087804eb0cd9655026d3593fc71712bc9bd407f17ce640fcbfcc6fc8ba43543f"
+      },
+      "added_test_module": {
+        "bytes": 72,
+        "sha256": "f4c32bd672cdd6ae8d54806f31fd2a4cd67c65305119bf9bcd9e279b768c5561"
+      },
+      "old_comment": "//! No row survives into another file/table. Parent inserts, FTS mirrors, document\n//! validation and identity survivor checks remain in their original positions.\n",
+      "new_comment": "//! No leaf row survives into another file/table. Parent inserts, document\n//! validation and identity survivor checks remain in their original positions.\n//! The snapshot-only FTS helper below mirrors bounded file windows by rowid.\n",
+      "reversibility": "Deleting exactly those helper/module bytes and reverting exactly that comment recovers the entire actual 180 source byte-for-byte.",
+      "preserved": "180 generic IntoIterator bounded_rows and normalized-BTreeSet resolution_dependencies; all six existing bounded leaf functions/tests, original 64-row/64KiB/64-8-1 behavior."
+    },
+    {
+      "path": "crates/cc-db/src/index_db_write_batch.rs",
+      "operation": "Start from actual 180 blobf1c7d161db2d3d09a3f30c5917490ec18338041d; immediately before fn insert_file_data_impl insert donor's exact private insert_snapshot_file_data_deferred_fts helper.",
+      "added_helper": {
+        "bytes": 408,
+        "sha256": "f6f9136f596dc38bc9836f789029fe7081ccbf383156eb0bf31426754cda4c6b"
+      },
+      "reversibility": "Removing this exact408B helper recovers the entire actual180 source byte-for-byte.",
+      "preserved": "Original 180 snapshot_leaf_batches -> public_surface_store::insert_snapshot_on dispatch remains, as do ordinary/incremental insert_on, current flags, validation/order/errors, all other code."
+    },
+    {
+      "path": "crates/cc-db/src/snapshot_write_txn.rs",
+      "operation": "Reuse exact donor blob e850...; relative to18020dc..., sole change is 2026-byte new documented opt-in write_file_data_for_rebuild. Original public write_file_data unchanged."
+    },
+    {
+      "path": "crates/cc-db/src/snapshot_fts_tests.rs",
+      "operation": "Add exact donor nine-test source c7cf... without modifying its assertions, budgets, fixtures or names."
+    },
+    {
+      "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+      "operation": "Reuse exact donor7aef...; relative to180f54e... only replace txn.write_file_data with txn.write_file_data_for_rebuild, retaining ? error propagation."
+    }
+  ],
+  "static_interface": {
+    "visibility": "New module functions/struct pub(crate); new IndexDb helper pub(crate); cross-crate SnapshotWriteTxn opt-in method public. Existing modules already registered. No Cargo/dependency/schema addition.",
+    "both_optimizations": "The new private helper calls insert_file_data_impl(..., true, true). Its second true still enters 180's snapshot-specific public-surface/resolution-dependency path. Ordinary existing calls retain their original flags and false path.",
+    "source_counts": "One new Rust test path over 180; expected source inventory1089→1090 for this five-path composition. No new ordinary validation path; preserve139 including p8-surface-window-controls workflow.",
+    "transaction_boundary": "No transaction or owner code modified. Opt-in owner must propagate Err and discard staging/no publication; existing sole production call does. OFF physical rollback remains explicitly unclaimed.",
+    "budget_boundary": "256files/window does not cap all literals/FTS buffer bytes; original native/measurement/parity/disk/RSS/time budgets untouched.",
+    "unrelated_paths": "No change to 180 dependency store/multiinsert/publicsurface source, oracle projection, Rust statistics owner, runtime observers, scale max_parallel20, workflows, source pins/registry, docs/tasks or original evidence."
+  },
+  "evidence": {
+    "donor_only": {
+      "actual_execution": "G173 plus nine frozen uncommitted files then exact committed-P bridge; not execution of this five-path composition",
+      "completed_engineering": "b112f98e63c6712480524cb0ee98a3a082a3baa9",
+      "bridge": "46b6051dc99df6b83009d29ba7b7c09ddc04075b",
+      "workspace_stdout": "a667b49e9bb807e0ecb66b09ac1c6ec35bbaca29",
+      "workspace_stderr": "3c3092faa03eaa8e5985099891c5782dbb7d98fe",
+      "nine_FTS_tests_actual_ok": true,
+      "statement_count_control": "257files+257literals:514 mirrors→4; MAX0 scans with SUM256 positive controls. Not elapsed-time/RSS evidence."
+    },
+    "composition_execution": {
+      "rustfmt": "not_run",
+      "compile": "not_run",
+      "tests": "not_run",
+      "native": "not_run",
+      "full_scale": "not_run",
+      "runtime": "not_run"
+    },
+    "unreferenced_blob_custody": "Both new blob OIDs locally calculated with Git object framing, official create_blob returned exact IDs, full official raw readback equalled candidate bytes. Three donor source blobs were independently fetched and hashed during donor review."
+  },
+  "created_objects": "Two source blobs and this author receipt only. No candidate commit/tree/ref, no run or task modification.",
+  "required_next": "Non-author review of this exact pair plus three donor blobs; root owns combined product/source binding and original actual engineering/registered study. Existing donor successes are input-specific evidence, never renamed to the new composed source.",
+  "original_TODOs": {
+    "done": 163,
+    "remaining": 29,
+    "newly_closed": 0
+  }
+}

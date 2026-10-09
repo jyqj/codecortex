@@ -1,0 +1,483 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_audit",
+  "reviewed_at_utc": "2026-10-09T08:37:49.153711+00:00",
+  "verdict": "accepted_scoped_static",
+  "scope": "nine newly differing Rust files and one workflow relative to the independently prepared d96 candidate; exact source bytes, no execution approval",
+  "source": {
+    "pr": 180,
+    "execution_head": "e6ab28bc5956e225e2015a57f601bc4d867d3732",
+    "execution_tree": "3d01f935c76a6c4da4ca4f1348804888fe08d45e",
+    "review_commit": "cc73a151f7c1a47a3b05c3e49140d2e90771df46",
+    "product_commit": "86a6e8eb88ddc97ee50a534452839bea25d92d16",
+    "product_tree": "a199b93020b7e6a650e3d9d7f861a047c256780a",
+    "product_parent": "ee467290785a4c8906d11d6d8764d2f1b4b92241",
+    "comparison_candidate": "d96e55338ae6980834ad5e6c21b7c2de1b5e1184",
+    "main_at_review": "bd4693351149a443bd0054a37508c53f74ed7b52",
+    "original_historical_base": "7354db236c9d9850a75f31672697ae9eab44565e"
+  },
+  "methods": [
+    "Read all nine Rust diffs and corresponding full binder, bounded-window, staging, projection and streaming call paths; read workflow exact single-line diff.",
+    "Official complete nontruncated crates/scripts/.github trees establish path mode/OID/size. Actual local Git objects and all ten new/old file SHA256 and Git blob IDs rechecked independently.",
+    "Reviewed literal expected-value and original-writer regression controls; did not execute or compile them.",
+    "Checked the current v15 AST is unchanged after normalizing only PRODUCT, REVIEW, REVIEW_PATH and REGISTRY_SHA256 assignments. No guard CLI rerun.",
+    "Retained full official head-filtered seven-run snapshot and complete jobs pages with total_count and exact head checks. Snapshots are explicitly timestamped, not a claim of subsequent live status."
+  ],
+  "paths": [
+    {
+      "path": ".github/workflows/p8-scale.yml",
+      "before_blob": "74f1b64ed447ef24da584f1c1f8d090d2fa1e03e",
+      "after_blob": "f667b72d7abc63c6aa06f92e453a3e2d14b505d7",
+      "before_sha256": "4258476dd37d8af223aaa7ad45d7c97d7298be1ba4ec5ffd9af9949785ed8f3d",
+      "after_sha256": "4c5e7a9b59a39edfb5628dc1ef60fde4345a3a658d424087925f0b331de98378",
+      "bytes": 8621,
+      "mode": "100644",
+      "actual_git_bytes_independently_rechecked": true
+    },
+    {
+      "path": "crates/cc-db/src/index_db_multi_insert.rs",
+      "before_blob": "539b9d19f1034a8cfd918090b1b48dacc177494c",
+      "after_blob": "a881c73c46693bb4ff098b283a05f57f04cb1ee4",
+      "before_sha256": "b621f633f231a98af42b6ead8c300956ad96ff1544bbbc392c3743b2e3038101",
+      "after_sha256": "62224f028852c6c7230d3a4d72151f9daf4d86f3c91d41fe30928e67acd0ab6c",
+      "bytes": 30100,
+      "mode": "100644",
+      "actual_git_bytes_independently_rechecked": true
+    },
+    {
+      "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+      "before_blob": "c4eee424e815aafce896379387fb894d99d490e6",
+      "after_blob": "9cd3320336e1ee9eeeb8b279d0a97448f61a4563",
+      "before_sha256": "1dbc014e9798dfac6d1d2b82bc9913fb4603e6aeb301e9e0fd22c8823a2cb1ee",
+      "after_sha256": "949fdaf5015703e4f55950c42cca28fcc527defc52c195894ed19bb5f125590b",
+      "bytes": 24457,
+      "mode": "100644",
+      "actual_git_bytes_independently_rechecked": true
+    },
+    {
+      "path": "crates/cc-db/src/index_db_write_batch.rs",
+      "before_blob": "32ed0414d16321032a45aa6b8f0a5333da7acf81",
+      "after_blob": "c732fab2d5cc62209a89317f42a5a4adc4edf0fb",
+      "before_sha256": "25f82e53d9479c357cbe7a02741f24cb92114f580e2dcddd8b1056e2080b52d7",
+      "after_sha256": "f9961e718523a83db99f6ce0911aceae3465a9ddd511f8b752d8a98fea43964c",
+      "bytes": 56654,
+      "mode": "100644",
+      "actual_git_bytes_independently_rechecked": true
+    },
+    {
+      "path": "crates/cc-db/src/public_surface_store.rs",
+      "before_blob": "df522a327e68a820699ce21f4c5b9880f48d519c",
+      "after_blob": "d0fa4c622876197bbb8c14b7d94f0d8ab3e1f318",
+      "before_sha256": "35c5b03670b3a2ed7add767f66ea46b4a7cd265dfffa3a77f81f04a8ed8d4650",
+      "after_sha256": "76d8f7bb89f99abf5cbb4b75e0ccb486720e187e9b46014b5bccde439bdb95e5",
+      "bytes": 8957,
+      "mode": "100644",
+      "actual_git_bytes_independently_rechecked": true
+    },
+    {
+      "path": "crates/cc-db/src/resolution_dependency_store.rs",
+      "before_blob": "6e90d4e85aae79d73d5d59b8defbd39d02c61097",
+      "after_blob": "97d3d9519fe10ed7cd30b9783164348998c02abc",
+      "before_sha256": "7afc688e8b6314f2f5373db35b38deb84f23feec88bcfb11210041fa9cdd29e4",
+      "after_sha256": "c37a7c44ed1aa5c2897fcb387eee5fb1007a60cb53c0de4abc6488dafde9ebbf",
+      "bytes": 10939,
+      "mode": "100644",
+      "actual_git_bytes_independently_rechecked": true
+    },
+    {
+      "path": "crates/cc-db/tests/p2b_resolution_store.rs",
+      "before_blob": "babd9caa60308b9f9dda8d34770eb1fefd4d48d9",
+      "after_blob": "f698d3427ad90c194cfdb5b7c241e0802c1267d1",
+      "before_sha256": "ac2f7d6ceed1130161d18ba22bb6c8ecf1d6982eb48a7ca15af5951721d80772",
+      "after_sha256": "2c99786a75ac5df604ca2481e799ef9bc8da84d6bf138781b1cbbfa6b9693d3c",
+      "bytes": 14608,
+      "mode": "100644",
+      "actual_git_bytes_independently_rechecked": true
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/oracle.rs",
+      "before_blob": "d6324b3003b5a3c3e8a1680536260ea99a950152",
+      "after_blob": "4c7fdb879e039af164b3b10ea1491d538c69ac68",
+      "before_sha256": "adccf4f437e637aaee6bd368109d0b41af1855f3e50c84c48f7cc8b5cf3dc711",
+      "after_sha256": "7b6438d212bd22471fedfb9ffd3a37a0c1d491f8e7846af3ba5c5850c622bc15",
+      "bytes": 14710,
+      "mode": "100644",
+      "actual_git_bytes_independently_rechecked": true
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+      "before_blob": "3c05342f976f534861347c098c3229ce988dfb61",
+      "after_blob": "6c60e6244fe1f316b180f8ea656d2b9f1ad17aa3",
+      "before_sha256": "5a51a72e8cb49c033754f860a3f5dc6366748ffe45a440da55cf7776cde7da0c",
+      "after_sha256": "9d9ef3624af2f1a27107baf3c625b7ee29643b8dbedcbf3b39b8a662c98e82a4",
+      "bytes": 29924,
+      "mode": "100644",
+      "actual_git_bytes_independently_rechecked": true
+    },
+    {
+      "path": "crates/cc-semantic/tests/crash_independent_review.rs",
+      "before_blob": "47a9abd36f8a4348b4c3c8731565da94833f69cb",
+      "after_blob": "412bfb88b7d10dcf0f324d916e4a8671c1abd482",
+      "before_sha256": "fdc5291977db6bc05e1d380e9b24a4b1da92ce3afd5c9a042fabc38fc79d8aeb",
+      "after_sha256": "9a81c1b79fcb71bc71f95e67a86c3ebd070b70797e9a06fe7d9df93f72238545",
+      "bytes": 19381,
+      "mode": "100644",
+      "actual_git_bytes_independently_rechecked": true
+    }
+  ],
+  "donor_review_boundary": {
+    "file": "donor-independent-source-review-original.json",
+    "sha256": "919a2a92cf3163dc4d8658470c4df7c512f5c24358bdf122b4fa7c836abb9011",
+    "declared_independent_reviewers": [
+      "/root/recovery_audit"
+    ],
+    "complete_input_count": 1090,
+    "changed_source_input_count": 49,
+    "validation_input_count": 139,
+    "execution_status": {
+      "combined_format": "not_run",
+      "combined_compile": "not_run",
+      "combined_tests": "not_run",
+      "combined_original_source_proofs": "not_run",
+      "combined_runtime": "not_run",
+      "combined_scale": "not_run",
+      "combined_quality": "not_run",
+      "combined_platform": "not_run"
+    },
+    "interpretation": "Original record is source admission only. Earlier ee467/178/179 measurements and CI cannot be relabelled as e6 combined execution. This report independently reviews only the listed added differences, not every pre-existing historical source change."
+  },
+  "db_semantics": [
+    "The ordinary insert_on/replace_on path still selects the original one-row dependency writer. Only existing full-snapshot snapshot_leaf_batches selects replace_snapshot_on, and batching requires at least eight normalized dependencies.",
+    "Manifest clone, normalization, validation, JSON size check, dependency DELETE, manifest INSERT/digest and subsequent table order remain in the same sequence. Public-surface validation/insertion remains before dependency replacement.",
+    "The normalized BTreeSet is borrowed directly. No whole-file vector, cross-file mixing, row reordering or additional deduplication is introduced. Bindings remain file_path/kind.as_str/key in that order.",
+    "Existing tiers 64/8/1 and bounds of at most 64 borrowed rows and 64 KiB actual bound-value payload are reused. Repeated file_path bytes are counted for each row. A legal oversized single row retains the one-row path; this is not an RSS cap or a new row-rejection threshold.",
+    "Generalizing bounded_rows from slices to IntoIterator retains exact-size slice behavior for all six existing callers. Empty upper bound and capacity lower bound affect allocation only for the concrete slice/BTreeSet iterators used.",
+    "SQL errors propagate through the existing owned temporary rebuild. Failed staging cannot publish new live rows or generation. Statement-level partial staging contents may differ; no physical rollback claim is made for journal-OFF staging.",
+    "New failure/parity controls compare original writer with snapshot writer, rowid/order/manifests/surfaces, generation changes, ordinary incremental replacement, injected key-70 ABORT and invalid manifest 999. Existing FTS rebuild opt-in and transaction/publication seam are preserved."
+  ],
+  "oracle_semantics": [
+    "One RowProjection exists per immutable column layout, table and input side; map keys/nodes are reused, while values are released to null after serialization and on projection failure.",
+    "All five ValueRef conversions are unchanged, including strict UTF-8 rejection and original BLOB digest. Integer extrema, signed zero, Unicode/control characters, NULL and empty-BLOB values have literal expected JSON controls.",
+    "serialize_row returns an owned String before clearing values. The legacy project_row wrapper still returns an owned Value::Object. Existing ordering behavior, including a preserve_order build, follows the same insertion order.",
+    "Streaming row-count and raw row-size checks precede projection. Serialized/cumulative-byte limits, checked arithmetic, ordinals, duplicate retention, sorting, fifteen-table set and canonical SQL spool batches are unchanged.",
+    "reference_spool now calls the same changed project_row, so that comparison alone is not independent evidence of conversion equivalence. The added literal expected-value tests and invalid-UTF8 partial-update/recovery control address this limitation; they remain pending actual execution.",
+    "No measured allocation, RSS, runtime or 100k speedup is claimed."
+  ],
+  "ready_signal_semantics": {
+    "path": "crates/cc-semantic/tests/crash_independent_review.rs",
+    "finding": "Write, sync and close ready.pending before same-directory rename to ready. This removes the observable create-before-write empty ready window while retaining the original reader, timing budgets, seeds, fault boundaries and SIGKILL behavior.",
+    "limits": "Current-head actual success is still pending. This does not modify resource sampling, live_child_snapshot attribution, the Mac fresh-helper 250 ms case, or any production binary."
+  },
+  "workflow": {
+    "path": ".github/workflows/p8-scale.yml",
+    "exact_delta": "measure.strategy.max-parallel: 10 -> 20 only",
+    "unchanged": [
+      "preflight max-parallel 5 and all five rep-0 successes required before remaining matrix",
+      "five scales x thirty repetitions; 150 shards and 1500 samples",
+      "native 18000000 ms (5 h), job timeout 350 min",
+      "native per-worker concurrency, seeds, dirty batch 200, resume 1024, 512 MiB limit",
+      "full fifteen-table parity, fixed build/source/seal identity, aggregate admission"
+    ],
+    "interpretation": "An Actions scheduling upper bound is changed, not a demonstrated worker count or performance improvement. This differs from this session original registered 5/10 schedule and cannot silently inherit byte-identical workflow/protocol claims.",
+    "root_decision_received": "Restore the exact measure max-parallel 10 before a new reviewed product/review/pins chain. This report does not claim that proposed restoration is already present at e6."
+  },
+  "new_controls": [
+    {
+      "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+      "name": "resolution_snapshot_batches_match_original_order_and_statement_work",
+      "execution_status": "not_run_by_this_review",
+      "required_evidence": "exact new source original CI log name and actual outcome"
+    },
+    {
+      "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+      "name": "resolution_snapshot_byte_windows_keep_legal_large_rows_single",
+      "execution_status": "not_run_by_this_review",
+      "required_evidence": "exact new source original CI log name and actual outcome"
+    },
+    {
+      "path": "crates/cc-db/tests/p2b_resolution_store.rs",
+      "name": "snapshot_dependency_manifest_and_rows_match_original_full_writer",
+      "execution_status": "not_run_by_this_review",
+      "required_evidence": "exact new source original CI log name and actual outcome"
+    },
+    {
+      "path": "crates/cc-db/tests/p2b_resolution_store.rs",
+      "name": "snapshot_dependency_failure_keeps_live_rows_and_generation_like_original",
+      "execution_status": "not_run_by_this_review",
+      "required_evidence": "exact new source original CI log name and actual outcome"
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/oracle.rs",
+      "name": "reused_projection_keeps_exact_sql_value_bytes_and_only_its_layout",
+      "execution_status": "not_run_by_this_review",
+      "required_evidence": "exact new source original CI log name and actual outcome"
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/oracle.rs",
+      "name": "projection_error_clears_partial_and_prior_values_before_recovery",
+      "execution_status": "not_run_by_this_review",
+      "required_evidence": "exact new source original CI log name and actual outcome"
+    }
+  ],
+  "existing_ci_coverage": "The original CI cargo test --workspace --all-targets --exclude cc-semantic --locked covers these cc-db unit/integration and cc-eval unit controls. Existing semantic workflow covers the separate ready test. No new workflow is required merely to duplicate those tests.",
+  "ci_original_snapshots": [
+    {
+      "capture": "round23-pr180-jobs-37903872563.json",
+      "captured_at": "2026-10-09T08:30:17.330Z",
+      "total_count": 1,
+      "jobs": [
+        {
+          "id": 113732521067,
+          "name": "engineering",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732"
+        }
+      ]
+    },
+    {
+      "capture": "round23-pr180-jobs-37903872564.json",
+      "captured_at": "2026-10-09T08:30:17.186Z",
+      "total_count": 1,
+      "jobs": [
+        {
+          "id": 113732521359,
+          "name": "gate_controls",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732"
+        }
+      ]
+    },
+    {
+      "capture": "round23-pr180-jobs-37903872571.json",
+      "captured_at": "2026-10-09T08:30:17.214Z",
+      "total_count": 1,
+      "jobs": [
+        {
+          "id": 113732521258,
+          "name": "lifecycle",
+          "status": "in_progress",
+          "conclusion": null,
+          "head_sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732"
+        }
+      ]
+    },
+    {
+      "capture": "round23-pr180-jobs-37903872591.json",
+      "captured_at": "2026-10-09T08:30:17.366Z",
+      "total_count": 6,
+      "jobs": [
+        {
+          "id": 113732520873,
+          "name": "soak",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732"
+        },
+        {
+          "id": 113732521150,
+          "name": "mixed (8)",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732"
+        },
+        {
+          "id": 113732521184,
+          "name": "fake_backfill",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732"
+        },
+        {
+          "id": 113732521240,
+          "name": "mixed (1)",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732"
+        },
+        {
+          "id": 113732521405,
+          "name": "mixed (4)",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732"
+        },
+        {
+          "id": 113732521458,
+          "name": "mixed (16)",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732"
+        }
+      ]
+    },
+    {
+      "capture": "round23-pr180-jobs-37903872633.json",
+      "captured_at": "2026-10-09T08:30:17.193Z",
+      "total_count": 3,
+      "jobs": [
+        {
+          "id": 113732521178,
+          "name": "msrv",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732"
+        },
+        {
+          "id": 113732521513,
+          "name": "security",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732"
+        },
+        {
+          "id": 113732521918,
+          "name": "check",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732"
+        }
+      ]
+    },
+    {
+      "capture": "round23-pr180-jobs-37903872639.json",
+      "captured_at": "2026-10-09T08:30:17.219Z",
+      "total_count": 4,
+      "jobs": [
+        {
+          "id": 113732521203,
+          "name": "mechanism",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732"
+        },
+        {
+          "id": 113732521428,
+          "name": "offline (default)",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732"
+        },
+        {
+          "id": 113732521456,
+          "name": "closeout",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732"
+        },
+        {
+          "id": 113732521552,
+          "name": "offline (semantic)",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732"
+        }
+      ]
+    },
+    {
+      "capture": "round23-pr180-jobs-37903872651.json",
+      "captured_at": "2026-10-09T08:30:17.186Z",
+      "total_count": 9,
+      "jobs": [
+        {
+          "id": 113732521327,
+          "name": "actual recovery and rollback matrix",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732"
+        },
+        {
+          "id": 113732521599,
+          "name": "cold macos / stable / default",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732"
+        },
+        {
+          "id": 113732521602,
+          "name": "cold linux / stable / default",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732"
+        },
+        {
+          "id": 113732521637,
+          "name": "cold macos / stable / semantic",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732"
+        },
+        {
+          "id": 113732521675,
+          "name": "cold linux / 1.95 / default",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732"
+        },
+        {
+          "id": 113732521709,
+          "name": "cold linux / 1.95 / semantic",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732"
+        },
+        {
+          "id": 113732521729,
+          "name": "cold macos / 1.95 / semantic",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732"
+        },
+        {
+          "id": 113732521761,
+          "name": "cold macos / 1.95 / default",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732"
+        },
+        {
+          "id": 113732521789,
+          "name": "cold linux / stable / semantic",
+          "status": "queued",
+          "conclusion": null,
+          "head_sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732"
+        }
+      ]
+    }
+  ],
+  "negative_evidence_disposition": [
+    {
+      "evidence": "Old 178 ready PID parse failure",
+      "status": "Preserved as old-head failure; precise atomic publication change is statically appropriate, current-head execution still pending."
+    },
+    {
+      "evidence": "E original 100k failure with unavailable terminal raw cause",
+      "status": "Preserved as failed/unknown. Static hotspots and SQL statement reductions are not evidence of its root cause or this source passing full study."
+    },
+    {
+      "evidence": "Original Mac fresh-helper 250 ms negative",
+      "status": "Not repaired or relabelled by these nine differences. Prepared-helper/cold-build scopes remain separate and original platform-related limit remains."
+    },
+    {
+      "evidence": "PR181 live_child_snapshot attribution failure",
+      "status": "No sampler/test fix in the listed #180 differences. Separate peer is reviewing original failure/source applicability; this report does not resolve it."
+    }
+  ],
+  "unresolved_source_blockers_in_reviewed_rust_scope": [],
+  "execution_and_acceptance_pending": [
+    "Current combined formatting/compilation and the six new named controls",
+    "Current combined semantic ready control and relevant original regressions",
+    "Original complete scale study, fixed-source artifact validation and all hard task dependencies",
+    "Existing platform negative-evidence disposition; no platform-wide green inference from cold matrix"
+  ],
+  "integration_limits": [
+    "Selective #181 snapshot preparation hunks must retain FTS write_file_data_for_rebuild, not overwrite the whole older snapshot file. Peer owns #181 semantic admission.",
+    "Freeze and review the actual new P/R/C after restoring scheduling and adding any #181 changes. Neither this static report nor old source CI certifies that not-yet-created product.",
+    "Root alone controls remote ref/PR changes. No workload, native test, Cargo, source modification, ref update or CI trigger was executed for this review."
+  ],
+  "formal_todo_completion": false,
+  "TODO_done": 163,
+  "TODO_remaining": 29,
+  "TODO_closed_this_review": 0
+}

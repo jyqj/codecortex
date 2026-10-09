@@ -1,0 +1,481 @@
+{
+  "schema": "p8-round23-existing-scale-phase-attribution-v1",
+  "reviewer": "/root/acceptance_review",
+  "status": "accepted_scoped_data_attribution_no_new_measurement",
+  "repository": "jyqj/codecortex",
+  "task_ledger": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "new_original_tasks_completed": 0,
+    "tasks_modified": false
+  },
+  "activity": {
+    "new_native_runs": 0,
+    "new_github_actions": 0,
+    "new_native_zip_downloads": 0,
+    "refs_or_commits_changed": 0,
+    "artifact_code_executed": false,
+    "workload_or_budget_changes": false,
+    "wait_for_G2_terminal_required_by_original_contract": false
+  },
+  "fixed_measurement": {
+    "source": "a23bb72d3c954f385b99fe81ce9189885c208557",
+    "tree": "58147c952505c44da1f41eb4b9c31643f2303b96",
+    "native_input_count": 1087,
+    "native_manifest_sha256": "4e0aa6bbfd4d5bea00416bca2cd99318d865ffc526fdcb45897c4d300de3ac00",
+    "run_id": 37872522779,
+    "attempt": 1,
+    "artifact_id": 11593548201,
+    "original_zip_bytes": 2964759,
+    "original_zip_sha256": "d0163f3421ea9abf3d544edad56a9386aec2db55fef0aa11155e30e10a27b06d",
+    "build_artifact_id": 11591482043,
+    "scale": 50000,
+    "repetition": 0,
+    "measurement_groups": 9,
+    "samples_per_group": 1,
+    "stable_tail": false,
+    "new_candidate_sample_credit": 0
+  },
+  "provenance": {
+    "archive_ref": "59a0540414250827281768e806d8deaa40fd0937",
+    "archive_path": "artifacts/checkpoints/p8-evidence-20261009-round19/scale-four-shard-audit-payload/scale-four-shard-audit-v1.tar.gz",
+    "archive_blob": "234feea42d6caf7e32be713a1eb5634e4ba64060",
+    "archive_bytes": 679900,
+    "archive_sha256": "38cd1ab10ce282fcf3c35468c515411edd530a2427dabe908f6665388c4c4f5d",
+    "failed_utf8_fetch": {
+      "tool": "github_fetch_blob",
+      "result": "UnicodeDecodeError at gzip byte 0x8b; no original bytes decoded"
+    },
+    "successful_transport": {
+      "tool": "github_fetch_file",
+      "encoding": "base64",
+      "exact_path_and_ref": true
+    },
+    "bounded_data_parse": {
+      "maximum_inflated_bytes": 6291456,
+      "actual_tar_bytes": 4311040,
+      "regular_members": 251,
+      "original_member_bytes": 4108564,
+      "gzip_crc_and_isize": true,
+      "deflate_eof_and_no_unused_compressed_bytes": true,
+      "tar_header_checksum": true,
+      "regular_ustar_only": true,
+      "canonical_unique_paths": true,
+      "all_member_size_mode_sha256_git_oid_match_frozen_proof": true,
+      "filesystem_extraction": false
+    },
+    "prior_package_review_blob": "60d76a10649283faccc070f453b7fa301639f5c0",
+    "members": [
+      {
+        "member": "E-state-context/shards/11593548201/review.json",
+        "bytes": 9769,
+        "sha256": "44baa425e6e46b2f9d18ccd5eaa81cb4c613dd0a458894267c44ed5cb63e7e08",
+        "git_blob": "caa77cb1905d59777fcb044f3ac5387c9904085c"
+      },
+      {
+        "member": "E-state-context/shards/11593548201/validated-shard.json",
+        "bytes": 13141,
+        "sha256": "12f3ca24c2e38182fac1c94c5b61e15c4fb12e445d88931c9d5685e8de93c3d6",
+        "git_blob": "d21688e5acea04a9bc92c06c4737c02a779df2c5"
+      }
+    ],
+    "newly_materialized_members": "Exact two existing JSON byte streams were uploaded as unreferenced Git blobs and then read back byte-for-byte. Their computed OIDs previously returned404 because only the tar was uploaded; no fields or historical paths were changed.",
+    "evidence_level": "This round sums the already validated original compact projection. It does not independently replay native/raw.jsonl, reexecute validate_shard, or time SQL."
+  },
+  "phase_50k": {
+    "supervisor_wall_s": 4214.047,
+    "build_counts": {
+      "full": 10,
+      "incremental": 501,
+      "total": 511
+    },
+    "nonoverlapping_work_classes": {
+      "full_build_recorded_build_timing_total_s": 1665.073502,
+      "parity_wall_s": 1613.085973,
+      "incremental_outer_wall_s": 917.992578,
+      "residual_and_different_measurement_boundaries_s": 17.894946999999434
+    },
+    "full_plus_parity_share_of_supervisor_percent": 77.79124141235255,
+    "incremental_outer_share_percent": 21.784108672731936,
+    "nested_subsets_not_to_add_again": {
+      "full_staging_s": 1257.452225,
+      "incremental_phase_ms": {
+        "analysis_ms": 9449,
+        "parse_ms": 98576,
+        "postprocess_ms": 100027,
+        "resolve_ms": 21631,
+        "scan_diff_ms": 171753,
+        "write_ms": 481185
+      },
+      "incremental_prepare_snapshot_s": 0.091297,
+      "incremental_commit_write_s": 495.2642850000001
+    },
+    "stages": [
+      {
+        "stage": "no_op",
+        "builds": 1,
+        "outer_s": 0.614544,
+        "scan_diff_s": 0.544,
+        "parse_s": 0.008,
+        "resolve_s": 0.003,
+        "write_s": 0.02,
+        "postprocess_s": 0,
+        "commit_write_s": 0.020584,
+        "prepare_snapshot_s": 0,
+        "parity_s": 173.630514,
+        "full_control_s": 132.227316
+      },
+      {
+        "stage": "body",
+        "builds": 245,
+        "outer_s": 408.277458,
+        "scan_diff_s": 82.109,
+        "parse_s": 57.92,
+        "resolve_s": 9.131,
+        "write_s": 237.206,
+        "postprocess_s": 3.52,
+        "commit_write_s": 241.189905,
+        "prepare_snapshot_s": 0.032124,
+        "parity_s": 188.004067,
+        "full_control_s": 179.089423
+      },
+      {
+        "stage": "api",
+        "builds": 86,
+        "outer_s": 222.294066,
+        "scan_diff_s": 30.298,
+        "parse_s": 7.582,
+        "resolve_s": 3.108,
+        "write_s": 80.241,
+        "postprocess_s": 93.032,
+        "commit_write_s": 82.03126,
+        "prepare_snapshot_s": 0.01398,
+        "parity_s": 200.813555,
+        "full_control_s": 186.25702
+      },
+      {
+        "stage": "config",
+        "builds": 165,
+        "outer_s": 266.951781,
+        "scan_diff_s": 55.84,
+        "parse_s": 32.46,
+        "resolve_s": 5.527,
+        "write_s": 156.956,
+        "postprocess_s": 3.475,
+        "commit_write_s": 159.860349,
+        "prepare_snapshot_s": 0.023508,
+        "parity_s": 158.186635,
+        "full_control_s": 181.572531
+      },
+      {
+        "stage": "batch_1",
+        "builds": 1,
+        "outer_s": 1.449695,
+        "scan_diff_s": 1.218,
+        "parse_s": 0.017,
+        "resolve_s": 0.027,
+        "write_s": 0.127,
+        "postprocess_s": 0,
+        "commit_write_s": 0.129574,
+        "prepare_snapshot_s": 0.000155,
+        "parity_s": 166.827906,
+        "full_control_s": 179.883043
+      },
+      {
+        "stage": "batch_10",
+        "builds": 1,
+        "outer_s": 1.861599,
+        "scan_diff_s": 0.552,
+        "parse_s": 0.021,
+        "resolve_s": 1.094,
+        "write_s": 0.14,
+        "postprocess_s": 0,
+        "commit_write_s": 0.146081,
+        "prepare_snapshot_s": 0.000481,
+        "parity_s": 179.425338,
+        "full_control_s": 188.779654
+      },
+      {
+        "stage": "batch_100",
+        "builds": 1,
+        "outer_s": 2.481846,
+        "scan_diff_s": 0.619,
+        "parse_s": 0.145,
+        "resolve_s": 0.434,
+        "write_s": 1.215,
+        "postprocess_s": 0,
+        "commit_write_s": 1.225066,
+        "prepare_snapshot_s": 0.002702,
+        "parity_s": 178.622255,
+        "full_control_s": 177.562107
+      },
+      {
+        "stage": "batch_1000",
+        "builds": 1,
+        "outer_s": 14.061589,
+        "scan_diff_s": 0.573,
+        "parse_s": 0.423,
+        "resolve_s": 2.307,
+        "write_s": 5.28,
+        "postprocess_s": 0,
+        "commit_write_s": 10.661466,
+        "prepare_snapshot_s": 0.018347,
+        "parity_s": 186.201005,
+        "full_control_s": 186.205664
+      }
+    ],
+    "dominant_incremental_mutations": {
+      "stages": [
+        "body",
+        "api",
+        "config"
+      ],
+      "builds": 496,
+      "of_incremental_builds": 501,
+      "outer_s": 897.523305,
+      "incremental_outer_share_percent": 97.7702136715968,
+      "explanation": "The body edit triggers more resumes than the API or config edit in this actual fixture. A body label is not a claim that persisted public identity is unchanged; the original driver inserts a source line."
+    },
+    "scan_scope": {
+      "incremental_scan_diff_s": 171.753,
+      "share_of_supervisor_percent": 4.075725780941694,
+      "interpretation": "Repeated scans are real and grow with resume count, but this50k observation does not identify scanning as the dominant whole-run cost."
+    },
+    "api_postprocess_s": 93.032,
+    "cold_table_row_counts": {
+      "call_edges": 245140,
+      "chunks": 318076,
+      "dispatch_sites": 0,
+      "document_manifest": 318076,
+      "files": 50000,
+      "imports": 33047,
+      "public_surfaces": 50000,
+      "resolution_dependencies": 959611,
+      "resolution_frontier": 0,
+      "resolution_manifests": 50000,
+      "routes": 4000,
+      "semantic_edges": 299076,
+      "symbol_refs": 722310,
+      "symbols": 278077,
+      "test_edges": 0
+    },
+    "cold_all_table_rows": 3327413,
+    "parity_row_order_of_magnitude": {
+      "calculation": "2 sides × 9 checkpoints × 3,327,413 cold rows",
+      "estimated_visits": 59893434,
+      "exact_all_checkpoint_count": false,
+      "reason": "Mutation changes can alter row counts; the compact projection does not give every table count at every checkpoint."
+    },
+    "unknown_from_this_projection": [
+      "per-table parity wall time",
+      "per-statement SQLite rows/VM/sort/fullscan counters",
+      "100k last native stage or native exit",
+      "which subsystem caused hosted runner communication loss"
+    ],
+    "timing_cautions": [
+      "full_staging_us is nested inside full build timing, not additional to it",
+      "prepare_snapshot_us, commit_write_us, prepare_us and phase *_ms have different/nested scope and must not all be summed",
+      "full build totals use recorded engine build_timing.total_us; parity and incremental outer use separate wall domains, so residual is not a new measured phase",
+      "millisecond phase values are rounded aggregates; no artificial exact balancing"
+    ]
+  },
+  "other_A23_single_shards": [
+    {
+      "artifact_id": 11591367982,
+      "scale": 1000,
+      "source": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "host_label": "runnervmmprz5",
+      "cpu_model": "AMD EPYC 7763 64-Core Processor",
+      "native_wall_s": 41.191,
+      "full_builds": 10,
+      "incremental_builds": 16,
+      "full_build_total_s": 18.572409,
+      "full_staging_subset_s": 12.119104,
+      "parity_s": 13.303747,
+      "incremental_outer_s": 6.227312,
+      "incremental_scan_diff_s": 0.193,
+      "stage_build_counts": {
+        "no_op": 1,
+        "body": 5,
+        "api": 2,
+        "config": 4,
+        "batch_1": 1,
+        "batch_10": 1,
+        "batch_100": 1,
+        "batch_1000": 1
+      },
+      "sample_per_group": 1,
+      "scope": "Different hosted CPU models; no pooled stable-tail or causal speedup inference. The1k run additionally has5 fanout samples outside these main-scale class sums."
+    },
+    {
+      "artifact_id": 11591464502,
+      "scale": 5000,
+      "source": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "host_label": "runnervmmprz5",
+      "cpu_model": "AMD EPYC 9V74 80-Core Processor",
+      "native_wall_s": 196.289,
+      "full_builds": 10,
+      "incremental_builds": 56,
+      "full_build_total_s": 98.193084,
+      "full_staging_subset_s": 73.867361,
+      "parity_s": 62.616383,
+      "incremental_outer_s": 32.872222,
+      "incremental_scan_diff_s": 1.666,
+      "stage_build_counts": {
+        "no_op": 1,
+        "body": 25,
+        "api": 9,
+        "config": 17,
+        "batch_1": 1,
+        "batch_10": 1,
+        "batch_100": 1,
+        "batch_1000": 1
+      },
+      "sample_per_group": 1,
+      "scope": "Different hosted CPU models; no pooled stable-tail or causal speedup inference. The1k run additionally has5 fanout samples outside these main-scale class sums."
+    },
+    {
+      "artifact_id": 11591693031,
+      "scale": 10000,
+      "source": "a23bb72d3c954f385b99fe81ce9189885c208557",
+      "host_label": "runnervmmprz5",
+      "cpu_model": "INTEL(R) XEON(R) PLATINUM 8573C",
+      "native_wall_s": 506.434,
+      "full_builds": 10,
+      "incremental_builds": 105,
+      "full_build_total_s": 240.168713,
+      "full_staging_subset_s": 178.093451,
+      "parity_s": 161.435633,
+      "incremental_outer_s": 99.982362,
+      "incremental_scan_diff_s": 6.513,
+      "stage_build_counts": {
+        "no_op": 1,
+        "body": 49,
+        "api": 18,
+        "config": 33,
+        "batch_1": 1,
+        "batch_10": 1,
+        "batch_100": 1,
+        "batch_1000": 1
+      },
+      "sample_per_group": 1,
+      "scope": "Different hosted CPU models; no pooled stable-tail or causal speedup inference. The1k run additionally has5 fanout samples outside these main-scale class sums."
+    }
+  ],
+  "G2_completed_logs": {
+    "source": "0272a1fb152fd76a7cfb22386a580629d4038a64",
+    "run_id": 37877604259,
+    "observations": [
+      {
+        "scale": 1000,
+        "job_id": 113651970350,
+        "log_bytes": 47109,
+        "log_sha256": "e83a2ad441b940a43c60bd822471f5ec2a5c4ef6a05395f64d2a40471df76a8a",
+        "command_printed_utc": "2026-10-09T03:17:31.0579917Z",
+        "compact_result_utc": "2026-10-09T03:18:11.2086834Z",
+        "approx_log_interval_s": 40.150692,
+        "artifact_id": 11593830434,
+        "artifact_size_bytes": 952740
+      },
+      {
+        "scale": 10000,
+        "job_id": 113651970386,
+        "log_bytes": 47177,
+        "log_sha256": "af7bcc4c52ac87d8a414d6022a9f00b506372aa9c19a60d2a283e07ea17df534",
+        "command_printed_utc": "2026-10-09T03:18:15.3649311Z",
+        "compact_result_utc": "2026-10-09T03:26:24.4891638Z",
+        "approx_log_interval_s": 489.124233,
+        "artifact_id": 11593802228,
+        "artifact_size_bytes": 853987
+      }
+    ],
+    "exact_native_phase_breakdown": null,
+    "raw_or_native_report_retrieved_this_round": false,
+    "scope": "The intervals are official log timestamps surrounding the original CLI invocation, not newly reconstructed native stage timings. CLI compact error=null/sample_count=null is retained; it does not furnish1500 coverage or a comparable stage speedup."
+  },
+  "source_evidence": {
+    "source_complexity_independent_review": {
+      "git_blob": "817925e2b351531af6921feb1b248d682f3b43ba",
+      "sha256": "c2fe6fa20ded875c0ccd306616b4444efdd1fb2f578fe700be17f4de5bfbd38b",
+      "bytes": 22424,
+      "candidate": "59c2197ebbada4e8cb2091d2fc7a852aa28c9205"
+    },
+    "workload": {
+      "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+      "lines": {
+        "cold_full_pair": "784–785",
+        "stages": "800–806",
+        "mutation_body": "818–829",
+        "incremental_resume": "881–895",
+        "full_control_and_parity": "897–904",
+        "original_stage_fields": "923–927"
+      }
+    },
+    "oracle_exact_A23_and_PR173_bytes": [
+      {
+        "path": "crates/cc-eval/src/benchmark/oracle.rs",
+        "git_blob": "d6324b3003b5a3c3e8a1680536260ea99a950152",
+        "key_lines": "116–130 project_row: per-row JSON Map, per-column owned key, Value conversion, BLOB digest, strict UTF8"
+      },
+      {
+        "path": "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+        "git_blob": "3c05342f976f534861347c098c3229ce988dfb61",
+        "key_lines": "163–209 spool;188–199 original row/byte budgets;219–228 exact Value fallback;280–304 complete duplicate-preserving SQLite order;310–392 all15tables"
+      }
+    ],
+    "interpretation": [
+      "Each unscoped incremental resume still requires freshness checks/full tree walk. With K resumes that is K repetitions of O(N) metadata work; K itself can grow with affected closure/budget200. This is a conditional complexity explanation, not a100k timing extrapolation.",
+      "The bounded reverse queries can reread completed prefixes. PR173 removes one redundant probe within a prepare, not all cross-resume prefixes. Existing file-state/catalog caches and current-batch prepare_snapshot exclude the claim that every resume blindly reloads every DB row.",
+      "The complete oracle performs a fixed15-table, two-side spool and sorted comparison at all9 checkpoints; it still converts each row through owned serde_json Value then canonical text. This exact path is unchanged from A23 to the read PR173/G2 source."
+    ]
+  },
+  "actionable_recommendation": [
+    {
+      "priority": 1,
+      "action": "Focus source-level review on full_staging and canonical-row spool, which account for the dominant measured work classes; avoid presenting scanner-only cleanup as a demonstrated100k fix.",
+      "boundary": "G2's snapshot leaf batching is already implemented; do not reimplement it or credit its benefit without G2 raw phase evidence."
+    },
+    {
+      "priority": 2,
+      "action": "A minimal candidate worth a bounded equivalence check is replacing only the oracle's per-row intermediate Value/Map construction with exactly equivalent direct serialization using a table column layout.",
+      "status": "proposal_only_here; no candidate source or measured speedup is approved by this report",
+      "must_preserve": [
+        "all15tables and every row on both sides",
+        "original column projection and map ordering",
+        "NULL/integer/float including nonfinite/signed-zero semantics",
+        "strict UTF8 failure and BLOB digest representation",
+        "duplicate-preserving ordinal/order and Value equality fallback",
+        "all original row/byte/scratch/deadline budgets and error paths"
+      ],
+      "expected_effect": "Potential allocation/serialization constant reduction inside observed1613s parity class; not removal of O(R log R) SQLite ordered-spool work and not a guaranteed100k pass."
+    },
+    {
+      "priority": 3,
+      "action": "Keep small frontier move/imports covering-index proposals as secondary, unmeasured candidates. Do not bypass source freshness, reuse benchmark knowledge, drop full controls, truncate oracle tables, or add persistent cursors without a separate semantics proof.",
+      "reason": "Current data attributes only4.08% of this whole50k run to incremental scan_diff; prepare_snapshot is0.091297s across incremental builds. Neither supports calling whole-snapshot/scan removal the principal measured fix."
+    }
+  ],
+  "prior_direct_serialization_diagnostic_reference": {
+    "state": "not_retrieved_or_verified_this_round",
+    "historical_parent_message_paths": [
+      "integration-validation/round11-oracle-projection-profile/direct-encode-probe.rs",
+      "integration-validation/round11-oracle-projection-profile/direct-results.json",
+      "integration-validation/round11-oracle-projection-profile/direct-assessment.json",
+      "integration-validation/round12-direct-oracle-comparison/candidate.rs",
+      "integration-validation/round12-direct-oracle-comparison/results.json",
+      "integration-validation/round12-direct-oracle-comparison/assessment.json"
+    ],
+    "git_blob_or_pr_known": null,
+    "admissible_speedup_credit": 0,
+    "statement": "These paths were named in an earlier root delegation. No current fixed blob or test evidence from them is claimed here. The candidate recommendation above is prospective, not an assertion that a reviewed optimization is ready."
+  },
+  "failure_and_completion_boundary": {
+    "original_A23_100k": "Official later terminal annotation says hosted runner lost communication. Native phase/outcome and physical root cause remain unknown; this is not proof of an original5h native timeout.",
+    "no_winner_selection": true,
+    "old_failure_retained": true,
+    "original_N_and_workload_unchanged": true,
+    "waiting_for_G2_terminal": "Not an original project hard prerequisite for reviewing/fixing a final source or registering a new fixed study; engineering sequencing must not be restated as a mandatory acceptance gate.",
+    "completion": "No original TODO can be marked complete from these partialN1 phase observations. Full original study/dependencies/regressions still need the actual required evidence."
+  }
+}

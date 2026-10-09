@@ -1,0 +1,574 @@
+﻿2026-10-09T06:19:27.6514549Z Current runner version: '2.337.0'
+2026-10-09T06:19:27.6549016Z ##[group]Runner Image Provisioner
+2026-10-09T06:19:27.6550724Z Hosted Compute Agent
+2026-10-09T06:19:27.6551743Z Version: 20261002.596
+2026-10-09T06:19:27.6553283Z Commit: c3d12f3313a95f25162a1503be624f3b0617f8c0
+2026-10-09T06:19:27.6554581Z Build Date: 2026-10-02T22:28:27Z
+2026-10-09T06:19:27.6555742Z Worker ID: {e2cab482-5a73-4f6c-b5c0-79ffc58886bd}
+2026-10-09T06:19:27.6557196Z Region: eastus2
+2026-10-09T06:19:27.6558096Z Cloud: Azure
+2026-10-09T06:19:27.6559104Z ##[endgroup]
+2026-10-09T06:19:27.6561379Z ##[group]Operating System
+2026-10-09T06:19:27.6562527Z Ubuntu
+2026-10-09T06:19:27.6563865Z 24.04.5
+2026-10-09T06:19:27.6564776Z LTS
+2026-10-09T06:19:27.6565671Z ##[endgroup]
+2026-10-09T06:19:27.6566737Z ##[group]Runner Image
+2026-10-09T06:19:27.6567740Z Image: ubuntu-24.04
+2026-10-09T06:19:27.6568826Z Version: 20261004.327.1
+2026-10-09T06:19:27.6571061Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-09T06:19:27.6574618Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327
+2026-10-09T06:19:27.6576386Z ##[endgroup]
+2026-10-09T06:19:27.6578470Z ##[group]GITHUB_TOKEN Permissions
+2026-10-09T06:19:27.6581459Z Contents: read
+2026-10-09T06:19:27.6582488Z Metadata: read
+2026-10-09T06:19:27.6583876Z ##[endgroup]
+2026-10-09T06:19:27.6586775Z Secret source: Actions
+2026-10-09T06:19:27.6588461Z Cache mode: write
+2026-10-09T06:19:27.6589850Z Prepare workflow directory
+2026-10-09T06:19:27.7145844Z Prepare all required actions
+2026-10-09T06:19:27.7216670Z Getting action download info
+2026-10-09T06:19:27.9296367Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-09T06:19:28.0277437Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-10-09T06:19:28.2412222Z Complete job name: source_admission
+2026-10-09T06:19:28.3262994Z ##[group]Run actions/checkout@v4
+2026-10-09T06:19:28.3263946Z with:
+2026-10-09T06:19:28.3264446Z   ref: b17535f5e762bf8afbea9978ccf02f7070ba6940
+2026-10-09T06:19:28.3265058Z   fetch-depth: 0
+2026-10-09T06:19:28.3265524Z   persist-credentials: false
+2026-10-09T06:19:28.3266060Z   repository: jyqj/codecortex
+2026-10-09T06:19:28.3269750Z   token: ***
+2026-10-09T06:19:28.3270194Z   ssh-strict: true
+2026-10-09T06:19:28.3270640Z   ssh-user: git
+2026-10-09T06:19:28.3271073Z   clean: true
+2026-10-09T06:19:28.3271521Z   sparse-checkout-cone-mode: true
+2026-10-09T06:19:28.3272057Z   fetch-tags: false
+2026-10-09T06:19:28.3272510Z   show-progress: true
+2026-10-09T06:19:28.3273169Z   lfs: false
+2026-10-09T06:19:28.3273587Z   submodules: false
+2026-10-09T06:19:28.3274040Z   set-safe-directory: true
+2026-10-09T06:19:28.3274556Z   allow-unsafe-pr-checkout: false
+2026-10-09T06:19:28.3275315Z env:
+2026-10-09T06:19:28.3275755Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T06:19:28.3276388Z   DIAG_SOURCE: a23bb72d3c954f385b99fe81ce9189885c208557
+2026-10-09T06:19:28.3277005Z ##[endgroup]
+2026-10-09T06:19:28.4271990Z Syncing repository: jyqj/codecortex
+2026-10-09T06:19:28.4275337Z ##[group]Getting Git version info
+2026-10-09T06:19:28.4276131Z Working directory is '/home/runner/work/codecortex/codecortex'
+2026-10-09T06:19:28.4277171Z [command]/usr/bin/git version
+2026-10-09T06:19:28.4340032Z git version 2.55.0
+2026-10-09T06:19:28.4361333Z ##[endgroup]
+2026-10-09T06:19:28.4374918Z Temporarily overriding HOME='/home/runner/work/_temp/f1efb207-c140-4799-a48f-68524993c206' before making global git config changes
+2026-10-09T06:19:28.4376337Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-09T06:19:28.4380283Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/codecortex/codecortex
+2026-10-09T06:19:28.4427416Z Deleting the contents of '/home/runner/work/codecortex/codecortex'
+2026-10-09T06:19:28.4431393Z ##[group]Initializing the repository
+2026-10-09T06:19:28.4435712Z [command]/usr/bin/git init /home/runner/work/codecortex/codecortex
+2026-10-09T06:19:28.4533059Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-09T06:19:28.4534182Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-09T06:19:28.4535851Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-09T06:19:28.4537117Z hint: call:
+2026-10-09T06:19:28.4537717Z hint:
+2026-10-09T06:19:28.4538605Z hint: 	git config --global init.defaultBranch <name>
+2026-10-09T06:19:28.4539616Z hint:
+2026-10-09T06:19:28.4540699Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-09T06:19:28.4541738Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-09T06:19:28.4542675Z hint:
+2026-10-09T06:19:28.4543130Z hint: 	git branch -m <name>
+2026-10-09T06:19:28.4543625Z hint:
+2026-10-09T06:19:28.4544295Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-09T06:19:28.4546060Z Initialized empty Git repository in /home/runner/work/codecortex/codecortex/.git/
+2026-10-09T06:19:28.4547791Z [command]/usr/bin/git remote add origin https://github.com/jyqj/codecortex
+2026-10-09T06:19:28.4592879Z ##[endgroup]
+2026-10-09T06:19:28.4593823Z ##[group]Disabling automatic garbage collection
+2026-10-09T06:19:28.4596874Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-09T06:19:28.4625795Z ##[endgroup]
+2026-10-09T06:19:28.4626593Z ##[group]Setting up auth
+2026-10-09T06:19:28.4632207Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T06:19:28.4662156Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T06:19:28.4997646Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T06:19:28.5033269Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T06:19:28.5265221Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T06:19:28.5296832Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T06:19:28.5516017Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-09T06:19:28.5554185Z ##[endgroup]
+2026-10-09T06:19:28.5555632Z ##[group]Fetching the repository
+2026-10-09T06:19:28.5564835Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+2026-10-09T06:19:57.5942019Z From https://github.com/jyqj/codecortex
+2026-10-09T06:19:57.5945593Z  * [new branch]        audit/p8-a23-original-readback-28fe-20261009 -> origin/audit/p8-a23-original-readback-28fe-20261009
+2026-10-09T06:19:57.5947436Z  * [new branch]        audit/p8-a23-original-readback-28fe-a2-20261009 -> origin/audit/p8-a23-original-readback-28fe-a2-20261009
+2026-10-09T06:19:57.5949001Z  * [new branch]        audit/p8-mac-diag-readback-28fe-20261009 -> origin/audit/p8-mac-diag-readback-28fe-20261009
+2026-10-09T06:19:57.5950367Z  * [new branch]        audit/public-dev-kind-review-20261003 -> origin/audit/public-dev-kind-review-20261003
+2026-10-09T06:19:57.5951778Z  * [new branch]        audit/public-dev-pygo-v2-independent-20261003 -> origin/audit/public-dev-pygo-v2-independent-20261003
+2026-10-09T06:19:57.5953442Z  * [new branch]        audit/v19-development-baseline -> origin/audit/v19-development-baseline
+2026-10-09T06:19:57.5954701Z  * [new branch]        audit/v19-four-repo-dev-admission -> origin/audit/v19-four-repo-dev-admission
+2026-10-09T06:19:57.5955853Z  * [new branch]        audit/v19-gin-dev-admission -> origin/audit/v19-gin-dev-admission
+2026-10-09T06:19:57.5956940Z  * [new branch]        audit/v19-global-protocol -> origin/audit/v19-global-protocol
+2026-10-09T06:19:57.5957612Z  * [new branch]        audit/v19-public-corpus-readiness -> origin/audit/v19-public-corpus-readiness
+2026-10-09T06:19:57.5958434Z  * [new branch]        audit/v19-public-index-failure-diagnosis -> origin/audit/v19-public-index-failure-diagnosis
+2026-10-09T06:19:57.5959190Z  * [new branch]        audit/v19-two-repo-admission -> origin/audit/v19-two-repo-admission
+2026-10-09T06:19:57.5959852Z  * [new branch]        audit/v24-failure-triage-20261003 -> origin/audit/v24-failure-triage-20261003
+2026-10-09T06:19:57.5960589Z  * [new branch]        backfill-phase-costs-v2-20261003 -> origin/backfill-phase-costs-v2-20261003
+2026-10-09T06:19:57.5961456Z  * [new branch]        candidate/integrate-gate-parallel-retry-20261003 -> origin/candidate/integrate-gate-parallel-retry-20261003
+2026-10-09T06:19:57.5962498Z  * [new branch]        candidate/integrate-startup-gate-parallel-retry-20261003 -> origin/candidate/integrate-startup-gate-parallel-retry-20261003
+2026-10-09T06:19:57.5964279Z  * [new branch]        candidate/pr123-attempt-pipeline -> origin/candidate/pr123-attempt-pipeline
+2026-10-09T06:19:57.5965087Z  * [new branch]        capability-snapshot-optimization-20261003 -> origin/capability-snapshot-optimization-20261003
+2026-10-09T06:19:57.5965871Z  * [new branch]        cloud/cc-search-budget-diagnostic -> origin/cloud/cc-search-budget-diagnostic
+2026-10-09T06:19:57.5966655Z  * [new branch]        codecortex-source-registry-v6-20261006-r1 -> origin/codecortex-source-registry-v6-20261006-r1
+2026-10-09T06:19:57.5967380Z  * [new branch]        codex/bounded-db-publication -> origin/codex/bounded-db-publication
+2026-10-09T06:19:57.5968248Z  * [new branch]        codex/cloud-cache-key-review -> origin/codex/cloud-cache-key-review
+2026-10-09T06:19:57.5969739Z  * [new branch]        codex/cloud-cross-build-validation -> origin/codex/cloud-cross-build-validation
+2026-10-09T06:19:57.5971052Z  * [new branch]        codex/cloud-dependency-security -> origin/codex/cloud-dependency-security
+2026-10-09T06:19:57.5972023Z  * [new branch]        codex/cloud-express-dev-review -> origin/codex/cloud-express-dev-review
+2026-10-09T06:19:57.5973092Z  * [new branch]        codex/cloud-express-repair-review -> origin/codex/cloud-express-repair-review
+2026-10-09T06:19:57.5973771Z  * [new branch]        codex/cloud-gin-dev-review -> origin/codex/cloud-gin-dev-review
+2026-10-09T06:19:57.5974541Z  * [new branch]        codex/cloud-gin-repair-review -> origin/codex/cloud-gin-repair-review
+2026-10-09T06:19:57.5975378Z  * [new branch]        codex/cloud-index-fix-integration -> origin/codex/cloud-index-fix-integration
+2026-10-09T06:19:57.5976146Z  * [new branch]        codex/cloud-p0-corpus-lock-repair -> origin/codex/cloud-p0-corpus-lock-repair
+2026-10-09T06:19:57.5976838Z  * [new branch]        codex/cloud-p0-gold-bounded-audit -> origin/codex/cloud-p0-gold-bounded-audit
+2026-10-09T06:19:57.5977538Z  * [new branch]        codex/cloud-p7-014-integration -> origin/codex/cloud-p7-014-integration
+2026-10-09T06:19:57.5978449Z  * [new branch]        codex/cloud-p7-014-lifecycle -> origin/codex/cloud-p7-014-lifecycle
+2026-10-09T06:19:57.5979361Z  * [new branch]        codex/cloud-p7-baseline-diagnosis -> origin/codex/cloud-p7-baseline-diagnosis
+2026-10-09T06:19:57.5980238Z  * [new branch]        codex/cloud-p7-cache-identity-review -> origin/codex/cloud-p7-cache-identity-review
+2026-10-09T06:19:57.5980987Z  * [new branch]        codex/cloud-p7-contention-validation -> origin/codex/cloud-p7-contention-validation
+2026-10-09T06:19:57.5981707Z  * [new branch]        codex/cloud-p7-crash-preparation -> origin/codex/cloud-p7-crash-preparation
+2026-10-09T06:19:57.5982489Z  * [new branch]        codex/cloud-p7-empty-test-independent-review -> origin/codex/cloud-p7-empty-test-independent-review
+2026-10-09T06:19:57.5983778Z  * [new branch]        codex/cloud-p7-empty-test-population -> origin/codex/cloud-p7-empty-test-population
+2026-10-09T06:19:57.5984812Z  * [new branch]        codex/cloud-p7-fixture-marker-publication -> origin/codex/cloud-p7-fixture-marker-publication
+2026-10-09T06:19:57.5985577Z  * [new branch]        codex/cloud-p7-formal-gate-scope -> origin/codex/cloud-p7-formal-gate-scope
+2026-10-09T06:19:57.5986406Z  * [new branch]        codex/cloud-p7-integration -> origin/codex/cloud-p7-integration
+2026-10-09T06:19:57.5987129Z  * [new branch]        codex/cloud-p7-integration-format -> origin/codex/cloud-p7-integration-format
+2026-10-09T06:19:57.5987874Z  * [new branch]        codex/cloud-p7-integration-review-base -> origin/codex/cloud-p7-integration-review-base
+2026-10-09T06:19:57.5988603Z  * [new branch]        codex/cloud-p7-lifecycle-fences -> origin/codex/cloud-p7-lifecycle-fences
+2026-10-09T06:19:57.5989284Z  * [new branch]        codex/cloud-p7-model-transition -> origin/codex/cloud-p7-model-transition
+2026-10-09T06:19:57.5990002Z  * [new branch]        codex/cloud-p7-query-encoding-service -> origin/codex/cloud-p7-query-encoding-service
+2026-10-09T06:19:57.5990793Z  * [new branch]        codex/cloud-p7-query-optin-integration -> origin/codex/cloud-p7-query-optin-integration
+2026-10-09T06:19:57.5991526Z  * [new branch]        codex/cloud-p7-query-production -> origin/codex/cloud-p7-query-production
+2026-10-09T06:19:57.5992237Z  * [new branch]        codex/cloud-p7-recovery-integration -> origin/codex/cloud-p7-recovery-integration
+2026-10-09T06:19:57.5993386Z  * [new branch]        codex/cloud-p7-recovery-lifecycle-review-base -> origin/codex/cloud-p7-recovery-lifecycle-review-base
+2026-10-09T06:19:57.5994856Z  * [new branch]        codex/cloud-p7-recovery-query-cache-review-base -> origin/codex/cloud-p7-recovery-query-cache-review-base
+2026-10-09T06:19:57.5996437Z  * [new branch]        codex/cloud-p7-recovery-retry-review-base -> origin/codex/cloud-p7-recovery-retry-review-base
+2026-10-09T06:19:57.5998211Z  * [new branch]        codex/cloud-p7-recovery-worker-review-base -> origin/codex/cloud-p7-recovery-worker-review-base
+2026-10-09T06:19:57.5999776Z  * [new branch]        codex/cloud-p7-release-resource-large -> origin/codex/cloud-p7-release-resource-large
+2026-10-09T06:19:57.6001226Z  * [new branch]        codex/cloud-p7-release-resource-small -> origin/codex/cloud-p7-release-resource-small
+2026-10-09T06:19:57.6002333Z  * [new branch]        codex/cloud-p7-resource-hotspot-diagnostic -> origin/codex/cloud-p7-resource-hotspot-diagnostic
+2026-10-09T06:19:57.6003820Z  * [new branch]        codex/cloud-p7-resource-prepared -> origin/codex/cloud-p7-resource-prepared
+2026-10-09T06:19:57.6004783Z  * [new branch]        codex/cloud-p7-resource-review-intake -> origin/codex/cloud-p7-resource-review-intake
+2026-10-09T06:19:57.6005501Z  * [new branch]        codex/cloud-p7-seed-bind-limit -> origin/codex/cloud-p7-seed-bind-limit
+2026-10-09T06:19:57.6006457Z  * [new branch]        codex/cloud-p7-staging-gc-prepared -> origin/codex/cloud-p7-staging-gc-prepared
+2026-10-09T06:19:57.6007664Z  * [new branch]        codex/cloud-p7-test-isolation -> origin/codex/cloud-p7-test-isolation
+2026-10-09T06:19:57.6008815Z  * [new branch]        codex/cloud-p7-v05-public-scope -> origin/codex/cloud-p7-v05-public-scope
+2026-10-09T06:19:57.6009869Z  * [new branch]        codex/cloud-p7-v11-cache-consumption -> origin/codex/cloud-p7-v11-cache-consumption
+2026-10-09T06:19:57.6010615Z  * [new branch]        codex/cloud-p7-v11-cache-key-matrix -> origin/codex/cloud-p7-v11-cache-key-matrix
+2026-10-09T06:19:57.6011513Z  * [new branch]        codex/cloud-p7-v11-generation-contract -> origin/codex/cloud-p7-v11-generation-contract
+2026-10-09T06:19:57.6012406Z  * [new branch]        codex/cloud-p7-v11-generation-snapshot-fix -> origin/codex/cloud-p7-v11-generation-snapshot-fix
+2026-10-09T06:19:57.6013695Z  * [new branch]        codex/cloud-p7-v16-offline-oracle -> origin/codex/cloud-p7-v16-offline-oracle
+2026-10-09T06:19:57.6014406Z  * [new branch]        codex/cloud-p7-v18-fault-contract -> origin/codex/cloud-p7-v18-fault-contract
+2026-10-09T06:19:57.6015063Z  * [new branch]        codex/cloud-p7-v18-integration -> origin/codex/cloud-p7-v18-integration
+2026-10-09T06:19:57.6015910Z  * [new branch]        codex/cloud-p7-v19-current-local -> origin/codex/cloud-p7-v19-current-local
+2026-10-09T06:19:57.6016580Z  * [new branch]        codex/cloud-semantic-chunk-lints -> origin/codex/cloud-semantic-chunk-lints
+2026-10-09T06:19:57.6017285Z  * [new branch]        codex/cloud-semantic-http-transport -> origin/codex/cloud-semantic-http-transport
+2026-10-09T06:19:57.6018045Z  * [new branch]        codex/cloud-semantic-provider-factory -> origin/codex/cloud-semantic-provider-factory
+2026-10-09T06:19:57.6018758Z  * [new branch]        codex/cloud-semantic-test-lints -> origin/codex/cloud-semantic-test-lints
+2026-10-09T06:19:57.6019438Z  * [new branch]        codex/cloud-typescript-dev-review -> origin/codex/cloud-typescript-dev-review
+2026-10-09T06:19:57.6020199Z  * [new branch]        codex/cloud-typescript-remaining-review -> origin/codex/cloud-typescript-remaining-review
+2026-10-09T06:19:57.6020962Z  * [new branch]        codex/cloud-v11-consumption-review -> origin/codex/cloud-v11-consumption-review
+2026-10-09T06:19:57.6022093Z  * [new branch]        codex/cloud-v16-cache-read-bounds -> origin/codex/cloud-v16-cache-read-bounds
+2026-10-09T06:19:57.6023675Z  * [new branch]        codex/cloud-v16-resource-validation -> origin/codex/cloud-v16-resource-validation
+2026-10-09T06:19:57.6024877Z  * [new branch]        codex/cloud-verified-chunk-qname -> origin/codex/cloud-verified-chunk-qname
+2026-10-09T06:19:57.6026155Z  * [new branch]        codex/native-adapter-diagnostic-20261003 -> origin/codex/native-adapter-diagnostic-20261003
+2026-10-09T06:19:57.6027397Z  * [new branch]        codex/packing-scope-v1-20261003 -> origin/codex/packing-scope-v1-20261003
+2026-10-09T06:19:57.6028543Z  * [new branch]        codex/python-root-provenance -> origin/codex/python-root-provenance
+2026-10-09T06:19:57.6029964Z  * [new branch]        codex/qname-packing-100k-20261004 -> origin/codex/qname-packing-100k-20261004
+2026-10-09T06:19:57.6030954Z  * [new branch]        corpus/v19-express-100  -> origin/corpus/v19-express-100
+2026-10-09T06:19:57.6031648Z  * [new branch]        corpus/v19-express-author -> origin/corpus/v19-express-author
+2026-10-09T06:19:57.6032316Z  * [new branch]        corpus/v19-express-dev-review-fixes -> origin/corpus/v19-express-dev-review-fixes
+2026-10-09T06:19:57.6033568Z  * [new branch]        corpus/v19-express-dev-supplement -> origin/corpus/v19-express-dev-supplement
+2026-10-09T06:19:57.6034199Z  * [new branch]        corpus/v19-gin-author   -> origin/corpus/v19-gin-author
+2026-10-09T06:19:57.6034755Z  * [new branch]        corpus/v19-requests-author -> origin/corpus/v19-requests-author
+2026-10-09T06:19:57.6035390Z  * [new branch]        corpus/v19-requests-dev-extension -> origin/corpus/v19-requests-dev-extension
+2026-10-09T06:19:57.6036058Z  * [new branch]        corpus/v19-requests-f0022-scope -> origin/corpus/v19-requests-f0022-scope
+2026-10-09T06:19:57.6036699Z  * [new branch]        corpus/v19-requests-license -> origin/corpus/v19-requests-license
+2026-10-09T06:19:57.6037443Z  * [new branch]        corpus/v19-typescript-author -> origin/corpus/v19-typescript-author
+2026-10-09T06:19:57.6038137Z  * [new branch]        cursor/deep-index-optimization-1dab -> origin/cursor/deep-index-optimization-1dab
+2026-10-09T06:19:57.6038911Z  * [new branch]        design/batched-cache-durability-20261003 -> origin/design/batched-cache-durability-20261003
+2026-10-09T06:19:57.6039676Z  * [new branch]        dev-corpus-lock-reconcile-20261003 -> origin/dev-corpus-lock-reconcile-20261003
+2026-10-09T06:19:57.6040464Z  * [new branch]        dev-paired-requests-20261004 -> origin/dev-paired-requests-20261004
+2026-10-09T06:19:57.6041140Z  * [new branch]        diag/cache-put-costs-20261003 -> origin/diag/cache-put-costs-20261003
+2026-10-09T06:19:57.6041867Z  * [new branch]        diag/p5e-fixed-boundary-review-20261003 -> origin/diag/p5e-fixed-boundary-review-20261003
+2026-10-09T06:19:57.6042871Z  * [new branch]        diag/p5e-stage-receipts-20261003 -> origin/diag/p5e-stage-receipts-20261003
+2026-10-09T06:19:57.6044081Z  * [new branch]        diagnose/p8-mac-supervisor-28fe-20261009 -> origin/diagnose/p8-mac-supervisor-28fe-20261009
+2026-10-09T06:19:57.6044902Z  * [new branch]        diagnostics/gin-native-regression-20261004 -> origin/diagnostics/gin-native-regression-20261004
+2026-10-09T06:19:57.6045718Z  * [new branch]        diagnostics/requests-native-zero-20261004 -> origin/diagnostics/requests-native-zero-20261004
+2026-10-09T06:19:57.6046523Z  * [new branch]        dot/cpp-cvref-fts-v28-20261006-e7745566 -> origin/dot/cpp-cvref-fts-v28-20261006-e7745566
+2026-10-09T06:19:57.6047440Z  * [new branch]        dot/cpp-qualified-owner-b1-r2-20261005-5c4c2d55 -> origin/dot/cpp-qualified-owner-b1-r2-20261005-5c4c2d55
+2026-10-09T06:19:57.6048359Z  * [new branch]        eval/public-dev-declaration-kind-v2-admission -> origin/eval/public-dev-declaration-kind-v2-admission
+2026-10-09T06:19:57.6049424Z  * [new branch]        evidence/baseline-cloud-20261003-build-blocked -> origin/evidence/baseline-cloud-20261003-build-blocked
+2026-10-09T06:19:57.6050250Z  * [new branch]        evidence/candidate-100k-gate-20261003 -> origin/evidence/candidate-100k-gate-20261003
+2026-10-09T06:19:57.6051035Z  * [new branch]        evidence/independent-100k-release-20261003 -> origin/evidence/independent-100k-release-20261003
+2026-10-09T06:19:57.6051853Z  * [new branch]        evidence/localwidth4-100k-paired-20261003 -> origin/evidence/localwidth4-100k-paired-20261003
+2026-10-09T06:19:57.6053088Z  * [new branch]        evidence/p8-round19-pr-management-28fe-20261009 -> origin/evidence/p8-round19-pr-management-28fe-20261009
+2026-10-09T06:19:57.6054588Z  * [new branch]        evidence/parallel-startup-100k-paired-20261003 -> origin/evidence/parallel-startup-100k-paired-20261003
+2026-10-09T06:19:57.6055706Z  * [new branch]        evidence/public-dev-current-group-js-20261003 -> origin/evidence/public-dev-current-group-js-20261003
+2026-10-09T06:19:57.6056599Z  * [new branch]        evidence/public-dev-paired-express-20261004 -> origin/evidence/public-dev-paired-express-20261004
+2026-10-09T06:19:57.6057414Z  * [new branch]        evidence/public-dev-paired-gin-20261004 -> origin/evidence/public-dev-paired-gin-20261004
+2026-10-09T06:19:57.6058707Z  * [new branch]        evidence/public-dev-paired-typescript-20261004 -> origin/evidence/public-dev-paired-typescript-20261004
+2026-10-09T06:19:57.6059791Z  * [new branch]        feat/declaration-identity-resource-contract-20261004 -> origin/feat/declaration-identity-resource-contract-20261004
+2026-10-09T06:19:57.6060684Z  * [new branch]        feat/final-validation-work-20261007 -> origin/feat/final-validation-work-20261007
+2026-10-09T06:19:57.6061485Z  * [new branch]        feat/p7-engineering-reviewed-union-20261007 -> origin/feat/p7-engineering-reviewed-union-20261007
+2026-10-09T06:19:57.6062275Z  * [new branch]        feat/p7-gc-unlink-reviewed-20261007 -> origin/feat/p7-gc-unlink-reviewed-20261007
+2026-10-09T06:19:57.6063635Z  * [new branch]        feat/p7-semantic-coverage-retention-reviewed-20261007 -> origin/feat/p7-semantic-coverage-retention-reviewed-20261007
+2026-10-09T06:19:57.6064613Z  * [new branch]        feat/p7-strategy-ablation-reviewed-20261007 -> origin/feat/p7-strategy-ablation-reviewed-20261007
+2026-10-09T06:19:57.6065449Z  * [new branch]        feat/python-capture-revalidation-20261007 -> origin/feat/python-capture-revalidation-20261007
+2026-10-09T06:19:57.6066204Z  * [new branch]        feat/python-declaration-adapter -> origin/feat/python-declaration-adapter
+2026-10-09T06:19:57.6066908Z  * [new branch]        fifo-100k-paired-decision-20261003 -> origin/fifo-100k-paired-decision-20261003
+2026-10-09T06:19:57.6067583Z  * [new branch]        fix/ci-schema-v25-contract -> origin/fix/ci-schema-v25-contract
+2026-10-09T06:19:57.6068266Z  * [new branch]        fix/contextual-member-ranking-20261004 -> origin/fix/contextual-member-ranking-20261004
+2026-10-09T06:19:57.6068977Z  * [new branch]        fix/cpp-boundary-declarator -> origin/fix/cpp-boundary-declarator
+2026-10-09T06:19:57.6070038Z  * [new branch]        fix/cpp-namespace-function-identity-20261005 -> origin/fix/cpp-namespace-function-identity-20261005
+2026-10-09T06:19:57.6070930Z  * [new branch]        fix/cpp-namespace-source-registry-v5-20261005 -> origin/fix/cpp-namespace-source-registry-v5-20261005
+2026-10-09T06:19:57.6071724Z  * [new branch]        fix/direct-writer-schema-20261003 -> origin/fix/direct-writer-schema-20261003
+2026-10-09T06:19:57.6072378Z  * [new branch]        fix/go-nested-call-identity -> origin/fix/go-nested-call-identity
+2026-10-09T06:19:57.6073375Z  * [new branch]        fix/hydration-fence-completeness -> origin/fix/hydration-fence-completeness
+2026-10-09T06:19:57.6074076Z  * [new branch]        fix/mcp-startup-project-errors -> origin/fix/mcp-startup-project-errors
+2026-10-09T06:19:57.6074814Z  * [new branch]        fix/member-source-registry-v4-20261005 -> origin/fix/member-source-registry-v4-20261005
+2026-10-09T06:19:57.6075620Z  * [new branch]        fix/nonembedding-facts-and-benchmark-v3 -> origin/fix/nonembedding-facts-and-benchmark-v3
+2026-10-09T06:19:57.6076413Z  * [new branch]        fix/nonembedding-facts-quality-20260906 -> origin/fix/nonembedding-facts-quality-20260906
+2026-10-09T06:19:57.6077214Z  * [new branch]        fix/nonembedding-facts-verified-20260906 -> origin/fix/nonembedding-facts-verified-20260906
+2026-10-09T06:19:57.6077922Z  * [new branch]        fix/p7-011-language-coverage -> origin/fix/p7-011-language-coverage
+2026-10-09T06:19:57.6078524Z  * [new branch]        fix/p7-013-cancellable-exact -> origin/fix/p7-013-cancellable-exact
+2026-10-09T06:19:57.6079114Z  * [new branch]        fix/p7-017-ci-build-receipt -> origin/fix/p7-017-ci-build-receipt
+2026-10-09T06:19:57.6079725Z  * [new branch]        fix/p7-ci-architecture-guards -> origin/fix/p7-ci-architecture-guards
+2026-10-09T06:19:57.6080733Z  * [new branch]        fix/p7-linux-process-sampler -> origin/fix/p7-linux-process-sampler
+2026-10-09T06:19:57.6081451Z  * [new branch]        fix/parallel-retry-progress-20261003 -> origin/fix/parallel-retry-progress-20261003
+2026-10-09T06:19:57.6082150Z  * [new branch]        fix/pr126-harness-observation -> origin/fix/pr126-harness-observation
+2026-10-09T06:19:57.6083185Z  * [new branch]        fix/python-declaration-kind -> origin/fix/python-declaration-kind
+2026-10-09T06:19:57.6083826Z  * [new branch]        fix/query-target-controls -> origin/fix/query-target-controls
+2026-10-09T06:19:57.6084496Z  * [new branch]        fix/schema-contract-cleanup-20261003 -> origin/fix/schema-contract-cleanup-20261003
+2026-10-09T06:19:57.6085704Z  * [new branch]        fix/semantic-http-ci-regression-20261003 -> origin/fix/semantic-http-ci-regression-20261003
+2026-10-09T06:19:57.6086706Z  * [new branch]        fix/shared-provider-gate-20261003 -> origin/fix/shared-provider-gate-20261003
+2026-10-09T06:19:57.6087459Z  * [new branch]        fix/type-atom-identifier-regression -> origin/fix/type-atom-identifier-regression
+2026-10-09T06:19:57.6088178Z  * [new branch]        fix/v19-requests-type-dependency -> origin/fix/v19-requests-type-dependency
+2026-10-09T06:19:57.6088822Z  * [new branch]        harness/reusable-100k-driver -> origin/harness/reusable-100k-driver
+2026-10-09T06:19:57.6089876Z  * [new branch]        independent-capability-v2-review-20261003 -> origin/independent-capability-v2-review-20261003
+2026-10-09T06:19:57.6091026Z  * [new branch]        independent-go-call-fix-review-20261003 -> origin/independent-go-call-fix-review-20261003
+2026-10-09T06:19:57.6091807Z  * [new branch]        independent-v2-100k-release-20261003 -> origin/independent-v2-100k-release-20261003
+2026-10-09T06:19:57.6092738Z  * [new branch]        integration/bounded-groundwork-20261004 -> origin/integration/bounded-groundwork-20261004
+2026-10-09T06:19:57.6093471Z  * [new branch]        integration/ci-contract-20261003 -> origin/integration/ci-contract-20261003
+2026-10-09T06:19:57.6094219Z  * [new branch]        integration/localwidth4-fixed-e3-20261003 -> origin/integration/localwidth4-fixed-e3-20261003
+2026-10-09T06:19:57.6095385Z  * [new branch]        integration/packing-evidence-20261003 -> origin/integration/packing-evidence-20261003
+2026-10-09T06:19:57.6096174Z  * [new branch]        integration/python-inventory-capture-v2 -> origin/integration/python-inventory-capture-v2
+2026-10-09T06:19:57.6097016Z  * [new branch]        integration/python-resource-contract-20261004 -> origin/integration/python-resource-contract-20261004
+2026-10-09T06:19:57.6097869Z  * [new branch]        integration/query-owner-context-v3-20261004 -> origin/integration/query-owner-context-v3-20261004
+2026-10-09T06:19:57.6098495Z  * [new branch]        main                    -> origin/main
+2026-10-09T06:19:57.6099072Z  * [new branch]        opt/code-index-benchmark-v2-20260906 -> origin/opt/code-index-benchmark-v2-20260906
+2026-10-09T06:19:57.6099778Z  * [new branch]        opt/python-inventory-capture -> origin/opt/python-inventory-capture
+2026-10-09T06:19:57.6100521Z  * [new branch]        perf/backfill-cost-breakdown-20261003 -> origin/perf/backfill-cost-breakdown-20261003
+2026-10-09T06:19:57.6101302Z  * [new branch]        perf/bounded-parallel-backfill-20261003 -> origin/perf/bounded-parallel-backfill-20261003
+2026-10-09T06:19:57.6102016Z  * [new branch]        perf/fifo-claim-index-20261003 -> origin/perf/fifo-claim-index-20261003
+2026-10-09T06:19:57.6103543Z  * [new branch]        prototype/source-declaration-identity-v1 -> origin/prototype/source-declaration-identity-v1
+2026-10-09T06:19:57.6105081Z  * [new branch]        public-dev-current-group-pygo-20261003 -> origin/public-dev-current-group-pygo-20261003
+2026-10-09T06:19:57.6106065Z  * [new branch]        public-dev-declaration-kind-v2-candidate-20261003 -> origin/public-dev-declaration-kind-v2-candidate-20261003
+2026-10-09T06:19:57.6107228Z  * [new branch]        review/context-owner-closing-qualifiers-20261004 -> origin/review/context-owner-closing-qualifiers-20261004
+2026-10-09T06:19:57.6108168Z  * [new branch]        review/context-owner-comparison-guard-20261004 -> origin/review/context-owner-comparison-guard-20261004
+2026-10-09T06:19:57.6109059Z  * [new branch]        review/context-owner-lexical-spans-20261004 -> origin/review/context-owner-lexical-spans-20261004
+2026-10-09T06:19:57.6109943Z  * [new branch]        review/context-owner-source-boundaries-20261004 -> origin/review/context-owner-source-boundaries-20261004
+2026-10-09T06:19:57.6110870Z  * [new branch]        review/declaration-identity-independent-20261004 -> origin/review/declaration-identity-independent-20261004
+2026-10-09T06:19:57.6111746Z  * [new branch]        review/declaration-resource-independent -> origin/review/declaration-resource-independent
+2026-10-09T06:19:57.6113132Z  * [new branch]        review/independent-closing-qualifiers-20261004 -> origin/review/independent-closing-qualifiers-20261004
+2026-10-09T06:19:57.6114209Z  * [new branch]        review/independent-comparison-guard-20261004 -> origin/review/independent-comparison-guard-20261004
+2026-10-09T06:19:57.6115065Z  * [new branch]        review/independent-direct-writer-20261003 -> origin/review/independent-direct-writer-20261003
+2026-10-09T06:19:57.6116039Z  * [new branch]        review/independent-e3-runtime-cache-20261003 -> origin/review/independent-e3-runtime-cache-20261003
+2026-10-09T06:19:57.6116861Z  * [new branch]        review/independent-fifo-claim-20261003 -> origin/review/independent-fifo-claim-20261003
+2026-10-09T06:19:57.6117658Z  * [new branch]        review/independent-lexical-spans-20261004 -> origin/review/independent-lexical-spans-20261004
+2026-10-09T06:19:57.6118489Z  * [new branch]        review/independent-parallel-drain-20261003 -> origin/review/independent-parallel-drain-20261003
+2026-10-09T06:19:57.6119393Z  * [new branch]        review/independent-requests-fix-20261003 -> origin/review/independent-requests-fix-20261003
+2026-10-09T06:19:57.6120218Z  * [new branch]        review/independent-retry-liveness-20261003 -> origin/review/independent-retry-liveness-20261003
+2026-10-09T06:19:57.6121241Z  * [new branch]        review/independent-source-boundaries-20261004 -> origin/review/independent-source-boundaries-20261004
+2026-10-09T06:19:57.6122099Z  * [new branch]        review/independent-v24-migration-20261003 -> origin/review/independent-v24-migration-20261003
+2026-10-09T06:19:57.6123338Z  * [new branch]        review/manual-v24-evidence-20261003 -> origin/review/manual-v24-evidence-20261003
+2026-10-09T06:19:57.6124055Z  * [new branch]        review/p7-crash-independent -> origin/review/p7-crash-independent
+2026-10-09T06:19:57.6124660Z  * [new branch]        review/p7-gc-unlink-20261007 -> origin/review/p7-gc-unlink-20261007
+2026-10-09T06:19:57.6125414Z  * [new branch]        review/p7-semantic-coverage-retention-20261007 -> origin/review/p7-semantic-coverage-retention-20261007
+2026-10-09T06:19:57.6126208Z  * [new branch]        review/p7-staging-gc-independent -> origin/review/p7-staging-gc-independent
+2026-10-09T06:19:57.6126924Z  * [new branch]        review/p7-strategy-ablation-20261007 -> origin/review/p7-strategy-ablation-20261007
+2026-10-09T06:19:57.6127661Z  * [new branch]        review/p7-worker-contention-20261007 -> origin/review/p7-worker-contention-20261007
+2026-10-09T06:19:57.6128450Z  * [new branch]        review/p8-leaf-on-a23-28fe-20261009 -> origin/review/p8-leaf-on-a23-28fe-20261009
+2026-10-09T06:19:57.6129690Z  * [new branch]        review/pr127-independent-20261003 -> origin/review/pr127-independent-20261003
+2026-10-09T06:19:57.6130493Z  * [new branch]        review/public-v19-requests-delta -> origin/review/public-v19-requests-delta
+2026-10-09T06:19:57.6131166Z  * [new branch]        review/public-v19-requests-dev -> origin/review/public-v19-requests-dev
+2026-10-09T06:19:57.6131870Z  * [new branch]        review/public-v19-requests-remaining -> origin/review/public-v19-requests-remaining
+2026-10-09T06:19:57.6133078Z  * [new branch]        review/python-identity-independent -> origin/review/python-identity-independent
+2026-10-09T06:19:57.6133907Z  * [new branch]        review/python-identity-r1-independent -> origin/review/python-identity-r1-independent
+2026-10-09T06:19:57.6134747Z  * [new branch]        review/python-inventory-independent-20261004 -> origin/review/python-inventory-independent-20261004
+2026-10-09T06:19:57.6135617Z  * [new branch]        review/python-inventory-p2-delta-20261004 -> origin/review/python-inventory-p2-delta-20261004
+2026-10-09T06:19:57.6206429Z  * [new branch]        review/python-provenance-independent-20261004 -> origin/review/python-provenance-independent-20261004
+2026-10-09T06:19:57.6207870Z  * [new branch]        review/qname-db-20261003 -> origin/review/qname-db-20261003
+2026-10-09T06:19:57.6209122Z  * [new branch]        review/qname-parser-public-20261003 -> origin/review/qname-parser-public-20261003
+2026-10-09T06:19:57.6210386Z  * [new branch]        review/query-owner-hint-20261004-0741 -> origin/review/query-owner-hint-20261004-0741
+2026-10-09T06:19:57.6211897Z  * [new branch]        review/query-owner-hint-independent-evidence-20261004 -> origin/review/query-owner-hint-independent-evidence-20261004
+2026-10-09T06:19:57.6213919Z  * [new branch]        review/query-target-independent-20261004 -> origin/review/query-target-independent-20261004
+2026-10-09T06:19:57.6215365Z  * [new branch]        review/resolver-bind-independent -> origin/review/resolver-bind-independent
+2026-10-09T06:19:57.6216836Z  * [new branch]        review/validation-work-metadata-fix-20261007 -> origin/review/validation-work-metadata-fix-20261007
+2026-10-09T06:19:57.6218474Z  * [new branch]        review/validation-work-packing-fix-20261007 -> origin/review/validation-work-packing-fix-20261007
+2026-10-09T06:19:57.6220009Z  * [new branch]        task/archive-evidence-104-28fe-20261008 -> origin/task/archive-evidence-104-28fe-20261008
+2026-10-09T06:19:57.6221539Z  * [new branch]        task/archive-evidence-105-108-124-28fe-20261008 -> origin/task/archive-evidence-105-108-124-28fe-20261008
+2026-10-09T06:19:57.6223424Z  * [new branch]        task/archive-evidence-batch9-28fe-20261008 -> origin/task/archive-evidence-batch9-28fe-20261008
+2026-10-09T06:19:57.6225170Z  * [new branch]        task/archive-path-a217-20261008 -> origin/task/archive-path-a217-20261008
+2026-10-09T06:19:57.6226478Z  * [new branch]        task/p8-a23-closeout-bfcc-20261009 -> origin/task/p8-a23-closeout-bfcc-20261009
+2026-10-09T06:19:57.6227759Z  * [new branch]        task/p8-a23-snapshot-bfcc-20261009 -> origin/task/p8-a23-snapshot-bfcc-20261009
+2026-10-09T06:19:57.6228861Z  * [new branch]        task/p8-a23-soak-wire-reception-20261009 -> origin/task/p8-a23-soak-wire-reception-20261009
+2026-10-09T06:19:57.6229666Z  * [new branch]        task/p8-bounded-zip-controls-20261009 -> origin/task/p8-bounded-zip-controls-20261009
+2026-10-09T06:19:57.6230406Z  * [new branch]        task/p8-complete-a217-20261009 -> origin/task/p8-complete-a217-20261009
+2026-10-09T06:19:57.6231045Z  * [new branch]        task/p8-completion-20261009 -> origin/task/p8-completion-20261009
+2026-10-09T06:19:57.6231694Z  * [new branch]        task/p8-d0-recovery-28fe-20261009 -> origin/task/p8-d0-recovery-28fe-20261009
+2026-10-09T06:19:57.6232430Z  * [new branch]        task/p8-d0-recovery-wave002-28fe-20261009 -> origin/task/p8-d0-recovery-wave002-28fe-20261009
+2026-10-09T06:19:57.6233569Z  * [new branch]        task/p8-evidence-checkpoint-a217-20261008 -> origin/task/p8-evidence-checkpoint-a217-20261008
+2026-10-09T06:19:57.6234392Z  * [new branch]        task/p8-evidence-delivery-a217-20261009 -> origin/task/p8-evidence-delivery-a217-20261009
+2026-10-09T06:19:57.6235233Z  * [new branch]        task/p8-failed-runtime-originals-28fe-20261009 -> origin/task/p8-failed-runtime-originals-28fe-20261009
+2026-10-09T06:19:57.6236006Z  * [new branch]        task/p8-fixed-d0-scale-20261008 -> origin/task/p8-fixed-d0-scale-20261008
+2026-10-09T06:19:57.6236712Z  * [new branch]        task/p8-full-delivery-intake-20261009 -> origin/task/p8-full-delivery-intake-20261009
+2026-10-09T06:19:57.6237722Z  * [new branch]        task/p8-full-delivery-intake-fix-20261009 -> origin/task/p8-full-delivery-intake-fix-20261009
+2026-10-09T06:19:57.6238559Z  * [new branch]        task/p8-g2-platform-reception-20261009 -> origin/task/p8-g2-platform-reception-20261009
+2026-10-09T06:19:57.6239339Z  * [new branch]        task/p8-g4-platform-reception-20261009 -> origin/task/p8-g4-platform-reception-20261009
+2026-10-09T06:19:57.6240100Z  * [new branch]        task/p8-g4-runtime-reception-20261009 -> origin/task/p8-g4-runtime-reception-20261009
+2026-10-09T06:19:57.6240897Z  * [new branch]        task/p8-g4-runtime-reception-fix-20261009 -> origin/task/p8-g4-runtime-reception-fix-20261009
+2026-10-09T06:19:57.6241740Z  * [new branch]        task/p8-independent-acceptance-28fe-20261009 -> origin/task/p8-independent-acceptance-28fe-20261009
+2026-10-09T06:19:57.6242492Z  * [new branch]        task/p8-local-G-1k-20261008 -> origin/task/p8-local-G-1k-20261008
+2026-10-09T06:19:57.6243583Z  * [new branch]        task/p8-mac-supervisor-diagnostic-a217-20261009 -> origin/task/p8-mac-supervisor-diagnostic-a217-20261009
+2026-10-09T06:19:57.6244448Z  * [new branch]        task/p8-macos-integration-bfcc-20261009 -> origin/task/p8-macos-integration-bfcc-20261009
+2026-10-09T06:19:57.6245336Z  * [new branch]        task/p8-mainb21-snapshot-leaf-integration-20261009 -> origin/task/p8-mainb21-snapshot-leaf-integration-20261009
+2026-10-09T06:19:57.6246249Z  * [new branch]        task/p8-prefix-window-engineering-20261009 -> origin/task/p8-prefix-window-engineering-20261009
+2026-10-09T06:19:57.6247013Z  * [new branch]        task/p8-round10-evidence-20261008 -> origin/task/p8-round10-evidence-20261008
+2026-10-09T06:19:57.6247693Z  * [new branch]        task/p8-round11-evidence-20261008 -> origin/task/p8-round11-evidence-20261008
+2026-10-09T06:19:57.6248365Z  * [new branch]        task/p8-round12-evidence-20261009 -> origin/task/p8-round12-evidence-20261009
+2026-10-09T06:19:57.6249034Z  * [new branch]        task/p8-round13-evidence-20261009 -> origin/task/p8-round13-evidence-20261009
+2026-10-09T06:19:57.6249851Z  * [new branch]        task/p8-round14-evidence-20261009 -> origin/task/p8-round14-evidence-20261009
+2026-10-09T06:19:57.6250525Z  * [new branch]        task/p8-round15-evidence-20261009 -> origin/task/p8-round15-evidence-20261009
+2026-10-09T06:19:57.6251186Z  * [new branch]        task/p8-round16-evidence-20261009 -> origin/task/p8-round16-evidence-20261009
+2026-10-09T06:19:57.6251842Z  * [new branch]        task/p8-round17-evidence-20261009 -> origin/task/p8-round17-evidence-20261009
+2026-10-09T06:19:57.6252497Z  * [new branch]        task/p8-round6-evidence-20261009 -> origin/task/p8-round6-evidence-20261009
+2026-10-09T06:19:57.6253660Z  * [new branch]        task/p8-round7-checkpoint-bfcc-20261009 -> origin/task/p8-round7-checkpoint-bfcc-20261009
+2026-10-09T06:19:57.6254392Z  * [new branch]        task/p8-round8-evidence-20261008 -> origin/task/p8-round8-evidence-20261008
+2026-10-09T06:19:57.6255323Z  * [new branch]        task/p8-runtime-finalization-controls-20261009 -> origin/task/p8-runtime-finalization-controls-20261009
+2026-10-09T06:19:57.6256131Z  * [new branch]        task/p8-scale-cache-a217-20261009 -> origin/task/p8-scale-cache-a217-20261009
+2026-10-09T06:19:57.6256895Z  * [new branch]        task/p8-snapshot-leaf-engineering-20261009 -> origin/task/p8-snapshot-leaf-engineering-20261009
+2026-10-09T06:19:57.6257777Z  * [new branch]        task/p8-snapshot-leaf-engineering-fix-20261009 -> origin/task/p8-snapshot-leaf-engineering-fix-20261009
+2026-10-09T06:19:57.6258641Z  * [new branch]        task/p8-staging-cache-engineering-20261008 -> origin/task/p8-staging-cache-engineering-20261008
+2026-10-09T06:19:57.6259470Z  * [new branch]        task/p8-surface-window-controls-20261009 -> origin/task/p8-surface-window-controls-20261009
+2026-10-09T06:19:57.6260256Z  * [new branch]        test/p7-014-fence-independent-recheck -> origin/test/p7-014-fence-independent-recheck
+2026-10-09T06:19:57.6261145Z  * [new branch]        test/p7-014-final-independent-review -> origin/test/p7-014-final-independent-review
+2026-10-09T06:19:57.6261824Z  * [new branch]        test/p7-017-offline-default -> origin/test/p7-017-offline-default
+2026-10-09T06:19:57.6262412Z  * [new branch]        test/p7-acceptance-matrix -> origin/test/p7-acceptance-matrix
+2026-10-09T06:19:57.6263406Z  * [new branch]        test/p7-cache-allocation-independent-review -> origin/test/p7-cache-allocation-independent-review
+2026-10-09T06:19:57.6264163Z  * [new branch]        test/p7-gate-lifecycle-review -> origin/test/p7-gate-lifecycle-review
+2026-10-09T06:19:57.6264766Z  * [new branch]        test/p7-partial-budget  -> origin/test/p7-partial-budget
+2026-10-09T06:19:57.6265447Z  * [new branch]        test/p7-production-fairness-model-review -> origin/test/p7-production-fairness-model-review
+2026-10-09T06:19:57.6266285Z  * [new branch]        test/p7-query-encoding-independent-review -> origin/test/p7-query-encoding-independent-review
+2026-10-09T06:19:57.6267031Z  * [new branch]        test/p7-query-network-contract -> origin/test/p7-query-network-contract
+2026-10-09T06:19:57.6267704Z  * [new branch]        test/p7-query-public-independent -> origin/test/p7-query-public-independent
+2026-10-09T06:19:57.6268438Z  * [new branch]        test/p7-query-public-independent-final -> origin/test/p7-query-public-independent-final
+2026-10-09T06:19:57.6269174Z  * [new branch]        test/p7-status-fence-independent -> origin/test/p7-status-fence-independent
+2026-10-09T06:19:57.6269858Z  * [new branch]        test/p7-v05-v11-independent-review -> origin/test/p7-v05-v11-independent-review
+2026-10-09T06:19:57.6270602Z  * [new branch]        test/p7-v16-oracle-independent-review -> origin/test/p7-v16-oracle-independent-review
+2026-10-09T06:19:57.6271298Z  * [new branch]        test/p7-v18-parameter-contract -> origin/test/p7-v18-parameter-contract
+2026-10-09T06:19:57.6271877Z  * [new branch]        test/p7-v19-offline     -> origin/test/p7-v19-offline
+2026-10-09T06:19:57.6272771Z  * [new branch]        test/p7-worker-contention-reviewed-20261007 -> origin/test/p7-worker-contention-reviewed-20261007
+2026-10-09T06:19:57.6273865Z  * [new branch]        test/p8-mac-original-supervisor-28fe-20261009 -> origin/test/p8-mac-original-supervisor-28fe-20261009
+2026-10-09T06:19:57.6274641Z  * [new branch]        work/p7-audit-996727-20261008 -> origin/work/p7-audit-996727-20261008
+2026-10-09T06:19:57.6275211Z  * [new branch]        work/p7-round2-20261007 -> origin/work/p7-round2-20261007
+2026-10-09T06:19:57.6275782Z  * [new branch]        work/p7-round2-final-20261007 -> origin/work/p7-round2-final-20261007
+2026-10-09T06:19:57.6276467Z  * [new branch]        work/p8-corpus-holdout-031390-20261008 -> origin/work/p8-corpus-holdout-031390-20261008
+2026-10-09T06:19:57.6277229Z  * [new branch]        work/p8-corpus-register-996727-20261008 -> origin/work/p8-corpus-register-996727-20261008
+2026-10-09T06:19:57.6277982Z  * [new branch]        work/p8-corpus-replay-996727-20261008 -> origin/work/p8-corpus-replay-996727-20261008
+2026-10-09T06:19:57.6278741Z  * [new branch]        work/p8-current-readback-996727-20261008 -> origin/work/p8-current-readback-996727-20261008
+2026-10-09T06:19:57.6279597Z  * [new branch]        work/p8-final-preseal-readback-996727-20261008 -> origin/work/p8-final-preseal-readback-996727-20261008
+2026-10-09T06:19:57.6280405Z  * [new branch]        work/p8-joint-corpus-996727-20261008 -> origin/work/p8-joint-corpus-996727-20261008
+2026-10-09T06:19:57.6281207Z  * [new branch]        work/p8-joint-release-readback-996727-20261008 -> origin/work/p8-joint-release-readback-996727-20261008
+2026-10-09T06:19:57.6281974Z  * [new branch]        work/p8-local-ten-todos-20261007 -> origin/work/p8-local-ten-todos-20261007
+2026-10-09T06:19:57.6282987Z  * [new branch]        work/p8-native-external-996727-20261008 -> origin/work/p8-native-external-996727-20261008
+2026-10-09T06:19:57.6283702Z  * [new branch]        work/p8-next-source-ebacee -> origin/work/p8-next-source-ebacee
+2026-10-09T06:19:57.6284425Z  * [new branch]        work/p8-next-ten-ebacee -> origin/work/p8-next-ten-ebacee
+2026-10-09T06:19:57.6285119Z  * [new branch]        work/p8-output-readback-996727-20261008 -> origin/work/p8-output-readback-996727-20261008
+2026-10-09T06:19:57.6285884Z  * [new branch]        work/p8-product-build-996727-20261008 -> origin/work/p8-product-build-996727-20261008
+2026-10-09T06:19:57.6286630Z  * [new branch]        work/p8-product-format-996727-20261008 -> origin/work/p8-product-format-996727-20261008
+2026-10-09T06:19:57.6287398Z  * [new branch]        work/p8-profile-contract-996727-20261008 -> origin/work/p8-profile-contract-996727-20261008
+2026-10-09T06:19:57.6288175Z  * [new branch]        work/p8-public-readback-996727-20261008 -> origin/work/p8-public-readback-996727-20261008
+2026-10-09T06:19:57.6288933Z  * [new branch]        work/p8-public-recovery-996727-20261008 -> origin/work/p8-public-recovery-996727-20261008
+2026-10-09T06:19:57.6289723Z  * [new branch]        work/p8-recovery-evidence-996727-20261008 -> origin/work/p8-recovery-evidence-996727-20261008
+2026-10-09T06:19:57.6290514Z  * [new branch]        work/p8-release-external-996727-20261008 -> origin/work/p8-release-external-996727-20261008
+2026-10-09T06:19:57.6291286Z  * [new branch]        work/p8-release-readback-996727-20261008 -> origin/work/p8-release-readback-996727-20261008
+2026-10-09T06:19:57.6292008Z  * [new branch]        work/p8-rust-probe-996727-20261008 -> origin/work/p8-rust-probe-996727-20261008
+2026-10-09T06:19:57.6292883Z  * [new branch]        work/p8-scale-031390    -> origin/work/p8-scale-031390
+2026-10-09T06:19:57.6293642Z  * [new branch]        work/p8-temporal-evidence-readback-996727-20261008 -> origin/work/p8-temporal-evidence-readback-996727-20261008
+2026-10-09T06:19:57.6294510Z  * [new branch]        work/p8-temporal-execute-996727-20261008 -> origin/work/p8-temporal-execute-996727-20261008
+2026-10-09T06:19:57.6295365Z  * [new branch]        work/p8-temporal-final-evidence-996727-20261008 -> origin/work/p8-temporal-final-evidence-996727-20261008
+2026-10-09T06:19:57.6296248Z  * [new branch]        work/p8-temporal-frozen-logic-996727-20261008 -> origin/work/p8-temporal-frozen-logic-996727-20261008
+2026-10-09T06:19:57.6297220Z  * [new branch]        work/p8-temporal-holdout-996727-20261008 -> origin/work/p8-temporal-holdout-996727-20261008
+2026-10-09T06:19:57.6298045Z  * [new branch]        work/p8-temporal-prepare-data-996727-20261008 -> origin/work/p8-temporal-prepare-data-996727-20261008
+2026-10-09T06:19:57.6298868Z  * [new branch]        work/p8-temporal-preseal-996727-20261008 -> origin/work/p8-temporal-preseal-996727-20261008
+2026-10-09T06:19:57.6299662Z  * [new branch]        work/p8-temporal-readback-996727-20261008 -> origin/work/p8-temporal-readback-996727-20261008
+2026-10-09T06:19:57.6300558Z  * [new branch]        work/p8-temporal-readback-tools-996727-20261008 -> origin/work/p8-temporal-readback-tools-996727-20261008
+2026-10-09T06:19:57.6301397Z  * [new branch]        work/p8-temporal-replay-996727-20261008 -> origin/work/p8-temporal-replay-996727-20261008
+2026-10-09T06:19:57.6302251Z  * [new branch]        work/p8-temporal-service-controls-996727-20261008 -> origin/work/p8-temporal-service-controls-996727-20261008
+2026-10-09T06:19:57.6303383Z  * [new branch]        work/p8-text-admission-counterexample-996727-20261008 -> origin/work/p8-text-admission-counterexample-996727-20261008
+2026-10-09T06:19:57.6304273Z  * [new branch]        work/pr157-final-review-996727-20261008 -> origin/work/pr157-final-review-996727-20261008
+2026-10-09T06:19:57.6304971Z  * [new branch]        work/ptv2-permit-37769636440 -> origin/work/ptv2-permit-37769636440
+2026-10-09T06:19:57.6305607Z  * [new branch]        work/todo-close-996727-20261008 -> origin/work/todo-close-996727-20261008
+2026-10-09T06:19:57.6306931Z [command]/usr/bin/git rev-parse --verify --quiet b17535f5e762bf8afbea9978ccf02f7070ba6940^{object}
+2026-10-09T06:19:57.6307471Z b17535f5e762bf8afbea9978ccf02f7070ba6940
+2026-10-09T06:19:57.6308313Z ##[endgroup]
+2026-10-09T06:19:57.6308877Z ##[group]Determining the checkout info
+2026-10-09T06:19:57.6309379Z ##[endgroup]
+2026-10-09T06:19:57.6309666Z [command]/usr/bin/git sparse-checkout disable
+2026-10-09T06:19:57.6310463Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-09T06:19:57.6311441Z ##[group]Checking out the ref
+2026-10-09T06:19:57.6311903Z [command]/usr/bin/git checkout --progress --force b17535f5e762bf8afbea9978ccf02f7070ba6940
+2026-10-09T06:19:58.6403599Z Updating files:  44% (10413/23391)
+2026-10-09T06:19:58.6548398Z Updating files:  45% (10526/23391)
+2026-10-09T06:19:58.6661713Z Updating files:  46% (10760/23391)
+2026-10-09T06:19:58.7419031Z Updating files:  47% (10994/23391)
+2026-10-09T06:19:58.7535099Z Updating files:  48% (11228/23391)
+2026-10-09T06:19:58.7904624Z Updating files:  49% (11462/23391)
+2026-10-09T06:19:58.8473178Z Updating files:  50% (11696/23391)
+2026-10-09T06:19:58.8635622Z Updating files:  51% (11930/23391)
+2026-10-09T06:19:58.9161082Z Updating files:  52% (12164/23391)
+2026-10-09T06:19:58.9267861Z Updating files:  53% (12398/23391)
+2026-10-09T06:19:58.9420275Z Updating files:  54% (12632/23391)
+2026-10-09T06:19:58.9680709Z Updating files:  55% (12866/23391)
+2026-10-09T06:19:58.9839859Z Updating files:  56% (13099/23391)
+2026-10-09T06:19:58.9970064Z Updating files:  57% (13333/23391)
+2026-10-09T06:19:59.0090793Z Updating files:  58% (13567/23391)
+2026-10-09T06:19:59.0196415Z Updating files:  59% (13801/23391)
+2026-10-09T06:19:59.0302472Z Updating files:  60% (14035/23391)
+2026-10-09T06:19:59.0408477Z Updating files:  61% (14269/23391)
+2026-10-09T06:19:59.0508857Z Updating files:  62% (14503/23391)
+2026-10-09T06:19:59.0610289Z Updating files:  63% (14737/23391)
+2026-10-09T06:19:59.0703703Z Updating files:  64% (14971/23391)
+2026-10-09T06:19:59.0820825Z Updating files:  65% (15205/23391)
+2026-10-09T06:19:59.0960100Z Updating files:  66% (15439/23391)
+2026-10-09T06:19:59.2149148Z Updating files:  67% (15672/23391)
+2026-10-09T06:19:59.2436401Z Updating files:  68% (15906/23391)
+2026-10-09T06:19:59.3104547Z Updating files:  69% (16140/23391)
+2026-10-09T06:19:59.3543027Z Updating files:  70% (16374/23391)
+2026-10-09T06:19:59.3801952Z Updating files:  71% (16608/23391)
+2026-10-09T06:19:59.4861982Z Updating files:  72% (16842/23391)
+2026-10-09T06:19:59.5464192Z Updating files:  73% (17076/23391)
+2026-10-09T06:19:59.6486177Z Updating files:  74% (17310/23391)
+2026-10-09T06:19:59.7824893Z Updating files:  74% (17472/23391)
+2026-10-09T06:19:59.8413051Z Updating files:  75% (17544/23391)
+2026-10-09T06:19:59.8656101Z Updating files:  76% (17778/23391)
+2026-10-09T06:19:59.8978807Z Updating files:  77% (18012/23391)
+2026-10-09T06:19:59.9805461Z Updating files:  78% (18245/23391)
+2026-10-09T06:20:00.6434403Z Updating files:  79% (18479/23391)
+2026-10-09T06:20:01.6495856Z Updating files:  79% (18556/23391)
+2026-10-09T06:20:01.8361705Z Updating files:  79% (18666/23391)
+2026-10-09T06:20:01.8666093Z Updating files:  80% (18713/23391)
+2026-10-09T06:20:01.8887153Z Updating files:  81% (18947/23391)
+2026-10-09T06:20:01.9049705Z Updating files:  82% (19181/23391)
+2026-10-09T06:20:01.9353755Z Updating files:  83% (19415/23391)
+2026-10-09T06:20:02.0360062Z Updating files:  84% (19649/23391)
+2026-10-09T06:20:02.1395633Z Updating files:  85% (19883/23391)
+2026-10-09T06:20:02.2376191Z Updating files:  86% (20117/23391)
+2026-10-09T06:20:02.3222858Z Updating files:  87% (20351/23391)
+2026-10-09T06:20:02.3491675Z Updating files:  88% (20585/23391)
+2026-10-09T06:20:02.3656600Z Updating files:  89% (20818/23391)
+2026-10-09T06:20:02.3841011Z Updating files:  90% (21052/23391)
+2026-10-09T06:20:02.4015100Z Updating files:  91% (21286/23391)
+2026-10-09T06:20:02.7355156Z Updating files:  92% (21520/23391)
+2026-10-09T06:20:03.0637916Z Updating files:  92% (21651/23391)
+2026-10-09T06:20:03.0889778Z Updating files:  93% (21754/23391)
+2026-10-09T06:20:03.1089598Z Updating files:  94% (21988/23391)
+2026-10-09T06:20:03.1263805Z Updating files:  95% (22222/23391)
+2026-10-09T06:20:03.1480419Z Updating files:  96% (22456/23391)
+2026-10-09T06:20:03.1720693Z Updating files:  97% (22690/23391)
+2026-10-09T06:20:03.1891742Z Updating files:  98% (22924/23391)
+2026-10-09T06:20:03.3176998Z Updating files:  99% (23158/23391)
+2026-10-09T06:20:03.3178107Z Updating files: 100% (23391/23391)
+2026-10-09T06:20:03.3178884Z Updating files: 100% (23391/23391), done.
+2026-10-09T06:20:03.4058230Z Note: switching to 'b17535f5e762bf8afbea9978ccf02f7070ba6940'.
+2026-10-09T06:20:03.4062953Z 
+2026-10-09T06:20:03.4113791Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-09T06:20:03.4143239Z changes and commit them, and you can discard any commits you make in this
+2026-10-09T06:20:03.4144310Z state without impacting any branches by switching back to a branch.
+2026-10-09T06:20:03.4173091Z 
+2026-10-09T06:20:03.4173546Z If you want to create a new branch to retain commits you create, you may
+2026-10-09T06:20:03.4174138Z do so (now or later) by using -c with the switch command. Example:
+2026-10-09T06:20:03.4174477Z 
+2026-10-09T06:20:03.4174630Z   git switch -c <new-branch-name>
+2026-10-09T06:20:03.4174863Z 
+2026-10-09T06:20:03.4174983Z Or undo this operation with:
+2026-10-09T06:20:03.4175167Z 
+2026-10-09T06:20:03.4175270Z   git switch -
+2026-10-09T06:20:03.4175411Z 
+2026-10-09T06:20:03.4175669Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-09T06:20:03.4176038Z 
+2026-10-09T06:20:03.4176316Z HEAD is now at b17535f5 ci: bind unchanged v15 admission to the isolated Mac diagnostic
+2026-10-09T06:20:03.4346320Z ##[endgroup]
+2026-10-09T06:20:03.5654913Z [command]/usr/bin/git log -1 --format=%H
+2026-10-09T06:20:03.5681614Z b17535f5e762bf8afbea9978ccf02f7070ba6940
+2026-10-09T06:20:03.5695053Z ##[group]Removing auth
+2026-10-09T06:20:03.5700438Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T06:20:03.5732235Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T06:20:03.5978614Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T06:20:03.6589643Z http.https://github.com/.extraheader
+2026-10-09T06:20:03.6599187Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-09T06:20:03.7738141Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T06:20:03.7987226Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T06:20:03.8024566Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T06:20:03.8267602Z ##[endgroup]
+2026-10-09T06:20:03.8662443Z ##[group]Run set -euo pipefail
+2026-10-09T06:20:03.8663270Z [36;1mset -euo pipefail[0m
+2026-10-09T06:20:03.8663598Z [36;1mmkdir "$RUNNER_TEMP/mac-source-admission"[0m
+2026-10-09T06:20:03.8664083Z [36;1mgit rev-parse HEAD > "$RUNNER_TEMP/mac-source-admission/execution-head.txt"[0m
+2026-10-09T06:20:03.8664495Z [36;1mset +e[0m
+2026-10-09T06:20:03.8665293Z [36;1mpython3 -B scripts/verify_reviewed_source_v15.py --source-version p8-completion-source-20261009-v15 > "$RUNNER_TEMP/mac-source-admission/stdout.log" 2> "$RUNNER_TEMP/mac-source-admission/stderr.log"[0m
+2026-10-09T06:20:03.8666159Z [36;1mresult=$?[0m
+2026-10-09T06:20:03.8666362Z [36;1mset -e[0m
+2026-10-09T06:20:03.8666671Z [36;1mecho "$result" > "$RUNNER_TEMP/mac-source-admission/exit-code.txt"[0m
+2026-10-09T06:20:03.8667045Z [36;1mexit "$result"[0m
+2026-10-09T06:20:04.9108150Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T06:20:04.9108541Z env:
+2026-10-09T06:20:04.9108833Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T06:20:04.9109137Z   DIAG_SOURCE: a23bb72d3c954f385b99fe81ce9189885c208557
+2026-10-09T06:20:04.9109447Z ##[endgroup]
+2026-10-09T06:21:27.2140823Z ##[group]Run actions/upload-artifact@v4
+2026-10-09T06:21:27.2141163Z with:
+2026-10-09T06:21:27.2141545Z   name: mac-diagnostic-source-admission-b17535f5e762bf8afbea9978ccf02f7070ba6940
+2026-10-09T06:21:27.2142052Z   path: /home/runner/work/_temp/mac-source-admission
+2026-10-09T06:21:27.2142377Z   if-no-files-found: error
+2026-10-09T06:21:27.2142950Z   compression-level: 6
+2026-10-09T06:21:27.2143175Z   overwrite: false
+2026-10-09T06:21:27.2143387Z   include-hidden-files: false
+2026-10-09T06:21:27.2143620Z env:
+2026-10-09T06:21:27.2143823Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-09T06:21:27.2144114Z   DIAG_SOURCE: a23bb72d3c954f385b99fe81ce9189885c208557
+2026-10-09T06:21:27.2144412Z ##[endgroup]
+2026-10-09T06:21:27.3908734Z (node:47797) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-09T06:21:27.3909613Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-09T06:21:27.3967937Z With the provided path, there will be 4 files uploaded
+2026-10-09T06:21:27.3972757Z Artifact name is valid!
+2026-10-09T06:21:27.3973539Z Root directory input is valid!
+2026-10-09T06:21:27.6130586Z Beginning upload of artifact content to blob storage
+2026-10-09T06:21:27.6366499Z (node:47797) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-09T06:21:27.6816256Z Uploaded bytes 850
+2026-10-09T06:21:27.7013089Z Finished uploading artifact content to blob storage!
+2026-10-09T06:21:27.7014462Z SHA256 digest of uploaded artifact zip is 1fe81d4b775cabb820fdb5f3cc0a4e02857f973035d087632566e91107ebabc6
+2026-10-09T06:21:27.7016629Z Finalizing artifact upload
+2026-10-09T06:21:27.9461650Z Artifact mac-diagnostic-source-admission-b17535f5e762bf8afbea9978ccf02f7070ba6940.zip successfully finalized. Artifact ID 11599012501
+2026-10-09T06:21:27.9463764Z Artifact mac-diagnostic-source-admission-b17535f5e762bf8afbea9978ccf02f7070ba6940 has been successfully uploaded! Final size is 850 bytes. Artifact ID is 11599012501
+2026-10-09T06:21:27.9469860Z Artifact download URL: https://github.com/jyqj/codecortex/actions/runs/37892853323/artifacts/11599012501
+2026-10-09T06:21:27.9684620Z Post job cleanup.
+2026-10-09T06:21:28.0568612Z [command]/usr/bin/git version
+2026-10-09T06:21:28.0606704Z git version 2.55.0
+2026-10-09T06:21:28.0644762Z Temporarily overriding HOME='/home/runner/work/_temp/d986f36f-d275-4b0c-b00c-103ed6aa4706' before making global git config changes
+2026-10-09T06:21:28.0646144Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-09T06:21:28.0649887Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/codecortex/codecortex
+2026-10-09T06:21:28.0687331Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T06:21:28.0720380Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T06:21:28.0967649Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T06:21:28.1000534Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T06:21:28.1252969Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T06:21:28.1283823Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T06:21:28.1708196Z Cleaning up orphan processes
+2026-10-09T06:21:28.2028599Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

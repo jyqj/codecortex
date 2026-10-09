@@ -1,0 +1,781 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-10-09T10:53:52.121362+00:00",
+  "reviewer": "/root/pr_triage",
+  "review_scope": "Independent read-only review of retained native execution evidence; no source edit, native replay, workload, measurement, or remote mutation.",
+  "decision": "accepted_scoped_native_engineering_evidence",
+  "source_P": "c92eb5ac7ece70d1f62271d7e2dacac513c285b5",
+  "tree": "9ae248f8e0c42a8a7389e26e3f44710dfb029640",
+  "ordered_parents": [
+    "4652cad11dde4b41126544a38fddf25eb2fb7474",
+    "55aa2bcf355441585bcf980e1d6f4fab8eebe59d"
+  ],
+  "original_zip": {
+    "path": "/workspace/scratch/bfccb8494ba0/root-round14/native-P-transfer/native-public-api-merge-P-c92e-controls.zip",
+    "bytes": 1336504,
+    "sha256": "3addc07bdf6c58cd57e5545b8a3942c3a86931c8037c0a1ef2db23e2f034c983",
+    "git_blob": "4d36d1836ccb958f6b29ce11cdab096e96690f36"
+  },
+  "archive": {
+    "members": 52,
+    "manifest_files": 51,
+    "crc_read_all": true,
+    "manifest_all_bytes_and_sha256_match": true,
+    "extracted_all_bytes_equal_zip": true,
+    "safe_unique_regular_paths": true,
+    "manifest": {
+      "path": "/workspace/scratch/bfccb8494ba0/root-round14/native-P-transfer/extracted/archive-manifest.json",
+      "bytes": 8823,
+      "sha256": "14e229fa7a5302aa7c364e1f308332b26badae925f0f0f65c3378aebefbb7a85",
+      "git_blob": "91b4f1e1a379b921e68f63a2a401dae7bbb8173f"
+    }
+  },
+  "source_binding": {
+    "actual_commit_object_rehashed_to_P": true,
+    "original_ls_tree_rows": 1245,
+    "baseline_entries": 1245,
+    "each_recorded_mode_and_git_blob_matches_original_P_ls_tree": true,
+    "before_after_maps": 12,
+    "entries_per_map": 1245,
+    "all_maps_equal_original_baseline_in_every_path_bytes_sha256_git_blob_mode": true,
+    "native_controller_reads_each_source_file_before_after": true,
+    "selected_scope_paths": [
+      "Cargo.lock",
+      "Cargo.toml",
+      "crates",
+      "scripts",
+      ".github",
+      "tests",
+      "artifacts/checkpoints/capability-snapshot-optimization-20261003/current-status-under-test.rs",
+      "artifacts/checkpoints/capability-snapshot-optimization-20261003/v2-status-checks.rs"
+    ],
+    "scope": "Selected sparse checkout; no whole-repository execution assertion. Independent primary review compares retained maps and original Git output, not a fresh re-read of unavailable native source files.",
+    "baseline": {
+      "path": "/workspace/scratch/bfccb8494ba0/root-round14/native-P-transfer/extracted/before-domain-receipt.json",
+      "bytes": 345633,
+      "sha256": "ff2cf3a3ce2f4736bdd0e8cc6998d007ca9a48d68c856dd307b7ccf1bb84eddd",
+      "git_blob": "20c5013de05095b599cf2caa4bae2e878eecb3c6"
+    },
+    "original_ls_tree": {
+      "path": "/workspace/scratch/bfccb8494ba0/root-round14/native-P-transfer/extracted/official-domain-ls-tree.stdout",
+      "bytes": 136655,
+      "sha256": "df88a40941e66c0b1877eac9a9844615a6c9d4d6c21587b8b820390b871bd06c",
+      "git_blob": "ba43dd82e105a55d4d5b6d7829bc18b5889a346d"
+    },
+    "parent_project_HEAD_unchanged": "ff458bc591b4e7e444af4464d6eef2513cdb335c"
+  },
+  "preparation": {
+    "six_git_commands_exit_codes": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "all_original_stdio_hashes_match": true,
+    "clone": {
+      "command": [
+        "/bin/cp",
+        "-cR",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/public-dependency-fix-1.95-sdk154-round13",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/public-api-merge-P-c92e-1.95-sdk154-round14"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 22.4436545,
+      "scope": "own APFS cached engineering target clone; not fresh/cold/performance"
+    }
+  },
+  "native_engineering": {
+    "commands": [
+      {
+        "label": "resolution-store",
+        "command": [
+          "/Users/jin/.cargo/bin/cargo",
+          "+1.95.0",
+          "test",
+          "--locked",
+          "-p",
+          "cc-db",
+          "--test",
+          "p2b_resolution_store"
+        ],
+        "exit_code": 0,
+        "started_at": "2026-10-09T10:45:20.602448+00:00",
+        "ended_at": "2026-10-09T10:45:31.335497+00:00",
+        "minimum_executed": 7,
+        "summaries_from_original_stdout": [
+          {
+            "passed": 7,
+            "failed": 0,
+            "ignored": 0,
+            "measured": 0,
+            "filtered_out": 0
+          }
+        ],
+        "passed_test_names": [
+          "corrupt_payload_is_rejected",
+          "package_aggregate_tracks_files_and_test_visibility",
+          "dependency_manifest_roundtrip_reverse_lookup_delete_and_rollback",
+          "public_snapshot_dependency_failure_preserves_original_catch_and_commit_prefix",
+          "bounded_frontier_excludes_changed_files_before_counting_and_crosses_batches",
+          "snapshot_dependency_manifest_and_rows_match_original_full_writer",
+          "snapshot_dependency_failure_keeps_live_rows_and_generation_like_original"
+        ],
+        "stdout": {
+          "path": "resolution-store.stdout",
+          "bytes": 633,
+          "sha256": "40326ea3198db067cb47eaeda7407d6f042c3b9eca26b7474771840ccd3803d1"
+        },
+        "stderr": {
+          "path": "resolution-store.stderr",
+          "bytes": 591,
+          "sha256": "8b338863dce23a2cdf507e7d80173a0b619209468941b4057a0804e41ab5c7d8"
+        },
+        "before_map": {
+          "path": "resolution-store-input-before.json",
+          "bytes": 345078,
+          "sha256": "8a54b088f48638d592369f323abc5c968fe0d4155265350eac59d178a476232d",
+          "entries": 1245
+        },
+        "after_map": {
+          "path": "resolution-store-input-after.json",
+          "bytes": 345077,
+          "sha256": "8cadcab211348421344946b0447954de0e0ba65b2b7f0ae29697a9e439ccf819",
+          "entries": 1245
+        }
+      },
+      {
+        "label": "snapshot-binder-dependency-unit",
+        "command": [
+          "/Users/jin/.cargo/bin/cargo",
+          "+1.95.0",
+          "test",
+          "--locked",
+          "-p",
+          "cc-db",
+          "--lib",
+          "index_db_snapshot_insert::"
+        ],
+        "exit_code": 0,
+        "started_at": "2026-10-09T10:45:31.491687+00:00",
+        "ended_at": "2026-10-09T10:45:37.310303+00:00",
+        "minimum_executed": 14,
+        "summaries_from_original_stdout": [
+          {
+            "passed": 14,
+            "failed": 0,
+            "ignored": 0,
+            "measured": 0,
+            "filtered_out": 193
+          }
+        ],
+        "passed_test_names": [
+          "index_db_snapshot_insert::tests::bound_payload_measures_sql_values_and_keeps_large_rows_legal",
+          "index_db_snapshot_insert::tests::failed_window_stops_before_later_rows_or_tables",
+          "index_db_snapshot_insert::tests::semantic_leaf_batches_reduce_actual_sqlite_statement_runs",
+          "index_db_snapshot_insert::tests::resolution_snapshot_byte_windows_keep_legal_large_rows_single",
+          "index_db_snapshot_insert::snapshot_fts_tests::autocommit_keeps_original_partial_failure_and_immediate_mirrors",
+          "index_db_snapshot_insert::snapshot_fts_tests::public_entry_preserves_partial_state_when_caller_commits_after_error",
+          "index_db_snapshot_insert::snapshot_fts_tests::checked_capacity_and_near_maximum_rowids_use_original_fallback",
+          "index_db_snapshot_insert::snapshot_fts_tests::private_fts_flush_full_error_abandons_actual_rebuild_without_publication",
+          "index_db_snapshot_insert::tests::resolution_snapshot_batches_match_original_order_and_statement_work",
+          "index_db_snapshot_insert::snapshot_fts_tests::max_rowid_boundaries_use_tail_lookup_with_a_real_scan_control",
+          "index_db_snapshot_insert::snapshot_fts_tests::rowid_range_uses_primary_key_and_reduces_mirror_statement_runs",
+          "index_db_snapshot_insert::snapshot_fts_tests::noncanonical_or_temp_schema_falls_back_without_losing_mirrors",
+          "index_db_snapshot_insert::snapshot_fts_tests::late_failure_rolls_back_flushed_windows_and_preserves_live_generation",
+          "index_db_snapshot_insert::snapshot_fts_tests::windows_preserve_all_rows_fts_search_and_cross_path_survivors"
+        ],
+        "stdout": {
+          "path": "snapshot-binder-dependency-unit.stdout",
+          "bytes": 1749,
+          "sha256": "657a6709b00c64d4f0ae2270144524e1b576dfda9810ad304753bb6948868c64"
+        },
+        "stderr": {
+          "path": "snapshot-binder-dependency-unit.stderr",
+          "bytes": 3692,
+          "sha256": "19bf9941b792645105124944d392bc42f3c29a515f16a461871095fcecf26ee2"
+        },
+        "before_map": {
+          "path": "snapshot-binder-dependency-unit-input-before.json",
+          "bytes": 345093,
+          "sha256": "8b1af3c013df728e12f56f9ed378d3c52d78b8161e599b7ad477014a321a990c",
+          "entries": 1245
+        },
+        "after_map": {
+          "path": "snapshot-binder-dependency-unit-input-after.json",
+          "bytes": 345092,
+          "sha256": "052b0c341a7d1fd1e2ea245a3a32089674f8c18af19281ec6c9b2532057270a6",
+          "entries": 1245
+        }
+      },
+      {
+        "label": "snapshot-leaf-owner-control",
+        "command": [
+          "/Users/jin/.cargo/bin/cargo",
+          "+1.95.0",
+          "test",
+          "--locked",
+          "-p",
+          "cc-index",
+          "--test",
+          "snapshot_leaf_batching"
+        ],
+        "exit_code": 0,
+        "started_at": "2026-10-09T10:45:37.467300+00:00",
+        "ended_at": "2026-10-09T10:45:48.938292+00:00",
+        "minimum_executed": 6,
+        "summaries_from_original_stdout": [
+          {
+            "passed": 6,
+            "failed": 0,
+            "ignored": 0,
+            "measured": 0,
+            "filtered_out": 0
+          }
+        ],
+        "passed_test_names": [
+          "snapshot_leaf_never_delays_identity_checks_past_the_next_file",
+          "snapshot_leaf_symbol_id_and_uid_conflicts_keep_sql_survivors_and_fts",
+          "snapshot_leaf_direct_writer_preserves_original_adapter_pragmas_and_bytes",
+          "snapshot_leaf_byte_windows_and_oversize_single_rows_preserve_values",
+          "snapshot_leaf_duplicate_paths_future_fk_and_late_identity_error_roll_back_wal",
+          "snapshot_leaf_tier_boundaries_preserve_all_fifteen_tables_and_fts"
+        ],
+        "stdout": {
+          "path": "snapshot-leaf-owner-control.stdout",
+          "bytes": 601,
+          "sha256": "ac6ffca56f62c10665fe64ddc115737843a8a3544ff4d0cf34d0a4e9b218c402"
+        },
+        "stderr": {
+          "path": "snapshot-leaf-owner-control.stderr",
+          "bytes": 905,
+          "sha256": "d57bce6e7933400cb72a3b9f47592241012d8ae13953b123268a9a8e0d8f4e0f"
+        },
+        "before_map": {
+          "path": "snapshot-leaf-owner-control-input-before.json",
+          "bytes": 345089,
+          "sha256": "b020d07817b17e859ac66641d8c4df1ea2b5fe6a3cb88a9a1af9b0086665a24e",
+          "entries": 1245
+        },
+        "after_map": {
+          "path": "snapshot-leaf-owner-control-input-after.json",
+          "bytes": 345088,
+          "sha256": "a173a73eb4349d0dad81ed7102499118f80aadb98290b211dae184d50b516a2b",
+          "entries": 1245
+        }
+      },
+      {
+        "label": "workspace-format",
+        "command": [
+          "/Users/jin/.cargo/bin/cargo",
+          "+1.95.0",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "started_at": "2026-10-09T10:45:49.096437+00:00",
+        "ended_at": "2026-10-09T10:45:50.511466+00:00",
+        "minimum_executed": 0,
+        "summaries_from_original_stdout": [],
+        "passed_test_names": [],
+        "stdout": {
+          "path": "workspace-format.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "workspace-format.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "before_map": {
+          "path": "workspace-format-input-before.json",
+          "bytes": 345078,
+          "sha256": "8d12073b03e9df3d42fae58f0a2b0616e73ff68e64829faeb9e83e173de46478",
+          "entries": 1245
+        },
+        "after_map": {
+          "path": "workspace-format-input-after.json",
+          "bytes": 345077,
+          "sha256": "0c713977455cf1ef1c6fc357dedf079f9dd610bfba881ac53ce8a284b36ca2aa",
+          "entries": 1245
+        }
+      },
+      {
+        "label": "cc-db-strict-clippy",
+        "command": [
+          "/Users/jin/.cargo/bin/cargo",
+          "+1.95.0",
+          "clippy",
+          "--locked",
+          "-p",
+          "cc-db",
+          "--all-targets",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "started_at": "2026-10-09T10:45:50.666486+00:00",
+        "ended_at": "2026-10-09T10:45:56.355697+00:00",
+        "minimum_executed": 0,
+        "summaries_from_original_stdout": [],
+        "passed_test_names": [],
+        "stdout": {
+          "path": "cc-db-strict-clippy.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "cc-db-strict-clippy.stderr",
+          "bytes": 372,
+          "sha256": "c0b620b0eb385db23beb530e3f0fcd75d706f9f9f5f4eb15714915d69330e9ae"
+        },
+        "before_map": {
+          "path": "cc-db-strict-clippy-input-before.json",
+          "bytes": 345081,
+          "sha256": "616e47f6a5088f979c455ab5aab6c1fd79981ea1ece91391aba265e803f96252",
+          "entries": 1245
+        },
+        "after_map": {
+          "path": "cc-db-strict-clippy-input-after.json",
+          "bytes": 345080,
+          "sha256": "14c2c885323e66ed36a391438795123ce3eb417897572f0e02479b2b4ec04f96",
+          "entries": 1245
+        }
+      },
+      {
+        "label": "integrated-installer-cli",
+        "command": [
+          "/Users/jin/.cargo/bin/cargo",
+          "+1.95.0",
+          "test",
+          "--locked",
+          "-p",
+          "cc-server",
+          "--test",
+          "installer_cli"
+        ],
+        "exit_code": 0,
+        "started_at": "2026-10-09T10:45:56.498084+00:00",
+        "ended_at": "2026-10-09T10:46:14.358533+00:00",
+        "minimum_executed": 1,
+        "summaries_from_original_stdout": [
+          {
+            "passed": 2,
+            "failed": 0,
+            "ignored": 0,
+            "measured": 0,
+            "filtered_out": 0
+          }
+        ],
+        "passed_test_names": [
+          "malformed_codex_config_makes_install_and_uninstall_fail_without_rewriting",
+          "install_and_uninstall_round_trip_the_exact_server_entry"
+        ],
+        "stdout": {
+          "path": "integrated-installer-cli.stdout",
+          "bytes": 267,
+          "sha256": "f6464262ba985bce0958e74200a911e16e8d4a8290e5ec1b4933a46bf6b22369"
+        },
+        "stderr": {
+          "path": "integrated-installer-cli.stderr",
+          "bytes": 1256,
+          "sha256": "443b24f8a638870119d8fc9200852c6ff5d0c59858345db357e92fc43747e22d"
+        },
+        "before_map": {
+          "path": "integrated-installer-cli-input-before.json",
+          "bytes": 345086,
+          "sha256": "2fa802a4481a285acf9df0671811ca91d8c31e29339cb87b1f32cfc73b417c30",
+          "entries": 1245
+        },
+        "after_map": {
+          "path": "integrated-installer-cli-input-after.json",
+          "bytes": 345085,
+          "sha256": "9dff4e79ea9c55c3625373b74dd2ef959155db68b1f4c7f02ac8b986966c08fa",
+          "entries": 1245
+        }
+      }
+    ],
+    "command_exit_codes": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "test_total_passed": 29,
+    "test_total_failed": 0,
+    "test_total_ignored": 0,
+    "test_total_filtered_out": 193,
+    "full_workspace_tests_claimed": false,
+    "fmt_scope": "cargo +1.95.0 fmt --all -- --check",
+    "clippy_scope": "cargo +1.95.0 clippy --locked -p cc-db --all-targets -- -D warnings",
+    "explicit_toolchain_selector": "1.95.0",
+    "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+    "fresh_rustc_binary_hash_or_version_probe_in_package": false,
+    "target": "APFS cloned owned engineering cache; not fresh/cold/performance",
+    "fts_max_control": {
+      "six_observations": true,
+      "rows": [
+        0,
+        1,
+        257
+      ],
+      "tables": [
+        "files",
+        "literal_index"
+      ],
+      "all_max_fullscan_steps": 0,
+      "rows257_sum_control_steps": 256,
+      "all_explain_include_Last": true,
+      "timing_measurement": false
+    }
+  },
+  "boundaries": [
+    "This accepts these six actual commands on committed P; it does not assert a complete workspace test suite or workspace-wide Clippy.",
+    "No historical 3ff RED/GREEN execution is relabeled as c92e.",
+    "No original Gc8 primary sample or component result transfers to this new P.",
+    "These commands contain no actual mixed-load DB lock acquisition wait measurement; the P8-007 original contract gap remains. This product is the public API merge repair, not the external default-off DB observation implementation.",
+    "Root 10:46:04 preparation snapshot remains frozen at its then-pending native-controls state; this terminal review is appended separately.",
+    "Original task ledger remains 163 done /29 remaining; this review closes no original TODO."
+  ],
+  "original_controller_hashes": {
+    "prepare-controller.py": {
+      "path": "/workspace/scratch/bfccb8494ba0/root-round14/native-P-transfer/extracted/prepare-controller.py",
+      "bytes": 3769,
+      "sha256": "b7b5b32929221d42d6e28c47927909d1a3ef7f61d62a5926647625194955bfcc",
+      "git_blob": "5d0b7d35ce3a42f256920151f8eb49eb1780df0b"
+    },
+    "controls-controller.py": {
+      "path": "/workspace/scratch/bfccb8494ba0/root-round14/native-P-transfer/extracted/controls-controller.py",
+      "bytes": 4616,
+      "sha256": "02b0ca4b490cff14e7ee6dc28e18e2b976a9e30c8346a961e03dd146f976cf95",
+      "git_blob": "e116063763f2d6d672ba91e82f78dd1bf0dfc545"
+    },
+    "package-controller.py": {
+      "path": "/workspace/scratch/bfccb8494ba0/root-round14/native-P-transfer/extracted/package-controller.py",
+      "bytes": 3389,
+      "sha256": "642f34a07d3ef26fa7f0acfd343d2c7867aa96af8ef0ec41ff9326aa7fdd44c7",
+      "git_blob": "a974b3f695bc6695fdedbba9f5aa18a7078adf76"
+    }
+  },
+  "all_original_members": [
+    {
+      "path": "actual-P-object.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "crc32": "00000000"
+    },
+    {
+      "path": "actual-P-object.stdout",
+      "bytes": 819,
+      "sha256": "e8d39ffb7013db6cc6811dde696856671fee3e69481a26400a17154d0c7e0014",
+      "crc32": "54f77cf3"
+    },
+    {
+      "path": "before-domain-receipt.json",
+      "bytes": 345633,
+      "sha256": "ff2cf3a3ce2f4736bdd0e8cc6998d007ca9a48d68c856dd307b7ccf1bb84eddd",
+      "crc32": "b05e9849"
+    },
+    {
+      "path": "cc-db-strict-clippy-input-after.json",
+      "bytes": 345080,
+      "sha256": "14c2c885323e66ed36a391438795123ce3eb417897572f0e02479b2b4ec04f96",
+      "crc32": "74ab0b29"
+    },
+    {
+      "path": "cc-db-strict-clippy-input-before.json",
+      "bytes": 345081,
+      "sha256": "616e47f6a5088f979c455ab5aab6c1fd79981ea1ece91391aba265e803f96252",
+      "crc32": "e032295b"
+    },
+    {
+      "path": "cc-db-strict-clippy-receipt.json",
+      "bytes": 1933,
+      "sha256": "145219cfea6b002d3e21066a0f987925ec25891008093eef2a038f3f31503d2c",
+      "crc32": "1deb85ca"
+    },
+    {
+      "path": "cc-db-strict-clippy.stderr",
+      "bytes": 372,
+      "sha256": "c0b620b0eb385db23beb530e3f0fcd75d706f9f9f5f4eb15714915d69330e9ae",
+      "crc32": "baff2195"
+    },
+    {
+      "path": "cc-db-strict-clippy.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "crc32": "00000000"
+    },
+    {
+      "path": "checkout-exact-inputs.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "crc32": "00000000"
+    },
+    {
+      "path": "checkout-exact-inputs.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "crc32": "00000000"
+    },
+    {
+      "path": "controls-controller.py",
+      "bytes": 4616,
+      "sha256": "02b0ca4b490cff14e7ee6dc28e18e2b976a9e30c8346a961e03dd146f976cf95",
+      "crc32": "d9d043a4"
+    },
+    {
+      "path": "controls-progress.json",
+      "bytes": 12539,
+      "sha256": "0c323ec2ccaf6b2cb693c5affc1a75160a61a1e2a82f486e38cb8a7f721b2fde",
+      "crc32": "7eb04fff"
+    },
+    {
+      "path": "create-detached-worktree.stderr",
+      "bytes": 44,
+      "sha256": "1c733e25275e99caa303067c4cebeede6dcdc1d46f0c30a244cbb96b7e1a372d",
+      "crc32": "fd0ebb5f"
+    },
+    {
+      "path": "create-detached-worktree.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "crc32": "00000000"
+    },
+    {
+      "path": "integrated-installer-cli-input-after.json",
+      "bytes": 345085,
+      "sha256": "9dff4e79ea9c55c3625373b74dd2ef959155db68b1f4c7f02ac8b986966c08fa",
+      "crc32": "fb7a793d"
+    },
+    {
+      "path": "integrated-installer-cli-input-before.json",
+      "bytes": 345086,
+      "sha256": "2fa802a4481a285acf9df0671811ca91d8c31e29339cb87b1f32cfc73b417c30",
+      "crc32": "fa672c54"
+    },
+    {
+      "path": "integrated-installer-cli-receipt.json",
+      "bytes": 2000,
+      "sha256": "9b29f72577e84b15f4b148db91dbebb9c2b8ec97c35d41ec545cd3f29fd374c5",
+      "crc32": "501a4909"
+    },
+    {
+      "path": "integrated-installer-cli.stderr",
+      "bytes": 1256,
+      "sha256": "443b24f8a638870119d8fc9200852c6ff5d0c59858345db357e92fc43747e22d",
+      "crc32": "964a9d98"
+    },
+    {
+      "path": "integrated-installer-cli.stdout",
+      "bytes": 267,
+      "sha256": "f6464262ba985bce0958e74200a911e16e8d4a8290e5ec1b4933a46bf6b22369",
+      "crc32": "e0878910"
+    },
+    {
+      "path": "official-domain-ls-tree.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "crc32": "00000000"
+    },
+    {
+      "path": "official-domain-ls-tree.stdout",
+      "bytes": 136655,
+      "sha256": "df88a40941e66c0b1877eac9a9844615a6c9d4d6c21587b8b820390b871bd06c",
+      "crc32": "3fed7e53"
+    },
+    {
+      "path": "package-controller.py",
+      "bytes": 3389,
+      "sha256": "642f34a07d3ef26fa7f0acfd343d2c7867aa96af8ef0ec41ff9326aa7fdd44c7",
+      "crc32": "7852a6b5"
+    },
+    {
+      "path": "parent-head-after.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "crc32": "00000000"
+    },
+    {
+      "path": "parent-head-after.stdout",
+      "bytes": 41,
+      "sha256": "61b87635e977a70fa554adeaf39d137e96af7d8091b4fd8fd688804e8825afc3",
+      "crc32": "25a1fd1c"
+    },
+    {
+      "path": "parent-head-before.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "crc32": "00000000"
+    },
+    {
+      "path": "parent-head-before.stdout",
+      "bytes": 41,
+      "sha256": "61b87635e977a70fa554adeaf39d137e96af7d8091b4fd8fd688804e8825afc3",
+      "crc32": "25a1fd1c"
+    },
+    {
+      "path": "preparation-receipts.json",
+      "bytes": 5555,
+      "sha256": "f62aeee5e449d2b445fb5b5ddf744cb45b20008b06d963787677cd18e379951b",
+      "crc32": "6fae12f0"
+    },
+    {
+      "path": "prepare-controller.py",
+      "bytes": 3769,
+      "sha256": "b7b5b32929221d42d6e28c47927909d1a3ef7f61d62a5926647625194955bfcc",
+      "crc32": "6b139f15"
+    },
+    {
+      "path": "resolution-store-input-after.json",
+      "bytes": 345077,
+      "sha256": "8cadcab211348421344946b0447954de0e0ba65b2b7f0ae29697a9e439ccf819",
+      "crc32": "b0a4473b"
+    },
+    {
+      "path": "resolution-store-input-before.json",
+      "bytes": 345078,
+      "sha256": "8a54b088f48638d592369f323abc5c968fe0d4155265350eac59d178a476232d",
+      "crc32": "134f575f"
+    },
+    {
+      "path": "resolution-store-receipt.json",
+      "bytes": 1962,
+      "sha256": "27c823fd6f5cb1773b6701ae5e7a66522a6cf21f636f542888a99374a1b957e2",
+      "crc32": "4c3a28ec"
+    },
+    {
+      "path": "resolution-store.stderr",
+      "bytes": 591,
+      "sha256": "8b338863dce23a2cdf507e7d80173a0b619209468941b4057a0804e41ab5c7d8",
+      "crc32": "b6e2152a"
+    },
+    {
+      "path": "resolution-store.stdout",
+      "bytes": 633,
+      "sha256": "40326ea3198db067cb47eaeda7407d6f042c3b9eca26b7474771840ccd3803d1",
+      "crc32": "bc03f790"
+    },
+    {
+      "path": "snapshot-binder-dependency-unit-input-after.json",
+      "bytes": 345092,
+      "sha256": "052b0c341a7d1fd1e2ea245a3a32089674f8c18af19281ec6c9b2532057270a6",
+      "crc32": "8906f052"
+    },
+    {
+      "path": "snapshot-binder-dependency-unit-input-before.json",
+      "bytes": 345093,
+      "sha256": "8b1af3c013df728e12f56f9ed378d3c52d78b8161e599b7ad477014a321a990c",
+      "crc32": "27182c14"
+    },
+    {
+      "path": "snapshot-binder-dependency-unit-receipt.json",
+      "bytes": 2039,
+      "sha256": "515f8ccc8a730e42abb1c9999b8c753cc1c6765e3c80d18de28f418fe7d96540",
+      "crc32": "64b3a295"
+    },
+    {
+      "path": "snapshot-binder-dependency-unit.stderr",
+      "bytes": 3692,
+      "sha256": "19bf9941b792645105124944d392bc42f3c29a515f16a461871095fcecf26ee2",
+      "crc32": "c7909ae9"
+    },
+    {
+      "path": "snapshot-binder-dependency-unit.stdout",
+      "bytes": 1749,
+      "sha256": "657a6709b00c64d4f0ae2270144524e1b576dfda9810ad304753bb6948868c64",
+      "crc32": "79c52e3a"
+    },
+    {
+      "path": "snapshot-leaf-owner-control-input-after.json",
+      "bytes": 345088,
+      "sha256": "a173a73eb4349d0dad81ed7102499118f80aadb98290b211dae184d50b516a2b",
+      "crc32": "080be952"
+    },
+    {
+      "path": "snapshot-leaf-owner-control-input-before.json",
+      "bytes": 345089,
+      "sha256": "b020d07817b17e859ac66641d8c4df1ea2b5fe6a3cb88a9a1af9b0086665a24e",
+      "crc32": "2799210d"
+    },
+    {
+      "path": "snapshot-leaf-owner-control-receipt.json",
+      "bytes": 2022,
+      "sha256": "f0abe6b1916db464edbf8b1dc52ddabb74a68c83141cbdc4ddad35c1b66b7d04",
+      "crc32": "3ff13e55"
+    },
+    {
+      "path": "snapshot-leaf-owner-control.stderr",
+      "bytes": 905,
+      "sha256": "d57bce6e7933400cb72a3b9f47592241012d8ae13953b123268a9a8e0d8f4e0f",
+      "crc32": "2768c2c3"
+    },
+    {
+      "path": "snapshot-leaf-owner-control.stdout",
+      "bytes": 601,
+      "sha256": "ac6ffca56f62c10665fe64ddc115737843a8a3544ff4d0cf34d0a4e9b218c402",
+      "crc32": "41537af3"
+    },
+    {
+      "path": "target-clone-receipt.json",
+      "bytes": 442,
+      "sha256": "7535edc6853cfe832eed74ac0028851f3bb3518b1dc24a4e76a7dfa02d1a31e9",
+      "crc32": "a400d83d"
+    },
+    {
+      "path": "target-clone.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "crc32": "00000000"
+    },
+    {
+      "path": "target-clone.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "crc32": "00000000"
+    },
+    {
+      "path": "workspace-format-input-after.json",
+      "bytes": 345077,
+      "sha256": "0c713977455cf1ef1c6fc357dedf079f9dd610bfba881ac53ce8a284b36ca2aa",
+      "crc32": "577996bb"
+    },
+    {
+      "path": "workspace-format-input-before.json",
+      "bytes": 345078,
+      "sha256": "8d12073b03e9df3d42fae58f0a2b0616e73ff68e64829faeb9e83e173de46478",
+      "crc32": "fe1009ae"
+    },
+    {
+      "path": "workspace-format-receipt.json",
+      "bytes": 1862,
+      "sha256": "8475b8d046fedd0cab1546b0b122ada142e491d855aaa27830de96eff16f7494",
+      "crc32": "357bef82"
+    },
+    {
+      "path": "workspace-format.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "crc32": "00000000"
+    },
+    {
+      "path": "workspace-format.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "crc32": "00000000"
+    },
+    {
+      "path": "archive-manifest.json",
+      "bytes": 8823,
+      "sha256": "14e229fa7a5302aa7c364e1f308332b26badae925f0f0f65c3378aebefbb7a85",
+      "crc32": "8a40d70d"
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-10-09T05:44:45.628199+00:00",
+  "commit": "b413f7882d8bf65f93a6ff3d07e0c17706d95d69",
+  "tree": "22f87169b504a35e5e431352d3ab82c9a157d603",
+  "parents": [
+    "26768b5e38ed1784bf77a8c4fe57baf01a19c626"
+  ],
+  "branch": "task/p8-macos-integration-bfcc-20261009",
+  "commands": [
+    {
+      "argv": [
+        "git",
+        "add",
+        "--",
+        "crates/cc-eval/tests/benchmark_adapters.rs",
+        "crates/cc-eval/tests/p8_scale.rs",
+        "crates/cc-index/src/project_model/python_inventory.rs",
+        "crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "argv": [
+        "git",
+        "commit",
+        "-m",
+        "fix: gate Linux-only code and prepare stderr helper on macOS"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "commit_metadata": "commit b413f7882d8bf65f93a6ff3d07e0c17706d95d69\nAuthor:     金亦加 <jin@MacBook-Pro.local>\nAuthorDate: Fri Oct 9 13:44:45 2026 +0800\nCommit:     金亦加 <jin@MacBook-Pro.local>\nCommitDate: Fri Oct 9 13:44:45 2026 +0800\n\n    fix: gate Linux-only code and prepare stderr helper on macOS\n",
+  "changed_paths": {
+    "crates/cc-eval/tests/benchmark_adapters.rs": {
+      "domain": "product",
+      "mode": "100644",
+      "bytes": 38925,
+      "sha256": "a5ef80d761a89c83d97998fe02e68a185d6c803ed0999723d9b24d90d1f1289c",
+      "blob": "9feb4fe9659c3cd84bc86684d3f73412f9caec17"
+    },
+    "crates/cc-eval/tests/p8_scale.rs": {
+      "domain": "product",
+      "mode": "100644",
+      "bytes": 21068,
+      "sha256": "71831ab2b2ab0e7b34e9917f499bc33f7b66a74e0c156874b4154bb6b783d8dc",
+      "blob": "31b34057ff76e0b07e9242ef179951577ed22187"
+    },
+    "crates/cc-index/src/project_model/python_inventory.rs": {
+      "domain": "product",
+      "mode": "100644",
+      "bytes": 13291,
+      "sha256": "e3fd1a31e0ed7cb9c8fa90a7025508a957f0bc8288f7850fff5e400094a5203e",
+      "blob": "e8f3ccd2d5d24ac222186f6954d983d859b4ee18"
+    },
+    "crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs": {
+      "domain": "product",
+      "mode": "100644",
+      "bytes": 15513,
+      "sha256": "5d9d105a151dff3b82bb27125e5e4d276966611de0ef74634cb3a4a67396f495",
+      "blob": "4d3b82904f0b9415f1f901a4192f66525492cd02"
+    }
+  },
+  "full_input_bridge": {
+    "path": "review-ci/macos-integration-candidate/product-commit-full-input-bridge.json",
+    "bytes": 334318,
+    "sha256": "babdff9b2d00965b4c5901d844e30f79e7d80aba2464c3d74c3f822e566512c4"
+  },
+  "checks": {
+    "source_before_after_product1089_and_validation138_equal": true,
+    "git_blob_bytes_and_modes_match_actual_execution": true,
+    "only_four_paths_committed": true,
+    "all_other_git_objects_and_modes_equal_G3": true,
+    "worktree_clean": true,
+    "old_candidate_macos_unchanged": true
+  },
+  "actual_execution_identity": {
+    "head": "26768b5e38ed1784bf77a8c4fe57baf01a19c626",
+    "uncommitted_diff_sha256": "b45ead05f6ca2bf604e21d7951a0b9414ef02cfaac559d5460b93d091301e463",
+    "native_job": "wc_job_aRmdq6q775GObe5L",
+    "relabeled_as_P_execution": false,
+    "equivalence": "P commit blobs/modes exactly equal the four-file uncommitted source plus unchangedG3 used by actual original4commands"
+  },
+  "R_written": false,
+  "guard_or_registry_changed": false,
+  "pushed": false,
+  "todo_credit": 0,
+  "remaining_original_todos": 29
+}

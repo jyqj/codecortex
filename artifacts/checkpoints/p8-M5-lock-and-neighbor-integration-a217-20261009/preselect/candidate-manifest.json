@@ -1,0 +1,53 @@
+{
+  "authorization_scope": "Parent root requested one isolated candidate; no shared checkout, Git object/ref, workflow or scale study is modified.",
+  "base": "832f79b8702c6cdfb567b7cf949508cd4589f286",
+  "base_identity": {
+    "bytes": 56042,
+    "git_blob": "383e8774d35d51d6406a669f5361eb34f6607c20",
+    "sha256": "11741090fd395c97ca01db3b63754f3d18de289595e24aac8a3416d26981f639"
+  },
+  "candidate_identity": {
+    "bytes": 59711,
+    "git_blob": "acee54f9100c012f18affae077aea92fdad97591",
+    "sha256": "a3aea905493d4204cf00209a53918175e2b31b84eed643b76ea19c09bcb011bb"
+  },
+  "created_utc": "2026-10-09T13:09:16.989360+00:00",
+  "formal_completion": false,
+  "legacy_source": {
+    "head": "9619641903f0b9f397007ebbe85893ce8f6b5f97",
+    "hunk": "preselect.rs score_graph_neighbors result.sort_by before expansion_limit",
+    "pr": 3
+  },
+  "new_controls": [
+    {
+      "meaning": "Real SQLite graph has four equal-scored caller files, one seed and limit two. Both DB insertion orders and independent calls must select a,b; all scores remain 0.8.",
+      "name": "graph_neighbor_ties_select_file_order_before_truncation"
+    },
+    {
+      "meaning": "A second real incoming edge raises z to 0.9; score must win over filepath a at 0.8, while the remaining tie chooses a. Five edges fit the unchanged per-seed DAO limit.",
+      "name": "graph_neighbor_score_precedes_file_order_at_the_cutoff"
+    }
+  ],
+  "not_changed": [
+    "top-20 seed score ties are a separate known point",
+    "all original tests and assertion bodies",
+    "all scale sources, budgets, repetitions and evidence"
+  ],
+  "patch_identity": {
+    "bytes": 4323,
+    "git_blob": "5924a40585771d2f591b51e9e8621975084b4bb2",
+    "sha256": "05636c5d36eaa1fd65f31f6010bd95e53b6afbd0746aad329f7b1a544c37455a"
+  },
+  "path": "crates/cc-search/src/preselect.rs",
+  "performance_claim": null,
+  "production_change": "Exactly one existing final neighbor sort gains filepath ordering when the original descending partial_cmp comparison returns Equal; scores, preselection, DAO queries, limits, filtering and truncation remain unchanged.",
+  "remaining_todos": 29,
+  "schema": "PR3-specific-graph-neighbor-tie-candidate-v1",
+  "validation": {
+    "cargo_fmt": "not_run: no Rust toolchain in current local environment",
+    "compilation": "not_run",
+    "native_measurement": "not_run",
+    "new_and_original_Rust_controls": "not_run",
+    "static_candidate_construction_and_fixed_source_byte_checks": "passed"
+  }
+}

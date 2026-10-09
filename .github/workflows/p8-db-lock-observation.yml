@@ -1,0 +1,126 @@
+name: P8 opt-in DB acquisition observations
+
+on:
+  create:
+  workflow_dispatch:
+  push:
+    branches:
+      - task/p8-db-lock-observation-a217-20261009
+    paths:
+      - .github/workflows/p8-db-lock-observation.yml
+      - crates/cc-db/Cargo.toml
+      - crates/cc-db/src/index_db.rs
+      - crates/cc-db/src/lib.rs
+      - crates/cc-db/src/lock_observation.rs
+      - crates/cc-eval/Cargo.toml
+      - crates/cc-server/Cargo.toml
+      - crates/cc-server/src/handlers/facade.rs
+      - crates/cc-server/src/tools.rs
+      - crates/cc-server/tests/p8_db_lock_observation.rs
+      - docs/P8_DB_LOCK_OBSERVATION.md
+      - scripts/p8_runtime.py
+      - scripts/p8_runtime_build.py
+      - scripts/p8_runtime_lock_observation.py
+      - scripts/reviewed-source-registry-v15.json
+      - scripts/tests/test_p8_runtime_lock_observation.py
+      - scripts/verify_reviewed_source_v15.py
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  CARGO_TERM_COLOR: never
+  CARGO_INCREMENTAL: '0'
+  CARGO_BUILD_JOBS: '2'
+  PYTHONDONTWRITEBYTECODE: '1'
+
+jobs:
+  admission_and_controls:
+    if: github.event_name == 'workflow_dispatch' || (github.event.ref_type == 'branch' && github.event.ref == 'task/p8-db-lock-observation-a217-20261009') || (github.event_name == 'push' && github.ref == 'refs/heads/task/p8-db-lock-observation-a217-20261009')
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: dtolnay/rust-toolchain@1.95.0
+        with:
+          components: rustfmt
+      - name: Prepare retained control directory
+        run: mkdir "$RUNNER_TEMP/p8-lock-controls"
+      - name: Admit the exact reviewed source and all validation inputs
+        run: python3 scripts/verify_reviewed_source_v15.py --source-version p8-completion-source-20261009-v15 2>&1 | tee "$RUNNER_TEMP/p8-lock-controls/source-admission.log"
+      - name: Fetch locked dependencies
+        run: cargo fetch --locked
+      - name: Check original Rust formatting and preserve diagnostics
+        run: cargo fmt --all -- --check 2>&1 | tee "$RUNNER_TEMP/p8-lock-controls/rustfmt.log"
+      - name: Default-off status contract
+        env:
+          CARGO_TARGET_DIR: ${{ runner.temp }}/p8-lock-control-target
+        run: |
+          cargo test -p cc-server --no-default-features --locked --offline --test p8_db_lock_observation -- --nocapture 2>&1 | tee "$RUNNER_TEMP/p8-lock-controls/default-status.log"
+      - name: Actual acquisition positive and negative controls
+        env:
+          CARGO_TARGET_DIR: ${{ runner.temp }}/p8-lock-control-target
+        run: |
+          cargo test -p cc-db --no-default-features --features p8-db-lock-observation --locked --offline --lib lock_observation::tests -- --nocapture 2>&1 | tee "$RUNNER_TEMP/p8-lock-controls/acquisition-controls.log"
+          cargo test -p cc-server --no-default-features --features p8-db-lock-observation --locked --offline --test p8_db_lock_observation -- --nocapture 2>&1 | tee "$RUNNER_TEMP/p8-lock-controls/feature-status.log"
+      - name: Receipt, counter, failure preservation and original runtime controls
+        run: |
+          python3 -m unittest discover -s scripts/tests -p 'test_p8_runtime*.py' -v 2>&1 | tee "$RUNNER_TEMP/p8-lock-controls/python-controls.log"
+      - name: Preserve all completed and failed controls
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-db-lock-controls-${{ github.sha }}
+          path: ${{ runner.temp }}/p8-lock-controls
+          if-no-files-found: error
+
+  mixed:
+    needs: admission_and_controls
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        concurrency: [1, 4, 8, 16]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: dtolnay/rust-toolchain@1.95.0
+      - name: Fetch locked dependencies before measurement
+        run: cargo fetch --locked
+      - name: Build separately identified release feature artifacts
+        env:
+          CARGO_TARGET_DIR: ${{ runner.temp }}/p8-lock-runtime-target
+        run: python3 scripts/p8_runtime_build.py --lock-observation --output "$RUNNER_TEMP/p8-lock-build"
+      - name: Original mixed workload with actual acquisition observations
+        run: |
+          python3 scripts/p8_runtime.py \
+            --binary "$RUNNER_TEMP/p8-lock-build/codecortex" \
+            --oracle "$RUNNER_TEMP/p8-lock-build/p8-oracle" \
+            --statistics "$RUNNER_TEMP/p8-lock-build/p8-runtime-statistics" \
+            --build-receipt "$RUNNER_TEMP/p8-lock-build/build-receipt.json" \
+            --lock-observation --profile mixed \
+            --concurrency '${{ matrix.concurrency }}' --operations 900 \
+            --files 1000 --interval-ms 500 --output "$RUNNER_TEMP/p8-lock-runtime"
+      - name: Verify every retained diagnostic runtime and build artifact
+        if: always()
+        run: |
+          python3 scripts/p8_runtime.py verify --output "$RUNNER_TEMP/p8-lock-runtime" \
+            --build-output "$RUNNER_TEMP/p8-lock-build"
+      - name: Preserve every original execution including failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-db-lock-mixed-c${{ matrix.concurrency }}-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/p8-lock-build
+            ${{ runner.temp }}/p8-lock-runtime
+          include-hidden-files: true
+          if-no-files-found: error

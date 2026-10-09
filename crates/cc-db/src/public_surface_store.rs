@@ -12,6 +12,22 @@ use std::collections::{HashMap, HashSet};
 pub type BoundSurfaceAddresses = HashMap<String, HashSet<(String, String)>>;
 
 pub(crate) fn insert_on(conn: &Connection, file: &FileWriteUnit) -> CcResult<()> {
+    insert_with(conn, file, crate::resolution_dependency_store::replace_on)
+}
+
+pub(crate) fn insert_snapshot_on(conn: &Connection, file: &FileWriteUnit) -> CcResult<()> {
+    insert_with(
+        conn,
+        file,
+        crate::resolution_dependency_store::replace_snapshot_on,
+    )
+}
+
+fn insert_with(
+    conn: &Connection,
+    file: &FileWriteUnit,
+    replace_resolution: fn(&Connection, &FileWriteUnit) -> CcResult<()>,
+) -> CcResult<()> {
     let mut surface = file.outcome.public_surface.clone();
     surface.normalize();
     surface.validate()?;
@@ -25,7 +41,7 @@ pub(crate) fn insert_on(conn: &Connection, file: &FileWriteUnit) -> CcResult<()>
         cc_model::package_surface::PackageKey::from_surface(&surface).map(|k| k.storage_key());
     conn.prepare_cached("INSERT INTO public_surfaces(file_path,format_version,payload,fingerprint,package_key) VALUES(?1,?2,?3,?4,?5)")
         .map_err(db_err)?.execute(rusqlite::params![file.rel_path, surface.format_version, payload, surface.fingerprint(),package]).map_err(db_err)?;
-    crate::resolution_dependency_store::replace_on(conn, file)
+    replace_resolution(conn, file)
 }
 
 impl ReadOps<'_> {

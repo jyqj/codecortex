@@ -116,7 +116,7 @@ impl Indexer {
         chunk_blobs: &PrecompressedChunks,
     ) -> CcResult<()> {
         // Write main file data (chunk payloads pre-compressed during prepare).
-        txn.write_file_data(write_units, chunk_blobs)?;
+        txn.write_file_data_for_rebuild(write_units, chunk_blobs)?;
 
         // Route nodes.
         txn.write_route_nodes(route_nodes)?;

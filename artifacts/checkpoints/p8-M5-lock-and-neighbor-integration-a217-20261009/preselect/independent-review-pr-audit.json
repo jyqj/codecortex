@@ -1,0 +1,41 @@
+{
+  "schema": "preselect-final-neighbor-tie-scoped-independent-review-v1",
+  "reviewer": "pr_audit",
+  "created_utc": "2026-10-09T13:15:00.768138+00:00",
+  "status": "accepted_scoped_static",
+  "base": "832f79b8702c6cdfb567b7cf949508cd4589f286",
+  "path": "crates/cc-search/src/preselect.rs",
+  "before": {
+    "bytes": 56042,
+    "sha256": "11741090fd395c97ca01db3b63754f3d18de289595e24aac8a3416d26981f639",
+    "git_blob": "383e8774d35d51d6406a669f5361eb34f6607c20"
+  },
+  "after": {
+    "bytes": 59711,
+    "sha256": "a3aea905493d4204cf00209a53918175e2b31b84eed643b76ea19c09bcb011bb",
+    "git_blob": "acee54f9100c012f18affae077aea92fdad97591"
+  },
+  "patch": {
+    "bytes": 4323,
+    "sha256": "05636c5d36eaa1fd65f31f6010bd95e53b6afbd0746aad329f7b1a544c37455a",
+    "git_blob": "5924a40585771d2f591b51e9e8621975084b4bb2"
+  },
+  "verified": [
+    "Actual G4 Git blob is byte-identical to retained before. Candidate hashes match manifest.",
+    "Entire original file through all old tests is preserved except one final result.sort_by expression; only final module closing delimiter follows two new tests.",
+    "Original descending score comparison remains primary; pathname is only fallback when partial_cmp returns Equal; original truncation, scores, ranking/DAO limits unchanged.",
+    "Single seed is present in files/symbols with uid:seed, so original top20/50 symbol caps cannot remove it. Four caller files are actually inserted into files/symbols/call_edges; callee_symbol_uid matches seed.",
+    "Actual G4 caller_rows_by_uids uses per-seed ROW_NUMBER ORDER BY line,rowid and unchanged per-seed limit5; equal case has4edges, stronger-z5edges, so neither insertion order loses a neighbor through DAO filtering.",
+    "The seed has no outgoing edges; all four expected neighbors arise through real incoming DAO rows. Second z edge increments score from default0.8 to0.9; a/b/c stay0.8. Limit2 tests final-sort-before-truncate behavior.",
+    "Both insertion orders and eight independent function calls are covered. Tests exercise the real private score_graph_neighbors/SQLite DAO path, not an emulated sorting implementation."
+  ],
+  "limitations": [
+    "cargo fmt, compilation and both new tests not_run by reviewer; no claim of red/green observed.",
+    "Tests target graph neighbor scoring directly, not entire external preselect API.",
+    "Top20 seed tie behavior remains unchanged and explicitly outside this patch.",
+    "No native/performance/100k claim, task status unchanged."
+  ],
+  "blockers": [],
+  "formal_completion": false,
+  "remaining_todos": 29
+}

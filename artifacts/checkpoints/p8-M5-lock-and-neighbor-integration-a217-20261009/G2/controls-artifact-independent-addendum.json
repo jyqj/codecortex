@@ -1,0 +1,69 @@
+{
+  "schema": "LG2-original-controls-zip-consistency-addendum-v1",
+  "status": "accepted_scoped",
+  "reviewed_at": "2026-10-09T13:18:30.903714+00:00",
+  "source": "4d18dcdb34b5d7a277566b57801cc882d8b1eb61",
+  "run": 37930392164,
+  "job": 113819400505,
+  "artifact": 11617781499,
+  "ZIP": {
+    "path": "original-LG2-runtime/artifacts/11617781499/11617781499.zip",
+    "bytes": 7220,
+    "sha256": "576426d079c75ea82d4790e8f56e8bc6876fd0ab7fceb2ff167653c0acb2f82b"
+  },
+  "members": [
+    {
+      "member": "acquisition-controls.log",
+      "bytes": 2568,
+      "sha256": "41d8e462052503334f357437602860ac348c9d6df4a213a155ee308c052e7bc8",
+      "all_nonempty_original_lines_in_order_in_full_official_log": true,
+      "empty_lines_preserved_in_original_zip": true,
+      "method_ok_count": 8
+    },
+    {
+      "member": "default-status.log",
+      "bytes": 6183,
+      "sha256": "9ce3ad4dbc45c2762acae9ddf17d25de4f854740a45df58853f979a1d1b72d46",
+      "all_nonempty_original_lines_in_order_in_full_official_log": true,
+      "empty_lines_preserved_in_original_zip": true,
+      "method_ok_count": 1
+    },
+    {
+      "member": "feature-status.log",
+      "bytes": 761,
+      "sha256": "b9c9f56b5dfec671b311705d0186f88625edcacdc32a8b297584c79b6e09744a",
+      "all_nonempty_original_lines_in_order_in_full_official_log": true,
+      "empty_lines_preserved_in_original_zip": true,
+      "method_ok_count": 1
+    },
+    {
+      "member": "python-controls.log",
+      "bytes": 13572,
+      "sha256": "1934c12126b9bef69cf6f1ef1a242a6dac587ed5c54daefe49dc1e9f7ffd7abc",
+      "all_nonempty_original_lines_in_order_in_full_official_log": true,
+      "empty_lines_preserved_in_original_zip": true,
+      "method_ok_count": 77
+    },
+    {
+      "member": "rustfmt.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "all_nonempty_original_lines_in_order_in_full_official_log": true,
+      "empty_lines_preserved_in_original_zip": true,
+      "method_ok_count": 0
+    },
+    {
+      "member": "source-admission.log",
+      "bytes": 2198,
+      "sha256": "40dcba2566e01c70d096ca1f0eb8e54383b65e0c8c19435f1bcbf5fce3ad6b3f",
+      "all_nonempty_original_lines_in_order_in_full_official_log": true,
+      "empty_lines_preserved_in_original_zip": true,
+      "method_ok_count": 0
+    }
+  ],
+  "normalization": "Only GitHub timestamp prefixes removed from comparison view of the full job log; ZIP bytes retained and hashed unchanged. Nonempty member lines occur in original order. Empty rustfmt output is interpreted jointly with actual successful original step/pipefail, not as standalone proof.",
+  "prior_review_sha256": "b54b64877a3a14fc624eccd75da19def453797f91ec84e6b2a644d7ebba0c8da",
+  "preparation_note": "An initial method-count regex incorrectly required a nonspace after test and stopped before any report; corrected regex recognizes original Rust test-space format and Python test_ format. No source/log/member changes.",
+  "scope": "10 targeted Rust controls +77 Python +fmt+v15; four mixed workload artifacts not accepted by this check. No new execution.",
+  "todo_remaining": 29
+}

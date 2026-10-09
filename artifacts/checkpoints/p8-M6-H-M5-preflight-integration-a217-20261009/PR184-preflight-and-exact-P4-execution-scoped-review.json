@@ -1,0 +1,122 @@
+{
+  "schema": "a217-PR184-fixture-preflight-and-existing-exact-P4-execution-v1",
+  "reviewer": "/root/pr_audit",
+  "decision": "accepted_scoped",
+  "current_PR184_head": "883230f2b44ebcf09495870db8c0e31d61270331",
+  "product": "cfc77b68828228cea1466e0161f9dc745fe5aef3",
+  "product_tree": "35cd8de386bd5b4d3755929743efe7bc8a9544fd",
+  "test": {
+    "path": "crates/cc-eval/tests/p8_scale.rs",
+    "bytes": 21328,
+    "git_blob": "02dc35a91dca2be2c8c7d63ff6072c8585c1bef9",
+    "sha256": "43d0d2dcabeef4419c37379475c86a59b6e365e0a0818ca03e6343df137a4b0a"
+  },
+  "canonical_review": {
+    "path": "artifacts/checkpoints/p8-canonical-physical-indexes-fixture-preflight-20261009/independent-source-review.json",
+    "bytes": 897059,
+    "git_blob": "933a8e42f9ea87c60f4cd93e116514da1b0f1c5c",
+    "sha256": "65153fd41e78e45b93359eb6dfdef2a9b2f2654b75f921c5a126cacc457f3bb7"
+  },
+  "actual_P4_delta_only_one_test_file": true,
+  "production_supervisor_and_all_other_inputs_unchanged_from_old_PR184": true,
+  "findings": [
+    "The no-descendant --fixture-preflight branch is newly added to the temporary shell fixture; it is not an already supported production CLI flag. Its first conditional exits0 before output parsing, sleep20 or summary creation. The ordinary invocation retains its prior descendant and summary behavior.",
+    "Preparation starts its own timer before spawn, performs one invocation with null stdin/stdout, polls exit success and kills/reaps on deadline or wait error. The2s setup limit is observed after spawn returns; this is not a kernel-level cancellable spawn or cold-start guarantee.",
+    "The original scenario still starts its timer after setup and calls unchanged run_supervised with250ms. The original total<2s assertion, exit0, stderr_complete=true and release_not_run remain; worker_exit0 and summarypassed are added. No supervisor deadline, retry loop, test ignore or production flag is added.",
+    "Relative to G4/M5 this differs from their older readiness scheme: the old2s setup called the same supervisor and launched a sleeping descendant, whereas this preflight launches no descendant. The resulting test file is not byte-equivalent to G4/M5. The measured scenario still has its original descendant/EOF cleanup obligation."
+  ],
+  "independently_received_existing_exact_test": {
+    "manifest": {
+      "path": "validation-P4-fixture-precheck-results/manifest.json",
+      "bytes": 9329,
+      "git_blob": "21ab192b169a6dd547d6824284e9ad9cdb0fa1ca",
+      "sha256": "888bf1451800aa4ff2307325de70f18d4731e1588585a155e6342ef1d4b58d88"
+    },
+    "original_streams": [
+      {
+        "path": "descendant-exact.stdout.log",
+        "bytes": 187,
+        "git_blob": "22c5e83f0fc222156fc3e234f9faf822c74edfb8",
+        "sha256": "75014d7e98299d31217871b629d50639834745ae420271398715f7ba37975234"
+      },
+      {
+        "path": "descendant-exact.stderr.log",
+        "bytes": 382,
+        "git_blob": "18f7a0c81955066de9c368d6cb5c7eb1aa8ef62d",
+        "sha256": "06ced31f8b807754cc2e1db78da964f11a1339bcc25bd09ccacf7559083cffe7"
+      }
+    ],
+    "command": {
+      "name": "descendant-exact",
+      "argv": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+1.95.0",
+        "test",
+        "--locked",
+        "-p",
+        "cc-eval",
+        "--test",
+        "p8_scale",
+        "subprocess_descendant_cannot_hold_stderr_past_worker_deadline",
+        "--",
+        "--exact"
+      ],
+      "cwd": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-pr184-native-20261009-root/worktree",
+      "timeout_seconds": 180,
+      "source_before": {
+        "head": "cfc77b68828228cea1466e0161f9dc745fe5aef3",
+        "tree": "35cd8de386bd5b4d3755929743efe7bc8a9544fd",
+        "status": ""
+      },
+      "started_at_utc": "2026-10-09T13:11:55.402933+00:00",
+      "status": "passed",
+      "exit_code": 0,
+      "timed_out": false,
+      "completed_at_utc": "2026-10-09T13:11:57.910961+00:00",
+      "elapsed_seconds": 2.507434083,
+      "stdout": {
+        "bytes": 187,
+        "sha256": "75014d7e98299d31217871b629d50639834745ae420271398715f7ba37975234"
+      },
+      "stderr": {
+        "bytes": 382,
+        "sha256": "06ced31f8b807754cc2e1db78da964f11a1339bcc25bd09ccacf7559083cffe7"
+      },
+      "source_after": {
+        "head": "cfc77b68828228cea1466e0161f9dc745fe5aef3",
+        "tree": "35cd8de386bd5b4d3755929743efe7bc8a9544fd",
+        "status": ""
+      },
+      "source_unchanged": true
+    },
+    "test_result": "1passed/0failed/0ignored/11filtered; test harness reported0.38s",
+    "outside_command_elapsed_seconds": 2.507434083,
+    "outside_elapsed_is_not_original250ms_test_timer": true,
+    "platform": "darwin",
+    "sdk_root": "/Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk",
+    "rustc": {
+      "argv": [
+        "/Users/jin/.cargo/bin/rustc",
+        "+1.95.0",
+        "-vV"
+      ],
+      "exit_code": 0,
+      "stdout": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: aarch64-apple-darwin\nrelease: 1.95.0\nLLVM version: 22.1.2\n",
+      "stderr": ""
+    },
+    "checkout_receipt": {
+      "path": "P4-fixture-checkout.json",
+      "bytes": 875,
+      "git_blob": "57ad1c79cb1cae2cd7eaa42038366821b697b136",
+      "sha256": "88cc2ca8eb398767c10d8f4b3935eb8c52434ff83d08ebaae1c86f3c1a438c52"
+    }
+  },
+  "limits": [
+    "This reviewer received only the focused original stdout/stderr and small checkout/command manifest, not all workspace native streams. The manifest records broader commands success, but this scoped review does not independently recertify those complete logs.",
+    "The earlier failed workspace/single-method runs remain failed. Prepared-helper success does not relabel cold executable startup or establish its precise operating-system cause.",
+    "All seven current bound883230f workflows are queued in captured official metadata. P4 results do not prove their completion or any future M6 execution.",
+    "No local native invocation, new scale run, source edit, test rerun or ref change was performed."
+  ],
+  "formal_completion": false,
+  "remaining_todos": 29
+}

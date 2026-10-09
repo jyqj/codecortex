@@ -1,0 +1,113 @@
+{
+  "schema": "a217-H0e6-snapshot-dependency-prefix-scoped-review-v1",
+  "reviewer": "/root/pr_audit",
+  "decision": "accepted_scoped_static",
+  "source": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+  "canonical_product": "b3bf22eab019175774c6c83295620b63a9740888",
+  "comparison_base": "832f79b8702c6cdfb567b7cf949508cd4589f286",
+  "three_original_blobs": [
+    {
+      "current": {
+        "path": "crates/cc-db/src/index_db_write_batch.rs",
+        "bytes": 57238,
+        "git_blob": "34c1e5e5188910482fcf80863008620d30fa73b1",
+        "sha256": "9d3300d999f58743cb42799c88e3328a101859ac879cc2161abbec17faa9b9b9"
+      },
+      "G4_before": {
+        "path": "crates/cc-db/src/index_db_write_batch.rs",
+        "bytes": 56654,
+        "git_blob": "c732fab2d5cc62209a89317f42a5a4adc4edf0fb",
+        "sha256": "f9961e718523a83db99f6ce0911aceae3465a9ddd511f8b752d8a98fea43964c"
+      }
+    },
+    {
+      "current": {
+        "path": "crates/cc-db/src/snapshot_write_txn.rs",
+        "bytes": 9204,
+        "git_blob": "159bec62dc5f8c5548aaf3fcffb608dcc8682c40",
+        "sha256": "5bf74ee89cd731afb8d42b6a3f951b9198e5b2de5172a8cfc94290a026134b3f"
+      },
+      "G4_before": {
+        "path": "crates/cc-db/src/snapshot_write_txn.rs",
+        "bytes": 9084,
+        "git_blob": "e850a30b549fcd1f0bda38fb2900d61add6db029",
+        "sha256": "7c941b0e7fca4c48ec0c8b44ee81108a2c201e0b28ab7a69f285dbc329eb446f"
+      }
+    },
+    {
+      "current": {
+        "path": "crates/cc-db/tests/p2b_resolution_store.rs",
+        "bytes": 17946,
+        "git_blob": "f009b732320705dbb221aa22a4f32d1aa9e2cfea",
+        "sha256": "39f49426530bd7367bb49030b1c8602ae5be908069ca3dfe4d974f8111a98ae9"
+      },
+      "G4_before": {
+        "path": "crates/cc-db/tests/p2b_resolution_store.rs",
+        "bytes": 14608,
+        "git_blob": "f698d3427ad90c194cfdb5b7c241e0802c1267d1",
+        "sha256": "2c99786a75ac5df604ca2481e799ef9bc8da84d6bf138781b1cbbfa6b9693d3c"
+      }
+    }
+  ],
+  "public_loop_exact_bytes_preserved": true,
+  "existing_test_prefix_preserved_except_two_rebuild_API_selections_and_whitespace": true,
+  "findings": [
+    {
+      "path": "crates/cc-db/src/index_db_write_batch.rs",
+      "lines": [
+        739,
+        763,
+        805,
+        816,
+        826,
+        872
+      ],
+      "finding": "Separates dependency batching from snapshot leaf batching and FTS deferral. Ordinary insert_file_data and public deferred-FTS entry points keep all previous selections and false dependency batching. The ordinary public snapshot seam keeps leaf batches but selects false for dependency batches, restoring resolution_dependency_store::replace_on and its per-statement prefix. It is not a claim that every snapshot leaf becomes per-row."
+    },
+    {
+      "path": "crates/cc-db/src/snapshot_write_txn.rs",
+      "lines": [
+        65,
+        80,
+        104,
+        113
+      ],
+      "finding": "The unchanged public write_file_data loop retains caller transaction ownership. Both explicit rebuild branches choose dependency batching: deferred FTS and the immediate-FTS fallback. The existing schema check, 256-file window, FTS mirror flush, error propagation, epoch and publication ownership are unchanged. Documentation expressly requires abandoning staging on error; no Rust-enforced rollback or journal-OFF physical rollback is claimed."
+    },
+    {
+      "path": "crates/cc-db/tests/p2b_resolution_store.rs",
+      "lines": [
+        242,
+        288,
+        355,
+        410
+      ],
+      "finding": "The 0/1/7/8/9/63/64/65/73 manifest/row comparison and 73-row/key70 owner-failure control now exercise the explicit rebuild API without changing original expected tables, generation or errors. The new separate public borrowed-connection regression catches the key70 ABORT, confirms transaction remains owned by the caller, commits, opens a new read-only connection and requires exactly keys0..69,73 rows in first.py and no never.py. It compares error and all three dependency/surface tables to the original per-row writer; this can distinguish the original70 prefix from a first64 committed batch."
+    }
+  ],
+  "execution_boundary": {
+    "local_Rust_or_native_run": false,
+    "new_H_CI": "All seven exact-H workflows queued; CI three jobs queued in saved official captures.",
+    "historical_red_green": "Canonical review describes old3ff RED64vs70 and corrected GREEN. This reviewer inspected test/source bytes and canonical statements, but did not independently receive the historical raw terminal logs.",
+    "bounded_reference_retrieval": [
+      {
+        "blob": "74eadfa07b3c75823219d3a21572407a98f4c49f",
+        "result": "readable original canonical prior review; selected original fields retained; source bb290,60Rust/77Python author/peer claims retain that scope"
+      },
+      {
+        "blob": "aec2fe8ae2f309db9e3232c82c75d465d72a552b",
+        "result": "official404 retained; no retry or invented raw execution"
+      },
+      {
+        "blob": "831d691a69c8f8c56179c95f2b513f9adccddcda",
+        "result": "official404 retained; no retry or invented raw execution"
+      }
+    ],
+    "canonical_P2_execution": "The read canonical current-execution section documents303 search tests+1 mechanism anchor and scoped tools, not this reviewer observing the DB-prefix method on H.",
+    "future_combination": "No execution transferred to any future M6 combination, source tree or scale study."
+  },
+  "no_gate_threshold_workload_task_change": true,
+  "source_edits_or_ref_writes_by_review": false,
+  "formal_completion": false,
+  "remaining_todos": 29
+}

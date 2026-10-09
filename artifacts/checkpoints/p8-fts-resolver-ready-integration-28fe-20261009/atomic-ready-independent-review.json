@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/recovery_audit",
+  "role": "non_author_review_of_existing_fixed_candidate",
+  "verdict": "accepted_scoped_source_candidate_for_PR180",
+  "scope": "Only same-directory complete ready PID publication in the existing Unix crash test fixture",
+  "base": {
+    "head": "ee467290785a4c8906d11d6d8764d2f1b4b92241",
+    "path": "crates/cc-semantic/tests/crash_independent_review.rs",
+    "git_blob": "47a9abd36f8a4348b4c3c8731565da94833f69cb",
+    "sha256": "fdc5291977db6bc05e1d380e9b24a4b1da92ce3afd5c9a042fabc38fc79d8aeb",
+    "bytes": 19222,
+    "raw_fixed_ref_exact": true
+  },
+  "existing_candidate": {
+    "head": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+    "path": "crates/cc-semantic/tests/crash_independent_review.rs",
+    "git_blob": "412bfb88b7d10dcf0f324d916e4a8671c1abd482",
+    "sha256": "9a81c1b79fcb71bc71f95e67a86c3ebd070b70797e9a06fe7d9df93f72238545",
+    "bytes": 19381,
+    "raw_fixed_ref_exact": true
+  },
+  "candidate_mode": "100644",
+  "source_author": "/root/execution_recon (as recorded by the existing independent review); this reviewer authored no replacement source",
+  "existing_independent_review": {
+    "git_blob": "449d11b3a2df3e6f073d7f85994eb02bbc40f49a",
+    "bytes": 3849,
+    "sha256": "f1c93d427e8f7c43ed78f366ce946ad8da56f776eaaea1b1f088eb32055f68f0"
+  },
+  "actual_diff": [
+    {
+      "old_start": 99,
+      "new_start": 99,
+      "removed": [
+        "    durable(",
+        "        &root.join(\"ready\"),",
+        "        std::process::id().to_string().as_bytes(),",
+        "    );"
+      ],
+      "added": [
+        "    // Publish the complete PID only after writing and syncing in this fresh directory.",
+        "    let pending = root.join(\"ready.pending\");",
+        "    durable(&pending, std::process::id().to_string().as_bytes());",
+        "    std::fs::rename(pending, root.join(\"ready\")).unwrap();"
+      ],
+      "old_end": 102,
+      "new_end": 102
+    }
+  ],
+  "all_bytes_outside_one_replacement_exact": true,
+  "original_failure": {
+    "source": "9f7b16f0758eb79f306cf44605b84550f02de441",
+    "run": 37896539239,
+    "job": 113709066322,
+    "command": "cargo test -p cc-semantic --locked --all-targets -- --nocapture",
+    "exit_code": 101,
+    "test": "independently_observed_sigkill_boundaries",
+    "observed_at": "2026-10-09T07:04:13.2989450Z",
+    "panic_source_line": 229,
+    "panic": "ParseIntError { kind: Empty }",
+    "original_full_log": {
+      "git_blob": "93ebefb560b74534bd3ac64d035b4bc818b8fd91",
+      "bytes": 187462,
+      "sha256": "bbc7c659020b24f702ddeb5fb172f7ec4d97a3b749d2b0482173e3093823d45c"
+    },
+    "evidence_boundary": "Independently read and hash-checked the complete original log. It records an empty PID parse at the ready reader. The exact scheduling interleaving and seed were not captured, so no new syscall trace/reproduction is claimed. The identical vulnerable source blob is present at fixedPR180."
+  },
+  "diagnosis": "The old helper created final ready before write_all and sync_all. Parent exists() could therefore succeed before PID bytes existed. The old parent immediately read and parsed the empty file, matching the observed panic. This is a fixture publication race; oldfailed execution remains failed.",
+  "change_and_justification": [
+    "Only signal_and_wait changes: durable writesPID to ready.pending; durable's existing write_all/sync_all complete and its File drops on return; rename then publishes ready in the same fresh per-case directory.",
+    "Both names share a directory/filesystem. Parent watches only ready, so it cannot read the pending inode during creation/writing. Atomic name publication exposes completePID bytes before the unchanged parent read/parse.",
+    "The owner already refuses reused per-case directories with create_dir. One ownedchild reaches signal_and_wait once and parks. The new pending name is not a second writer, a retry or a reused successful marker.",
+    "Write/sync/rename errors retain unwrap propagation. Child failure is still observed by the original try_wait/deadline loop; malformed/wrongPID stays a strict parse/equality failure. No empty-PID retry or error swallowing is added.",
+    "This preserves the existing process-crash test scope; it does not introduce a power-loss durability guarantee or alter production cache/database writes."
+  ],
+  "preserved_exact": [
+    "durable helper and all other call sites",
+    "15second ready deadline and10ms polling",
+    "strict ready PID parse and exactchildid assertion",
+    "three seeds and five crash boundaries",
+    "separate prekill observer and visibility assertions",
+    "SIGKILL and exactsignal9 check",
+    "OwnedChild existing cleanup behavior",
+    "lease negative controls, naturalexpiry bounds, recovery assertions and provider cost accounting",
+    "all production, workflow, validator, sourceguard and task files"
+  ],
+  "integration_instruction": "Reuse exact existingblob412bfb88b7d10dcf0f324d916e4a8671c1abd482 at the single path onPR180. Do not copy thePR178 tree/registry or unrelated FTS changes as part of this fix. Actual newP/R/G and originalauthorizedCI must bind any eventual combination; this record does not claim an alreadycreated integratedsource.",
+  "execution": {
+    "reviewer_tests": "not_run",
+    "reviewer_fault_experiments": "not_run",
+    "reviewer_native": "not_run",
+    "PR180_plus_fix_original_command": "not_run",
+    "other_PR178_new_results": "not adopted by this review"
+  },
+  "unresolved_scoped_source_blockers": [],
+  "task_accounting": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "newly_completed": 0
+  },
+  "actions": {
+    "created_duplicate_source": false,
+    "created_ref": false,
+    "changed_PR": false,
+    "changed_workflow": false,
+    "created_unreferenced_report_blob_only": true
+  }
+}

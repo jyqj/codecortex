@@ -1,0 +1,33 @@
+--- /workspace/scratch/a217aaae3bde/original-173-runtime/helpers-275e-v1/review_e_backfill_original.py
++++ /workspace/scratch/a217aaae3bde/original-C3ff-runtime/helpers-C3ff-v1/review_e_backfill_original.py
+@@ -5,7 +5,7 @@
+ 
+ repo=pathlib.Path(sys.argv[4]).resolve(strict=True)
+ manifest=json.loads(pathlib.Path(sys.argv[1]).read_text());head=sys.argv[3]
+-assert head==HEAD, 'helper frozen for exact fixed 173 execution only'
++assert head==HEAD, 'helper frozen for exact fixed C3ff execution only'
+ assert subprocess.check_output(['git','rev-parse','HEAD'],cwd=repo,text=True).strip()==head, 'frozen checkout HEAD differs'
+ assert len(head)==40 and all(x in '0123456789abcdef' for x in head)
+ artifact_id=manifest['artifact_id'];archive=pathlib.Path(sys.argv[2])/str(artifact_id)/(str(artifact_id)+'.zip')
+@@ -27,10 +27,10 @@
+ seal=b.verify_output(p);r=json.loads((p/'receipt.json').read_text());assert r['status']=='passed_observation' and r['exit_code']==r['build_exit_code']==r['execution_exit_code']==0
+ assert r['source_before']==r['source_after']==r['source_final'] and r['source_before']['source_commit']==head
+ assert r['source_before']['source_tree']==subprocess.check_output(['git','rev-parse',head+'^{tree}'],cwd=repo,text=True).strip()
+-assert r['source_before']['input_count']==1089 and r['source_before']['manifest_sha256']==hashlib.sha256(b.json_bytes(r['source_before']['inputs'])).hexdigest()
++assert r['source_before']['input_count']==1092 and r['source_before']['manifest_sha256']==hashlib.sha256(b.json_bytes(r['source_before']['inputs'])).hexdigest()
+ assert r['source_before']['manifest_sha256']==PRODUCT_MANIFEST, 'combined product manifest differs'
+ assert set(r['source_before']['inputs'])==set(subprocess.check_output(['git','ls-tree','-r','--name-only',head,'--','Cargo.toml','Cargo.lock','crates'],cwd=repo,text=True).splitlines())
+-assert len(r['source_before']['inputs'])==1089 and all(hashlib.sha256(g(n)).hexdigest()==v for n,v in r['source_before']['inputs'].items())
++assert len(r['source_before']['inputs'])==1092 and all(hashlib.sha256(g(n)).hexdigest()==v for n,v in r['source_before']['inputs'].items())
+ assert r['observer_before']==r['observer_after']==r['observer_final'] and len(r['observer_before']['files'])==9
+ assert r['observer_before']['source_commit']==head, 'backfill observer manifest HEAD differs'
+ assert set(r['observer_before']['files'])==set(b.OBSERVER_FILES), 'backfill observer manifest inventory differs'
+@@ -72,7 +72,7 @@
+  seeds.append({'seed':seed,'cells':phase_reviews,'held_provider_active':held['provider']['active'],'held_claimed':held['queue']['claimed'],'held_pending':held['queue']['pending'],'old_held_input_publications':0,'new_provider_calls':summary['new_provider_calls'],'queue_final':summary['queue_final'],'db_availability':db,'shared_native_resource_stages':4,'initial_build_us':summary['initial_build_us'],'held_build_us':summary['held_build_us'],'write_delete_us':summary['write_delete_us'],'switch_and_drain_us':summary['switch_and_drain_us']})
+ assert request_total==768;b.verify_output(p)
+ assert archive.stat().st_size==manifest['zip_bytes'] and file_hash(archive)==manifest['zip_sha256'], 'original ZIP changed during audit'
+-review={'verdict':'accepted_scoped_original_'+head[:8]+'_backfill_observation','head':head,'workflow_run':metadata['run_id'],'artifact_id':artifact_id,'zip_sha256':manifest['zip_sha256'],'zip_bytes':manifest['zip_bytes'],'receipt_sha256':h(p/'receipt.json'),'sealed_files_verified':len(seal['artifact_inventory']),'fixed_source_inputs':1089,'fixed_source_verified_against_git_blobs':True,'fixed_observer_inputs':9,'actual_cargo_features':a['features'],'private_fresh_build':True,'actual_release_profile':a['profile'],'binary_sha256':r['executable_sha256'],'execution_elapsed_ns':r['execution_elapsed_ns'],'original_test_executed_passed':True,'request_total':request_total,'seeds':seeds,'unresolved_blockers':[],'scope_limits':['actual CodeIndex/post-index worker with synthetic in-process fake provider; no live provider or network throughput claim','existing 2s local/5s progress/100ms writer controls retained; no new SLA or performance improvement claim','resource CPU/RSS high-water belongs to one shared test runner/CodeIndex/provider process; no component sum or current RSS claim','independent audit of this exact executed head; historical observations preserved separately; no automatic TODO/release certification']}
++review={'verdict':'accepted_scoped_original_'+head[:8]+'_backfill_observation','head':head,'workflow_run':metadata['run_id'],'artifact_id':artifact_id,'zip_sha256':manifest['zip_sha256'],'zip_bytes':manifest['zip_bytes'],'receipt_sha256':h(p/'receipt.json'),'sealed_files_verified':len(seal['artifact_inventory']),'fixed_source_inputs':1092,'fixed_source_verified_against_git_blobs':True,'fixed_observer_inputs':9,'actual_cargo_features':a['features'],'private_fresh_build':True,'actual_release_profile':a['profile'],'binary_sha256':r['executable_sha256'],'execution_elapsed_ns':r['execution_elapsed_ns'],'original_test_executed_passed':True,'request_total':request_total,'seeds':seeds,'unresolved_blockers':[],'scope_limits':['actual CodeIndex/post-index worker with synthetic in-process fake provider; no live provider or network throughput claim','existing 2s local/5s progress/100ms writer controls retained; no new SLA or performance improvement claim','resource CPU/RSS high-water belongs to one shared test runner/CodeIndex/provider process; no component sum or current RSS claim','independent audit of this exact executed head; historical observations preserved separately; no automatic TODO/release certification']}
+ review.update(helper=dict(path=str(pathlib.Path(__file__).resolve()),sha256=h(pathlib.Path(__file__))))
+ (out/'independent-review.json').write_text(json.dumps(review,indent=2,sort_keys=True)+'\n');print(json.dumps({k:v for k,v in review.items() if k!='seeds'},indent=2))
+ 

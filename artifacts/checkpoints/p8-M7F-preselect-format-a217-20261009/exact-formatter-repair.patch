@@ -1,0 +1,15 @@
+--- a/crates/cc-search/src/preselect.rs
++++ b/crates/cc-search/src/preselect.rs
+@@ -1474,7 +1474,11 @@
+                 (file, &uid),
+             )
+             .unwrap();
+-            let calls = if stronger_z && file == "src/z.rs" { 2 } else { 1 };
++            let calls = if stronger_z && file == "src/z.rs" {
++                2
++            } else {
++                1
++            };
+             for line in 1..=calls {
+                 let edge = format!("{file}:{line}");
+                 conn.execute(

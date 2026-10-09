@@ -84,8 +84,8 @@ fn fresh_index_really_initializes_current_schema() {
     assert_ne!(db.reads().read_generation().unwrap().incarnation, [0; 16]);
 }
 
-/// Same semantic schema, missing only the physical child-key access path.
-/// Normal writable open installs it without reparsing or replacing any rows.
+/// Same semantic schema, missing both maintained physical access paths.
+/// Normal writable open restores canonical definitions without replacing rows.
 #[test]
 fn current_schema_identity_index_preserves_rows_and_uses_indexed_fk_cascade() {
     fn snapshot(conn: &Connection) -> Vec<(String, Vec<Vec<rusqlite::types::Value>>)> {
@@ -126,6 +126,7 @@ fn current_schema_identity_index_preserves_rows_and_uses_indexed_fk_cascade() {
     conn.pragma_update(None, "foreign_keys", true).unwrap();
     assert_eq!(migrate_index_db(&conn).unwrap(), SchemaStatus::Initialized);
     assert_indexed_identity_cascade(&conn);
+    let schema_before = legacy_objects(&conn);
     // Schema fixtures only: these rows test preservation and FK behavior,
     // not the parser-authority validation of a SymbolIdentityRecord.
     conn.execute_batch(
@@ -140,7 +141,8 @@ fn current_schema_identity_index_preserves_rows_and_uses_indexed_fk_cascade() {
            ('keep','sentinel.rs','doc-keep','v1','keep-symbol',1,'{}'),
            ('remove','sentinel.rs','doc-remove','v1','remove-symbol',1,'{}');
          INSERT INTO metadata(key,value) VALUES('index_epoch','17'),('evidence_epoch','23'),('semantic_epoch','31');
-         DROP INDEX chunk_symbol_identity_doc_key;",
+         DROP INDEX chunk_symbol_identity_doc_key;
+         DROP INDEX semantic_outbox_fifo_pending;",
     )
     .unwrap();
     let before = snapshot(&conn);
@@ -161,6 +163,7 @@ fn current_schema_identity_index_preserves_rows_and_uses_indexed_fk_cascade() {
         drop(db);
         let conn = Connection::open(&path).unwrap();
         assert_eq!(snapshot(&conn), before);
+        assert_eq!(legacy_objects(&conn), schema_before);
         assert_indexed_identity_cascade(&conn);
     }
 

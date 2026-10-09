@@ -77,6 +77,52 @@ impl<'a> SnapshotWriteTxn<'a> {
         Ok(())
     }
 
+    /// Opt in to bounded dependency INSERTs and files/literal FTS mirrors
+    /// during a full rebuild.
+    ///
+    /// Unlike `write_file_data`, this can leave earlier files in the current
+    /// window without their mirrors when a later write fails, and a failed
+    /// dependency batch need not retain the per-row writer's partial prefix.
+    /// It does not own or roll back the borrowed connection's transaction.
+    ///
+    /// The rebuild owner MUST propagate any error, abandon the entire staging
+    /// transaction/database, and prevent publication. Do not catch an error
+    /// and commit partial work. The existing full-rebuild adapters provide
+    /// this failure boundary; general callers should use `write_file_data`.
+    pub fn write_file_data_for_rebuild(
+        &self,
+        write_units: &[FileWriteUnit],
+        chunk_blobs: &PrecompressedChunks,
+    ) -> CcResult<()> {
+        if write_units.is_empty() {
+            return Ok(());
+        }
+        // Only these two FTS mirrors cross a file boundary. Leaf binders and
+        // all base/identity writes retain their original order and bounds.
+        // FTS errors can occur after later base writes in this window; the
+        // owner must abandon the staging transaction/database and prevent publication.
+        let can_defer = crate::index_db_snapshot_insert::can_defer_snapshot_fts(self.conn)?;
+        for files in write_units.chunks(256) {
+            let mirror = if can_defer {
+                crate::index_db_snapshot_insert::SnapshotFtsWindow::begin(self.conn, files)?
+            } else {
+                None
+            };
+            for unit in files {
+                let blobs = chunk_blobs.get(&unit.rel_path).map(Vec::as_slice);
+                if mirror.is_some() {
+                    IndexDb::insert_snapshot_file_data_deferred_fts(self.conn, unit, blobs)?;
+                } else {
+                    IndexDb::insert_snapshot_file_data_for_rebuild(self.conn, unit, blobs)?;
+                }
+            }
+            if let Some(mirror) = mirror {
+                mirror.flush(self.conn)?;
+            }
+        }
+        Ok(())
+    }
+
     /// Write route nodes.
     pub fn write_route_nodes(
         &self,

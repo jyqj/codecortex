@@ -1,0 +1,269 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/todo_audit",
+  "observed_at": "2026-10-09T05:42:53.640271+00:00",
+  "native_job": "wc_job_aRmdq6q775GObe5L",
+  "native_terminal_exit": 0,
+  "status": "passed_original_four_commands_on_frozen_G3_plus_four_paths",
+  "actual_commands": [
+    {
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "pid": 27757,
+      "started_at": "2026-10-09T05:31:48.393512+00:00",
+      "finished_at": "2026-10-09T05:31:50.293728+00:00",
+      "receipt": {
+        "path": "review-ci/macos-integration-candidate/validation-attempt01/01-fmt.json",
+        "bytes": 4349,
+        "sha256": "d45c4059fa5c387dcdcb6809c8ec1de60fcb8b876ae7836736147a66e4916036"
+      }
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "pid": 27847,
+      "started_at": "2026-10-09T05:31:50.594424+00:00",
+      "finished_at": "2026-10-09T05:32:27.573623+00:00",
+      "receipt": {
+        "path": "review-ci/macos-integration-candidate/validation-attempt01/02-clippy.json",
+        "bytes": 4443,
+        "sha256": "1f56bbe8b7337bd2d8f63731390da2559abb1c67b1e5dd458158e0dd454b6d90"
+      }
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--workspace"
+      ],
+      "exit_code": 0,
+      "pid": 30542,
+      "started_at": "2026-10-09T05:32:27.862916+00:00",
+      "finished_at": "2026-10-09T05:41:15.024755+00:00",
+      "receipt": {
+        "path": "review-ci/macos-integration-candidate/validation-attempt01/03-workspace-test.json",
+        "bytes": 4356,
+        "sha256": "b3afc954d44a7b9ea4fb5fcfb7ef16e5a83f1c071cf0b0a59699b989ff15f06b"
+      }
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-eval",
+        "--",
+        "integration_fixtures_and_corpus"
+      ],
+      "exit_code": 0,
+      "pid": 44148,
+      "started_at": "2026-10-09T05:41:15.326117+00:00",
+      "finished_at": "2026-10-09T05:41:18.734715+00:00",
+      "receipt": {
+        "path": "review-ci/macos-integration-candidate/validation-attempt01/04-integration-fixtures.json",
+        "bytes": 4482,
+        "sha256": "114e735410c09d7a3ff10d8edc5698c872d6d49c4a50d503289c76d95fb7a3de"
+      }
+    }
+  ],
+  "source_identity": {
+    "head": "26768b5e38ed1784bf77a8c4fe57baf01a19c626",
+    "head_tree": "41138a7ac367aa6ca13cf516a811c46ab812de98",
+    "branch": "task/p8-macos-integration-bfcc-20261009",
+    "modified_paths": [
+      "crates/cc-eval/tests/benchmark_adapters.rs",
+      "crates/cc-eval/tests/p8_scale.rs",
+      "crates/cc-index/src/project_model/python_inventory.rs",
+      "crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs"
+    ],
+    "untracked_paths": [],
+    "status_porcelain": " M crates/cc-eval/tests/benchmark_adapters.rs\n M crates/cc-eval/tests/p8_scale.rs\n M crates/cc-index/src/project_model/python_inventory.rs\n M crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs\n",
+    "diff_sha256": "b45ead05f6ca2bf604e21d7951a0b9414ef02cfaac559d5460b93d091301e463",
+    "files": {
+      "crates/cc-eval/tests/p8_scale.rs": {
+        "bytes": 21068,
+        "sha256": "71831ab2b2ab0e7b34e9917f499bc33f7b66a74e0c156874b4154bb6b783d8dc"
+      },
+      "crates/cc-index/src/project_model/python_inventory.rs": {
+        "bytes": 13291,
+        "sha256": "e3fd1a31e0ed7cb9c8fa90a7025508a957f0bc8288f7850fff5e400094a5203e"
+      },
+      "crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs": {
+        "bytes": 15513,
+        "sha256": "5d9d105a151dff3b82bb27125e5e4d276966611de0ef74634cb3a4a67396f495"
+      },
+      "crates/cc-eval/tests/benchmark_adapters.rs": {
+        "bytes": 38925,
+        "sha256": "a5ef80d761a89c83d97998fe02e68a185d6c803ed0999723d9b24d90d1f1289c"
+      }
+    }
+  },
+  "source_comparison_review": {
+    "path": "review-ci/macos-integration-candidate/source-integration-review.json",
+    "bytes": 4896,
+    "sha256": "17d6f72d7505569876b03d6df701d4843033ecc49cbd3c53ad48f7e44dfc1d81"
+  },
+  "product_map_sha256": "c7e4d77a38f28fc6aae878d6b527269b0849a88eff9ba29b39cf8a631900fd52",
+  "validation_inputs_count": 138,
+  "validation_map_sha256": "41ef41f5e45cd7edcb1c82c61ced9827c55f38e0abb96a539c32f777d9556725",
+  "workspace_counts": {
+    "passed": 2712,
+    "failed": 0,
+    "ignored": 73,
+    "measured": 0,
+    "filtered_out": 0
+  },
+  "ordinary_passed": 2711,
+  "doctest_targets": 8,
+  "actual_doctests_passed": 1,
+  "zero_case_doctest_targets": 7,
+  "p8_scale": {
+    "sequence": 102,
+    "target": {
+      "kind": "test_binary",
+      "cargo_target": "tests/p8_scale.rs",
+      "executable": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/macos-integration-1.95-sdk154-round8/debug/deps/p8_scale-a2f51b686c6f3d87",
+      "stderr_line": 258,
+      "binary_name": "p8_scale"
+    },
+    "running_count": 12,
+    "summary_stdout_line": 1287,
+    "counts": {
+      "passed": 12,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0
+    },
+    "duration": "16.17s",
+    "actual_passed_test_names": [
+      "matrix_and_release_admission_are_explicit_and_bounded",
+      "shards_partition_registered_repetitions_without_lowering_release_admission",
+      "named_scale_capacity_is_explicit_and_cannot_relax_fanout_pressure",
+      "complete_stage_timing_accounts_for_real_split_handoffs_and_full_staging",
+      "failed_independent_fanout_truth_remains_a_failure",
+      "subprocess_descendant_cannot_hold_stderr_past_worker_deadline",
+      "bounded_python_forwarding_resume_keeps_all_targets_and_fifteen_table_parity",
+      "native_evidence_hash_uses_all_file_bytes_without_running_a_profile",
+      "subprocess_deadline_preserves_report_and_rejects_output_reuse",
+      "configured_evidence_budget_stops_without_overwriting_partial_raw",
+      "actual_shard_keeps_global_ids_and_changes_exact_batch_including_yaml_and_routes",
+      "real_scale_smoke_preserves_builds_counts_mutations_and_full_parity"
+    ]
+  },
+  "new_nine_passed_case_names": [
+    {
+      "kind": "test_binary",
+      "binary_or_crate": "cc_db",
+      "test_name": "index_db_snapshot_insert::tests::bound_payload_measures_sql_values_and_keeps_large_rows_legal"
+    },
+    {
+      "kind": "test_binary",
+      "binary_or_crate": "cc_db",
+      "test_name": "index_db_snapshot_insert::tests::failed_window_stops_before_later_rows_or_tables"
+    },
+    {
+      "kind": "test_binary",
+      "binary_or_crate": "cc_db",
+      "test_name": "index_db_snapshot_insert::tests::semantic_leaf_batches_reduce_actual_sqlite_statement_runs"
+    },
+    {
+      "kind": "test_binary",
+      "binary_or_crate": "snapshot_leaf_batching",
+      "test_name": "snapshot_leaf_byte_windows_and_oversize_single_rows_preserve_values"
+    },
+    {
+      "kind": "test_binary",
+      "binary_or_crate": "snapshot_leaf_batching",
+      "test_name": "snapshot_leaf_direct_writer_preserves_original_adapter_pragmas_and_bytes"
+    },
+    {
+      "kind": "test_binary",
+      "binary_or_crate": "snapshot_leaf_batching",
+      "test_name": "snapshot_leaf_duplicate_paths_future_fk_and_late_identity_error_roll_back_wal"
+    },
+    {
+      "kind": "test_binary",
+      "binary_or_crate": "snapshot_leaf_batching",
+      "test_name": "snapshot_leaf_never_delays_identity_checks_past_the_next_file"
+    },
+    {
+      "kind": "test_binary",
+      "binary_or_crate": "snapshot_leaf_batching",
+      "test_name": "snapshot_leaf_symbol_id_and_uid_conflicts_keep_sql_survivors_and_fts"
+    },
+    {
+      "kind": "test_binary",
+      "binary_or_crate": "snapshot_leaf_batching",
+      "test_name": "snapshot_leaf_tier_boundaries_preserve_all_fifteen_tables_and_fts"
+    }
+  ],
+  "final_fixture_filter_counts": {
+    "passed": 1,
+    "failed": 0,
+    "ignored": 0,
+    "measured": 0,
+    "filtered_out": 474
+  },
+  "fixture_is_repeat_not_new_unique_case": true,
+  "test_summary_index": {
+    "path": "review-ci/macos-integration-candidate/validation-attempt01/test-summary-index.json",
+    "bytes": 269917,
+    "sha256": "a0c30a1addf4fc798fa1c134d32bae9cc0fe4d32df5db588837c395b869565cb"
+  },
+  "selected_actual_executables": [
+    {
+      "cargo_target": "tests/benchmark_adapters.rs",
+      "path": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/macos-integration-1.95-sdk154-round8/debug/deps/benchmark_adapters-51b72767f461e199",
+      "bytes": 15372624,
+      "sha256": "da163c80fb6d7b38e9930083c04e51cf86ae7e870416dca6ccb4c39b6e1ffa75",
+      "archive_policy": "Keep native isolated target; do not copy executable into small Git archive."
+    },
+    {
+      "cargo_target": "tests/p8_scale.rs",
+      "path": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/macos-integration-1.95-sdk154-round8/debug/deps/p8_scale-a2f51b686c6f3d87",
+      "bytes": 48822840,
+      "sha256": "e55bdad72b0b400759540ecc5878140a763112b9a0d4f2f33e5617bfd8ffa02b",
+      "archive_policy": "Keep native isolated target; do not copy executable into small Git archive."
+    },
+    {
+      "cargo_target": "tests/snapshot_leaf_batching.rs",
+      "path": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/macos-integration-1.95-sdk154-round8/debug/deps/snapshot_leaf_batching-72e420ae25dce202",
+      "bytes": 27768408,
+      "sha256": "7e16069d175df6725843dbcbbcf626ba327bb043efe7131627261ba1511db57d",
+      "archive_policy": "Keep native isolated target; do not copy executable into small Git archive."
+    },
+    {
+      "cargo_target": "tests/p7_cache_allocation_independent_review.rs",
+      "path": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p8-bfccb8494ba0/targets/macos-integration-1.95-sdk154-round8/debug/deps/p7_cache_allocation_independent_review-a295714dd830b9ad",
+      "bytes": 2421928,
+      "sha256": "e50a27c6d3f28f49c717f6da4b1a9a16661d36dbc346712cb34ff42be0de33a0",
+      "archive_policy": "Keep native isolated target; do not copy executable into small Git archive."
+    }
+  ],
+  "source_edited_during_run": false,
+  "commands_added_after_success": false,
+  "previous_round_preserved_separate": true,
+  "scope_limits": [
+    "Actual checkout G3 plus four uncommitted files, no newP/R/G installed",
+    "Mac aarch64 Rust1.95 SDK15.4 default features/defaulttestthreads/4buildjobs",
+    "No Linux or all-features execution claimed",
+    "No formal scale or performance samples; no FTS prototype present"
+  ],
+  "todo_credit": 0,
+  "remaining_original_todos": 29
+}

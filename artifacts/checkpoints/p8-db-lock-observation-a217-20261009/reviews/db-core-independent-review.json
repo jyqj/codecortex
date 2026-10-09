@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_audit",
+  "reviewed_at": "2026-10-09T10:12:07.693436+00:00",
+  "status": "accepted_scoped_static",
+  "base_commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+  "scope": "four cc-db opt-in observation paths and their exact API contract with the separately reviewed server/harness candidate",
+  "implementation_manifest": {
+    "path": "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/attribution-gap-review/implementation-checkpoint-v2.json",
+    "bytes": 3476,
+    "sha256": "c34fece5ecbe9fe50dfe0343cb14d38fe40efc69a5d4784777c67c50a2067a0c"
+  },
+  "reviewed_files": [
+    {
+      "path": "crates/cc-db/Cargo.toml",
+      "bytes": 467,
+      "sha256": "db903ff906d648cdabcd8261d0119a42f391370739e15313abba44ead01e2622",
+      "git_blob": "bed1ee2a9d36d85300ab737b63deeaa62361c3b8",
+      "mode": "100644",
+      "base_git_blob": "69c83252f99328ab8c5cea62ac1e804d5f29423b",
+      "base_sha256": "169278d054b2575aae1123650dfa2c8f8e9fe0aabe575fbb2d67e4d168a9b047"
+    },
+    {
+      "path": "crates/cc-db/src/lib.rs",
+      "bytes": 2010,
+      "sha256": "4009224185a44950145f92df84b4dde27cba7279f7960674903b10e532da56cf",
+      "git_blob": "1d1fc26adbf3c344b8088e528772e5db09013693",
+      "mode": "100644",
+      "base_git_blob": "f41c91b18b8b6120da4b2ab813a408bf37f16dbd",
+      "base_sha256": "2ee1fd4600ce4625725c5c673b9ce96be5eab6d74ce7a8c407de4f92a3ee983f"
+    },
+    {
+      "path": "crates/cc-db/src/index_db.rs",
+      "bytes": 51685,
+      "sha256": "2fa3230ab5b25167b7db3d2052636058fe2adabbcc9030427547cd390fe0d539",
+      "git_blob": "f29aac1e787c60d86db46fbbdc10b4cf5103fa39",
+      "mode": "100644",
+      "base_git_blob": "58c30296ae0e635fe3ab0f383558c692f507e63b",
+      "base_sha256": "6202a556d78731b88757a08cdbc77f83112db17e3000fe2eaef9572a65915d4e"
+    },
+    {
+      "path": "crates/cc-db/src/lock_observation.rs",
+      "bytes": 20954,
+      "sha256": "77c1ffa0f042fb249afe16aca06469ebbed96a3eabc9fb7b0cf9c7e7131d9aa4",
+      "git_blob": "0e1401576f3ae0196ce402b07af955e17775c7d4",
+      "mode": "100644",
+      "base_git_blob": null,
+      "base_sha256": null
+    }
+  ],
+  "method": [
+    "Read complete new lock_observation.rs and index_db.rs feature-on/off diff, Cargo/lib feature declarations and original lock-use locations.",
+    "Verify each frozen v2 file actual bytes, SHA256 and Git blob against authors manifest.",
+    "Check fixed six-counter-category groups, process-global lifetime, thread-local RAII role restoration and standard guard/error return semantics.",
+    "Check all eight controls exercise actual guarded ownership/poison/pool exhaustion or explicit accounting failure invariants; their source is not treated as actual test execution."
+  ],
+  "findings": [
+    {
+      "topic": "default feature",
+      "result": "No default feature added; the old Mutex field/constructor and complete original read_conn body remain selected by cfg(not(feature)). Scale peer separately owns the expanded cfg-off proof."
+    },
+    {
+      "topic": "actual acquisitions",
+      "result": "ObservedMutex returns original std LockResult<MutexGuard>; timing surrounds the actual lock call and recording retains successful or poisoned ownership. read_conn preserves read-lock, None pool and pool.get error order/messages while separating pool-lock acquisition from checkout wall."
+    },
+    {
+      "topic": "consistent counters",
+      "result": "SeqCst sequence and active-recorders bracket each begin/finish update. A snapshot claims coherent only if no recorder overlaps its field reads, sequence unchanged, and no overflow. In-flight attempts remain explicit; checked counter overflow marks incomplete instead of wrapping."
+    },
+    {
+      "topic": "process and observer scope",
+      "result": "A const static fixed-size aggregate survives retired IndexDb instances without a handle map or reset. Thread-local role captured at begin prevents concurrent workload threads being charged to a synchronous status observer; !Send RAII restores nested/unwind role."
+    },
+    {
+      "topic": "overhead",
+      "result": "No new metadata mutex, SQL, per-attempt allocation or OnceLock in production accounting. Fixed memory and categories do not imply wait-free CAS or zero timing overhead; feature samples must remain distinct from default performance."
+    },
+    {
+      "topic": "failure retention",
+      "result": "Abandoned/unwound acquisitions are recorded as failed. WouldBlock comes only from actual test-only try_lock calls. SQLite busy time is explicitly outside the measured acquisition seams."
+    },
+    {
+      "topic": "controls",
+      "result": "Eight Rust controls cover held writer ownership, poison, nested/thread/unwind attribution, abandoned failures, incoherence/overflow, concurrent snapshots, actual single-connection checkout and retired handles, and unavailable pool errors. None was run by this review."
+    }
+  ],
+  "unresolved_source_blockers": [],
+  "rustfmt": "not_run; actual CI fmt gate required",
+  "rust_compilation_and_tests": "not_run; no local Rust toolchain",
+  "native_workloads": "not_run",
+  "source_or_refs_modified_by_review": false,
+  "formal_todo_completion": false,
+  "ledger": {
+    "done": 163,
+    "remaining": 29
+  }
+}

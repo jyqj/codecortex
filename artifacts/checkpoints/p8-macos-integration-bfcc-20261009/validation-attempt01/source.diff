@@ -1,0 +1,154 @@
+diff --git a/crates/cc-eval/tests/benchmark_adapters.rs b/crates/cc-eval/tests/benchmark_adapters.rs
+index 9466989bb3e1ccfea8c64fa20155e169b1b18d40..9feb4fe9659c3cd84bc86684d3f73412f9caec17 100644
+--- a/crates/cc-eval/tests/benchmark_adapters.rs
++++ b/crates/cc-eval/tests/benchmark_adapters.rs
+@@ -213,6 +213,7 @@ mod p7_offline {
+         "adr",
+     ];
+ 
++    #[cfg(target_os = "linux")]
+     fn file_digest(path: &Path) -> String {
+         use sha2::{Digest, Sha256};
+         format!("{:x}", Sha256::digest(std::fs::read(path).unwrap()))
+@@ -220,6 +221,7 @@ mod p7_offline {
+ 
+     enum SpawnPolicy {
+         Direct,
++        #[cfg(target_os = "linux")]
+         KillOnNetwork {
+             launcher: PathBuf,
+             digest: String,
+@@ -275,6 +277,7 @@ mod p7_offline {
+         fn proof(&self) -> Value {
+             match self {
+                 Self::Direct => Value::Null,
++                #[cfg(target_os = "linux")]
+                 Self::KillOnNetwork { probes, .. } => probes.clone(),
+             }
+         }
+@@ -286,10 +289,13 @@ mod p7_offline {
+     }
+ 
+     async fn spawn(binary: &Path, root: &Path, policy: &SpawnPolicy) -> (Client, ProductChild) {
++        #[cfg(target_os = "linux")]
+         let evidence = tempfile::tempdir().unwrap();
++        #[cfg(target_os = "linux")]
+         let receipt_path = evidence.path().join("pre-exec.json");
+         let mut command = match policy {
+             SpawnPolicy::Direct => tokio::process::Command::new(binary),
++            #[cfg(target_os = "linux")]
+             SpawnPolicy::KillOnNetwork {
+                 launcher, digest, ..
+             } => {
+@@ -334,6 +340,7 @@ mod p7_offline {
+             .unwrap();
+         let guard_receipt = match policy {
+             SpawnPolicy::Direct => Value::Null,
++            #[cfg(target_os = "linux")]
+             SpawnPolicy::KillOnNetwork { digest, .. } => {
+                 let receipt: Value =
+                     serde_json::from_slice(&std::fs::read(receipt_path).unwrap()).unwrap();
+diff --git a/crates/cc-eval/tests/p8_scale.rs b/crates/cc-eval/tests/p8_scale.rs
+index e4369e275bee0ddbc1cbea91e61bcc5735483e4e..31b34057ff76e0b07e9242ef179951577ed22187 100644
+--- a/crates/cc-eval/tests/p8_scale.rs
++++ b/crates/cc-eval/tests/p8_scale.rs
+@@ -489,6 +489,33 @@ fn subprocess_descendant_cannot_hold_stderr_past_worker_deadline() {
+     )
+     .unwrap();
+     std::fs::set_permissions(&helper, std::fs::Permissions::from_mode(0o700)).unwrap();
++    // This scenario needs a ready helper that exits normally before its
++    // descendant's inherited stderr is drained; it does not certify cold
++    // executable startup within 250ms. Establish that precondition once with
++    // a separate, bounded fixture setup. The same supervisor cleans up its
++    // fresh process group, including the setup's sleeping descendant.
++    let readiness_plan = ScalePlan {
++        deadline_ms: 2_000,
++        ..ScalePlan::default()
++    };
++    let readiness =
++        p8_scale::run_supervised(&readiness_plan, &temp.path().join("readiness"), &helper);
++    let ready = readiness.as_ref().is_ok_and(|report| {
++        report["exit_code"] == 0
++            && report["worker_exit_code"] == 0
++            && report["summary"]["passed"] == true
++            && report["stderr_complete"] == true
++            && report["fixture_cleanup"]["error"].is_null()
++            && report["release_certification"] == "not_run"
++    });
++    eprintln!("single helper readiness (separate from the 250ms assertion): {readiness:?}");
++    if !ready {
++        let evidence = temp.keep();
++        panic!(
++            "helper readiness failed without retry: {readiness:?}; evidence retained at {}",
++            evidence.display()
++        );
++    }
+     let plan = ScalePlan {
+         deadline_ms: 250,
+         ..ScalePlan::default()
+diff --git a/crates/cc-index/src/project_model/python_inventory.rs b/crates/cc-index/src/project_model/python_inventory.rs
+index 95b87a9780d41e86b88336e809882a1fcf1497f8..e8f3ccd2d5d24ac222186f6954d983d859b4ee18 100644
+--- a/crates/cc-index/src/project_model/python_inventory.rs
++++ b/crates/cc-index/src/project_model/python_inventory.rs
+@@ -1,5 +1,6 @@
+ //! Opt-in, complete Linux inventory and Python declaration admission.
+ //! No scanner filters, persistence, interpreter execution or atomic snapshot claim.
++#[cfg(target_os = "linux")]
+ use super::{config_cache::Loader, python};
+ use cc_model::{declaration_identity::*, module_inputs::*, project_model::ConfigInput};
+ use cc_parsers::python_identity::*;
+@@ -93,6 +94,7 @@ impl CapturedDeclarations {
+         &self.outcomes
+     }
+ }
++#[cfg(target_os = "linux")]
+ fn bound(actual: usize, limit: usize, resource: &'static str) -> Result<()> {
+     if actual > limit {
+         Err(CaptureRefusal::Budget(resource))
+@@ -100,6 +102,7 @@ fn bound(actual: usize, limit: usize, resource: &'static str) -> Result<()> {
+         Ok(())
+     }
+ }
++#[cfg(target_os = "linux")]
+ fn sum(a: usize, b: usize, resource: &'static str) -> Result<usize> {
+     a.checked_add(b).ok_or(CaptureRefusal::Budget(resource))
+ }
+@@ -287,6 +290,7 @@ fn capture_inner(
+ // Only complete collection-root directives are supported. Selectors, include/
+ // exclude, namespace switches, Poetry package selectors and other setuptools
+ // settings are refused, even when the legacy provenance has no limitation.
++#[cfg(target_os = "linux")]
+ fn supported_document(doc: &ConfigDocument) -> Result<()> {
+     let ConfigDocument::Toml(v) = doc else {
+         return Err(CaptureRefusal::Configuration);
+@@ -328,10 +332,12 @@ fn supported_document(doc: &ConfigDocument) -> Result<()> {
+     }
+     Ok(())
+ }
++#[cfg(target_os = "linux")]
+ struct OutputMeter {
+     bytes: usize,
+     limit: usize,
+ }
++#[cfg(target_os = "linux")]
+ impl std::io::Write for OutputMeter {
+     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+         let n = self
+diff --git a/crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs b/crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs
+index f35c2cd2cb14e4c257d7ab4ec143be0497bd905b..4d3b82904f0b9415f1f901a4192f66525492cd02 100644
+--- a/crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs
++++ b/crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs
+@@ -8,8 +8,12 @@ use std::{
+     alloc::{GlobalAlloc, Layout, System},
+     cell::Cell,
+     io::Write,
+-    path::{Path, PathBuf},
++    path::PathBuf,
+     sync::atomic::{AtomicU64, Ordering},
++};
++#[cfg(target_os = "linux")]
++use std::{
++    path::Path,
+     time::{Duration, Instant},
+ };
+ 

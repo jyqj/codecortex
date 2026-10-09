@@ -1,0 +1,54 @@
+Traceback (most recent call last):
+  File "/home/runner/work/_temp/p8-G4-offline-runtime/soak/inspect.py", line 192, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "/home/runner/work/_temp/p8-G4-offline-runtime/soak/inspect.py", line 178, in main
+    cache_wire=bind_compound_reads(rows,requests,responses,times)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/_temp/p8-G4-offline-runtime/soak/cache_wire.py", line 49, in bind_compound_reads
+    require(len(search_ids)==len(calls)==2*len(reads),'all original symbol/hybrid RPCs accounted')
+  File "/home/runner/work/_temp/p8-G4-offline-runtime/soak/cache_wire.py", line 7, in require
+    if not ok: raise ValueError(message)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: all original symbol/hybrid RPCs accounted
+Error in sys.excepthook:
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/apport_python_hook.py", line 228, in partial_apport_excepthook
+    return apport_excepthook(binary, exc_type, exc_obj, exc_tb)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/apport_python_hook.py", line 66, in apport_excepthook
+    import apport.report
+  File "/usr/lib/python3/dist-packages/apport/__init__.py", line 8, in <module>
+    from apport.report import Report
+  File "/usr/lib/python3/dist-packages/apport/report.py", line 45, in <module>
+    import apport.fileutils
+  File "/usr/lib/python3/dist-packages/apport/fileutils.py", line 32, in <module>
+    from problem_report import ProblemReport
+  File "/usr/lib/python3/dist-packages/problem_report.py", line 215, in <module>
+    @dataclasses.dataclass
+     ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/dataclasses.py", line 1268, in dataclass
+    return wrap(cls)
+           ^^^^^^^^^
+  File "/usr/lib/python3.12/dataclasses.py", line 1258, in wrap
+    return _process_class(cls, init, repr, eq, order, unsafe_hash,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/dataclasses.py", line 970, in _process_class
+    cls_annotations = inspect.get_annotations(cls)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'inspect' has no attribute 'get_annotations'
+
+Original exception was:
+Traceback (most recent call last):
+  File "/home/runner/work/_temp/p8-G4-offline-runtime/soak/inspect.py", line 192, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "/home/runner/work/_temp/p8-G4-offline-runtime/soak/inspect.py", line 178, in main
+    cache_wire=bind_compound_reads(rows,requests,responses,times)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/_temp/p8-G4-offline-runtime/soak/cache_wire.py", line 49, in bind_compound_reads
+    require(len(search_ids)==len(calls)==2*len(reads),'all original symbol/hybrid RPCs accounted')
+  File "/home/runner/work/_temp/p8-G4-offline-runtime/soak/cache_wire.py", line 7, in require
+    if not ok: raise ValueError(message)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: all original symbol/hybrid RPCs accounted

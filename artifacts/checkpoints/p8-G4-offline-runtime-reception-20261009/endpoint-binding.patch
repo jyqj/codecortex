@@ -1,0 +1,243 @@
+--- a/originals/soak/cache_wire.py
++++ b/derived/soak/cache_wire.py
+@@ -85,3 +85,67 @@
+             'mapping':mapping,'unbound_status_RPCs':len(set(status_ids)-used),
+             'common_monotonic_origin_interval_ns':[origin_low,origin_high],
+             'scope':'Exact request arguments and full response bytes/JSON bound to original wire IDs and common clock; sampler status RPCs retained separately, no contiguous ID assumption.'}
++
++
++def bind_compound_reads_with_endpoint(rows, requests, responses, times, records,
++                                      full_requests, full_responses, full_times):
++    """Bind the separately emitted endpoint pair, then preserve all read gates."""
++    endpoints = [(i, row) for i, row in enumerate(records) if row.get("kind") == "endpoint_public"]
++    require(len(endpoints) == 1, "one original endpoint_public record required")
++    position, endpoint = endpoints[0]
++    operation_positions = [i for i, row in enumerate(records) if row.get("kind") == "operation"]
++    require(operation_positions and max(operation_positions) < position,
++            "endpoint_public must follow all original operation records")
++    reads = [row for row in rows if row["operation"] == "read"]
++    require(reads, "original compound read population required")
++    search_ids = sorted((i for i, payload in requests.items()
++                         if payload.get("method") == "tools/call"
++                         and payload.get("params", {}).get("name") == "search"),
++                        key=lambda i: times[i]["request"])
++    require(len(search_ids) == 2 * len(reads) + 1,
++            "exact workload searches and one explained endpoint search required")
++    endpoint_id = search_ids[-1]
++    expected = {"name": "search", "arguments": {
++        "query": "p8_runtime_stable_signal", "mode": "symbol", "top_k": 5}}
++    require(requests[endpoint_id].get("params") == expected,
++            "incremental endpoint search arguments differ")
++    require(tool_value(responses[endpoint_id]) == endpoint.get("incremental"),
++            "incremental endpoint full response differs")
++    full_searches = [i for i, payload in full_requests.items()
++                     if payload.get("method") == "tools/call"
++                     and payload.get("params", {}).get("name") == "search"]
++    require(len(full_searches) == 1, "one original full-control endpoint search required")
++    full_id = full_searches[0]
++    require(full_requests[full_id].get("params") == expected,
++            "full-control endpoint search arguments differ")
++    require(tool_value(full_responses[full_id]) == endpoint.get("full"),
++            "full-control endpoint full response differs")
++    # Complete transports were validated before this call. This one separately
++    # proved RPC is excluded only from the work-interval read population.
++    work_requests = {i: value for i, value in requests.items() if i != endpoint_id}
++    work_responses = {i: value for i, value in responses.items() if i != endpoint_id}
++    work_times = {i: value for i, value in times.items() if i != endpoint_id}
++    result = bind_compound_reads(rows, work_requests, work_responses, work_times)
++    bound_ids = {row["rpc_id"] for row in result["mapping"]}
++    require(endpoint_id not in bound_ids and len(bound_ids) == 4 * len(reads),
++            "endpoint overlaps the original four-call read population")
++    latest_response = max(times[i]["response"] for i in bound_ids)
++    latest_operation = max(row["finished_ns"] for row in rows)
++    origin_high = result["common_monotonic_origin_interval_ns"][1]
++    require(times[endpoint_id]["request"] > latest_response
++            and times[endpoint_id]["request"] > origin_high + latest_operation,
++            "incremental endpoint search precedes original work completion")
++    require(full_times[full_id]["request"] >= times[endpoint_id]["response"],
++            "full-control endpoint search precedes incremental endpoint response")
++    result["endpoint_binding"] = {
++        "incremental_rpc_id": endpoint_id, "full_rpc_id": full_id,
++        "endpoint_public_record_index": position, "exact_parameters": expected,
++        "incremental_request_ns": times[endpoint_id]["request"],
++        "incremental_response_ns": times[endpoint_id]["response"],
++        "full_request_ns": full_times[full_id]["request"],
++        "full_response_ns": full_times[full_id]["response"],
++        "latest_bound_read_response_ns": latest_response,
++        "latest_raw_operation_finished_ns": latest_operation,
++        "scope": "One separately emitted endpoint on each original transport; full responses and timing proved. No unexplained search dropped."
++    }
++    return result
+--- a/originals/soak/inspect.py
++++ b/derived/soak/inspect.py
+@@ -12,7 +12,7 @@
+ import re
+ import sys
+ import time
+-from cache_wire import transport, bind_compound_reads
++from cache_wire import transport, bind_compound_reads, bind_compound_reads_with_endpoint
+ 
+ HERE = Path(__file__).resolve().parent
+ REPO = '/workspace/scratch/2eaa00d0f93a/p8-G4-exact-source'
+@@ -168,20 +168,22 @@
+         require(sha(replay_binary.read_bytes())==build['statistics_sha256'] and all(sha((output/name).read_bytes())==inventory['p8-runtime/'+name]['sha256'] for name in ('plan.json','raw.jsonl')),'offline replay inputs/binary unchanged')
+         statistics_replay=dict(argv=command,exit_code=replayed.returncode,seconds=time.monotonic()-started,byte_identical=True)
+         # Stream all original transport JSON, ensuring both owned sessions close cleanly.
+-        transports={};cache_wire=None
++        transports={};cache_wire=None;sessions={}
+         for prefix in ['product','full-product']:
+             events=(json.loads(line) for line in z.open('p8-runtime/'+prefix+'/rpc.jsonl'))
+             requests,responses,times,kinds=transport(events)
++            sessions[prefix]=(requests,responses,times)
+             process=read('p8-runtime/'+prefix+'/process.json')
+             require(process['exit_code']==0 and process['cleanup']=='completed' and process['tool_count']==14 and process['binary_sha256']==build['binary_sha256'],'original process closure')
+-            if prefix=='product':
+-                cache_wire=bind_compound_reads(rows,requests,responses,times)
+-                require(cache_wire['compound_reads']==2400 and cache_wire['bound_RPCs']==9600,'all compound reads bound to original stdio')
+-                require(all(r['cache_probe']['server_pid']==process['pid'] for r in rows if r['operation']=='read'),'cache probes from actual owned server')
+-                indexes=[p for p in requests.values() if p.get('method')=='tools/call' and p.get('params',{}).get('name')=='index']
+-                require(len(indexes)==1202 and indexes[0]['params']['arguments']['full'] is True and all(p['params']['arguments']['full'] is False for p in indexes[1:]),'initialfull+1201increments; no endpoint repair')
+-                (output/'cache-wire-binding.json').write_text(json.dumps(cache_wire,sort_keys=True,indent=2)+'\n')
+             transports[prefix]={'kinds':kinds,'process_exit_0_observed':True,'stdout_eof_observed':True}
++        requests,responses,times=sessions['product']
++        process=read('p8-runtime/product/process.json')
++        cache_wire=bind_compound_reads_with_endpoint(rows,requests,responses,times,records,*sessions['full-product'])
++        require(cache_wire['compound_reads']==2400 and cache_wire['bound_RPCs']==9600,'all compound reads bound to original stdio')
++        require(all(r['cache_probe']['server_pid']==process['pid'] for r in rows if r['operation']=='read'),'cache probes from actual owned server')
++        indexes=[p for p in requests.values() if p.get('method')=='tools/call' and p.get('params',{}).get('name')=='index']
++        require(len(indexes)==1202 and indexes[0]['params']['arguments']['full'] is True and all(p['params']['arguments']['full'] is False for p in indexes[1:]),'initialfull+1201increments; no endpoint repair')
++        (output/'cache-wire-binding.json').write_text(json.dumps(cache_wire,sort_keys=True,indent=2)+'\n')
+         endpoint=next(r['response'] for r in records if r['kind']=='endpoint_status')
+         result={'decision':'accepted_scoped_original_G4_soak_observation','source_commit':G4,'run_id':RUN,'job_id':JOB,'artifact_id':expected['artifact_id'],'artifact_sha256':ZIP_SHA,'artifact_bytes':expected['bytes'],'all_member_count':len(inventory),'all_member_bytes':sum(x['bytes'] for x in inventory.values()),'all_member_CRC_SHA_verified':True,'run_seal_files':2108,'build_seal_files':15,'source_inputs_exact_Git':1087,'observer_files_exact_Git':7,'operations':dict(operations),'outcomes':{'success':3601},'observed_work_ns':report['observed_work_ns'],'rss':report['rss'],'resource_coverage':cov,'branch_switches':switches,'catalog_compactions':compactions,'configured_C':4,'observed_workload_peak':report['actual_concurrency']['maximum'],'parity_tables':15,'original_parity_exit_code':0,'statistics_replay':statistics_replay,'cache_reuse':cache,'bound_cache_RPCs':cache_wire['bound_RPCs'],'endpoint_search_cache':endpoint['search_cache'],'transport':transports,'limitations':['Offline receipt/raw replay only; no product/Cargo/new performance measurement. Original full parity evidence retained without rerunning product or oracle.','Compound read is one offered sample containing two status, symbol and local hybrid calls. All 9600 subrequests stay within 2400 read samples.','Same native server and bounded shared query-pool counters are observed; no individual OS-thread, semantic-worker, provider or actual C4-peak claim.','Per-RPC timeout sum is180 seconds excluding admission wait; no new performance SLA. Uniform soak timings are not directly comparable to previous symbol-only reads.','Original IID intervals retain serial-correlation limitations; original Rust statistics replay is byte-identical without creating a new estimator.'],'TODO_closed':0,'TODO_remaining':29}
+         with archive.open('rb') as f:require(hashlib.file_digest(f,'sha256').hexdigest()==ZIP_SHA,'original ZIP unchanged after replay')
+--- a/controller
++++ b/controller
+@@ -29,6 +29,12 @@
+     "mixed/review_mixed.py": "e0e6002810aa7722ed070483532a7853e9971f7f45f38ea5355caf9e5920825b",
+     "soak/inspect.py": "a9eaa4b0ac030d8b9569d3db5bbea3e9ba624c115bf4ae6966f75320af5add26",
+     "soak/cache_wire.py": "63486a0954a6e2d3b12077797e40a3256ce8aa6a179b1233f2947ab3473e4b35",
++}
++
++# Explicitly reviewed derivatives; original three receiver bodies remain archived.
++DERIVED = {
++    "soak/inspect.py": "4fa1e18e355cd303b0ed8df986438f5965fb186ee413249b0ac62a434a6705c1",
++    "soak/cache_wire.py": "7ddec02ac351832562a7c0ff367cbccead2291c0fb447b91600c248ded57a5ea"
+ }
+ 
+ def require(ok, message):
+@@ -226,7 +232,13 @@
+     for relative, expected in ORIGINALS.items():
+         original = HERE / "originals" / relative
+         require(sha(original) == expected, "original receiver body changed")
+-        raw = original.read_text()
++        variant = original
++        if relative in DERIVED:
++            variant = HERE / "derived" / relative
++            require(sha(variant) == DERIVED[relative]
++                    and REG["derived_receivers"][relative]["sha256"] == DERIVED[relative],
++                    "registered receiver derivative changed")
++        raw = variant.read_text()
+         body = raw
+         if relative in mapping:
+             old, new = mapping[relative]
+@@ -237,8 +249,9 @@
+         target.parent.mkdir(parents=True, exist_ok=True)
+         with target.open("x") as output:
+             output.write(body)
+-        records[relative] = {"original_sha256": expected, "mapped_sha256": sha(target),
+-                             "only_checkout_root_mapping": relative in mapping}
++        records[relative] = {"original_sha256": expected, "derived_sha256": DERIVED.get(relative),
++                             "selected_receiver_sha256": sha(variant), "mapped_sha256": sha(target),
++                             "only_checkout_root_mapping_after_registered_derivation": relative in mapping}
+     write(OUT / "receiver-mapping.json", records)
+ 
+ def run():
+--- a/workflow
++++ b/workflow
+@@ -1,8 +1,8 @@
+-name: Original G4 runtime offline reception
++name: Original G4 runtime offline reception with endpoint binding
+ 
+ on:
+   push:
+-    branches: [task/p8-g4-runtime-reception-20261009]
++    branches: [task/p8-g4-runtime-reception-fix-20261009]
+ 
+ permissions:
+   contents: read
+--- a/registration
++++ b/registration
+@@ -1,5 +1,5 @@
+ {
+-  "schema": "p8-G4-offline-runtime-reception-v1",
++  "schema": "p8-G4-offline-runtime-reception-v2-endpoint",
+   "source": "260f596582f2d82b8d7c707b61a6b8b6a43b069f",
+   "source_tree": "645404431ca15770d6e729785a3ada68b096c593",
+   "run_id": 37854847820,
+@@ -67,5 +67,29 @@
+   },
+   "scope": "Original G4 artifacts only. No Cargo, product, oracle, provider or new workload. Original retained statistics executable is replayed on original plan/raw. No TODO or release approval.",
+   "reserve_bytes": 536870912,
+-  "expanded_ceiling_bytes": 4294967296
++  "expanded_ceiling_bytes": 4294967296,
++  "derived_receivers": {
++    "soak/inspect.py": {
++      "sha256": "4fa1e18e355cd303b0ed8df986438f5965fb186ee413249b0ac62a434a6705c1",
++      "original_sha256": "a9eaa4b0ac030d8b9569d3db5bbea3e9ba624c115bf4ae6966f75320af5add26",
++      "bytes": 21317,
++      "git_blob": "949f67fffe91dcb56ff9e72542d326e1e8719b9c"
++    },
++    "soak/cache_wire.py": {
++      "sha256": "7ddec02ac351832562a7c0ff367cbccead2291c0fb447b91600c248ded57a5ea",
++      "original_sha256": "63486a0954a6e2d3b12077797e40a3256ce8aa6a179b1233f2947ab3473e4b35",
++      "bytes": 9750,
++      "git_blob": "e6378c62bda6258b161c7c22d1c4603c36993ebc"
++    }
++  },
++  "failed_receiver": {
++    "controller": "29edc89440f2e49846b08bff4e437d53ed58a44b",
++    "run_id": 37877082223,
++    "artifact_id": 11593096106,
++    "bytes": 233689826,
++    "sha256": "d716e4d975dd2a0283eee2656fe68aed0ebb054efe36412a872ab55e6e04cea5",
++    "receipt_status": "incomplete_not_certified",
++    "error": "all original symbol/hybrid RPCs accounted",
++    "preserved_unchanged": true
++  }
+ }
+--- a/readme
++++ b/readme
+@@ -2,13 +2,13 @@
+ 
+ This auxiliary controller is separate from the product P/R/G chain. Its source is fixed G4 `260f596582f2d82b8d7c707b61a6b8b6a43b069f`; its five input archives are the registered original Actions artifacts from run 37854847820, attempt 1. It never changes the candidate's 140-input validation manifest, G4 refs, original measurements or task statuses.
+ 
+-The standalone branch trigger is `task/p8-g4-runtime-reception-20261009`, first attempt only. The workflow checks out its own immutable event commit into `receiver` and G4 independently into `source`. It uses no Cargo, provider, product execution, new benchmark or parity-oracle execution. It executes only the original retained statistics binary on original plan/raw after full origin binding.
++The standalone branch trigger is `task/p8-g4-runtime-reception-fix-20261009`, first attempt only. The workflow checks out its own immutable event commit into `receiver` and G4 independently into `source`. It uses no Cargo, provider, product execution, new benchmark or parity-oracle execution. It executes only the original retained statistics binary on original plan/raw after full origin binding.
+ 
+-The three original receiver bodies are retained unchanged under `originals/`. The controller verifies their registered SHA-256 values. Runtime mapping changes exactly one REPO literal in mixed/review_mixed.py and exactly one in soak/inspect.py; an inverse transformation must recover every original byte. cache_wire.py is copied unchanged. All existing predicates, populations, actual Rust-statistics replay, complete source comparison, seven original observers, stdio EOF/response binding, complete fifteen-table parity receipts and cache RPC checks remain.
++The three original receiver bodies are retained unchanged under `originals/`. Two explicitly registered derivatives are stored separately under `derived/soak/`, with an exact patch and independent review. All original cache_wire functions, including the 2×read search and 4×read total-RPC gates, remain byte-for-byte unchanged. Runtime root mapping changes exactly one REPO literal in the selected mixed/soak inspector; inverse mapping recovers the selected original or derivative bytes. All existing populations, actual Rust-statistics replay, source comparison, seven observers, complete stdio transport, fifteen-table parity receipts and cache checks remain.
+ 
+ Before extracting, the controller retains the ZIPs and complete API metadata, checks exact IDs/names/source/size/digest and successful selected jobs, validates safe central directories, and totals actual expansion. All members including binaries and hidden files receive full CRC/size/SHA checks and are retained. Filesystem headroom remains 512 MiB; a 4 GiB expansion ceiling is a receiver resource bound, not a reduced evidence population. Capacity failure remains incomplete/nonzero with originals preserved. Derived replay copies are conservatively budgeted before extraction.
+ 
+-The original G4 `p8_runtime.py verify` command runs on each complete expanded original build/runtime pair. Then the unmodified receiver logic runs the source-bound original statistics executable. Complete ZIPs, expanded files and source/observer snapshots are checked again after replay. The separate receiver report is scoped to original G4 observations; no TODO is closed and no sample is assigned to a new study.
++The original G4 `p8_runtime.py verify` command runs on each complete expanded original build/runtime pair. Then the registered receiver logic runs the source-bound original statistics executable. Complete ZIPs, expanded files and source/observer snapshots are checked again after replay. The separate receiver report is scoped to original G4 observations; no TODO is closed and no sample is assigned to a new study.
+ 
+ This draft has only static preparation; no download, receiver or binary has been run by its author. A non-author must review the full controller/workflow, literal mapping and original bodies before a new controller commit/ref is created. GitHub-hosted execution is ordinary offline reception, not an external paid runner.
+ 
+@@ -19,4 +19,15 @@
+ 
+ The five original Actions job logs remain unchanged on the isolated runner and are used by the original offline receiver predicates. They may contain signed storage redirect URLs and are therefore excluded by five exact upload paths. `withheld-original-job-logs.json` records each original job API reference, presence, byte count and SHA-256, plus a safe typed checkout/exit-event excerpt. The file inventory marks those raw paths as not included in the upload. The excerpts are deliberately incomplete and never replace the raw logs as validator input; complete independent replay requires retrieving the original Actions logs. All five original ZIPs, their complete expanded evidence and every other output are retained in the upload. No raw job log is deleted or edited.
+ 
+-A transfer timeout records a fixed failure containing only the registered API-relative path. The controller does not serialize `TimeoutExpired`, whose original argument list includes the authorization header. Transfers are not retried. These output-safety changes do not alter any of the three original receiver bodies or their predicates.
++A transfer timeout records a fixed failure containing only the registered API-relative path. The controller does not serialize `TimeoutExpired`, whose original argument list includes the authorization header. Transfers are not retried. These output-safety changes remain unchanged; the endpoint derivation is separately registered and reviewed below.
++
++
++## Explicit endpoint binding derivative
++
++The first actual receiver (controller 29edc894, run 37877082223) remains failed and retained. Its 233,689,826-byte output ZIP was fully CRC/SHA checked; the first error came from treating all product search RPCs as work-interval searches. Original G4 emits a separate endpoint symbol search after the work has drained, followed by the full-control endpoint search and one endpoint_public record.
++
++Actual original evidence contains 2400 compound reads, 4800 work-interval searches and 9600 read RPCs, plus product endpoint search ID14400 and full-control endpoint search ID4. Both exact endpoint responses and parameters were independently bound to the unique original endpoint_public record. No sample, request or response is removed from the original evidence.
++
++The derivative first validates both complete transports, then proves exactly one additional product search and one full-control search against that record, full response values and exact G4 endpoint arguments. It calls the unchanged original read binder on the remaining work population, retaining its 2×/4× assertions and all unique payload/response/clock matching. It also proves the incremental endpoint request occurs after every bound read response and every original operation's completion under the common clock interval, and the full endpoint request follows the incremental response. Raw endpoint records have no invented timestamp: their original JSONL order is checked separately.
++
++Missing or unexplained extra searches, duplicate endpoint records, altered parameters or responses, misplaced endpoints, and broken original four-call read populations are rejected by the synthetic controls. This derivation changes only the external offline receiver, never the product source, original archives, failed run or measured study. Its new fixed controller/branch requires independent review and a new offline run, never a rerun of the original product.

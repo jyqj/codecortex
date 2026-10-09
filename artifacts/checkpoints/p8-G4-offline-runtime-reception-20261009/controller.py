@@ -31,6 +31,12 @@ ORIGINALS = {
     "soak/cache_wire.py": "63486a0954a6e2d3b12077797e40a3256ce8aa6a179b1233f2947ab3473e4b35",
 }
 
+# Explicitly reviewed derivatives; original three receiver bodies remain archived.
+DERIVED = {
+    "soak/inspect.py": "4fa1e18e355cd303b0ed8df986438f5965fb186ee413249b0ac62a434a6705c1",
+    "soak/cache_wire.py": "7ddec02ac351832562a7c0ff367cbccead2291c0fb447b91600c248ded57a5ea"
+}
+
 def require(ok, message):
     if not ok:
         raise ValueError(message)
@@ -226,7 +232,13 @@ def adapt():
     for relative, expected in ORIGINALS.items():
         original = HERE / "originals" / relative
         require(sha(original) == expected, "original receiver body changed")
-        raw = original.read_text()
+        variant = original
+        if relative in DERIVED:
+            variant = HERE / "derived" / relative
+            require(sha(variant) == DERIVED[relative]
+                    and REG["derived_receivers"][relative]["sha256"] == DERIVED[relative],
+                    "registered receiver derivative changed")
+        raw = variant.read_text()
         body = raw
         if relative in mapping:
             old, new = mapping[relative]
@@ -237,8 +249,9 @@ def adapt():
         target.parent.mkdir(parents=True, exist_ok=True)
         with target.open("x") as output:
             output.write(body)
-        records[relative] = {"original_sha256": expected, "mapped_sha256": sha(target),
-                             "only_checkout_root_mapping": relative in mapping}
+        records[relative] = {"original_sha256": expected, "derived_sha256": DERIVED.get(relative),
+                             "selected_receiver_sha256": sha(variant), "mapped_sha256": sha(target),
+                             "only_checkout_root_mapping_after_registered_derivation": relative in mapping}
     write(OUT / "receiver-mapping.json", records)
 
 def run():

@@ -1,0 +1,101 @@
+{
+  "status": "passed_scoped_18_controls",
+  "checks": [
+    "positive: all original four read RPCs and separate exact two endpoint RPCs bound",
+    "unexplained extra product search: exact workload searches and one explained endpoint search required",
+    "missing product endpoint: exact workload searches and one explained endpoint search required",
+    "wrong product endpoint arguments: incremental endpoint search arguments differ",
+    "wrong product endpoint full response: incremental endpoint full response differs",
+    "wrong full endpoint arguments: full-control endpoint search arguments differ",
+    "wrong full endpoint full response: full-control endpoint full response differs",
+    "missing full endpoint: one original full-control endpoint search required",
+    "extra full search: one original full-control endpoint search required",
+    "duplicate endpoint record: one original endpoint_public record required",
+    "endpoint record before final operation: endpoint_public must follow all original operation records",
+    "endpoint RPC overlaps bound reads: incremental endpoint search precedes original work completion",
+    "endpoint after reads but before last build: incremental endpoint search precedes original work completion",
+    "full endpoint precedes incremental response: full-control endpoint search precedes incremental endpoint response",
+    "original work search payload mismatch: original ordered search RPC payload/response differs",
+    "missing original status call retains four-RPC denominator: full four-RPC read denominator",
+    "all original cache_wire functions byte-prefix and AST unchanged, including 2x/4x gates",
+    "inspect inverse replacement exactly restores every original byte"
+  ],
+  "files": {
+    "wire": {
+      "bytes": 9750,
+      "sha256": "7ddec02ac351832562a7c0ff367cbccead2291c0fb447b91600c248ded57a5ea",
+      "git_blob": "e6378c62bda6258b161c7c22d1c4603c36993ebc"
+    },
+    "inspect": {
+      "bytes": 21317,
+      "sha256": "4fa1e18e355cd303b0ed8df986438f5965fb186ee413249b0ac62a434a6705c1",
+      "git_blob": "949f67fffe91dcb56ff9e72542d326e1e8719b9c"
+    }
+  },
+  "scope": "Synthetic pure-Python endpoint binding controls and inverse byte proof; no product/Cargo/statistics/receiver execution. Original failed receiver and all old originals retained.",
+  "author_control_failure_preserved": "First synthetic wrong-response test shared the same Python dict between wire and expected endpoint, so mutation changed both and was incorrectly accepted; fixed fixture isolation with deepcopy before this rerun. Production binder was not changed.",
+  "final_files": {
+    "controller": {
+      "bytes": 20600,
+      "sha256": "cd0f307f90c2f035405e8fe5ddee8c8446aa0df9d37e40c3f7985d2e5fce377b",
+      "git_blob": "594a5aef3cf529ab9de57c80ab2dc5681e6e3522"
+    },
+    "workflow": {
+      "bytes": 2313,
+      "sha256": "8731f5ecf3cfd74e0d8824c508182b761f2b0470c28de29d861d27a1a5cd3b51",
+      "git_blob": "e705c3c590e051d4560bbdba603615e44dcf6a7a"
+    },
+    "registration": {
+      "bytes": 3274,
+      "sha256": "7d1b1980f10b3952f6b58e601af67a123bbb1c5aae3c53bbcd354a1789a0a203",
+      "git_blob": "5721e5348bbecebf8c21f90f564427ec588db4d6"
+    },
+    "readme": {
+      "bytes": 6280,
+      "sha256": "2db37deefa147c1753f6e4326f48bce63174a75926dceb94c4abe02ccad1a7c1",
+      "git_blob": "2782c53b8d7fba1ef7cb1d070eed53bd88757329"
+    },
+    "test": {
+      "bytes": 6364,
+      "sha256": "9923c8fd7c48b51178844da21a809bcf01fbfce199e44be8ef9d4c1a3ef9d90c",
+      "git_blob": "d7f242a7cdb38c35bf5841401344674b63fbc5db"
+    },
+    "wire": {
+      "bytes": 9750,
+      "sha256": "7ddec02ac351832562a7c0ff367cbccead2291c0fb447b91600c248ded57a5ea",
+      "git_blob": "e6378c62bda6258b161c7c22d1c4603c36993ebc"
+    },
+    "inspect": {
+      "bytes": 21317,
+      "sha256": "4fa1e18e355cd303b0ed8df986438f5965fb186ee413249b0ac62a434a6705c1",
+      "git_blob": "949f67fffe91dcb56ff9e72542d326e1e8719b9c"
+    }
+  },
+  "controller_unchanged_functions": [
+    "check_originals",
+    "extract_verified",
+    "free",
+    "get_api",
+    "head",
+    "invoke",
+    "job_log_exclusions",
+    "location",
+    "main",
+    "original_name",
+    "paged",
+    "public_job_log_events",
+    "record_withheld_job_logs",
+    "require",
+    "run",
+    "safe_infos",
+    "sha",
+    "write"
+  ],
+  "actual_diagnostic_blobs": {
+    "mapping": "95d8e14c6473638d4c4063b31b52864eb85b274f",
+    "report": "b6fec76401b95a3c2ee59f47e9e2b4db172132fe",
+    "script": "903dae2a78c24a4c12ff153b26a88efdf45dfe97"
+  },
+  "original_failure_intake_blob": "e1923b6c4c020e4ff4497ca017de94c411dadd50",
+  "original_failure_stderr_blob": "b12a729f7c2269945760c5f86a7b8fe61b60ffa8"
+}

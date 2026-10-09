@@ -489,6 +489,33 @@ fn subprocess_descendant_cannot_hold_stderr_past_worker_deadline() {
     )
     .unwrap();
     std::fs::set_permissions(&helper, std::fs::Permissions::from_mode(0o700)).unwrap();
+    // This scenario needs a ready helper that exits normally before its
+    // descendant's inherited stderr is drained; it does not certify cold
+    // executable startup within 250ms. Establish that precondition once with
+    // a separate, bounded fixture setup. The same supervisor cleans up its
+    // fresh process group, including the setup's sleeping descendant.
+    let readiness_plan = ScalePlan {
+        deadline_ms: 2_000,
+        ..ScalePlan::default()
+    };
+    let readiness =
+        p8_scale::run_supervised(&readiness_plan, &temp.path().join("readiness"), &helper);
+    let ready = readiness.as_ref().is_ok_and(|report| {
+        report["exit_code"] == 0
+            && report["worker_exit_code"] == 0
+            && report["summary"]["passed"] == true
+            && report["stderr_complete"] == true
+            && report["fixture_cleanup"]["error"].is_null()
+            && report["release_certification"] == "not_run"
+    });
+    eprintln!("single helper readiness (separate from the 250ms assertion): {readiness:?}");
+    if !ready {
+        let evidence = temp.keep();
+        panic!(
+            "helper readiness failed without retry: {readiness:?}; evidence retained at {}",
+            evidence.display()
+        );
+    }
     let plan = ScalePlan {
         deadline_ms: 250,
         ..ScalePlan::default()

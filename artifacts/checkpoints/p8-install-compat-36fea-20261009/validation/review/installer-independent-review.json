@@ -1,0 +1,135 @@
+{
+  "schema": "installer-independent-review-v2",
+  "reviewer": "/root/scale_acceptance",
+  "reviewed_at_utc": "2026-10-09T09:29:00.186742+00:00",
+  "verdict": "accepted_scoped_installer_behavior_after_comment_fix",
+  "accepted": true,
+  "scope": "Independent review of the Codex installer, removed private helper, CLI failure propagation, lockfile and installer documentation. Product and test sources were not edited and no compilation was performed by this reviewer.",
+  "source_sha256": {
+    "crates/cc-server/src/installer/targets/codex_cli.rs": "e69a9c1080f6f6892bf13d34f4e7292782e019b791a390aebfdadb9e524cdf27",
+    "crates/cc-server/src/installer/helpers.rs": "5d244bf240f8f7ed817bd7662275a4adcf06d7295da2ae3c88843eedcd2274fc",
+    "crates/cc-server/src/cli.rs": "3987198c27e4cd720b43e37174b3951faab0e7357ffb15b700e76d0c3509d7f3",
+    "crates/cc-server/src/main.rs": "6a11befd0f4cc6dbb77f2f8e88a79c195ee958edfa217ea37d8aea7225c9877b",
+    "crates/cc-server/src/installer/mod.rs": "3855d218c90d93dbe0b3acd99692a50e94ee44974d22747fe90433ecb0554ac0",
+    "crates/cc-server/Cargo.toml": "4b316a3dc3e35c0d1b3b3423025223c28ef4b35fa86b61096f142c53ff6a47b5",
+    "Cargo.lock": "8a38d631ab3d489c7e4fc111c2d8f966d7e34d6502b8180c184907a27235c5d6",
+    "crates/cc-server/tests/installer_cli.rs": "b2f383d4542b0b56883353dc953f37904b85fbc659794359089a199aeb6adc66",
+    "README.md": "1039606c6a8a830152ecc958b70a7faee56c11b347ba60add7a7f8979a43cc8e",
+    "docs/TROUBLESHOOTING.md": "7238fa34ab360876474b07e1e3fcc24f027502ea9a5ea29f8b28e6b7fd59ccca"
+  },
+  "findings": [
+    {
+      "id": "INSTALL-COMMENT-001",
+      "severity": "medium",
+      "path": "crates/cc-server/src/installer/targets/codex_cli.rs",
+      "symbol": "CodexCliTarget::install command/args replacement loop",
+      "summary": "The prior reinstall comment-loss defect is fixed: existing keys retain their Key object while Item values are replaced through get_mut.",
+      "mechanism": "toml_edit 0.22.27 Table::insert and InlineTable::insert call the occupied key fmt(); Key::fmt clears leaf_decor and dotted_decor. Copying only Value::decor preserves a trailing value comment but cannot preserve the key-prefix comments.",
+      "actual_reproduction": "The already-built root codecortex binary ran install in two isolated temporary homes, one standard table and one dotted-key document. Both returned exit0 and lost KEEP_COMMAND_RATIONALE/KEEP_ARGS_RATIONALE; unrelated enabled comment/value and the other server were retained.",
+      "reproducer_path": "/workspace/scratch/36fea31f96e3/validation/review/installer-comment-loss-reproducer.json",
+      "reproducer_sha256": "206a543690f71ef96bfd43614b7f2c351375d46cf03cd88bf97f10f1ce13c2f8",
+      "recommended_change": "For existing keys, replace the Item through get_mut (after transferring existing Value decor), preserving the original Key object. Use insert only for absent keys. Retain a regression covering comments before quoted command/args keys and dotted command/args keys.",
+      "status": "resolved",
+      "affected_source_sha256": "102ec1b704b51b04b6dd505a78008d637a8495f6728eb93935f6b8b6dc3f5a7a",
+      "affected_binary_sha256": "166f584b99afd6d782be38400466be5fa18febb7401f8ee8ef8ac1859d75017a",
+      "fixed_source_sha256": "e69a9c1080f6f6892bf13d34f4e7292782e019b791a390aebfdadb9e524cdf27",
+      "fixed_binary_sha256": "c8e35e35b025c49c519a0f3c9a9784888694157f4c9979f04c48e9886fe63538",
+      "fix_reproducer_path": "/workspace/scratch/36fea31f96e3/validation/review/installer-comment-fix-reproducer.json",
+      "fix_reproducer_sha256": "b44a9aaa697d346e728339211ed9e745bafea2f059b662fbd0611b0eb849076b"
+    }
+  ],
+  "reviewed_nonblocking_paths": [
+    "Exact parsed mcp_servers/codecortex entry lookups preserve differently named services, including a literal codecortex.other key.",
+    "as_table_like covers normal and inline tables; new child representation follows the outer inline form. Existing dotted/quoted and nested representations remain in the parsed document.",
+    "Uninstall removes the target subtree through the parsed table; multiline values cannot be mistaken for section headers.",
+    "Invalid UTF8, syntax/read failures, non-table mcp_servers or target entry, and existing URL transport are rejected before write_config. No-server uninstall returns before serialization/write.",
+    "The replacement loop owns only command/args; env, enabled=false, timeout and other user fields are retained. Whole Codex schema validation is not claimed or added as a gate.",
+    "current_exe IO errors propagate; per-target errors are reported and then produce Config error through main exit1. Successful other targets remain applied as documented.",
+    "The removed append helper was pub(crate) with its sole production caller replaced; no remaining crate reference exists. InstallerTarget signatures, IDs, config_location and public registry shape stay unchanged.",
+    "Cargo.lock only adds the existing toml_edit package as cc-server dependency; locked toml_edit remains 0.22.27. The manifest requests that already-locked compatible version."
+  ],
+  "existing_behavior_evidence": {
+    "original_unit_red": {
+      "path": "validation/install/red-receipt.json",
+      "exit_code": 101,
+      "passed": 5,
+      "failed": 9
+    },
+    "original_cli_red": {
+      "path": "validation/install/cli-red-receipt.json",
+      "exit_code": 101,
+      "passed": 0,
+      "failed": 2
+    },
+    "root_initial_green": {
+      "path": "validation/round2/commands.json",
+      "installer_unit": {
+        "exit_code": 0,
+        "passed": 49,
+        "failed": 0
+      },
+      "installer_cli": {
+        "exit_code": 0,
+        "passed": 2,
+        "failed": 0
+      },
+      "meaning": "These tests exercise the named initial cases but do not cover key-prefix comment loss."
+    },
+    "reviewer_counterexamples": {
+      "executed_existing_binary_only": true,
+      "binary_sha256": "166f584b99afd6d782be38400466be5fa18febb7401f8ee8ef8ac1859d75017a",
+      "cases": 2,
+      "asserted_preservation_failures": 2,
+      "binary_unchanged": true
+    },
+    "final_root_green": {
+      "path": "/workspace/scratch/36fea31f96e3/validation/final-source/commands.json",
+      "sha256": "8f3103f9a8e75a0ca50ee9471f5a3ca0e769f865a00c28f6d9418ba9ec373b16",
+      "installer_unit": {
+        "exit_code": 0,
+        "passed": 49,
+        "failed": 0
+      },
+      "installer_cli": {
+        "exit_code": 0,
+        "passed": 2,
+        "failed": 0
+      },
+      "source_before_sha256": "12cf66bdaaa42353f2003a21acccc6d9c9c5174cb4fec5149cc7032b270333e0",
+      "source_after_sha256": "12cf66bdaaa42353f2003a21acccc6d9c9c5174cb4fec5149cc7032b270333e0",
+      "source_inputs": 1090,
+      "source_before_after_entries_equal": true
+    },
+    "final_independent_behavior": {
+      "path": "/workspace/scratch/36fea31f96e3/validation/review/installer-comment-fix-reproducer.json",
+      "sha256": "b44a9aaa697d346e728339211ed9e745bafea2f059b662fbd0611b0eb849076b",
+      "source_sha256": "e69a9c1080f6f6892bf13d34f4e7292782e019b791a390aebfdadb9e524cdf27",
+      "binary_sha256": "c8e35e35b025c49c519a0f3c9a9784888694157f4c9979f04c48e9886fe63538",
+      "cases": 2,
+      "install_invocations": 4,
+      "all_preservation_exact_value_and_idempotence_checks_passed": true,
+      "compiled_by_reviewer": false,
+      "source_and_binary_unchanged_during_replay": true
+    }
+  },
+  "acceptance_remaining": [],
+  "original_todo_status_changed": false,
+  "original_todo_completed_by_review": 0,
+  "acceptance_scope": "Installer behavior and the reported comment-preservation regression only; this is not repository-wide CI or original P8 task acceptance.",
+  "provenance_correction": {
+    "reason": "The first review captured source hashes after the root concurrently installed the fix, while its behavior counterexamples had already run against the older round2 binary. Its top-level codex source hash was therefore not the source affected by the reported defect.",
+    "initial_review_preserved_path": "/workspace/scratch/36fea31f96e3/validation/review/installer-independent-review.initial.json",
+    "initial_review_sha256": "042f71e10960550d38497cd396724f85cebb7c1ede0d75f14340d1a8653a366a",
+    "initial_top_level_codex_hash_captured_after_fix": "e69a9c1080f6f6892bf13d34f4e7292782e019b791a390aebfdadb9e524cdf27",
+    "actual_old_bug_source_sha256": "102ec1b704b51b04b6dd505a78008d637a8495f6728eb93935f6b8b6dc3f5a7a",
+    "actual_old_bug_binary_sha256": "166f584b99afd6d782be38400466be5fa18febb7401f8ee8ef8ac1859d75017a",
+    "old_source_binding": "validation/round2/source-before.json and source-after.json; actual old binary hash is retained in installer-comment-loss-reproducer.json",
+    "clarification": "The old counterexamples do not demonstrate a defect in source e69a9c1080f6f6892bf13d34f4e7292782e019b791a390aebfdadb9e524cdf27. The new independent replay below verifies the fixed source/binary separately."
+  },
+  "repository_gates_outside_component_acceptance": {
+    "final_source_format_observed_exit": 1,
+    "format_status": "The retained final-source commands report exit1; this component review does not change or waive that result.",
+    "round2_search_lib_observed_exit": 101,
+    "whole_repository_green_claimed": false
+  }
+}

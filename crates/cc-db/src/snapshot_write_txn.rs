@@ -77,11 +77,13 @@ impl<'a> SnapshotWriteTxn<'a> {
         Ok(())
     }
 
-    /// Opt in to bounded files/literal FTS mirrors during a full rebuild.
+    /// Opt in to bounded dependency INSERTs and files/literal FTS mirrors
+    /// during a full rebuild.
     ///
     /// Unlike `write_file_data`, this can leave earlier files in the current
-    /// window without their mirrors when a later write fails. It does not own
-    /// or roll back the borrowed connection's transaction.
+    /// window without their mirrors when a later write fails, and a failed
+    /// dependency batch need not retain the per-row writer's partial prefix.
+    /// It does not own or roll back the borrowed connection's transaction.
     ///
     /// The rebuild owner MUST propagate any error, abandon the entire staging
     /// transaction/database, and prevent publication. Do not catch an error
@@ -111,7 +113,7 @@ impl<'a> SnapshotWriteTxn<'a> {
                 if mirror.is_some() {
                     IndexDb::insert_snapshot_file_data_deferred_fts(self.conn, unit, blobs)?;
                 } else {
-                    IndexDb::insert_snapshot_file_data_precompressed(self.conn, unit, blobs)?;
+                    IndexDb::insert_snapshot_file_data_for_rebuild(self.conn, unit, blobs)?;
                 }
             }
             if let Some(mirror) = mirror {

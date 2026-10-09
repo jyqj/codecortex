@@ -1,0 +1,282 @@
+{
+  "schema_version": "codecortex.environment-baseline-review.v1",
+  "reviewer": "scale_acceptance",
+  "reviewed_at_utc": "2026-10-09T09:42:19.687828+00:00",
+  "source_under_validation": "b069c73a0d76736e1dfb3eb64e79cad6980b773f",
+  "worktree_head_at_report": "733b70584fd9cf5581096fb2edfc7006f9a7dd80",
+  "verdict": "workspace_validation_incomplete_due_to_observed_ENOSPC",
+  "scope": "Read-only independent review of original logs, source, prior execution evidence and PID visibility. No build, test rerun, source edit, credential read, sampler disablement or original-log modification.",
+  "current_attempt": {
+    "evidence": {
+      "identity.json": {
+        "path": "/workspace/scratch/36fea31f96e3/validation/integrated-gates-restored/identity.json",
+        "bytes": 1008,
+        "sha256": "7d10d7fbe1c7f922a4de14cf46d97823133645f677747957034e88d7e947d7b5"
+      },
+      "format.log": {
+        "path": "/workspace/scratch/36fea31f96e3/validation/integrated-gates-restored/format.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "clippy.log": {
+        "path": "/workspace/scratch/36fea31f96e3/validation/integrated-gates-restored/clippy.log",
+        "bytes": 787,
+        "sha256": "9a812d3870d9c857e2c318d7a1e869654ebd15a92106fab836143cb3aa134e8e"
+      },
+      "workspace.log": {
+        "path": "/workspace/scratch/36fea31f96e3/validation/integrated-gates-restored/workspace.log",
+        "bytes": 8192,
+        "sha256": "6b8435bc76b59fa0fd34f20c803b33733f9258ca11f9dcbfd761c22e2eeda9c0"
+      },
+      "commands.json": {
+        "path": "/workspace/scratch/36fea31f96e3/validation/integrated-gates-restored/commands.json",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "identity": {
+      "source": "b069c73a0d76736e1dfb3eb64e79cad6980b773f",
+      "rustc": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.95.0\nLLVM version: 22.1.2\n",
+      "target_precondition": "isolated target reused from prior scoped checks; eight existing Git artifact test fixtures now explicitly materialized by sparse checkout; integrated-source regression, not a fresh cold build",
+      "environment": {
+        "CARGO_HOME": "/workspace/scratch/50c364fd60b1/cargo",
+        "RUSTUP_HOME": "/workspace/scratch/50c364fd60b1/rustup",
+        "RUSTUP_TOOLCHAIN": "1.95.0",
+        "CARGO_TARGET_DIR": "/workspace/scratch/36fea31f96e3/target-validation",
+        "CARGO_PROFILE_DEV_DEBUG": "0",
+        "CARGO_PROFILE_TEST_DEBUG": "0",
+        "CARGO_INCREMENTAL": "0",
+        "CARGO_BUILD_JOBS": "2"
+      },
+      "platform": [
+        "Linux",
+        "d68b7f253e72",
+        "6.18.44",
+        "#1 SMP Sat Sep 26 20:02:31 UTC 2026",
+        "x86_64"
+      ]
+    },
+    "observed": {
+      "linker_error": true,
+      "rustc_llvm_enospc": true,
+      "explicit_os_error_28": true,
+      "cc_server_lib_test_compile_error": true,
+      "python_identity_resource_integration_named_in_saved_log": true,
+      "execution_markers": [],
+      "saved_workspace_log_ends_mid_compiler_invocation": true,
+      "commands_json_empty": true,
+      "clippy_finished_profile_line": "    Finished `dev` profile [unoptimized] target(s) in 45.14s"
+    },
+    "exit_identity": {
+      "workspace_cargo_exit_code": null,
+      "wrapper_exit_code": 1,
+      "wrapper_exit_source": "Parent agent original tool result, relayed in its message: wrapper failed while writing receipt after ENOSPC.",
+      "why_cargo_exit_is_unknown": "The original commands.json is empty; no successful persisted numeric cargo-exit receipt was available to this reviewer. A failed linker exit 1 is not the cargo exit.",
+      "format_and_clippy_exit_records": "Use the parent thread original tool receipts. Empty format.log alone is not proof of exit 0, and this review does not reconstruct the lost commands.json."
+    },
+    "interpretation": "The retained log establishes compilation/linking failure with ENOSPC. It contains no test-run or test-result markers. This attempt cannot be called a sampler failure, a workspace pass, or proof that all otherwise unlogged tests were unexecuted.",
+    "parent_reported_recovery": "Parent cleaned only this thread target-validation build caches for cc-eval, cc-server, cc-index and cc-search, reporting 4.2 GiB released; raw validation and Git retained. This reviewer performed no cleanup."
+  },
+  "sampler_environment_baseline": {
+    "source": {
+      "path": "crates/cc-eval/src/benchmark/sampler.rs",
+      "sha256_by_ref": {
+        "bd4693351149a443bd0054a37508c53f74ed7b52": "1460c2cc3e866ca951d4da2b84e9084f2e3b47dd4db61475413b36c8d9a67317",
+        "b069c73a0d76736e1dfb3eb64e79cad6980b773f": "1460c2cc3e866ca951d4da2b84e9084f2e3b47dd4db61475413b36c8d9a67317"
+      },
+      "byte_equality": true,
+      "limit": "Source-byte equality is not a baseline execution or definitive causal attribution."
+    },
+    "static_contract": {
+      "linux_probe": "native_linux_snapshot reads /proc/{pid}/stat and linux_stat_snapshot checks the numeric reported PID. process_snapshot applies a 250 ms caller budget.",
+      "live_child_test": "The Linux test samples a re-executed child by child.id(), waits up to 3 s for snapshots, checks memory, threads and monotonically increasing CPU time, then verifies absence after kill/reap.",
+      "source_line_anchors": [
+        112,
+        144,
+        163,
+        177,
+        824,
+        836,
+        879,
+        911
+      ]
+    },
+    "current_read_only_namespace_observation": {
+      "os_getpid": 5,
+      "proc_self_symlink": "781884",
+      "proc_self_stat_pid": 781884,
+      "nspid": [
+        781884,
+        5
+      ],
+      "pid_namespace_link": "pid:[4026532347]",
+      "method": "Read-only inspection of this reviewer Python process. No sampler test or diagnostic child spawned.",
+      "pid_namespace_differs_from_procfs_numbering": true
+    },
+    "namespace_inference": "The mounted procfs numbers processes differently from the execution PID namespace. Reading /proc/{child.id()}/stat is therefore not reliable attribution of the spawned child here; existence of that numeric path may refer to another process. This is a concrete environment boundary, not an observed current-P sampler test outcome or proof that it is the sole cause of older failures.",
+    "historical_local_failure": {
+      "source": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+      "commands": [
+        {
+          "command": [
+            "cargo",
+            "fmt",
+            "--all",
+            "--",
+            "--check"
+          ],
+          "exit_code": 0,
+          "log": "format.log",
+          "name": "format"
+        },
+        {
+          "command": [
+            "cargo",
+            "clippy",
+            "--workspace",
+            "--all-targets",
+            "--locked",
+            "--offline",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "exit_code": 0,
+          "log": "clippy.log",
+          "name": "clippy"
+        },
+        {
+          "command": [
+            "cargo",
+            "test",
+            "--workspace",
+            "--locked",
+            "--offline"
+          ],
+          "exit_code": 101,
+          "log": "workspace-tests.log",
+          "name": "workspace-tests"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "/workspace/scratch/50c364fd60b1/validation/sampler-targeted-diagnostic.log",
+          "bytes": 1022,
+          "sha256": "b683185a1ad44e98d219c1b03d649bead6ddf4f3d39d0ba68094a1ff5742102c"
+        },
+        {
+          "path": "/workspace/scratch/50c364fd60b1/validation/final-product-checks-corrected/workspace-tests.log",
+          "bytes": 40896,
+          "sha256": "7a06196e4c466cdb72fca5ced685b5697871352279f0bf97a4afad9bf802c987"
+        },
+        {
+          "path": "/workspace/scratch/50c364fd60b1/validation/final-product-checks-corrected/receipt.json",
+          "bytes": 300323,
+          "sha256": "74ec6fecd6fc070e36e27e47c9b15d8be14c3b34cf761fd8b0683e0899d81977"
+        },
+        {
+          "path": "/workspace/scratch/50c364fd60b1/validation/local-process-namespace-diagnostic.json",
+          "bytes": 580,
+          "sha256": "28a9e9759b6771cb30e052cf79a6ef0a5de5eb5763b94a7d96eb5310f9c898b0"
+        },
+        {
+          "path": "/workspace/scratch/50c364fd60b1/validation/sampler-source-equality.json",
+          "bytes": 429,
+          "sha256": "53c97e9f844e8db04dffa0d99b5fd640eb121d48c3ee0279511ccc0988decdd2"
+        }
+      ],
+      "targeted_result": "0 passed; 1 failed; 64 filtered out; live child snapshot unavailable",
+      "workspace_cc_eval_lib_result": "59 passed; 1 failed; 5 ignored; live child snapshot unavailable",
+      "old_namespace_diagnostic_summary": "The saved old diagnostic reports child PID 6, child /proc/self PID 64815, and parent /proc/6/stat identifying caas-prefix-tra. This diagnostic was not rerun."
+    },
+    "historical_original_ci": {
+      "run": {
+        "id": 37903250638,
+        "run_attempt": 1,
+        "head_sha": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/jyqj/codecortex/actions/runs/37903250638"
+      },
+      "actual_execution_checkout": {
+        "sha": "0805905f48b963b60864f40e74fef6aed7c4f934",
+        "tree": "87e746f47d4ea8c1a6b06cb29e180fc7bbd78137",
+        "log_line": 175,
+        "parents": [
+          "bd4693351149a443bd0054a37508c53f74ed7b52",
+          "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529"
+        ]
+      },
+      "evidence": [
+        {
+          "path": "/workspace/scratch/50c364fd60b1/validation/g181-ci-review/api-run.json",
+          "bytes": 12163,
+          "sha256": "e6321c58b5445b1abd02e0a6081a04fc112209f47062104ee01cf4d0bea9d394"
+        },
+        {
+          "path": "/workspace/scratch/50c364fd60b1/validation/g181-ci-review/independent-review.json",
+          "bytes": 22585,
+          "sha256": "04a3496b33f06fb2a267784bb02f7950cf90ef10e1f456cfcc30c8171dcba4b0"
+        },
+        {
+          "path": "/workspace/scratch/50c364fd60b1/validation/g181-ci-review/original-check.log",
+          "bytes": 1066114,
+          "sha256": "1ae3d8991dc6839be84460e0f324c08069050bacf6cff09ebfc5d5dacf3102eb"
+        }
+      ],
+      "independently_read_named_test_successes": [
+        {
+          "line": 1220,
+          "text": "2026-10-09T08:39:51.6283878Z test benchmark::sampler::process_probe_tests::linux::live_child_snapshot_is_attributed_monotonic_and_disappears ... ok",
+          "enclosing_suite_result": {
+            "line": 1237,
+            "text": "2026-10-09T08:39:57.2835467Z test result: ok. 60 passed; 0 failed; 5 ignored; 0 measured; 0 filtered out; finished in 5.78s"
+          }
+        },
+        {
+          "line": 7202,
+          "text": "2026-10-09T08:53:24.5090807Z test benchmark::sampler::process_probe_tests::linux::live_child_snapshot_is_attributed_monotonic_and_disappears ... ok",
+          "enclosing_suite_result": {
+            "line": 7231,
+            "text": "2026-10-09T08:53:32.0639314Z test result: ok. 60 passed; 0 failed; 5 ignored; 0 measured; 0 filtered out; finished in 8.62s"
+          }
+        }
+      ],
+      "limit": "These are actual successful original PR #181 CI executions at their saved execution identity. They do not execute current P and do not erase the historical local failures."
+    }
+  },
+  "minimum_continuation_advice": {
+    "status": "Recommendations only; parent owns execution and resulting receipts.",
+    "environment": "Use the same declared toolchain and controlled target environment as identity.json, after checking free space; keep each command receipt and source identity separately.",
+    "commands": [
+      {
+        "command": "cargo test -p cc-eval --offline --locked -- integration_fixtures_and_corpus --nocapture",
+        "purpose": "Complete the prescribed corpus filter in a separate batch; do not claim it from the aborted workspace log."
+      },
+      {
+        "command": "cargo test -p cc-server --lib --offline --locked",
+        "purpose": "Complete the cc-server lib target explicitly named as a compilation failure."
+      },
+      {
+        "command": "cargo test -p cc-index --test python_identity_resource_integration --offline --locked",
+        "purpose": "Complete the cc-index integration target identified in the parent original failure output, as a separate small target."
+      },
+      {
+        "command": "cargo test -p cc-server --test installer_cli --offline --locked",
+        "purpose": "Retain integrated-source CLI coverage for this change, unless an already completed same-source receipt covers it."
+      },
+      {
+        "command": "cargo test -p cc-search --lib --offline --locked",
+        "purpose": "Retain integrated-source execution coverage for the test de-duplication, unless an already completed same-source receipt covers it."
+      }
+    ],
+    "remaining_full_gate": "Scoped batch passes supplement the aborted workspace attempt; they are not a full workspace pass. Remaining required targets need their actual current-source execution results. If a later actual sampler failure aborts other targets, target-specific continuation or a resource-feasible --no-fail-fast invocation can collect the remaining outcomes while preserving that failure.",
+    "no_test_or_protocol_change_recommended": true
+  },
+  "todo_accounting": {
+    "original_total": 192,
+    "original_done": 163,
+    "original_remaining": 29,
+    "completed_by_this_review": 0
+  }
+}

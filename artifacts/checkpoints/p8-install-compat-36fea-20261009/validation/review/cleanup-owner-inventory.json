@@ -1,0 +1,537 @@
+{
+  "artifact": "cleanup-owner-inventory",
+  "format_version": 1,
+  "source": {
+    "repository": "jyqj/codecortex",
+    "product_commit": "b069c73a0d76736e1dfb3eb64e79cad6980b773f",
+    "source_ref_is_fixed": true,
+    "scope_git_ls_tree_sha256": "fccf1a2d5346175f24c1d6fddd6f10ed00c2fa31b32091728e5e4928b7c1fdc5",
+    "tracked_path_counts": {
+      "cc-index": {
+        "tracked_paths": 129,
+        "root_src_rust_paths": 105
+      },
+      "cc-search": {
+        "tracked_paths": 38,
+        "root_src_rust_paths": 37
+      },
+      "cc-eval": {
+        "tracked_paths": 596,
+        "root_src_rust_paths": 45
+      }
+    },
+    "scoped_worktree_diff_against_product": []
+  },
+  "task_accounting": {
+    "original_task": "P8-017",
+    "status_change_requested": false,
+    "original_task_remains_open": true,
+    "new_original_todos_completed": 0,
+    "original_total": 192,
+    "original_done": 163,
+    "original_remaining": 29,
+    "new_subtasks_created": 0
+  },
+  "review_scope": {
+    "method": "Read-only source and call-site inspection at fixed P, keyword/path scan of 187 root src Rust files across the three scoped crates, detailed examination of the named owner families, and exact Git/content equality for the catalogue evidence. No compilation or new test execution.",
+    "limits": [
+      "This is a bounded static ownership inventory, not a compiler-derived complete call graph or proof that every remaining duplicate has been ruled out.",
+      "Third-party benchmark sources, frozen fixtures, independent test references and separate wire schema domains are not deletion candidates solely because text or names resemble production code.",
+      "No source, configuration, task definition, dependency, status or remote change was made by this inventory."
+    ],
+    "original_acceptance_boundary": "P8-017 original dependency and V18/V21 acceptance requirements remain in force. This inventory and the bounded tests do not complete those requirements."
+  },
+  "outstanding_ownership_item": {
+    "description": "The local execution registry and the query policy obligation builder independently enumerate the ordered local lane catalogue.",
+    "execution_owner": {
+      "source": "execution_registry",
+      "symbol": "default_lanes",
+      "concrete_lane_types": [
+        "ExactSymbolLane",
+        "PathLane",
+        "LexicalLane",
+        "GrepLane",
+        "GraphLane"
+      ],
+      "resolved_lane_ids": [
+        "exact_symbol",
+        "path",
+        "lexical",
+        "grep",
+        "graph"
+      ],
+      "call_chain": [
+        "SearchEngine::search_planned_detailed",
+        "default_lanes",
+        "run_lanes",
+        "materialize_lane_outcomes",
+        "fuse_outcomes"
+      ],
+      "role": "Selects executable local lane implementations and preserves fusion/annotation order."
+    },
+    "policy_owner": {
+      "source": "policy_catalogue",
+      "symbol": "QueryPolicy::resolve",
+      "literal_lane_ids": [
+        "exact_symbol",
+        "path",
+        "lexical",
+        "grep",
+        "graph"
+      ],
+      "call_chains": [
+        [
+          "SearchPlan::build_configured",
+          "QueryPolicy::resolve"
+        ],
+        [
+          "QueryHandle::search_async",
+          "QueryPolicy::resolve",
+          "SemanticRequest.policy_fingerprint"
+        ]
+      ],
+      "role": "Produces ordered per-lane intent roles and child budgets, then conditionally adds semantic obligations; fingerprint serializes the policy."
+    },
+    "equality_evidence": {
+      "equal": true,
+      "ordered_ids": [
+        "exact_symbol",
+        "path",
+        "lexical",
+        "grep",
+        "graph"
+      ],
+      "method": "Read fixed-P Git blobs; extract default_lanes concrete registration order, resolve each RetrievalLane::lane_id constant from its impl, and compare to QueryPolicy::resolve literal array. Assert both exactly equal the stated ordered IDs.",
+      "claim_limit": "No current catalogue mismatch or user-visible failure was observed. The remaining issue is ownership and future manual synchronization."
+    },
+    "later_bounded_action": "Choose one shared ordered local-lane descriptor/catalogue for both consumers, or document and justify why separate owners are necessary. This action was not performed in P.",
+    "compatibility_requirements": [
+      "Preserve current local lane execution and fusion order.",
+      "Preserve disabled and zero-weight lane receipt obligations, intent roles and child budgets.",
+      "Preserve conditional semantic lane inclusion and existing serialized QueryPolicy/fingerprint values for the unchanged catalogue."
+    ],
+    "verification_for_later_change": [
+      "Compare before/after serialized policy and fingerprints across supported strategies and intents.",
+      "Compare registered execution IDs and policy obligation IDs including disabled and zero-weight cases.",
+      "Run existing lane registry, fusion, policy and affected integration regressions."
+    ],
+    "existing_test_limit": "default_lanes_registry_keeps_fusion_order asserts current order; policy tests cover current roles and fingerprints. These tests do not make one production catalogue derive from the other."
+  },
+  "reviewed_owner_families": [
+    {
+      "area": "runtime latency statistics",
+      "owner": [
+        "crates/cc-eval/src/benchmark/statistics.rs"
+      ],
+      "consumers": [
+        "crates/cc-eval/src/bench.rs",
+        "crates/cc-eval/src/report.rs",
+        "crates/cc-eval/src/bin/p8-runtime-statistics.rs",
+        "scripts/p8_runtime.py"
+      ],
+      "finding": "PR #175 establishes Rust nearest_rank / legacy_latency_ns as the shared quantile owner. Python consumes the Rust legacy_ns result; the CLI delegates. Paired reporting calls the shared bootstrap implementation.",
+      "retain": "Nanosecond versus microsecond wire formats, null versus historical zero defaults, and all-terminal versus successful-sample populations have separate compatibility meanings."
+    },
+    {
+      "area": "benchmark relevance scoring",
+      "owner": [
+        "crates/cc-eval/src/benchmark/metrics.rs",
+        "crates/cc-eval/src/benchmark/fnmatch.rs"
+      ],
+      "finding": "ScoreProfile dispatches compatibility and native scoring; shared dcg/ndcg and path matching remain centralized. The reviewed branches are distinct contracts, not a proven duplicated scorer.",
+      "retain": "Compatibility preserves expected-file order and linear grades. Native handles answer groups, symbol/span evidence, no-answer cases, recall and bounded MRR."
+    },
+    {
+      "area": "corpus scoring and MCP calls",
+      "owner": [
+        "crates/cc-eval/src/runner.rs",
+        "crates/cc-eval/src/types.rs"
+      ],
+      "finding": "Corpus compute_retrieval_metrics uses literal symbol names and MRR over all returned names; it is not interchangeable with benchmark native mrr10. CodeIndexBackend calls the cc-server MCP seam reexported by cc-eval::mcp_wire.",
+      "retain": "EvalCase/Assertion fixtures and Suite/Query/Row benchmark records are different formats. MCP_TOOLS is a public retained mirror, not the production router; no deletion is justified by absence of internal consumers."
+    },
+    {
+      "area": "schema ownership",
+      "owner": [
+        "crates/cc-eval/src/benchmark/schema.rs",
+        "crates/cc-db/src/index_migrate.rs",
+        "crates/cc-db/src/sql/index_v1.sql",
+        "crates/cc-model/src/project_model.rs",
+        "crates/cc-model/src/retrieval.rs"
+      ],
+      "finding": "Benchmark SCHEMA_VERSION=1 types generate CLI schema output via schemars. Product database schema version 25 and DDL belong to cc-db; project model version 3 and candidate/lane receipt version 1 belong to cc-model.",
+      "retain": "These version numbers describe different serialized domains. Operational report schema_version fields and disposable oracle sorting tables are not alternative owners of the product schema."
+    },
+    {
+      "area": "retrieval fusion and adapters",
+      "owner": [
+        "crates/cc-search/src/fusion.rs",
+        "crates/cc-model/src/retrieval.rs"
+      ],
+      "finding": "fuse_outcomes is the reviewed live versioned-candidate fusion owner. lanes.rs reexports it and adapts materialized cc-model lane receipts. Search paths funnel through the planned detailed execution path.",
+      "retain": "Candidate version/span identity, lane vote validation, checked denominators, finite contributions, Complete/Partial voting, and legacy_chunk_id hydration compatibility."
+    },
+    {
+      "area": "local lane catalogue",
+      "owner": [
+        "crates/cc-search/src/lanes.rs",
+        "crates/cc-search/src/query_policy.rs"
+      ],
+      "finding": "Two independent production catalogues currently declare the same ordered five local lanes. This is the concrete unresolved ownership item recorded below.",
+      "retain": "Execution order, disabled/zero-weight obligations, intent roles, budgets, conditional semantic inclusion and serialized policy fingerprints."
+    },
+    {
+      "area": "reranking and legacy score projection",
+      "owner": [
+        "crates/cc-search/src/plan.rs",
+        "crates/cc-search/src/score_trace.rs",
+        "crates/cc-search/src/engine_graph.rs"
+      ],
+      "finding": "The plan performs token-overlap reranking and ScoreSlot-to-SearchHit projection; ScoreTrace owns the accumulated score. Graph additions use the existing planned path and traced boosts.",
+      "retain": "Legacy lexical/grep/graph output fields and stable accumulation/tie ordering; graph structural evidence is not an interchangeable token scorer."
+    },
+    {
+      "area": "preselection and source coverage",
+      "owner": [
+        "crates/cc-search/src/preselect.rs",
+        "crates/cc-search/src/selection/overlap.rs"
+      ],
+      "finding": "preselect and its registry own preselection. preselect_files delegates with defaults. SourceCoverage owns union-of-byte-span accounting by file and snapshot.",
+      "retain": "Byte-union overlap differs from rrf::overlap_score token membership. Read-only new_bytes and mutating add in the same owner are not separate production scoring implementations."
+    },
+    {
+      "area": "Cypher variable-length traversal",
+      "owner": [
+        "crates/cc-search/src/cypher/traversal_semantics.rs",
+        "crates/cc-search/src/cypher/executor.rs",
+        "crates/cc-search/src/cypher/fast_path.rs"
+      ],
+      "finding": "SQL translation and lazy BFS consume VARLEN_TRAVERSAL: IgnoreDirection, DistinctPerRootNodeDepth, BoundedByMaxHops and DistinctRows. The fast path supports a subset; SQL remains the fallback.",
+      "retain": "Existing direction behavior and public CypherQuery::match_clause accessor. Removing a backend or changing direction rules would alter supported external behavior."
+    },
+    {
+      "area": "public surface and document identity",
+      "owner": [
+        "crates/cc-model/src/public_surface.rs",
+        "crates/cc-index/src/indexer_phases/dirty.rs",
+        "crates/cc-index/src/documents/symbol_identity.rs",
+        "crates/cc-index/src/documents/render.rs"
+      ],
+      "finding": "PublicSurface canonical bytes, fingerprint and changed_from centralize public-surface identity; dirty propagation consumes that owner. Document identity uses shared model types with raw snapshot byte proof.",
+      "retain": "Unknown versus known-empty surfaces, snapshot verification and embedding projection format are separate contracts; independent source proof should not disappear during consolidation."
+    },
+    {
+      "area": "resolver catalogue and resolution stages",
+      "owner": [
+        "crates/cc-index/src/resolver/catalog.rs",
+        "crates/cc-index/src/resolver/helpers.rs",
+        "crates/cc-index/src/resolver/resolve_core.rs",
+        "crates/cc-index/src/module_resolution/mod.rs"
+      ],
+      "finding": "ResolutionCatalog owns streamed symbol registration; helpers own streamed prefix candidate scoring. Symbol and module-address resolution are separate stages. PR #179 preserves legacy ordering and alias behavior.",
+      "retain": "cfg(test) legacy_exports, legacy_prefix and legacy_candidates are independent regression references. workspace_package_legacy_entry supports main/module/types when exports is absent."
+    },
+    {
+      "area": "pass gates and persisted compatibility",
+      "owner": [
+        "crates/cc-index/src/pass_gate.rs",
+        "crates/cc-index/src/project_model/mod.rs",
+        "crates/cc-index/src/indexer_phases/config_link.rs"
+      ],
+      "finding": "SignatureStore/PassGate owns compare-record and deferred records. Missing persisted algorithm metadata maps to legacy version 1. legacy_config_inputs_unchanged guards scoped reuse together with algorithm/signature state.",
+      "retain": "Upgrade behavior and supported legacy configuration shapes; a legacy name alone does not demonstrate dead code."
+    },
+    {
+      "area": "oracle projection",
+      "owner": [
+        "crates/cc-eval/src/benchmark/oracle.rs",
+        "crates/cc-eval/src/benchmark/oracle/streaming.rs"
+      ],
+      "finding": "Streaming imports shared TABLES/columns/select_columns/project_row from oracle.rs. Its canonical_rows SQLite storage is a disposable sorting strategy, not another product schema.",
+      "retain": "Two resource strategies preserve duplicate rows and signed-zero equality. Independent reconstruction must remain capable of detecting product errors."
+    },
+    {
+      "area": "index memory budget",
+      "owner": [
+        "crates/cc-index/src/memory_budget.rs"
+      ],
+      "finding": "One reviewed MemoryBudget definition owns index budget sampling. process_rss_bytes_opt is the fallible reader; public process_rss_bytes delegates and preserves a zero fallback.",
+      "retain": "The evaluation sampler has process/PID/CPU attribution requirements. A header describing a self-contained copy is not evidence of another indexing memory controller."
+    }
+  ],
+  "explicit_public_compatibility": [
+    {
+      "path": "crates/cc-search/src/rrf.rs",
+      "symbol": "rrf_accumulate",
+      "exposure": "crates/cc-search/src/lib.rs exports pub mod rrf",
+      "finding": "Public legacy weight/(k+rank+1) accumulation remains. The versioned candidate fusion API has additional validation and different inputs. No internal production caller does not establish absence of external callers; deletion is not proposed."
+    },
+    {
+      "path": "crates/cc-eval/src/types.rs",
+      "symbol": "MCP_TOOLS",
+      "ordered_values": [
+        "status",
+        "index",
+        "search",
+        "context",
+        "node",
+        "explore",
+        "trace",
+        "relations",
+        "impact",
+        "architecture",
+        "files",
+        "graph_query",
+        "ingest_traces",
+        "adr"
+      ],
+      "current_macro_router_names_equal": true,
+      "actual_router": "crates/cc-server/src/mcp.rs #[tool(name = ...)] declarations",
+      "finding": "Current 14-name equality was checked from fixed-P source. The public constant is a compatibility mirror, not evidence of a second production dispatcher. No external API usage survey was performed."
+    }
+  ],
+  "existing_execution_evidence": {
+    "product_commit": "b069c73a0d76736e1dfb3eb64e79cad6980b773f",
+    "source_binding": "validation/bounded-gates/source-before.json and source-after.json bind the bounded execution; inventory reads fixed P directly.",
+    "archive_prefix": "artifacts/checkpoints/p8-install-compat-36fea-20261009/validation/",
+    "receipts": [
+      {
+        "path": "bounded-gates/index-search-libs.log",
+        "actual_results": "cc-index 427 passed, 1 ignored; cc-search 301 passed."
+      },
+      {
+        "path": "bounded-gates/statistics-lib.log",
+        "actual_results": "2 passed, 65 filtered; not a complete statistics library suite."
+      },
+      {
+        "path": "bounded-gates/statistics-bin.log",
+        "actual_results": "5 passed."
+      },
+      {
+        "path": "bounded-gates/corpus.log",
+        "actual_results": "1 corpus Rust test passed; other displayed targets may have 0 or filtered tests."
+      },
+      {
+        "path": "python-discovery/receipt.json",
+        "actual_results": "32 Python discovery tests passed at P."
+      }
+    ],
+    "selected_actual_passes": [
+      "engine_lane_tests::default_lanes_registry_keeps_fusion_order",
+      "query_policy::tests::intent_and_budgets_are_fingerprinted_without_hiding_partial",
+      "fusion::tests::raw_score_scale_does_not_change_rrf_and_trace_replays",
+      "fusion::tests::duplicate_lanes_cannot_cast_two_votes",
+      "rrf::tests::rrf_basic",
+      "rrf::tests::rrf_merge_two_lists",
+      "cypher::fast_path::tests::equivalence_sweep_over_fixtures_templates_and_directions",
+      "resolver::catalog::catalog_build_bench::export_registration_matches_legacy_after_remove_and_readd",
+      "resolver::catalog::catalog_build_bench::export_registration_matches_legacy_for_alias_collisions",
+      "resolver::helpers::import_distance_regression_tests::streamed_prefix_matches_original_path_segment_semantics",
+      "resolver::helpers::import_distance_regression_tests::one_pass_distance_preserves_original_ties_duplicates_and_order",
+      "pass_gate::tests::db_signature_gate_missing_algo_key_reads_as_version_one"
+    ],
+    "limits": [
+      "No tests were rerun to create this inventory. Existing receipts demonstrate only their executed scopes.",
+      "A complete workspace success was not obtained in this round because linking encountered ENOSPC. No new full-workspace total is claimed.",
+      "Prior PR executions and present component passes do not substitute for all original V18/V21 acceptance requirements."
+    ]
+  },
+  "source_index": {
+    "execution_registry": {
+      "path": "crates/cc-search/src/lanes.rs",
+      "git_blob": "9069edd85e1e76144930fcc03f073441138693c7",
+      "sha256": "58cb26a7ae4cfaf6a6f5f387454df5d5cc9137d1d044a0cf6eb40854a1440744",
+      "line_anchors": {
+        "fn default_lanes(": 45,
+        "pub(crate) const LANE_EXACT_SYMBOL": 30
+      }
+    },
+    "exact_lane": {
+      "path": "crates/cc-search/src/lanes/exact_symbol.rs",
+      "git_blob": "d9c88e700c8eab8a1684ab6f86f72f88fcbc6128",
+      "sha256": "876190ddbb0514b129997b5d3aef6f5bfa1b84dcb0c32ee69fbf42c74ff7b10d",
+      "line_anchors": {}
+    },
+    "path_lane": {
+      "path": "crates/cc-search/src/lanes/path.rs",
+      "git_blob": "cd6ccdece6580d4c2538a4e2f6367d7840d703be",
+      "sha256": "c291891884c04a9f86474f5ab80806df45b140a0ca95574a8229d76246676589",
+      "line_anchors": {}
+    },
+    "policy_catalogue": {
+      "path": "crates/cc-search/src/query_policy.rs",
+      "git_blob": "d7642807baaab53c565d7e8f91568d1addbcd5b9",
+      "sha256": "7934394278307dec06ffaa683cb3fc33619e3d5516fcc49811d4ec4711ebc612",
+      "line_anchors": {
+        "pub fn resolve(": 43,
+        "for lane_id in [": 60,
+        "pub fn fingerprint(": 106
+      }
+    },
+    "search_entry": {
+      "path": "crates/cc-search/src/engine.rs",
+      "git_blob": "cbd1f6e75036c217737f3df838b65b47a591399b",
+      "sha256": "5b2cf052a1eb7b5d5b837d979759522aed5a06e91630ec14c148c65c4154ec4a",
+      "line_anchors": {
+        "search_planned_detailed(": 265,
+        "let lanes = default_lanes();": 281
+      }
+    },
+    "search_plan": {
+      "path": "crates/cc-search/src/plan.rs",
+      "git_blob": "4e36285f58d7824c1808c30014c05f40df7803e1",
+      "sha256": "98e9380818a6d4a9fbaec0077ed635335d852fc027a783ce32b20a394e88c9cc",
+      "line_anchors": {
+        "QueryPolicy::resolve(": 115
+      }
+    },
+    "semantic_caller": {
+      "path": "crates/cc-server/src/query_handle.rs",
+      "git_blob": "d490fcc4155ffb512ffa145e04645a845528c942",
+      "sha256": "7b331043093f243e8ad23516098d008216cda0cecb3c3fa63a7947a5f226b420",
+      "line_anchors": {
+        "QueryPolicy::resolve(": 77,
+        "policy_fingerprint: policy.fingerprint()": 89
+      }
+    },
+    "fusion": {
+      "path": "crates/cc-search/src/fusion.rs",
+      "git_blob": "41c7082cc8f9389cb0e2c3af5a6c438fc6a4c9c9",
+      "sha256": "70f8a9037e52c78f243fdf1282535f9b634aff29b3dfdc04e1f543d5c7cf7770",
+      "line_anchors": {}
+    },
+    "public_rrf": {
+      "path": "crates/cc-search/src/rrf.rs",
+      "git_blob": "94569f688ace455a859475b5e63bc5240ac46e4f",
+      "sha256": "ac35aa954f548f8354b5f2facd952c8bd1fb4c3c7317af5fe76746350c192be1",
+      "line_anchors": {
+        "pub fn rrf_accumulate(": 10
+      }
+    },
+    "search_exports": {
+      "path": "crates/cc-search/src/lib.rs",
+      "git_blob": "bd573dbec512f8fec6debb95dea632d50b97ed51",
+      "sha256": "274c15f6f5f8a09087fa18844c837dd5a512bcc81c1c303f2783e445877b1583",
+      "line_anchors": {
+        "pub mod rrf;": 28
+      }
+    },
+    "statistics": {
+      "path": "crates/cc-eval/src/benchmark/statistics.rs",
+      "git_blob": "415fbdc0a254729e4b7fa5f2fe040b3019d90aa9",
+      "sha256": "ad331897b23e067909c21a0b4848b1ac39ea208453e340c922c6830cb9264264",
+      "line_anchors": {
+        "fn nearest_rank(": 15,
+        "fn legacy_latency_ns(": 42
+      }
+    },
+    "statistics_cli": {
+      "path": "crates/cc-eval/src/bin/p8-runtime-statistics.rs",
+      "git_blob": "6273b16ebc403602b5aaf3eb0a9699b5cdfdca70",
+      "sha256": "d6595a2c01fd31fc9635f3110b1887d49df98b1e9988e089c98298a52c3a20a9",
+      "line_anchors": {}
+    },
+    "runtime_driver": {
+      "path": "scripts/p8_runtime.py",
+      "git_blob": "031ebdc4c604fd39ab2d647b652ca533180bf818",
+      "sha256": "9f052e72615f084463c3bd4d29c561c088d20ffcb38bb0de351c5d408a17387b",
+      "line_anchors": {
+        "legacy_ns = json.loads(statistics_bytes)[\"legacy_ns\"]": 791
+      }
+    },
+    "benchmark_metrics": {
+      "path": "crates/cc-eval/src/benchmark/metrics.rs",
+      "git_blob": "fa0104a8ed385b7db87b3237ea27231c5745f32e",
+      "sha256": "b44093ea835e42643ce141e7a3c8c5d7a64c39f11bb299fb4b952259ffbc8516",
+      "line_anchors": {}
+    },
+    "benchmark_schema": {
+      "path": "crates/cc-eval/src/benchmark/schema.rs",
+      "git_blob": "95c77b433956a75c6bb3255c95f6017e987b9a06",
+      "sha256": "a17c78b23f507c732f0a0c4454cf0443ed182554988474cdc527a965bfbf5765",
+      "line_anchors": {}
+    },
+    "corpus_runner": {
+      "path": "crates/cc-eval/src/runner.rs",
+      "git_blob": "e771db498b9124321f2d3ef57faf387c12f672d7",
+      "sha256": "ea7cc22064dcc1b5b7f27c7544791ec7d0e5000b45a2b61458f85b3c5aea5b8f",
+      "line_anchors": {}
+    },
+    "corpus_types": {
+      "path": "crates/cc-eval/src/types.rs",
+      "git_blob": "a209d87bea4deabb77d719cd55bd410cd79af194",
+      "sha256": "193759cd04ab0e2b91bd865e4264c7ad19e0bbef6772da026e42a28bd09d63d9",
+      "line_anchors": {}
+    },
+    "mcp_dispatch": {
+      "path": "crates/cc-server/src/mcp.rs",
+      "git_blob": "9a018185e2b2e362a16641c29bf3a41c74ac90ef",
+      "sha256": "555e9ec55d433566ef7388bf1c0eac413550fe5cf4cc579a8a49367308034e4c",
+      "line_anchors": {}
+    },
+    "traversal_semantics": {
+      "path": "crates/cc-search/src/cypher/traversal_semantics.rs",
+      "git_blob": "148f0ba1bc19a148489f6aa9ec6c05c0dbc51143",
+      "sha256": "ce1ea81b469d2d1aed54ab95e94ceff90f1edd72fe3d200271bdc403068f8fa6",
+      "line_anchors": {
+        "VARLEN_TRAVERSAL": 81
+      }
+    },
+    "resolver_catalog": {
+      "path": "crates/cc-index/src/resolver/catalog.rs",
+      "git_blob": "69ca350784614fcc3df3b93eac981023d18eaea0",
+      "sha256": "6b9116062c9cd345b4a5a56595ce6d2bac966a1465e8406901313a0750b086be",
+      "line_anchors": {
+        "fn add_symbols_iter": 386,
+        "fn legacy_exports": 793
+      }
+    },
+    "resolver_helpers": {
+      "path": "crates/cc-index/src/resolver/helpers.rs",
+      "git_blob": "417e940d4682cc41c9adbeb2fb14b24d1d1fa8e2",
+      "sha256": "5f37cf6b0aaf47da076c9ce8bc3929cb627b0f13037dab1bc3e560157c8c7c88",
+      "line_anchors": {
+        "mod import_distance_regression_tests": 362
+      }
+    },
+    "public_surface": {
+      "path": "crates/cc-model/src/public_surface.rs",
+      "git_blob": "ea4dcd10f59094e42ed006024b86061974c97c98",
+      "sha256": "24ce031b84ab2a399c940b9ed23cdd402715ce18d84cf7b33e7815d2fd9bd177",
+      "line_anchors": {}
+    },
+    "dirty_phase": {
+      "path": "crates/cc-index/src/indexer_phases/dirty.rs",
+      "git_blob": "ffcfce673e9501e36797fad3a07f42cb0348dc6f",
+      "sha256": "20821b6045e42e16ab0cc53c8bf3d21befae74929b6afb7bd97aab8882daf484",
+      "line_anchors": {}
+    },
+    "pass_gate": {
+      "path": "crates/cc-index/src/pass_gate.rs",
+      "git_blob": "ac83bb8ff3b4c78875a6847b0b6152acefab5200",
+      "sha256": "bda40da72a768e4b09ee1a431856dbe93b6ea8541f8de07a8241bb253b6005c6",
+      "line_anchors": {}
+    },
+    "oracle_projection": {
+      "path": "crates/cc-eval/src/benchmark/oracle.rs",
+      "git_blob": "d6324b3003b5a3c3e8a1680536260ea99a950152",
+      "sha256": "adccf4f437e637aaee6bd368109d0b41af1855f3e50c84c48f7cc8b5cf3dc711",
+      "line_anchors": {}
+    },
+    "oracle_streaming": {
+      "path": "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+      "git_blob": "3c05342f976f534861347c098c3229ce988dfb61",
+      "sha256": "5a51a72e8cb49c033754f860a3f5dc6366748ffe45a440da55cf7776cde7da0c",
+      "line_anchors": {}
+    },
+    "memory_budget": {
+      "path": "crates/cc-index/src/memory_budget.rs",
+      "git_blob": "e76153badb5136e95924aa9f14288c227e88ab49",
+      "sha256": "7cdd4af829f2578a486c0acf4aa7d4912db597a6b7e41dc2d042531911cc0541",
+      "line_anchors": {
+        "fn process_rss_bytes_opt(": 18,
+        "fn process_rss_bytes(": 26
+      }
+    }
+  }
+}

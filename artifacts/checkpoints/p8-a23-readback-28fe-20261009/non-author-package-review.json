@@ -1,0 +1,185 @@
+{
+  "schema": "p8-a23-original-readback-nonauthor-static-review-v1",
+  "reviewer": "acceptance_review",
+  "status": "accepted_for_first_fixed_readonly_GHA_execution",
+  "source": {
+    "commit": "a23bb72d3c954f385b99fe81ce9189885c208557",
+    "tree": "58147c952505c44da1f41eb4b9c31643f2303b96",
+    "native_inputs": 1087,
+    "manifest_sha256": "4e0aa6bbfd4d5bea00416bca2cd99318d865ffc526fdcb45897c4d300de3ac00"
+  },
+  "reviewed_objects": {
+    "runtime": {
+      "bytes": 20512,
+      "sha256": "2e1b90dda02956a668a2fc160772e86f6b6049ce867c409b790615a98b22ad59",
+      "git_blob": "a39a6e5d52b780c6646db126c955573c25ea8f46"
+    },
+    "platform": {
+      "bytes": 63358,
+      "sha256": "3c08bfd6fb95bab47fdcee2ed46233d19546ddc51e46a8f7e9e54b1956cfb245",
+      "git_blob": "d3e593e956d952b06ca11966f2690bb9601dbcfb"
+    },
+    "transport": {
+      "bytes": 30691,
+      "sha256": "439cd78c903de8edd38f21dcb4e7fe334b2d6b3aca13757f56d40f8dc75ce1b8",
+      "git_blob": "e7f717680588bc7f93ab668a86cc3284cfd1f2b1"
+    },
+    "protocol": {
+      "bytes": 8243,
+      "sha256": "487d6323d861067e0aafa913afa7011c0f776061fbf0ccf3f3c49d958c91c0b7",
+      "git_blob": "181813853df8d823541f5f972967219998f81813"
+    },
+    "workflow": {
+      "bytes": 3235,
+      "sha256": "7aee87a534737ead0c5f39001d59d8ff5922b56433e938bc4e91ec56943d7ee1",
+      "git_blob": "ab5b0d05879f4feebc2c0b025e6d0f5cacf4bd16"
+    }
+  },
+  "preserved_previous_objects": {
+    "transport_v1": "20a1637c2b2cfaed04f35a41827eda0363be2497",
+    "transport_v2": "c03ae87d81f676ffa1fc1e4edbf9b4bf3a8e1c31",
+    "platform_v1": "d5a3a7058aa19f45fd7b348f255f28202ec13644",
+    "workflow_v1": "f56957d33056dc9d7f13da219f631fa72a3652fe",
+    "transport_v3": "07e9e5c90a2424ad29fbc640cfe905385a035500"
+  },
+  "review_method": {
+    "execution": "No Python, native binaries, SQL, workflow, local tests or remote writes performed by this reviewer; local process backend unavailable",
+    "reads": "Official GitHub raw content and full Git tree references; all stated hashes/Gitblob OIDs independently recomputed in JS memory",
+    "artifact_bytes": "ZIPs not downloaded in this review; protocol identities compared with retained official locator records and authors' original official observation"
+  },
+  "verification": {
+    "runtime_unchanged_auditor_files": 3,
+    "runtime_source_helpers": 11,
+    "platform_unchanged_dependencies": 24,
+    "platform_unique_dependency_blobs": 15,
+    "platform_source_helpers": 8,
+    "artifacts": {
+      "runtime": 7,
+      "platform": 11,
+      "total": 18
+    },
+    "exact_source_and_observer_domains": true,
+    "archived_review_commit": "4630e635cd762bfbd2726cf1dd49e37803c06034",
+    "archive_review_tree": "e3955f856882f58a8b0c446b500e3a8de10f090b",
+    "platform_v2_only_three_declared_changes": true,
+    "transport_v3_only_stage_upload_addition": true,
+    "transport_v4_only_valid_deflate_positive": true
+  },
+  "resolved_findings": [
+    {
+      "finding": "Directories skipped ZIP stream and CRC validation",
+      "resolution": "v2 consumes directory streams, requires actual empty payload/CRC; directory CRC/payload negative controls added"
+    },
+    {
+      "finding": "ZipExtFile could truncate a forged declared-size prefix",
+      "resolution": "v2 bounded raw STORED/DEFLATE reader verifies local filename/method/flags, complete output size/CRC, true EOF/no trailing compressed data and nonoverlap; adds forged prefix negative control"
+    },
+    {
+      "finding": "Metadata omitted exact artifact name and repository identities",
+      "resolution": "v2 matches registered name and both repository IDs1249213794 in addition to ID/run/A23/SHA/size"
+    },
+    {
+      "finding": "Possible signed locator exception leakage and credential forwarding",
+      "resolution": "v2 fresh unauthenticated HTTPS storage request, API redirects disabled, redirect validation removes Authorization/Cookie, locator exceptions sanitized; GH_TOKEN removed before review subprocesses"
+    },
+    {
+      "finding": "Timestamp-valid pyc could be read despite -B",
+      "resolution": "v2 rejects source/scripts/controller pyc caches before import, prehashes identity helper; compiles controller module raw bytes; platform separately verifies committed Python inventory and uses fresh pycache prefix"
+    },
+    {
+      "finding": "Failed partial transfers lacked frozen custody",
+      "resolution": "v2 preserves and freezes partial regular files/inventory and rechecks them; incomplete transport remains failure"
+    },
+    {
+      "finding": "Platform returned accepted but required passed was missing",
+      "resolution": "platform v2 adds passed normal/exception paths; exact209B delta verified"
+    },
+    {
+      "finding": "Whole-directory upload followed checkout symlink and could expose unrelated source/config",
+      "resolution": "v3 regular-only stage skips/prunes all symlinks and hashes exact hardlinked/copied bytes; YAML v2 uploads only stage and disables checkout credential persistence"
+    },
+    {
+      "finding": "New strict decoder originally had only STORED positive and DEFLATE negative controls",
+      "resolution": "v4 exact4-line addition first extracts the valid complete DEFLATE fixture and verifies full SHA before mutating it; control has not yet run"
+    }
+  ],
+  "scope": {
+    "allowed": "Publish and run this exact fixed ordinary-GitHub-Actions read-only artifact verification package; this is static execution-scope approval only, and grants no original observation/task/coverage result.",
+    "runtime": "4mixed900 each + soak3601 + backfill768 + lifecycle1230 are original observations, reconstructed/validated only; no new product run",
+    "platform": "Original portable 8cell collector uses fresh derived copies, hash/JSON/stdio replay only; no compiler or foreign executable",
+    "recovery": "Original raw RPC/HTTP audit and14 original DB byte copies with mode=ro&immutable after empty-WAL check; no fault injection or new backup/restore",
+    "gates": "6 original production tests and7 previously archived native CLI runs validated by bound source/receipts/logs/outputs; no Docker or cc-eval invocation",
+    "statistics": "Original native oracle/statistics execution receipts bound; no native replay. Lifecycle CI populations/estimates reconstructed, Rust confidence bounds preserved rather than independently recomputed",
+    "environment": "Inherited historical Mac wording explicitly distinguished from actual Linux host in outer receipts",
+    "conservation": "Fixed source/native manifest, helper/reviewer/controller and original ZIP/extracted bytes compared before/after; failed statuses never converted to observation pass"
+  },
+  "remaining": [
+    "First actual Python syntax parse and11 bounded transport self-check cases have not run; they must pass before readback",
+    "18 official ZIP downloads, generated reports, original-input conservation and all per-domain explicit results remain not_yet_executed; inspect actual run artifacts before accepting data readback",
+    "If an artifact-only review appendix commit is added before first branch creation, preserve all reviewed controller/workflow/protocol bytes and read back its actual identity; no new study or original source mutation is approved"
+  ],
+  "original_tasks": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "newly_closed": 0
+  },
+  "prepared_commit": {
+    "sha": "9d565e7fc0636ec0b85367fc5587ab303e6f8311",
+    "tree": "872b1d8b18b4a58c5e73b7f225f4167e74dcc050",
+    "sole_parent": "a23bb72d3c954f385b99fe81ce9189885c208557",
+    "official_commit_readback": true,
+    "independent_root_tree_rehash": true,
+    "commit_header_rehash_claim": false
+  },
+  "actual_package": {
+    "added_files": 42,
+    "modified_existing_files": 0,
+    "deleted_files": 0,
+    "added_regular_mode": "100644",
+    "added_bytes": 516977,
+    "workflow_path": ".github/workflows/p8-a23-original-readback-28fe.yml",
+    "artifact_prefix": "artifacts/checkpoints/p8-a23-readback-28fe-20261009/",
+    "artifact_files": 41,
+    "artifact_bytes": 513742,
+    "artifact_tree": "305cad16883250bfc6fde8b9627bd7cc434884a1",
+    "controller_tree": "6512fa27dfa10811fda4bbd11d2f8793bde4a0b9",
+    "all_42_actual_blob_bytes_verified": true,
+    "all_6_package_subtrees_rehashed": true,
+    "all_10_changed_ancestor_and_base_trees_rehashed": true,
+    "all_11_other_root_entries_unchanged": true,
+    "all_8_existing_workflows_unchanged": true,
+    "all_190_existing_checkpoint_entries_unchanged": true,
+    "other_4_artifact_subtrees_unchanged": true,
+    "full_41_file_audit_manifest_sha256": "babd603e08e8a7dc17aecedc51c97e1bf2f595d10667b3d201e7e255a6b07625"
+  },
+  "source_unchanged_domains": [
+    "Cargo.toml",
+    "Cargo.lock",
+    "crates",
+    "scripts",
+    "docs including tasks.json",
+    "tests",
+    "source-admission pins",
+    "all existing workflow blobs"
+  ],
+  "workflow_scope": {
+    "trigger": "push only audit/p8-a23-original-readback-28fe-20261009",
+    "jobs": "runtime/platform matrix, max_parallel2, fail_fastfalse",
+    "timeout_minutes_per_job": 45,
+    "permissions": {
+      "contents": "read",
+      "actions": "read"
+    },
+    "checkout_credentials_persisted": false,
+    "source_checkout": "actual A23 at GITHUB_WORKSPACE after controller copied to RUNNER_TEMP",
+    "upload": "always regular-only independent stage; include original hidden regular files; skip all source/raw-view symlinks",
+    "original_A23_head_or_150_study_changed": false,
+    "prepared_ref_or_run_created_by_reviewer": false
+  },
+  "caveats": [
+    "No original ZIP bytes were newly downloaded or native products executed by this reviewer; byte identity of code and saved text dependencies was independently verified via official GitHub blobs",
+    "Original native oracle/statistical/fault executions remain their own recorded evidence; current reader only verifies raw/receipt relationships and read-only copied SQLite state",
+    "Source commit API parent/tree were checked; independent Git commit header serialization was not asserted because the API representation normalizes identity fields"
+  ]
+}

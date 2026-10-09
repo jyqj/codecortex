@@ -1,0 +1,284 @@
+{
+  "schema": "E6-original-closeout-atomic-ready-execution-scoped-review-v1",
+  "reviewer": "/root/pr_audit",
+  "created_at": "2026-10-09T09:38:55.487673+00:00",
+  "decision": "accepted_scoped_original_E6_execution",
+  "run_id": 37903872639,
+  "job_id": 113732521456,
+  "execution_head": "e6ab28bc5956e225e2015a57f601bc4d867d3732",
+  "actual_checkout": "e6ab28bc5956e225e2015a57f601bc4d867d3732",
+  "actual_tree": "3d01f935c76a6c4da4ca4f1348804888fe08d45e",
+  "current_C": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+  "current_C_execution_credit": false,
+  "checkout_original_log_lines": [
+    {
+      "line": 190,
+      "text": "2026-10-09T09:19:31.6110073Z HEAD is now at e6ab28bc chore(p8): bind final snapshot and resolver composition to original v15 checks"
+    },
+    {
+      "line": 191,
+      "text": "2026-10-09T09:19:31.6352828Z ##[endgroup]"
+    },
+    {
+      "line": 192,
+      "text": "2026-10-09T09:19:31.6405749Z [command]/usr/bin/git log -1 --format=%H"
+    },
+    {
+      "line": 193,
+      "text": "2026-10-09T09:19:31.6429547Z e6ab28bc5956e225e2015a57f601bc4d867d3732"
+    }
+  ],
+  "official_job": {
+    "id": 113732521456,
+    "name": "closeout",
+    "head_sha": "e6ab28bc5956e225e2015a57f601bc4d867d3732",
+    "status": "completed",
+    "conclusion": "success",
+    "started_at": "2026-10-09T09:19:04Z",
+    "completed_at": "2026-10-09T09:29:33Z",
+    "runner_name": "GitHub Actions 1000005191",
+    "labels": [
+      "ubuntu-latest"
+    ]
+  },
+  "all_original_job_steps": [
+    {
+      "name": "Set up job",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 1,
+      "started_at": "2026-10-09T09:19:05Z",
+      "completed_at": "2026-10-09T09:19:06Z"
+    },
+    {
+      "name": "Run actions/checkout@v4",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 2,
+      "started_at": "2026-10-09T09:19:06Z",
+      "completed_at": "2026-10-09T09:19:31Z"
+    },
+    {
+      "name": "Run dtolnay/rust-toolchain@1.95.0",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 3,
+      "started_at": "2026-10-09T09:19:31Z",
+      "completed_at": "2026-10-09T09:19:40Z"
+    },
+    {
+      "name": "Bind current source and isolated build",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 4,
+      "started_at": "2026-10-09T09:19:40Z",
+      "completed_at": "2026-10-09T09:19:40Z"
+    },
+    {
+      "name": "Actual cache races, process faults and WAL recovery",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 5,
+      "started_at": "2026-10-09T09:19:40Z",
+      "completed_at": "2026-10-09T09:22:46Z"
+    },
+    {
+      "name": "Original default, semantic and HTTP wiring contracts",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 6,
+      "started_at": "2026-10-09T09:22:46Z",
+      "completed_at": "2026-10-09T09:25:45Z"
+    },
+    {
+      "name": "Original thirteen-checkpoint real stdio lifecycle",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 7,
+      "started_at": "2026-10-09T09:25:45Z",
+      "completed_at": "2026-10-09T09:27:19Z"
+    },
+    {
+      "name": "Three-seed real product retry, crash, deletion, recovery and automatic GC",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 8,
+      "started_at": "2026-10-09T09:27:19Z",
+      "completed_at": "2026-10-09T09:29:02Z"
+    },
+    {
+      "name": "Attributed resources and actual worker contention",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 9,
+      "started_at": "2026-10-09T09:29:02Z",
+      "completed_at": "2026-10-09T09:29:27Z"
+    },
+    {
+      "name": "Preserve final source identity",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 10,
+      "started_at": "2026-10-09T09:29:27Z",
+      "completed_at": "2026-10-09T09:29:28Z"
+    },
+    {
+      "name": "Archive exact commands and raw evidence",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 11,
+      "started_at": "2026-10-09T09:29:28Z",
+      "completed_at": "2026-10-09T09:29:31Z"
+    },
+    {
+      "name": "Post Run actions/checkout@v4",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 22,
+      "started_at": "2026-10-09T09:29:31Z",
+      "completed_at": "2026-10-09T09:29:31Z"
+    },
+    {
+      "name": "Complete job",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 23,
+      "started_at": "2026-10-09T09:29:31Z",
+      "completed_at": "2026-10-09T09:29:31Z"
+    }
+  ],
+  "original_command": [
+    "cargo",
+    "test",
+    "-p",
+    "cc-semantic",
+    "--locked",
+    "--all-targets",
+    "--",
+    "--nocapture"
+  ],
+  "command_log_lines": [
+    {
+      "line": 484,
+      "text": "2026-10-09T09:19:40.5992735Z \u001b[36;1mcargo test -p cc-semantic --locked --all-targets -- --nocapture \\\u001b[0m"
+    },
+    {
+      "line": 485,
+      "text": "2026-10-09T09:19:40.5993222Z \u001b[36;1m  2>&1 | tee \"$RUNNER_TEMP/p7-closeout/semantic-fault-matrix.log\"\u001b[0m"
+    },
+    {
+      "line": 486,
+      "text": "2026-10-09T09:19:40.6054039Z shell: /usr/bin/bash -e {0}"
+    }
+  ],
+  "actual_target_log_lines": [
+    {
+      "line": 1254,
+      "text": "2026-10-09T09:21:05.1607913Z      Running tests/crash_independent_review.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/crash_independent_review-7430f146cfca9b98)"
+    },
+    {
+      "line": 1255,
+      "text": "2026-10-09T09:21:05.1622580Z "
+    },
+    {
+      "line": 1256,
+      "text": "2026-10-09T09:21:05.1622730Z running 2 tests"
+    },
+    {
+      "line": 1257,
+      "text": "2026-10-09T09:21:05.1624749Z test independent_child ... ignored, child entry; invoked only by the owning parent with an isolated directory"
+    },
+    {
+      "line": 1258,
+      "text": "2026-10-09T09:21:51.0759989Z test independently_observed_sigkill_boundaries ... ok"
+    },
+    {
+      "line": 1259,
+      "text": "2026-10-09T09:21:51.0761114Z "
+    },
+    {
+      "line": 1260,
+      "text": "2026-10-09T09:21:51.0761602Z test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 45.91s"
+    }
+  ],
+  "atomic_ready_source": {
+    "path": "crates/cc-semantic/tests/crash_independent_review.rs",
+    "git_blob": "412bfb88b7d10dcf0f324d916e4a8671c1abd482",
+    "bytes": 19381,
+    "sha256": "9a81c1b79fcb71bc71f95e67a86c3ebd070b70797e9a06fe7d9df93f72238545",
+    "same_entire_file_in_current_C": true,
+    "producer_lines": "92-102: write_all + sync_all to ready.pending, then rename to ready",
+    "consumer_lines": "217-230: await ready, read/parse complete PID and compare to spawned child ID",
+    "parent_control": "independently_observed_sigkill_boundaries",
+    "parent_actual_ok_occurrences": 1,
+    "child_entry": "independent_child is deliberately ignored in ordinary harness and explicitly invoked by parent using --ignored --exact with its isolated directory at208",
+    "source_plan": "3 seeds101/211/307 ×5 boundaries uncommitted/claimed/response/artifact/published; no new seed or budget introduced",
+    "raw_case_results_reviewed_here": false
+  },
+  "whole_log_summary_counts": {
+    "rust_result_groups": 55,
+    "passed_occurrences": 1028,
+    "failed_occurrences": 0,
+    "ignored_occurrences": 22,
+    "scope": "Log summary counts only, not unique test count or a separate raw artifact replay."
+  },
+  "artifact_upload": {
+    "id": 11607116507,
+    "name": "p7-closeout-e6ab28bc5956e225e2015a57f601bc4d867d3732",
+    "zip_bytes_reported_by_original_log": 20432124,
+    "original_log_lines": [
+      {
+        "line": 4196,
+        "text": "2026-10-09T09:29:31.4984032Z Artifact p7-closeout-e6ab28bc5956e225e2015a57f601bc4d867d3732.zip successfully finalized. Artifact ID 11607116507"
+      },
+      {
+        "line": 4197,
+        "text": "2026-10-09T09:29:31.4986139Z Artifact p7-closeout-e6ab28bc5956e225e2015a57f601bc4d867d3732 has been successfully uploaded! Final size is 20432124 bytes. Artifact ID is 11607116507"
+      }
+    ],
+    "ZIP_downloaded_or_reviewed_here": false
+  },
+  "bindings": {
+    "complete_original_log": {
+      "path": "/workspace/scratch/a217aaae3bde/original-173-platform-gates/C3ff-ci/E6-closeout-113732521456-original.log",
+      "bytes": 1918744,
+      "sha256": "da6f5748589ae5cde55fe8690ff02b814d6ac393b2384fcf4ec164f7a214bf9b",
+      "git_blob_sha1": "4c4c27fd01466f2b1401fadb87a913bf228db9ad"
+    },
+    "official_all_four_jobs": {
+      "path": "/workspace/scratch/a217aaae3bde/original-173-platform-gates/C3ff-ci/E6-closeout-original-jobs-1791538613952.json",
+      "bytes": 28963,
+      "sha256": "6d4da04905b5c47f267d3a7877fd5141d00bbee7055bae96a6a443e408fbf1e0",
+      "git_blob_sha1": "0a3367fec88f2ce6a16f54d4d7a782f4be6e0c07"
+    },
+    "official_execution_commit": {
+      "path": "/workspace/scratch/a217aaae3bde/original-173-platform-gates/C3ff-ci/official-E6-commit-1791538674734.json",
+      "bytes": 3573,
+      "sha256": "fa07d0554309841882640f245466a8e9b5db139aa6e2de3b501934914d77a30c",
+      "git_blob_sha1": "1621b41b0b9f1cd8a8808d487a39ef88eb97ecd1"
+    }
+  },
+  "source_after_assertion_log_lines": [
+    {
+      "line": 4149,
+      "text": "2026-10-09T09:29:27.9557711Z \u001b[36;1m(out / 'source-after.json').write_bytes(json_bytes(after))\u001b[0m"
+    },
+    {
+      "line": 4150,
+      "text": "2026-10-09T09:29:27.9558239Z \u001b[36;1massert json.loads((out / 'source-before.json').read_text()) == after\u001b[0m"
+    }
+  ],
+  "transport_preservation": "Original tool text retained in session; first scratch patch writer added one extra terminal newline, detected by exact original UTF8 byte count and SHA, then removed. Reopened1918744-byte file equals the full original tool text SHA256; original tool response unchanged.",
+  "scope_limits": [
+    "This closes the actual execution location for the E6 atomic ready parent control; current C own closeout remains queued at last observation.",
+    "No claim that an older PID-empty failure record changed or cannot ever recur.",
+    "Individual three-seed/five-boundary raw result JSON, SQLite and child logs were not downloaded/replayed in this narrow review.",
+    "Other three P7 jobs are success in official complete metadata; their full logs are not newly audited here.",
+    "No new native/control execution, CI rerun, source edit or remote mutation."
+  ],
+  "formal_task_completion": false,
+  "ledger": {
+    "done": 163,
+    "remaining": 29
+  }
+}

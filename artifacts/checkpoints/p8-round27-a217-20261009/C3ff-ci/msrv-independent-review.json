@@ -1,0 +1,162 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_audit",
+  "reviewed_at_utc": "2026-10-09T09:55:25.071117+00:00",
+  "status": "accepted_scoped",
+  "scope": "original completed MSRV job log and exact executed Git identity; compilation only",
+  "source_commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+  "actual_checkout": "54031d548d4199c84bc8ff5ea056adb26470f930",
+  "actual_checkout_tree": "0e655b4258afd9ca040dd7c1ace868bf1c322a30",
+  "actual_checkout_parents": [
+    "bd4693351149a443bd0054a37508c53f74ed7b52",
+    "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302"
+  ],
+  "source_equivalence": "actual checkout full tree equals fixed C3ff; does not claim later main was tested",
+  "official_job": {
+    "id": 113748746718,
+    "run_id": 37908825870,
+    "head_sha": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+    "name": "msrv",
+    "status": "completed",
+    "conclusion": "success",
+    "started_at": "2026-10-09T09:49:06Z",
+    "completed_at": "2026-10-09T09:50:17Z",
+    "html_url": "https://github.com/jyqj/codecortex/actions/runs/37908825870/job/113748746718"
+  },
+  "log": {
+    "path": "/workspace/scratch/a217aaae3bde/original-173-platform-gates/C3ff-ci/C3ff-msrv-113748746718-original.log",
+    "bytes": 38333,
+    "sha256": "2817351326cb1cedb700334f553a6164094369f5320bc01b8d3b21fc4fdbaacb",
+    "git_blob_sha1": "cdfbc6a5380a235c6561fd744147e06e64ac4efd",
+    "transport": "exact UTF-8 text from full official job-log tool result; preserved BOM and final newline by parsing tool capture and writing exact bytes"
+  },
+  "controls": [
+    {
+      "name": "actual checkout",
+      "lines": [
+        97,
+        174,
+        177
+      ],
+      "result": "54031d548d4199c84bc8ff5ea056adb26470f930"
+    },
+    {
+      "name": "actual compiler",
+      "lines": [
+        272,
+        376,
+        381
+      ],
+      "result": "rustc 1.95.0 (59807616e 2026-04-14), x86_64-unknown-linux-gnu"
+    },
+    {
+      "name": "workspace minimum supported compiler check",
+      "command": "cargo check --workspace --all-targets --locked",
+      "lines": [
+        449,
+        450,
+        468
+      ],
+      "result": "Finished dev profile in 17.54s; official step success"
+    },
+    {
+      "name": "optional evaluator HTTP compiler check",
+      "command": "cargo check -p cc-eval --all-targets --features eval-http --locked",
+      "lines": [
+        469,
+        470,
+        484
+      ],
+      "result": "Finished dev profile in 10.44s; official step success"
+    }
+  ],
+  "official_steps": [
+    {
+      "name": "Set up job",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 1,
+      "started_at": "2026-10-09T09:49:06Z",
+      "completed_at": "2026-10-09T09:49:08Z"
+    },
+    {
+      "name": "Run actions/checkout@v4",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 2,
+      "started_at": "2026-10-09T09:49:08Z",
+      "completed_at": "2026-10-09T09:49:34Z"
+    },
+    {
+      "name": "Run dtolnay/rust-toolchain@1.95.0",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 3,
+      "started_at": "2026-10-09T09:49:34Z",
+      "completed_at": "2026-10-09T09:49:42Z"
+    },
+    {
+      "name": "Run Swatinem/rust-cache@v2",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 4,
+      "started_at": "2026-10-09T09:49:42Z",
+      "completed_at": "2026-10-09T09:49:46Z"
+    },
+    {
+      "name": "MSRV check",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 5,
+      "started_at": "2026-10-09T09:49:46Z",
+      "completed_at": "2026-10-09T09:50:04Z"
+    },
+    {
+      "name": "MSRV optional benchmark HTTP feature",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 6,
+      "started_at": "2026-10-09T09:50:04Z",
+      "completed_at": "2026-10-09T09:50:15Z"
+    },
+    {
+      "name": "Post Run Swatinem/rust-cache@v2",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 11,
+      "started_at": "2026-10-09T09:50:15Z",
+      "completed_at": "2026-10-09T09:50:15Z"
+    },
+    {
+      "name": "Post Run actions/checkout@v4",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 12,
+      "started_at": "2026-10-09T09:50:15Z",
+      "completed_at": "2026-10-09T09:50:15Z"
+    },
+    {
+      "name": "Complete job",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 13,
+      "started_at": "2026-10-09T09:50:15Z",
+      "completed_at": "2026-10-09T09:50:15Z"
+    }
+  ],
+  "metadata_provenance": {
+    "jobs_capture": "/workspace/scratch/a217aaae3bde/original-173-platform-gates/C3ff-ci/C3ff-msrv-official-jobs.json",
+    "jobs_capture_sha256": "90edbcdb4ae48c661d1792db02750b3b17d5aea6187491b4625400f52fa50a9c",
+    "prior_actual_merge_capture": "/workspace/scratch/a217aaae3bde/original-173-platform-gates/C3ff-ci/official-merge-1791536749044.json",
+    "prior_actual_merge_capture_sha256": "ba285b0672fca96f738f47e9652878853fdb00937de5a9941c056c11b238fc7e"
+  },
+  "limitations": [
+    "No runtime test execution or native benchmark acceptance is claimed by cargo check.",
+    "No ignored-test count applies to these compiler checks.",
+    "Main check and security jobs had not completed in the associated jobs capture.",
+    "No original source, CI workflow, task ledger or acceptance threshold was modified."
+  ],
+  "formal_todo_completion": false,
+  "formal_tasks_done": 163,
+  "formal_tasks_remaining": 29
+}

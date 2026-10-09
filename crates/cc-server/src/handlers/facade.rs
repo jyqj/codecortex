@@ -11,7 +11,17 @@ use serde_json::{json, Value};
 // ── 1. handle_status ────────────────────────────────────────────────
 
 pub fn handle_status(runtime: SharedCodeIndex, aspect: &str) -> CcResult<Value> {
+    // Synchronous scope only: ordinary status DB reads are accounted separately
+    // from concurrent workload threads; the opt-in snapshot itself runs no SQL.
+    #[cfg(feature = "p8-db-lock-observation")]
+    let _observer_scope = cc_db::lock_observation::enter_observer_scope();
     match aspect {
+        #[cfg(feature = "p8-db-lock-observation")]
+        "lock_observation" => {
+            let rt = super::lock_index(&runtime)?;
+            let db = rt.index_db().ok_or(CcError::ProjectNotSet)?;
+            Ok(json!(db.lock_observation_snapshot()))
+        }
         "index" => {
             let mut result = core::index_status(runtime.clone())?;
             attach_status_extras(&runtime, &mut result);

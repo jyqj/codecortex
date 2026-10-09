@@ -1,0 +1,392 @@
+{
+ "schema": "pr180-G3-actual-M-direct-domain-bridge-review-v2",
+ "reviewer": "/root/runtime_review",
+ "recorded_at_utc": "2026-10-09 09:56:05 UTC",
+ "verdict": "accepted_scoped_static_actual_M_input_bridge; preserves_175_and_179; M_itself_not_built_or_measured; no_ref_update",
+ "identity": {
+  "actual_main_at_start": "f7a003636b4902f569404f4e493e1fff7630093e",
+  "initial_main_tree": "03c581729a4454f0ff4d22f5377ef9becfc1e68d",
+  "actual_main_latest": "fd9ca5db6485b575872c722995c451db926d05c9",
+  "actual_main_latest_tree": "48d9e58e8bded84e0a9d56196929f5347a6d3b94",
+  "G3": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+  "G3_tree": "0e655b4258afd9ca040dd7c1ace868bf1c322a30",
+  "P": "b13ba8c1b738bc9c24b81cad1e88711fc9734283",
+  "R": "2ccf89dd6c6f558bdfa5d8ddfa7ddf8958c7aa89",
+  "E6": "e6ab28bc5956e225e2015a57f601bc4d867d3732",
+  "C8": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+  "comparison_method": "Direct complete untruncated Git subtree leaves and modes, NOT the three-point compare file list relative to a merge base.",
+  "M": "4652cad11dde4b41126544a38fddf25eb2fb7474",
+  "M_tree": "6737ba0b700344853b6bce17cb3ee4bd792363d5",
+  "M_parents": [
+   "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+   "fd9ca5db6485b575872c722995c451db926d05c9"
+  ],
+  "M_readback": "Official commit/root/complete27file compare read. M preserves the entire G3 crates/scripts/.github/tests trees and Cargo blobs. No execution or branch update was performed."
+ },
+ "evidence_method": [
+  "Read exact immutable main and G3 root trees; recursively read both crates and scripts trees with truncated=false. Reconciled every leaf path/mode/type/OID; Cargo roots and complete .github/tests tree OIDs are identical.",
+  "Reconstructed the actual G3 validation selector exactly: scripts, .github/workflows, tests/source_integrity; excluding only the original v15 guard/registry and CI-selector special case. Actual set has139 paths with no missing/extra versus fixed R.",
+  "Read complete original PR175/179/182 changed-file lists, all shorter than100; compared donor code/test OIDs to both actual trees. Also read the PR175 runtime document at both refs and found exact equal bytes.",
+  "Read actual latest main ref fd9 and its commit/root; complete f7...fd9 comparison has exactly two documentation paths, and only root docs tree changed. The initial product/validation comparison therefore remains current for fd9.",
+  "Read original C16, v15 verifier, actual v15 historical context, p7 build source snapshot and original scale driver admission rules. Did not run them.",
+  "Source reports400e067... and fixed independent review329248... are reused only for already reviewed bytes; no wholesale re-audit of1092 raw source bodies or new compilation is claimed.",
+  "Read actual M commit and full root. Compared its complete27file delta to G3:7modified docs/task-navigation and20new historical artifacts only; no original G3 artifact or fixture is removed/modified."
+ ],
+ "direct_domain_result": {
+  "main_product_count": 1089,
+  "G3_product_count": 1092,
+  "exact_shared_product_paths": 1073,
+  "product_delta_summary": {
+   "modified": 16,
+   "added_to_G3": 3,
+   "removed_from_main": 0
+  },
+  "main_to_G3_product_differences": [
+   {
+    "path": "crates/cc-db/src/index_db_multi_insert.rs",
+    "main_blob": "539b9d19f1034a8cfd918090b1b48dacc177494c",
+    "G3_blob": "a881c73c46693bb4ff098b283a05f57f04cb1ee4",
+    "main_bytes": 29410,
+    "G3_bytes": 30100,
+    "mode": "100644"
+   },
+   {
+    "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+    "main_blob": "2188f67d83d44b49c3015598c7001d231fd22428",
+    "G3_blob": "9cd3320336e1ee9eeeb8b279d0a97448f61a4563",
+    "main_bytes": 13172,
+    "G3_bytes": 24457,
+    "mode": "100644"
+   },
+   {
+    "path": "crates/cc-db/src/index_db_write_batch.rs",
+    "main_blob": "2758481da50748be45f9c35a35832d2f2bc9b851",
+    "G3_blob": "c732fab2d5cc62209a89317f42a5a4adc4edf0fb",
+    "main_bytes": 56106,
+    "G3_bytes": 56654,
+    "mode": "100644"
+   },
+   {
+    "path": "crates/cc-db/src/public_surface_store.rs",
+    "main_blob": "df522a327e68a820699ce21f4c5b9880f48d519c",
+    "G3_blob": "d0fa4c622876197bbb8c14b7d94f0d8ab3e1f318",
+    "main_bytes": 8537,
+    "G3_bytes": 8957,
+    "mode": "100644"
+   },
+   {
+    "path": "crates/cc-db/src/resolution_dependency_store.rs",
+    "main_blob": "6e90d4e85aae79d73d5d59b8defbd39d02c61097",
+    "G3_blob": "97d3d9519fe10ed7cd30b9783164348998c02abc",
+    "main_bytes": 10207,
+    "G3_bytes": 10939,
+    "mode": "100644"
+   },
+   {
+    "path": "crates/cc-db/src/snapshot_fts_tests.rs",
+    "main_blob": null,
+    "G3_blob": "c7cf6e2d7fd61a1e6a33aad772c3c0530484d0b8",
+    "main_bytes": null,
+    "G3_bytes": 22068,
+    "mode": "100644"
+   },
+   {
+    "path": "crates/cc-db/src/snapshot_write_txn.rs",
+    "main_blob": "20dc6ffc60d2a63320b56d1bd8e010e2937ffe26",
+    "G3_blob": "e850a30b549fcd1f0bda38fb2900d61add6db029",
+    "main_bytes": 7058,
+    "G3_bytes": 9084,
+    "mode": "100644"
+   },
+   {
+    "path": "crates/cc-db/tests/p2b_resolution_store.rs",
+    "main_blob": "babd9caa60308b9f9dda8d34770eb1fefd4d48d9",
+    "G3_blob": "f698d3427ad90c194cfdb5b7c241e0802c1267d1",
+    "main_bytes": 8252,
+    "G3_bytes": 14608,
+    "mode": "100644"
+   },
+   {
+    "path": "crates/cc-eval/src/benchmark/oracle.rs",
+    "main_blob": "d6324b3003b5a3c3e8a1680536260ea99a950152",
+    "G3_blob": "4c7fdb879e039af164b3b10ea1491d538c69ac68",
+    "main_bytes": 8780,
+    "G3_bytes": 14710,
+    "mode": "100644"
+   },
+   {
+    "path": "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+    "main_blob": "3c05342f976f534861347c098c3229ce988dfb61",
+    "G3_blob": "6c60e6244fe1f316b180f8ea656d2b9f1ad17aa3",
+    "main_bytes": 29842,
+    "G3_bytes": 29924,
+    "mode": "100644"
+   },
+   {
+    "path": "crates/cc-eval/tests/benchmark_adapters.rs",
+    "main_blob": "9466989bb3e1ccfea8c64fa20155e169b1b18d40",
+    "G3_blob": "9feb4fe9659c3cd84bc86684d3f73412f9caec17",
+    "main_bytes": 38661,
+    "G3_bytes": 38925,
+    "mode": "100644"
+   },
+   {
+    "path": "crates/cc-eval/tests/p8_scale.rs",
+    "main_blob": "e4369e275bee0ddbc1cbea91e61bcc5735483e4e",
+    "G3_blob": "31b34057ff76e0b07e9242ef179951577ed22187",
+    "main_bytes": 19815,
+    "G3_bytes": 21068,
+    "mode": "100644"
+   },
+   {
+    "path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch.rs",
+    "main_blob": "1ec37855f7209426931dd90ae2d483cc1fe2ffc1",
+    "G3_blob": "8d230b0a463bd53ab21e80e56af9d7fc9d3a0a2d",
+    "main_bytes": 11036,
+    "G3_bytes": 11716,
+    "mode": "100644"
+   },
+   {
+    "path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs",
+    "main_blob": null,
+    "G3_blob": "d1888e13cb6bc1e4748cf372209b9686a705a1da",
+    "main_bytes": null,
+    "G3_bytes": 9704,
+    "mode": "100644"
+   },
+   {
+    "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+    "main_blob": "f54e02421b71259abd6c2b3b1e0ab6de48f7c883",
+    "G3_blob": "af1aa549cc2ebc4c952bf72804a7693e81ee5411",
+    "main_bytes": 10132,
+    "G3_bytes": 10488,
+    "mode": "100644"
+   },
+   {
+    "path": "crates/cc-index/src/project_model/python_inventory.rs",
+    "main_blob": "95b87a9780d41e86b88336e809882a1fcf1497f8",
+    "G3_blob": "e8f3ccd2d5d24ac222186f6954d983d859b4ee18",
+    "main_bytes": 13123,
+    "G3_bytes": 13291,
+    "mode": "100644"
+   },
+   {
+    "path": "crates/cc-index/tests/full_snapshot_empty_config.rs",
+    "main_blob": null,
+    "G3_blob": "c900883bd45b427a605330b6ce4ac359f99506ef",
+    "main_bytes": null,
+    "G3_bytes": 3850,
+    "mode": "100644"
+   },
+   {
+    "path": "crates/cc-semantic/tests/crash_independent_review.rs",
+    "main_blob": "47a9abd36f8a4348b4c3c8731565da94833f69cb",
+    "G3_blob": "412bfb88b7d10dcf0f324d916e4a8671c1abd482",
+    "main_bytes": 19222,
+    "G3_bytes": 19381,
+    "mode": "100644"
+   },
+   {
+    "path": "crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs",
+    "main_blob": "f35c2cd2cb14e4c257d7ab4ec143be0497bd905b",
+    "G3_blob": "4d3b82904f0b9415f1f901a4192f66525492cd02",
+    "main_bytes": 15463,
+    "G3_bytes": 15513,
+    "mode": "100644"
+   }
+  ],
+  "validation_count": 139,
+  "all139_equal_main_to_G3": true,
+  "github_tree_in_both": "e192188202d5da9065c60b474edce10dedb24324",
+  "tests_tree_in_both": "b3e8744962f9e4b25ff9104001a3e57d3168735d",
+  "Cargo_toml_in_both": "c376fdc70465a237022de8a05b7b27cc28f72cc8",
+  "Cargo_lock_in_both": "c83b9a3dae16231117e3c3c12dc56479988e1b24",
+  "scripts_only_differences": [
+   {
+    "path": "scripts/reviewed-source-registry-v15.json",
+    "main_blob": "64e52bc563692dcff34ad4b1c80c0f52adebe772",
+    "G3_blob": "53dae35d245acf7ca084d90a31b3086362adc7cf"
+   },
+   {
+    "path": "scripts/verify_reviewed_source_v15.py",
+    "main_blob": "70cb849c6121a77dbbbf65d5557c8ca29ca067e3",
+    "G3_blob": "caf26bf55794ceae66e591a390df8ae9be39bfb4"
+   }
+  ],
+  "script_decision": "Retain the entire matching G3 v15 registry+verifier pair; main's pins describe its different product. Do not combine main registry with G3 source or mix the two identity files.",
+  "source_domains": "G3 has exactly1090 crate leaves plus2Cargo files; no extra/missing crate path outside complete_inputs.139validation selected paths include modes100644/100755. CI itself is equal via the entire .github tree and remains separately constrained by original expected_ci().",
+  "actual_M": {
+   "product_inputs_equal_to_G3": 1092,
+   "validation_inputs_equal_to_G3": 139,
+   "Cargo_and_crates_and_scripts_and_github_and_tests_roots_equal": true,
+   "original_guard_registry_pair_equal": true,
+   "original_G3_artifacts_and_fixtures_preserved": true,
+   "delta_modified_docs": 7,
+   "delta_added_historical_artifacts": 20,
+   "no_removed_paths": true
+  }
+ },
+ "merged_PR_conservation": {
+  "exact_code_and_test_donors_in_both": [
+   {
+    "path": "crates/cc-eval/src/benchmark/statistics.rs",
+    "main_and_G3_and_original_PR_blob": "415fbdc0a254729e4b7fa5f2fe040b3019d90aa9"
+   },
+   {
+    "path": "crates/cc-eval/src/bin/p8-runtime-statistics.rs",
+    "main_and_G3_and_original_PR_blob": "6273b16ebc403602b5aaf3eb0a9699b5cdfdca70"
+   },
+   {
+    "path": "scripts/p8_runtime.py",
+    "main_and_G3_and_original_PR_blob": "031ebdc4c604fd39ab2d647b652ca533180bf818"
+   },
+   {
+    "path": "scripts/tests/test_p8_runtime.py",
+    "main_and_G3_and_original_PR_blob": "797dda75c3d23f4bca92996a8e316c279d82b6e4"
+   },
+   {
+    "path": "crates/cc-index/src/resolver/catalog.rs",
+    "main_and_G3_and_original_PR_blob": "69ca350784614fcc3df3b93eac981023d18eaea0"
+   },
+   {
+    "path": "crates/cc-index/src/resolver/helpers.rs",
+    "main_and_G3_and_original_PR_blob": "417e940d4682cc41c9adbeb2fb14b24d1d1fa8e2"
+   }
+  ],
+  "PR175_document": {
+   "path": "docs/P8_RUNTIME_EVIDENCE.md",
+   "git_blob": "46027ad45782e6ad6919ed8c4fa1ce94fb8d06a8",
+   "main_equals_G3": true,
+   "sha256": "ca11059f1da6060ac9b31320efd8a4637d2b5a16968ee2e2795c3341f1b54a9d"
+  },
+  "finding": "Selecting all G3 product/validation inputs does not revert175's Rust statistics/runtime/test changes or179's resolver changes. They are already identical blobs in both sides. Main's distinct registry lineage is superseded by the intact G3 approval identity, while its historical records must remain preserved."
+ },
+ "main_docs_to_retain": {
+  "PR182_paths": [
+   "README.md",
+   "docs/roadmap/code-index-v2/05-TODO.md",
+   "docs/roadmap/code-index-v2/08-HANDOFF.md",
+   "docs/roadmap/code-index-v2/README.md",
+   "docs/roadmap/code-index-v2/tasks.json"
+  ],
+  "PR183_actual_changes": [
+   {
+    "path": "docs/ARCHITECTURE.md",
+    "blob": "897c0f40721b2336e75d909bba4bab3cabbb6804"
+   },
+   {
+    "path": "docs/MCP_TOOLS.md",
+    "blob": "da5c8b2bd97b698dd389709d9e4ee84e43ddc54d"
+   }
+  ],
+  "finding": "Merge current main documentation/task-navigation and historical archives without replacing the G3 product/validation pair. Do not select the G3 whole repository tree and discard newer main docs.",
+  "archive_union_scope": "Updated independent design ca10fbbfb407709b3ba01a20db43f9a8e302cab5 predicts tree6737ba0b700344853b6bce17cb3ee4bd792363d5. Actual M equals this tree. Its7main docs and3historical namespaces/20files are present; the old f7 proposal is superseded without rewriting it."
+ },
+ "old_execution_non_equivalence": {
+  "C8_to_G3": {
+   "C8_product_count": 1090,
+   "changed_or_added_product_paths": 16,
+   "product_diff_paths": [
+    "crates/cc-db/src/index_db_multi_insert.rs",
+    "crates/cc-db/src/index_db_snapshot_insert.rs",
+    "crates/cc-db/src/index_db_write_batch.rs",
+    "crates/cc-db/src/public_surface_store.rs",
+    "crates/cc-db/src/resolution_dependency_store.rs",
+    "crates/cc-db/tests/p2b_resolution_store.rs",
+    "crates/cc-eval/src/benchmark/oracle.rs",
+    "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+    "crates/cc-eval/src/benchmark/statistics.rs",
+    "crates/cc-eval/src/bin/p8-runtime-statistics.rs",
+    "crates/cc-index/src/dispatch_synthesis/interface_dispatch.rs",
+    "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs",
+    "crates/cc-index/src/indexer_phases/snapshot.rs",
+    "crates/cc-index/src/resolver/catalog.rs",
+    "crates/cc-index/src/resolver/helpers.rs",
+    "crates/cc-index/tests/full_snapshot_empty_config.rs"
+   ],
+   "validation_changed": [
+    "scripts/p8_runtime.py",
+    "scripts/tests/test_p8_runtime.py"
+   ],
+   "other_validation": "Common .github and tests root trees; no other validation delta.",
+   "boundary": "C8's ongoing study/CI belongs to C8. There are substantive DB,oracle,statistics,resolver and snapshot changes; do not call this complete product-input equality or relabel C8 samples as G3."
+  },
+  "E6_to_G3": {
+   "E6_product_count": 1090,
+   "changed_or_added_product_paths": 4,
+   "paths": [
+    "crates/cc-index/src/dispatch_synthesis/interface_dispatch.rs",
+    "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs",
+    "crates/cc-index/src/indexer_phases/snapshot.rs",
+    "crates/cc-index/tests/full_snapshot_empty_config.rs"
+   ],
+   "validation_changed": [
+    ".github/workflows/p8-scale.yml"
+   ],
+   "boundary": "E6 differs by actual empty-input production logic,2newtest files and max-parallel20→10. Its whole execution is not G3's."
+  },
+  "G3_to_docs_archive_merge": "Actual M preserves all1092 product and139validation inputs, special-case CI/guard identity and existing G3 historical/test fixtures, as proved by complete equal subtree identities and27only-doc/archive changes. M has the same reviewed executable/observer source input domain as G3, with a distinct commit/tree and no M build/measurement claim."
+ },
+ "original_contract_and_bridge": {
+  "C16": {
+   "path": "docs/roadmap/code-index-v2/02-CONTRACTS.md",
+   "finding": "Requires current target SHA evidence. It does not state that every archive/document-only commit needs a new150-shard native study. An independent actual-target path/mode/OID mapping plus original execution identities is the evidence bridge; it is not permission to rewrite old receipts."
+  },
+  "source_admission": {
+   "path": "scripts/verify_reviewed_source_v15.py",
+   "lines": "90-132,180-192,195-206,209-238",
+   "finding": "Original guard compares complete current product files/tracked set against approved P bytes, then complete validation bytes/modes and expected CI. It does not require current HEAD to equal PRODUCT. Thus retaining G3 P/R/pins is compatible with a current archive/docs merge when original protected inputs remain intact.",
+   "history_path": "scripts/v15_historical_context.py",
+   "history_lines": "102-127,152-157",
+   "history_finding": "Current historical protection compares a fixed catalogue of original registry/review/fixture paths at7354db...; it does not hash every newly appended artifact directory. Preserve exact protected paths and every test-imported fixture, not merely the product count."
+  },
+  "build_and_scale": {
+   "source_snapshot_path": "scripts/p7_build_identity.py",
+   "source_snapshot_lines": "24-95",
+   "finding": "The original build snapshot records actual HEAD,whole source_tree and full crate/Cargo content manifest as separate fields. Equal product content is not equal HEAD/tree.",
+   "driver_path": "scripts/p8_scale_matrix.py",
+   "driver_lines": "198-216,311-331,754-807,952+",
+   "driver_finding": "Original validate_build binds driver_snapshot's source_commit to the build snapshot and optional execution checkout; shards keep exact source_commit/manifest/binary/driver identities. Replay/aggregate original G3 evidence under its exact original G3 source context; do not run that check under futureM and falsify a G3 source_commit merely because input bytes match."
+  },
+  "bridge_recipe": [
+   "Actual M commit parents/tree and full product set were read:1092/1092 G3 inputs equal, no missing/extra product inputs.",
+   "Actual M keeps full139validation domain, CI bytes, exact G3 guard/registry/P/R input records and all existing historical/test fixtures. Preserve original binary/compiler/environment/source paths/run/attempt/plan identities in downstream evidence.",
+   "Keep G3 execution checkout and M target checkout as separate named identities. This report attaches complete source-domain equivalence to actual M; never edit original receipts, source_tree, engine_head_observed or study labels.",
+   "Use only actual terminal passing CI/raw validations and a complete qualifying original study. G3 queued/running jobs count as pending. No study pooling/replacement or new sample creation.",
+   "Documentation/plan/facts checks consume documentation that changed; their current-target result is separate from compile/native input equivalence. Do not claim the entire old CI including changed-doc checks was executed atM.",
+   "The proven whole-tree difference is only the27document/archive changes. It is not itself a reason for a second150-cell study. Any later executable/observer/build-environment change requires its own honest applicability scope."
+  ],
+  "interpretation_boundary": "This is a reasoned application of existing byte-domain admission and C16 evidence rules, not a change to validators, sampling budgets, native workload, statistical gates or task definitions.",
+  "build_and_runtime_metadata": {
+   "actual_build_entry": "scripts/p8_runtime_build.py git95da67c6a270cf4fd96f318cc4ffd494bbad5512",
+   "runtime_build_lines": "134-152,178-239,244-292",
+   "binding": "Original fresh-target build records compiler/environment, actual Cargo executable/copy, full source/observer beforeafter including commit and tree. verify_receipt requires the same source and original target; equal Rust text alone cannot substitute M for G3 in that verifier.",
+   "compiler_helper": "scripts/p7_stdio_build_receipt.py git2b031eb8fc71b0e64ee4bc41f835a49f7c01e45e:14-55 selects RUSTC and blanks both wrappers;39 retains other inherited environment. Runtime adds private Cargo target/build-dir. No git-SHA environment injection appears in these reviewed entry functions, but this is not a universal hermetic-build claim.",
+   "scale_build_entry": "p8_scale_matrix.py:219-220,259-276 uses original Cargo command and producer cwd; no rewritten head override. Original environment/toolchain/absolute source paths remain execution inputs.",
+   "engine_source": "crates/cc-eval/src/benchmark/runner.rs git25138446e4bb2d2b05cba88b2c0cfa03253b4e2b:14-68",
+   "engine_binding": "env!(CARGO_MANIFEST_DIR) at15 is a compile-time absolute source path; the engine queries git at that source root and records actual engine_head_observed at60, source digest, lock digest, binary digest, SDKROOT/RUSTFLAGS and rustc. Original scale validate_shard:807 requires that observed HEAD equal the original build source_commit.",
+   "conclusion": "Preserve actual G3 binary bytes/build paths/compiler/environment/run/source receipts and replay source context. The bridge neither promises an M rebuild produces the same binary nor reclassifies a G3 binary as built from M. M's build/runtime metadata is unmeasured; no new build was requested here."
+  }
+ },
+ "event_and_cancellation_boundary": {
+  "scale_workflow_blob": "74f1b64ed447ef24da584f1c1f8d090d2fa1e03e",
+  "actual_events": "workflow_dispatch and pull_request.types:[labeled]; build condition requires dispatch or label p8-scale-run. It does not subscribe to synchronize.",
+  "effect": "Updating the existing PR180 head with an archive/docs merge does not by itself start a new150-study via synchronize. Existing G3/C8 run source/event/attempt identities remain unchanged.",
+  "lifecycle_workflow": "p8-lifecycle.yml:12-14 uses group p8-lifecycle-${{github.event.pull_request.number||github.ref}} and cancel-in-progress:true.",
+  "risk": "A PR180 head update can trigger lifecycle and cancel an older same-PR lifecycle run. Root reports G3 lifecycle37908825715 queued with0steps at09:52. This review did not refresh that job; do not generalize scale trigger isolation to all workflows.",
+  "action_boundary": "Actual M is prepared but no ref update,workflow modification,cancel,retry,dispatch,CI or native execution was performed by this review. Parent plans an isolated evidence branch first, leaving PR180/G3 lifecycle untouched."
+ },
+ "task_boundary": {
+  "original": 192,
+  "done": 163,
+  "remaining": 29,
+  "newly_completed": 0,
+  "main_task_status_check": "acceptance_review independently reports main PR182 ledger1365970... retains192/163/29; this task did not modify it."
+ },
+ "related_reports": {
+  "actual_G3_five_path_review": "400e067951b06de40b99b713e984d33130377dfb",
+  "G3_independent_full_review": "329248fb4cd3f1c03e8ff455e1a21f8be4350dd8",
+  "actual_M_three_way_design": "ca10fbbfb407709b3ba01a20db43f9a8e302cab5"
+ },
+ "current_execution_result": "not_evaluated; G3_future_success_is_conditional; M_no_build_or_measurement; no_queued_job_promoted"
+}

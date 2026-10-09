@@ -1,0 +1,219 @@
+{
+  "schema": "round28-P8-019-original-contract-and-implementation-gap-review-v1",
+  "repository": "jyqj/codecortex",
+  "reviewer": "/root/recovery_audit",
+  "reviewed_at_utc": "2026-10-09T09:45:35Z",
+  "main": "f7a003636b4902f569404f4e493e1fff7630093e",
+  "verdict": "no_evidenced_immediate_code_change_recommended_existing_archive_and_replay_primitives_present_final_candidate_integration_and_acceptance_pending",
+  "scope": "Read-only original P8-019 definition and existing archive/manifest/replay/CI entry points. No native, tests, replay, provider, workflow, refs, task mutation or new release authorization. P8-017/P8-018 externally claimed implementation untouched.",
+  "original_task": {
+    "id": "P8-019",
+    "phase": "P8",
+    "phase_name": "规模、质量与发行认证",
+    "batch": "P8-D",
+    "title": "发布工件与完整报告归档",
+    "status": "in_progress",
+    "priority": "normal",
+    "scope": [
+      ".github/workflows/ci.yml",
+      "artifacts/benchmarks/",
+      "docs/benchmarks/"
+    ],
+    "depends_on": [
+      "P8-018"
+    ],
+    "steps": [
+      "归档精确binary/checksum/manifest/raw/gates",
+      "latest只指向run"
+    ],
+    "deliverables": [
+      "发布工件与完整报告归档的实现/配置或规格变更",
+      "artifacts/benchmarks/<run-id>/ 中对应 V01, V04, V21 验证证据（实施时生成）"
+    ],
+    "acceptance": [
+      "报告可重算，历史原始run不被下一轮覆盖",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validations": [
+      "V01",
+      "V04",
+      "V21"
+    ],
+    "contracts_doc": "02-CONTRACTS.md",
+    "benchmark_doc": "09-BENCHMARK.md",
+    "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+    "conditional": null,
+    "required_for": [
+      "M4-local",
+      "M4-semantic"
+    ],
+    "evidence": [
+      {
+        "status": "local_engineering_advanced_not_full_acceptance",
+        "round": 1,
+        "source": "d1bf4b799e52d6367fe4959d08c5a79e63b3bafe",
+        "artifacts": [
+          "artifacts/benchmarks/p8-release-local-20261007",
+          "docs/roadmap/code-index-v2/P8-LOCAL-PROGRESS.md"
+        ],
+        "limitations": "原任务硬依赖与正式验收保留；没有新100k/live/holdout/跨平台/长时认证。"
+      }
+    ],
+    "conditional_dependencies": [],
+    "implementation_notes": "\n2026-10-07 P8本地推进第一轮：新增不可覆盖归档、候选绑定、完整清单/checksum、失败raw保留及仅passed_local且实语料锁才可提升的latest指针。39项有界夹具测试通过；完整G8、指标复算、发行批准保持OPEN。"
+  },
+  "original_contract_locations": {
+    "benchmark": "09-BENCHMARK.md:130,134-136,191",
+    "validation": "06-VALIDATION.md:23(V01),26(V04),43(V21)",
+    "V01": "Reproducible build/old tests, exact SHA/dirty/binary digest/toolchain/SDK, ignored explicit, cold target.",
+    "V04": "Transport/readiness/error/exit contracts and raw-to-metrics/report reproducibility.",
+    "V21": "Rollback/release/documentation, schema/cache safety, default/semantic packages, SDK/MSRV, factual documentation."
+  },
+  "implemented": [
+    {
+      "requirement": "Exact binary/source/config/corpus/scoring/model bytes and manifest/checksum",
+      "entry": "scripts/p8_release_evidence.py:328-392,483-504,524-575",
+      "evidence": "freeze independently copies explicit inputs; archive copies complete candidate/evidence, records all payload sizes/SHA/executable metadata and archive.json, writes checksums.sha256, then verifies inventory/digests. Offline verify does not require retired original paths.",
+      "boundary": "scope local_engineering_only, release_certified=false. Source paths and build profile are declarations; actual binary-source build proof must come from the original build receipt, not inferred."
+    },
+    {
+      "requirement": "Historical runs not overwritten; retain failures and partial raw",
+      "entry": "scripts/p8_release_evidence.py:287-291,524-575",
+      "evidence": "Exclusive output.mkdir rejects existing even-empty directories; partial marker retained on failure; failed/inconclusive/invalid/cancelled gates preserve copied evidence and nonzero exit; digest-suffixed run directory.",
+      "boundary": "Tool-level immutability, not filesystem WORM/signature. No failure is upgraded by verify."
+    },
+    {
+      "requirement": "latest only refers to a run",
+      "entry": "scripts/p8_release_evidence.py:507-521,568-571",
+      "evidence": "Atomic replace of local latest.json containing only schema/kind/scope and run/archive/candidate digests. Symlink/unrelated latest rejected. Only explicitly requested passed_local with verified corpus files can update it.",
+      "boundary": "This is explicitly a local-engineering pointer, not a release channel. Ordinary native passed/baseline/failure/cancelled never promote. No reason to broaden status or bypass publication approval."
+    },
+    {
+      "requirement": "Reports reproducible from retained raw",
+      "entry": "crates/cc-eval/src/benchmark/report.rs::replay; cc-eval.rs:98-101,377-380",
+      "evidence": "Existing cc-eval replay --run path verifies run/adapter version, query snapshot and normalized digests, repetition uniqueness/range and every referenced raw digest, then calls the original finish/summarize/gate logic.",
+      "boundary": "replay writes derived outputs in the supplied run directory. For final archive verification use a distinct working copy and compare derived results; do not replay in immutable original evidence. Archive integrity verification alone is not numerical replay."
+    },
+    {
+      "requirement": "Existing old-regression entry",
+      "entry": ".github/workflows/ci.yml:49-54; scripts/tests/test_p8_release_evidence.py:378-411",
+      "evidence": "Original CI discovers existing test_p8_* controls. Existing archive controls include retired-source portability/external sha256sum and failure/latest behavior; existing native benchmark_reports test compares metrics before/after replay.",
+      "boundary": "No new execution performed, no current-main full regression result inferred from this code inspection."
+    }
+  ],
+  "original_fixture_evidence": {
+    "directory": "artifacts/benchmarks/p8-release-local-20261007",
+    "source": "d1bf4b799e52d6367fe4959d08c5a79e63b3bafe",
+    "receipt_blob": "75d8e46af1b389db89c6a9a814f7a15763bd6d89",
+    "log_blob": "89360af56c6a7cf9ce390e9cf43d6e290a32076d",
+    "log_bytes": 6425,
+    "log_sha256": "18bb7874c0c88674b76342899f12da6225b0c45b2e0ed9effd4a3fffb3e45fbb",
+    "log_matches_receipt": true,
+    "independently_counted_ok_methods": 39,
+    "original_terminal": "Ran39 tests in21.894s; OK",
+    "receipt_wrapper_elapsed_seconds": 22.114,
+    "current_script_test_doc_SHA_match_original_receipt": true,
+    "claim": "Existing39 fixture checks, not production candidate archive, product execution, G8 acceptance or current-main full validation.",
+    "original_directory_entries": [
+      "README.md",
+      "receipt.json",
+      "unittest.log"
+    ]
+  },
+  "pending_not_newly_invented_work": [
+    {
+      "item": "Final candidate artifact set and build provenance",
+      "reason": "The current local archiver explicitly fixes caller-supplied bytes rather than proving that the binary was built from them. Real frozen candidate build/compiler/source receipts and full original report inventory must be assembled under the original V01/V04/V21 contract.",
+      "kind": "final-candidate integration/evidence"
+    },
+    {
+      "item": "Final run offline reconstruction",
+      "reason": "Actual final original bundle must be verified and its metrics/report/gates independently recomputed with the original replay/validator on a copy. Existing implementation supports this but the local39 fixture record is not that final execution.",
+      "kind": "execution/evidence"
+    },
+    {
+      "item": "P8-018 and its transitive hard dependencies; original regression/release scope",
+      "reason": "P8-019 status cannot move to done while its original dependency or required original validations remain open. This review creates no new release/provider permission.",
+      "kind": "unchanged original prerequisite"
+    }
+  ],
+  "no_immediate_patch_basis": [
+    "No concrete counterexample was found in the bounded read showing a missing immutable-directory/checksum/latest/replay mechanism.",
+    "Original acceptance requires a reproducible report; it does not require a second scorer inside the archive verifier. The existing original replay supplies the computation path.",
+    "Existing p8_release_review.py is expressly a G8 gap ledger and always not_accepted; this deliberate role is not a bug or a reason to turn declarations into release approval.",
+    "The local-only archiver's dev/fixture, fake/disabled model and resource restrictions are explicit. Do not silently turn it into a full live/holdout release publisher while dependencies/authorization remain unresolved.",
+    "Legacy docs/benchmarks/latest.md is an older baseline report. It is not the P8 local latest.json pointer or evidence that a current P8 release was published; this review does not rewrite historical output."
+  ],
+  "recommendation": "Do not start another packager, scorer, documentation-only task or extra test campaign now merely to fill the scale waiting interval. Reuse the existing immutable archive and original replay/build receipt interfaces when final same-source inputs are available; if their actual composition exposes a specific incompatibility, review that exact fix then. This is not a claim that full P8-019 release implementation/acceptance is already complete.",
+  "exact_read_inputs": [
+    {
+      "path": "scripts/p8_release_evidence.py",
+      "git_blob": "90ab28ac05bc177626f7dc652eb1dadda1a1b0c9",
+      "bytes": 30556,
+      "sha256": "dd9971219e0c368f876b7e7b6ce563f0779a0e9cde1e00b5d844a0fb57e6774a"
+    },
+    {
+      "path": "scripts/p8_release_review.py",
+      "git_blob": "30b2611b04dfed78c45feb9c3e99c74cf03b563f",
+      "bytes": 15811,
+      "sha256": "dd421c1a2ca753c9a4777e6db1a7cc7d2c5ca7e98b87e61a9aff5ea59048c26f"
+    },
+    {
+      "path": "scripts/tests/test_p8_release_evidence.py",
+      "git_blob": "a88d8d5f3dc6c2f3232cb808206b4ca5099c1d8c",
+      "bytes": 26985,
+      "sha256": "62e8fdd449e4fb0fb4878185ebf06e9f9c790906a4f95415bf4138862977d380"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/P8-RELEASE-EVIDENCE.md",
+      "git_blob": "b0a533d816f2141f740e913c82b253c26fa4fae1",
+      "bytes": 12264,
+      "sha256": "9dd0d0a50ea778066346dde61c466c59bdce8d27b15292be76e22eccf2cf7977"
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/report.rs",
+      "git_blob": "8d633bd75772e2ef4cfead559688a6fea4ca6644",
+      "bytes": 14477,
+      "sha256": "8836e4b7112390628b3441ef94f3e660a58bf79f5dacfa748615c570480d995d"
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/runner.rs",
+      "git_blob": "25138446e4bb2d2b05cba88b2c0cfa03253b4e2b",
+      "bytes": 12441,
+      "sha256": "c5ee07890319d0e6ab31cd74fe0578cf0201e6cbd3b668cff89ded9846c5895a"
+    },
+    {
+      "path": "crates/cc-eval/src/bin/cc-eval.rs",
+      "git_blob": "73c4666b05611b2e7b6578412f8f7dc4365e7d4c",
+      "bytes": 16918,
+      "sha256": "99de08c18fa7b0172693763c9e14c3be2778cb2109f15ed5e474b20238350578"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "git_blob": "8c7325eb88b791f909e72c4b6c79b417185e4386",
+      "bytes": 11046,
+      "sha256": "7e659bc2f8cf1565238b2903864639a2e4bfc0887721d9482f128f6e83b81914"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "git_blob": "5ced0c455e7e774a9d95da23187c64dcefc37314",
+      "bytes": 20488,
+      "sha256": "0c8bcbed17ea4e83b1dc55e9828f93a27e2a334a0d0eaa056302944260d0a731"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+      "git_blob": "fcbcf9e9280d41a4e8e138543d2bd217137a2c5e",
+      "bytes": 10172,
+      "sha256": "64a9fde995077f8349edc76ee501825feca6717c6c60ab7c03cc535142016aad"
+    }
+  ],
+  "task_accounting": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "newly_closed": 0,
+    "P8_019": "in_progress",
+    "dependency": "P8-018"
+  },
+  "mutation": "Only this unreferenced review blob; all observed repository/source/task/ref/run objects unchanged."
+}

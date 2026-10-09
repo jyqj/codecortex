@@ -1,0 +1,728 @@
+{
+  "schema": "p8-main-G3-three-way-merge-design-v1",
+  "reviewer": "/root/acceptance_review",
+  "created_at_utc": "2026-10-09T09:48:00.207Z",
+  "repository": "jyqj/codecortex",
+  "verdict": "Static merge design accepted: no main-only product/validation content needs to displace G3; retain G3 complete source/pins and add main navigation plus disjoint historical artifacts. This is not an actual merge, execution, CI or TODO acceptance.",
+  "fixed_inputs": {
+    "main": {
+      "commit": "f7a003636b4902f569404f4e493e1fff7630093e",
+      "tree": "03c581729a4454f0ff4d22f5377ef9becfc1e68d",
+      "parents": [
+        "d4f5dc380507eaacd36ca77590eb4f6cb6f4733a",
+        "8da6bd93d6bd735e30daba11d821726a21ad8424"
+      ]
+    },
+    "G3": {
+      "commit": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "tree": "0e655b4258afd9ca040dd7c1ace868bf1c322a30",
+      "parents": [
+        "2ccf89dd6c6f558bdfa5d8ddfa7ddf8958c7aa89"
+      ]
+    },
+    "base": {
+      "commit": "840fa2e0a26ab60c138747a4309aba5df506edc1",
+      "tree": "54d66ff6a15661c64d2a05df48f14e9aa09fc13c",
+      "parents": [
+        "13610caf2904f7656fa45ccbf20f61a313b708b8"
+      ]
+    }
+  },
+  "official_merge_base_confirmation": {
+    "endpoint": "https://api.github.com/repos/jyqj/codecortex/compare/f7a003636b4902f569404f4e493e1fff7630093e...3ffcefc3b28ee1a4ed80caecebd7208a45c3e302?per_page=1&page=2",
+    "merge_base": "840fa2e0a26ab60c138747a4309aba5df506edc1",
+    "status": "diverged",
+    "ahead_by": 17,
+    "behind_by": 16,
+    "usage": "Only official merge-base/ancestry metadata used. No compare.files/three-dot patch was treated as an endpoint-tree diff."
+  },
+  "method": "Read actual three root trees; complete untruncated recursive crates/docs/scripts trees; shared workflows/tests trees; shallow artifacts/checkpoints trees plus the three main-only subtrees. Classify each differing leaf by (mode,type,Git blob) against actual merge base. Exact tree objects make unchanged subtrees reusable without rereading all artifact bodies.",
+  "actual_nonartifact_delta_summary": {
+    "G3_only_native_paths": 19,
+    "G3_only_modified_native_paths": 16,
+    "G3_only_added_native_paths": 3,
+    "main_only_navigation_paths": 5,
+    "true_both_sides_different_blob_conflicts": 2,
+    "main_unique_native_or_validation_change_blockers": [],
+    "shared_github_tree": "e192188202d5da9065c60b474edce10dedb24324",
+    "shared_tests_tree": "b3e8744962f9e4b25ff9104001a3e57d3168735d",
+    "Cargo_lock_and_toml_equal": true
+  },
+  "true_blob_conflicts": [
+    {
+      "path": "scripts/reviewed-source-registry-v15.json",
+      "base": "668ab05c479457b08a482c50241ccd21dff644e3",
+      "main": "64e52bc563692dcff34ad4b1c80c0f52adebe772",
+      "G3": "53dae35d245acf7ca084d90a31b3086362adc7cf",
+      "base_mode": "100644",
+      "main_mode": "100644",
+      "G3_mode": "100644",
+      "classification": "both_different",
+      "resolution": "G3 exact full blob; no edited or main-pinned hybrid",
+      "reason": "Retain G3 product/review identities and all1092/139 hashes. Main registry binds a different product/review."
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v15.py",
+      "base": "3cca26982bbc8232d55aea2ad8934be33f93aedc",
+      "main": "70cb849c6121a77dbbbf65d5557c8ca29ca067e3",
+      "G3": "caf26bf55794ceae66e591a390df8ae9be39bfb4",
+      "base_mode": "100644",
+      "main_mode": "100644",
+      "G3_mode": "100644",
+      "classification": "both_different",
+      "resolution": "G3 exact full blob; no edited or main-pinned hybrid",
+      "reason": "Retain G3 PRODUCT/REVIEW/REVIEW_PATH/REGISTRY_SHA256. Exact body excluding these four constants equals main; no guard algorithm or frozen gate change."
+    }
+  ],
+  "G3_native_differences_to_main": [
+    {
+      "path": "crates/cc-db/src/index_db_multi_insert.rs",
+      "base_and_main": "539b9d19f1034a8cfd918090b1b48dacc177494c",
+      "G3": "a881c73c46693bb4ff098b283a05f57f04cb1ee4",
+      "mode": "100644",
+      "choice": "G3",
+      "reason": "Main remained exact merge-base blob at this path"
+    },
+    {
+      "path": "crates/cc-db/src/index_db_snapshot_insert.rs",
+      "base_and_main": "2188f67d83d44b49c3015598c7001d231fd22428",
+      "G3": "9cd3320336e1ee9eeeb8b279d0a97448f61a4563",
+      "mode": "100644",
+      "choice": "G3",
+      "reason": "Main remained exact merge-base blob at this path"
+    },
+    {
+      "path": "crates/cc-db/src/index_db_write_batch.rs",
+      "base_and_main": "2758481da50748be45f9c35a35832d2f2bc9b851",
+      "G3": "c732fab2d5cc62209a89317f42a5a4adc4edf0fb",
+      "mode": "100644",
+      "choice": "G3",
+      "reason": "Main remained exact merge-base blob at this path"
+    },
+    {
+      "path": "crates/cc-db/src/public_surface_store.rs",
+      "base_and_main": "df522a327e68a820699ce21f4c5b9880f48d519c",
+      "G3": "d0fa4c622876197bbb8c14b7d94f0d8ab3e1f318",
+      "mode": "100644",
+      "choice": "G3",
+      "reason": "Main remained exact merge-base blob at this path"
+    },
+    {
+      "path": "crates/cc-db/src/resolution_dependency_store.rs",
+      "base_and_main": "6e90d4e85aae79d73d5d59b8defbd39d02c61097",
+      "G3": "97d3d9519fe10ed7cd30b9783164348998c02abc",
+      "mode": "100644",
+      "choice": "G3",
+      "reason": "Main remained exact merge-base blob at this path"
+    },
+    {
+      "path": "crates/cc-db/src/snapshot_write_txn.rs",
+      "base_and_main": "20dc6ffc60d2a63320b56d1bd8e010e2937ffe26",
+      "G3": "e850a30b549fcd1f0bda38fb2900d61add6db029",
+      "mode": "100644",
+      "choice": "G3",
+      "reason": "Main remained exact merge-base blob at this path"
+    },
+    {
+      "path": "crates/cc-db/tests/p2b_resolution_store.rs",
+      "base_and_main": "babd9caa60308b9f9dda8d34770eb1fefd4d48d9",
+      "G3": "f698d3427ad90c194cfdb5b7c241e0802c1267d1",
+      "mode": "100644",
+      "choice": "G3",
+      "reason": "Main remained exact merge-base blob at this path"
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/oracle.rs",
+      "base_and_main": "d6324b3003b5a3c3e8a1680536260ea99a950152",
+      "G3": "4c7fdb879e039af164b3b10ea1491d538c69ac68",
+      "mode": "100644",
+      "choice": "G3",
+      "reason": "Main remained exact merge-base blob at this path"
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+      "base_and_main": "3c05342f976f534861347c098c3229ce988dfb61",
+      "G3": "6c60e6244fe1f316b180f8ea656d2b9f1ad17aa3",
+      "mode": "100644",
+      "choice": "G3",
+      "reason": "Main remained exact merge-base blob at this path"
+    },
+    {
+      "path": "crates/cc-eval/tests/benchmark_adapters.rs",
+      "base_and_main": "9466989bb3e1ccfea8c64fa20155e169b1b18d40",
+      "G3": "9feb4fe9659c3cd84bc86684d3f73412f9caec17",
+      "mode": "100644",
+      "choice": "G3",
+      "reason": "Main remained exact merge-base blob at this path"
+    },
+    {
+      "path": "crates/cc-eval/tests/p8_scale.rs",
+      "base_and_main": "e4369e275bee0ddbc1cbea91e61bcc5735483e4e",
+      "G3": "31b34057ff76e0b07e9242ef179951577ed22187",
+      "mode": "100644",
+      "choice": "G3",
+      "reason": "Main remained exact merge-base blob at this path"
+    },
+    {
+      "path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch.rs",
+      "base_and_main": "1ec37855f7209426931dd90ae2d483cc1fe2ffc1",
+      "G3": "8d230b0a463bd53ab21e80e56af9d7fc9d3a0a2d",
+      "mode": "100644",
+      "choice": "G3",
+      "reason": "Main remained exact merge-base blob at this path"
+    },
+    {
+      "path": "crates/cc-index/src/indexer_phases/snapshot.rs",
+      "base_and_main": "f54e02421b71259abd6c2b3b1e0ab6de48f7c883",
+      "G3": "af1aa549cc2ebc4c952bf72804a7693e81ee5411",
+      "mode": "100644",
+      "choice": "G3",
+      "reason": "Main remained exact merge-base blob at this path"
+    },
+    {
+      "path": "crates/cc-index/src/project_model/python_inventory.rs",
+      "base_and_main": "95b87a9780d41e86b88336e809882a1fcf1497f8",
+      "G3": "e8f3ccd2d5d24ac222186f6954d983d859b4ee18",
+      "mode": "100644",
+      "choice": "G3",
+      "reason": "Main remained exact merge-base blob at this path"
+    },
+    {
+      "path": "crates/cc-semantic/tests/crash_independent_review.rs",
+      "base_and_main": "47a9abd36f8a4348b4c3c8731565da94833f69cb",
+      "G3": "412bfb88b7d10dcf0f324d916e4a8671c1abd482",
+      "mode": "100644",
+      "choice": "G3",
+      "reason": "Main remained exact merge-base blob at this path"
+    },
+    {
+      "path": "crates/cc-semantic/tests/p7_cache_allocation_independent_review.rs",
+      "base_and_main": "f35c2cd2cb14e4c257d7ab4ec143be0497bd905b",
+      "G3": "4d3b82904f0b9415f1f901a4192f66525492cd02",
+      "mode": "100644",
+      "choice": "G3",
+      "reason": "Main remained exact merge-base blob at this path"
+    },
+    {
+      "path": "crates/cc-db/src/snapshot_fts_tests.rs",
+      "base_and_main": null,
+      "G3": "c7cf6e2d7fd61a1e6a33aad772c3c0530484d0b8",
+      "mode": "100644",
+      "choice": "G3",
+      "reason": "G3 added input; no main counterpart"
+    },
+    {
+      "path": "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs",
+      "base_and_main": null,
+      "G3": "d1888e13cb6bc1e4748cf372209b9686a705a1da",
+      "mode": "100644",
+      "choice": "G3",
+      "reason": "G3 added input; no main counterpart"
+    },
+    {
+      "path": "crates/cc-index/tests/full_snapshot_empty_config.rs",
+      "base_and_main": null,
+      "G3": "c900883bd45b427a605330b6ce4ac359f99506ef",
+      "mode": "100644",
+      "choice": "G3",
+      "reason": "G3 added input; no main counterpart"
+    }
+  ],
+  "main_product_changes_since_merge_base_already_exact_in_G3": [
+    {
+      "path": "crates/cc-index/src/indexer_phases/reconcile.rs",
+      "base": "9617e0f241c624ce35db3c6db8e5eba568fb7594",
+      "main": "c8aed85c88cf2fbbbf691592fd1837ce6356818e",
+      "G3": "c8aed85c88cf2fbbbf691592fd1837ce6356818e",
+      "exact_main_preserved_in_G3": true
+    },
+    {
+      "path": "crates/cc-index/src/resolver/catalog.rs",
+      "base": "78d9b810708ec45bff6ae42f1bb440850908fa92",
+      "main": "69ca350784614fcc3df3b93eac981023d18eaea0",
+      "G3": "69ca350784614fcc3df3b93eac981023d18eaea0",
+      "exact_main_preserved_in_G3": true
+    },
+    {
+      "path": "crates/cc-index/src/resolver/helpers.rs",
+      "base": "6d1f5c90aa27e573dcf2d885cee7fbeea96371c8",
+      "main": "417e940d4682cc41c9adbeb2fb14b24d1d1fa8e2",
+      "G3": "417e940d4682cc41c9adbeb2fb14b24d1d1fa8e2",
+      "exact_main_preserved_in_G3": true
+    }
+  ],
+  "main_navigation_selection": [
+    {
+      "path": "README.md",
+      "sha": "8978a0da9afd699dae146f3f80988e091d1ebad9",
+      "mode": "100644",
+      "type": "blob",
+      "reason": "Main-only original task evidence/progress update. G3 remains exact merge base here; select complete main blob, not a hand-edited reconstruction."
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/05-TODO.md",
+      "sha": "9e08ed8122f54eec9d77e1d42c7d4e093fbe546c",
+      "mode": "100644",
+      "type": "blob",
+      "reason": "Main-only original task evidence/progress update. G3 remains exact merge base here; select complete main blob, not a hand-edited reconstruction."
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/08-HANDOFF.md",
+      "sha": "aac0a878fcdf40cb279f9f9f1055879037852c88",
+      "mode": "100644",
+      "type": "blob",
+      "reason": "Main-only original task evidence/progress update. G3 remains exact merge base here; select complete main blob, not a hand-edited reconstruction."
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/README.md",
+      "sha": "29847d5e240d3514c5fcf3889686b8de611995ec",
+      "mode": "100644",
+      "type": "blob",
+      "reason": "Main-only original task evidence/progress update. G3 remains exact merge base here; select complete main blob, not a hand-edited reconstruction."
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/tasks.json",
+      "sha": "1365970c32d0883cc05a37f9333ffb9589299141",
+      "mode": "100644",
+      "type": "blob",
+      "reason": "Main-only original task evidence/progress update. G3 remains exact merge base here; select complete main blob, not a hand-edited reconstruction."
+    }
+  ],
+  "navigation_scope": {
+    "tasks_blob": "1365970c32d0883cc05a37f9333ffb9589299141",
+    "task_counts": {
+      "total": 192,
+      "done": 163,
+      "remaining": 29,
+      "newly_closed": 0
+    },
+    "main_P182_views": "Retain main task evidence and its four original derived views exactly; do not rerun generator during pure preparation.",
+    "previous_finite_navigation_review_blob": "60c91a8a84a8735e8736541c31aea99116f4e16d",
+    "docs_tree_selection": "Entire main docs tree b3fc2f89de0fb1e266deb1f276409a265760dac5 is safe here: its only differences from G3 are exactly the four listed roadmap paths. All other doc blobs/modes are equal.",
+    "top_docs_common": "CONTRIBUTING.md e70d34871f78f394578a6e4273df75dd92afa35f is already exact on both sides; existing main177 scope is not lost."
+  },
+  "artifacts": {
+    "unchanged_noncheckpoint_subtrees": [
+      "benchmarks:018b31dca0ba3d6ea4c96883dafa5aa413984789",
+      "controls:d4b1398682808895c0c947c118869b43d4a9cc9c",
+      "diagnostics:d63f9f777c1bee105019d220fa7d6ed028c6f054",
+      "reviews:095e14913c3857ca8fb6e962f95df74cc79a5e54"
+    ],
+    "merge_base_checkpoint_directories": 201,
+    "all_base_checkpoint_mode_type_tree_sha_unchanged_on_both_sides": true,
+    "main_checkpoint_entries": 205,
+    "G3_checkpoint_entries": 209,
+    "union_checkpoint_entries": 212,
+    "common_new_directory": {
+      "path": "artifacts/checkpoints/p8-surface-window-controls-20261009",
+      "tree": "97fc103ecaba3c97cdde2004a3072f7e491d26d6"
+    },
+    "true_blob_or_subtree_conflicts": [],
+    "deletions": [],
+    "overwrites_of_historical_content": [],
+    "main_only_additions": [
+      {
+        "path": "artifacts/checkpoints/p8-pr175-main-integration-20261009",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "219ccaea88c47fea17362614afbfffe3d8f9bbf8",
+        "files": [
+          {
+            "path": "artifacts/checkpoints/p8-pr175-main-integration-20261009/actual-product-composition-bridge.json",
+            "mode": "100644",
+            "sha": "0e913e66aef139678913004e8f9c9969c578e100",
+            "bytes": 15159
+          },
+          {
+            "path": "artifacts/checkpoints/p8-pr175-main-integration-20261009/complete-product-validation-maps.json",
+            "mode": "100644",
+            "sha": "6a19c4d322e6eae2f9689d5f3472d8359df4345b",
+            "bytes": 171396
+          },
+          {
+            "path": "artifacts/checkpoints/p8-pr175-main-integration-20261009/exact-tree-composition-proof.json",
+            "mode": "100644",
+            "sha": "cd233fa1fc3f4e5f7f9990bfb969748e2a25b003",
+            "bytes": 379134
+          },
+          {
+            "path": "artifacts/checkpoints/p8-pr175-main-integration-20261009/independent-composition-review.json",
+            "mode": "100644",
+            "sha": "e1217ab50edae0246c6cf1ff8d36aeff47b47cc9",
+            "bytes": 11691
+          },
+          {
+            "path": "artifacts/checkpoints/p8-pr175-main-integration-20261009/independent-source-review.json",
+            "mode": "100644",
+            "sha": "973c78a413b6aec72b4bdd89bfcad49a2f8fa3c7",
+            "bytes": 593448
+          },
+          {
+            "path": "artifacts/checkpoints/p8-pr175-main-integration-20261009/integration-plan.json",
+            "mode": "100644",
+            "sha": "7a242b59fa1ced07a053f21cd5bb8afaff6c8735",
+            "bytes": 7587
+          }
+        ],
+        "regular_file_count": 6,
+        "bytes": 1178415
+      },
+      {
+        "path": "artifacts/checkpoints/p8-pr179-stack-integration-20261009",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "1f42bfe5fdf16fe79f0d8eae968f8783d4493a16",
+        "files": [
+          {
+            "path": "artifacts/checkpoints/p8-pr179-stack-integration-20261009/actual-product-composition-bridge.json",
+            "mode": "100644",
+            "sha": "9ff36374fc9a96e6f84883ca7e02a74852a7eee4",
+            "bytes": 59709
+          },
+          {
+            "path": "artifacts/checkpoints/p8-pr179-stack-integration-20261009/complete-product-validation-maps.json",
+            "mode": "100644",
+            "sha": "b48a06427ab22951f6f36ae6dac48dac7b535db6",
+            "bytes": 171837
+          },
+          {
+            "path": "artifacts/checkpoints/p8-pr179-stack-integration-20261009/exact-tree-composition-proof.json",
+            "mode": "100644",
+            "sha": "2b5738a154897c97d20feb4ca71671dd2ff843de",
+            "bytes": 289767
+          },
+          {
+            "path": "artifacts/checkpoints/p8-pr179-stack-integration-20261009/independent-composition-review.json",
+            "mode": "100644",
+            "sha": "5cae6a5f667380972ca246442acd83b194dfc891",
+            "bytes": 15195
+          },
+          {
+            "path": "artifacts/checkpoints/p8-pr179-stack-integration-20261009/independent-source-review.json",
+            "mode": "100644",
+            "sha": "187c1f105d9338f3acc0bd5271ca98a375ced3cf",
+            "bytes": 602428
+          },
+          {
+            "path": "artifacts/checkpoints/p8-pr179-stack-integration-20261009/integration-plan.json",
+            "mode": "100644",
+            "sha": "958343a432e1196c0daf6477399f53438af173b5",
+            "bytes": 11885
+          }
+        ],
+        "regular_file_count": 6,
+        "bytes": 1150821
+      },
+      {
+        "path": "artifacts/checkpoints/p8-resolver-allocations-20261009",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "2773310f88b8d4100ace517a65753ad5332577c3",
+        "files": [
+          {
+            "path": "artifacts/checkpoints/p8-resolver-allocations-20261009/formatting-followup/first-check-failure.log",
+            "mode": "100644",
+            "sha": "9f345794222c578345d36dbe5f2091b6560f961e",
+            "bytes": 38796
+          },
+          {
+            "path": "artifacts/checkpoints/p8-resolver-allocations-20261009/formatting-followup/implementation-facts.json",
+            "mode": "100644",
+            "sha": "2a649d99106110d862874dcb060bae3c10185c27",
+            "bytes": 6273
+          },
+          {
+            "path": "artifacts/checkpoints/p8-resolver-allocations-20261009/formatting-followup/independent-formatting-review.json",
+            "mode": "100644",
+            "sha": "89ee6ef6b759d6613c8d27296b2fb1be536de88c",
+            "bytes": 5269
+          },
+          {
+            "path": "artifacts/checkpoints/p8-resolver-allocations-20261009/formatting-followup/independent-source-review.json",
+            "mode": "100644",
+            "sha": "2e95d14ca4e6b98171dcf0e2722b31722f690c1d",
+            "bytes": 176667
+          },
+          {
+            "path": "artifacts/checkpoints/p8-resolver-allocations-20261009/implementation-facts.json",
+            "mode": "100644",
+            "sha": "c1ffd36fd0f9d017b3dc38832bf1b673743eeef9",
+            "bytes": 7177
+          },
+          {
+            "path": "artifacts/checkpoints/p8-resolver-allocations-20261009/independent-composition-review.json",
+            "mode": "100644",
+            "sha": "b13a0ca87d1495c7bbd319aaabe11e586cabd388",
+            "bytes": 4790
+          },
+          {
+            "path": "artifacts/checkpoints/p8-resolver-allocations-20261009/independent-source-review.json",
+            "mode": "100644",
+            "sha": "d6f26f044791e59d34a80b6287409c17022e690c",
+            "bytes": 177324
+          },
+          {
+            "path": "artifacts/checkpoints/p8-resolver-allocations-20261009/independent-two-path-review.json",
+            "mode": "100644",
+            "sha": "749bbdcb0b8aa220c512cc4877daa258c2850a0c",
+            "bytes": 4008
+          }
+        ],
+        "regular_file_count": 8,
+        "bytes": 420304
+      }
+    ],
+    "G3_only_subtrees_retained": [
+      {
+        "path": "artifacts/checkpoints/p8-combined-integration-a217-20261009",
+        "tree": "112d5f9698193cbc6b2f1c869dd63097a71e070f",
+        "mode": "040000"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-combined-surface-mac-28fe-20261009",
+        "tree": "b14231004f3b99c206adf08eb9ff0218b3fc11b6",
+        "mode": "040000"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-fts-resolver-ready-integration-28fe-20261009",
+        "tree": "7cfeffd3a8150cac4425307cf7e5f01a3684dd26",
+        "mode": "040000"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-macos-integration-bfcc-20261009",
+        "tree": "32d16e5472715b898141fe7f6e154614973ca6cf",
+        "mode": "040000"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-pr180-integration-a217-20261009",
+        "tree": "3afecee94f6a90d572726f055112c4d5f5f1cd57",
+        "mode": "040000"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-round23-a217-20261009",
+        "tree": "9a2cbf05d404631073d834297b0cb1f455ea8680",
+        "mode": "040000"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-snapshot-oracle-integration-28fe-20261009",
+        "tree": "3c07bd03eab8f3c3da401c460f1f1bb9f2abd66d",
+        "mode": "040000"
+      }
+    ],
+    "additional_files_from_main": 20,
+    "additional_bytes_from_main": 2749540
+  },
+  "protected_G3_inputs": {
+    "complete_inputs": 1092,
+    "validation_inputs": 139,
+    "missing": [],
+    "nonregular": [],
+    "selected_main_collision": [],
+    "identity_level": "exact Git blob and mode via complete untruncated source subtrees; no execution or reread of every unchanged body",
+    "executable_regular_paths": [
+      "crates/cc-eval/benchmarks/public-v19/vite/intake/recovery-authoring-20261008/source/packages/create-vite/index.js",
+      "crates/cc-eval/benchmarks/public-v19/vite/intake/recovery-authoring-20261008/source/packages/create-vite/src/index.ts",
+      "crates/cc-eval/benchmarks/public-v19/vite/intake/recovery-authoring-20261008/source/packages/vite/bin/vite.js",
+      "crates/cc-eval/benchmarks/public-v19/vite/reviewed-dev-20261008/source/packages/create-vite/index.js",
+      "crates/cc-eval/benchmarks/public-v19/vite/reviewed-dev-20261008/source/packages/create-vite/src/index.ts",
+      "crates/cc-eval/benchmarks/public-v19/vite/reviewed-dev-20261008/source/packages/vite/bin/vite.js",
+      "scripts/update-doc-baselines.sh",
+      "scripts/verify_reviewed_source_v14.py"
+    ],
+    "final_native_tree": "bd5d2b4bd2157556bf3a829b70886ce9067f5fcc",
+    "final_scripts_tree": "f47d4fc2c3a3e8da4c60ad3002c94f782873b407",
+    "registry_blob": "53dae35d245acf7ca084d90a31b3086362adc7cf",
+    "registry_sha256": "bd73dcab83430d83a6a18c272386caf63547a498b1cd196c74f00b6aeea3cb04",
+    "guard_blob": "caf26bf55794ceae66e591a390df8ae9be39bfb4",
+    "product_source": "b13ba8c1b738bc9c24b81cad1e88711fc9734283",
+    "review_source": "2ccf89dd6c6f558bdfa5d8ddfa7ddf8958c7aa89",
+    "base_source": "7354db236c9d9850a75f31672697ae9eab44565e",
+    "schema_version": 10,
+    "preservation": "All1092 product and139 validation path/mode/blob identities stay exact G3 by whole-subtree preservation. No SHA256 recomputation of all1231 unchanged file bodies or execution is claimed.",
+    "frozen_files": [
+      {
+        "path": "scripts/verify_reviewed_source_v14.py",
+        "G3": "5e5ef518787ec7445731eec75eface5e70cc834a",
+        "base": "5e5ef518787ec7445731eec75eface5e70cc834a",
+        "equal": true,
+        "mode": "100755"
+      },
+      {
+        "path": "scripts/reviewed-source-registry-v14.json",
+        "G3": "361e7d75c99cc70cd09f818093fdfce9efbfaf27",
+        "base": "361e7d75c99cc70cd09f818093fdfce9efbfaf27",
+        "equal": true,
+        "mode": "100644"
+      },
+      {
+        "path": "tests/source_integrity/test_reviewed_source_v14.py",
+        "G3": "1e498d473fab024d9d3db7aa7ac5e418972dc21e",
+        "base": "1e498d473fab024d9d3db7aa7ac5e418972dc21e",
+        "equal": true,
+        "mode": "100644"
+      },
+      {
+        "path": "scripts/v14_historical_context.py",
+        "G3": "48296d55b90f56e8ee97c52dab0430087487f462",
+        "base": "48296d55b90f56e8ee97c52dab0430087487f462",
+        "equal": true,
+        "mode": "100644"
+      },
+      {
+        "path": "tests/source_integrity/v14_historical_test_adapter.py",
+        "G3": "843f3b017aea054de68a6d9a0a97df9eb2df222b",
+        "base": "843f3b017aea054de68a6d9a0a97df9eb2df222b",
+        "equal": true,
+        "mode": "100644"
+      },
+      {
+        "path": "tests/source_integrity/test_v14_historical_context.py",
+        "G3": "2ed28a33aeb1e8527813ddf7884b2b699f018db2",
+        "base": "2ed28a33aeb1e8527813ddf7884b2b699f018db2",
+        "equal": true,
+        "mode": "100644"
+      }
+    ]
+  },
+  "exact_minimal_tree_design": {
+    "base_tree": "0e655b4258afd9ca040dd7c1ace868bf1c322a30",
+    "entries": [
+      {
+        "path": "README.md",
+        "sha": "8978a0da9afd699dae146f3f80988e091d1ebad9",
+        "mode": "100644",
+        "type": "blob"
+      },
+      {
+        "path": "docs/roadmap/code-index-v2/05-TODO.md",
+        "sha": "9e08ed8122f54eec9d77e1d42c7d4e093fbe546c",
+        "mode": "100644",
+        "type": "blob"
+      },
+      {
+        "path": "docs/roadmap/code-index-v2/08-HANDOFF.md",
+        "sha": "aac0a878fcdf40cb279f9f9f1055879037852c88",
+        "mode": "100644",
+        "type": "blob"
+      },
+      {
+        "path": "docs/roadmap/code-index-v2/README.md",
+        "sha": "29847d5e240d3514c5fcf3889686b8de611995ec",
+        "mode": "100644",
+        "type": "blob"
+      },
+      {
+        "path": "docs/roadmap/code-index-v2/tasks.json",
+        "sha": "1365970c32d0883cc05a37f9333ffb9589299141",
+        "mode": "100644",
+        "type": "blob"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-pr175-main-integration-20261009",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "219ccaea88c47fea17362614afbfffe3d8f9bbf8"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-pr179-stack-integration-20261009",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "1f42bfe5fdf16fe79f0d8eae968f8783d4493a16"
+      },
+      {
+        "path": "artifacts/checkpoints/p8-resolver-allocations-20261009",
+        "mode": "040000",
+        "type": "tree",
+        "sha": "2773310f88b8d4100ace517a65753ad5332577c3"
+      }
+    ],
+    "expected_checkpoint_tree": "642aa8a0fc53623f47c13c185fb572f0b8ecb6fe",
+    "expected_artifacts_tree": "5b569febabb485b04f8794ad97f994f611d38dff",
+    "expected_root_tree": "59707ad866f5ce30d455b51616061b6eaecd3bd1",
+    "root_choice": "Start with all G3 root entries. Change README.md to main, docs tree to main, artifacts to the exact disjoint union above. All other root entries remain G3.",
+    "possible_merge_parents": [
+      "f7a003636b4902f569404f4e493e1fff7630093e",
+      "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302"
+    ],
+    "meaning": "The listed eight Git tree entries are a design only; no Git tree, commit, ref or PR was created. Expected SHA excludes any later added review files.",
+    "independent_tree_recomputation": [
+      {
+        "label": "main",
+        "kind": "root",
+        "official": "03c581729a4454f0ff4d22f5377ef9becfc1e68d",
+        "calculated": "03c581729a4454f0ff4d22f5377ef9becfc1e68d",
+        "equal": true
+      },
+      {
+        "label": "main",
+        "kind": "artifacts",
+        "official": "c4f42db6654366eb273bc2a3c1c5670bace7d83d",
+        "calculated": "c4f42db6654366eb273bc2a3c1c5670bace7d83d",
+        "equal": true
+      },
+      {
+        "label": "main",
+        "kind": "checkpoints",
+        "official": "6283d88d1c0d78b22125a32c0ef3d90090972466",
+        "calculated": "6283d88d1c0d78b22125a32c0ef3d90090972466",
+        "equal": true
+      },
+      {
+        "label": "G3",
+        "kind": "root",
+        "official": "0e655b4258afd9ca040dd7c1ace868bf1c322a30",
+        "calculated": "0e655b4258afd9ca040dd7c1ace868bf1c322a30",
+        "equal": true
+      },
+      {
+        "label": "G3",
+        "kind": "artifacts",
+        "official": "97edb96050ee64a2447f96083b2b94949924c9e5",
+        "calculated": "97edb96050ee64a2447f96083b2b94949924c9e5",
+        "equal": true
+      },
+      {
+        "label": "G3",
+        "kind": "checkpoints",
+        "official": "337283e89461889e991320aefc1c25ee067ee12e",
+        "calculated": "337283e89461889e991320aefc1c25ee067ee12e",
+        "equal": true
+      },
+      {
+        "label": "base",
+        "kind": "root",
+        "official": "54d66ff6a15661c64d2a05df48f14e9aa09fc13c",
+        "calculated": "54d66ff6a15661c64d2a05df48f14e9aa09fc13c",
+        "equal": true
+      },
+      {
+        "label": "base",
+        "kind": "artifacts",
+        "official": "f3bbbade6096818f1e6f03e9e075e9bd7424279f",
+        "calculated": "f3bbbade6096818f1e6f03e9e075e9bd7424279f",
+        "equal": true
+      },
+      {
+        "label": "base",
+        "kind": "checkpoints",
+        "official": "50cec4e124583ee9c53f2ac107b00d30255c6b74",
+        "calculated": "50cec4e124583ee9c53f2ac107b00d30255c6b74",
+        "equal": true
+      }
+    ]
+  },
+  "execution_and_study_boundary": {
+    "new_tests_or_native_runs": 0,
+    "new_CI_or_scale_actions": 0,
+    "refs_or_labels_changed": 0,
+    "G3_study": "37910924354 remains bound to actual G3; no sample is relabeled as a later merge SHA.",
+    "C8_study": "37902429727 remains separate c8be source and is not modified.",
+    "workflow_trigger_correction": "The shared p8-scale workflow has workflow_dispatch and pull_request types:[labeled], not synchronize. This report does not repeat the incorrect assumption that any PR-head update automatically starts a duplicate scale. Root separately reviews all actual workflow triggers/concurrency before a ref action.",
+    "no_new_measurement_requirement": "A documents/artifact merge that leaves all relevant measured inputs exact does not by itself prove a need for another150 shards. Any later source/run bridge must preserve the actual execution SHA and complete relevant source/observer/artifact scope; it is not granted merely by this tree design."
+  },
+  "remaining_before_any_actual_merge_claim": [
+    "Create only the concrete candidate root/parents the owner chooses and independently read it back against this exact design.",
+    "Retain actual checks and measurements under their executed source identities. This design is not a claim that pending tests/studies completed.",
+    "Do not use a main registry or old main guard to overwrite the G3 admission identity."
+  ]
+}

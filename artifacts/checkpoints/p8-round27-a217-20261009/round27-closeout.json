@@ -1,0 +1,500 @@
+{
+  "schema": "p8-round27-closeout-and-evidence-preservation-v1",
+  "recorded_at": "2026-10-09T10:01:25Z",
+  "round": 27,
+  "round_state": "closed",
+  "following_round": 28,
+  "ledger": {
+    "total_original_tasks": 192,
+    "done": 163,
+    "remaining": 29,
+    "newly_completed_this_round": 0,
+    "target_minimum_newly_completed": 10,
+    "newly_completed_during_session": 0
+  },
+  "source": {
+    "candidate": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+    "product": "b13ba8c1b738bc9c24b81cad1e88711fc9734283",
+    "review": "2ccf89dd6c6f558bdfa5d8ddfa7ddf8958c7aa89",
+    "product_entries": 1092,
+    "product_manifest_sha256": "be60b3d1bb7b90a8f8023506e9d9570c7b445d67686f047e4ef12fde75f7e835",
+    "candidate_ref_not_changed_by_this_record": true
+  },
+  "accepted_scopes": [
+    {
+      "scope": "C3ff original scale build admission",
+      "run": 37910924354,
+      "artifact": 11607655032,
+      "original_helper_sha256": "b10728501358eb2a55a043d9a67e18cb6105a19398b84baae3b0689a9b0d0fee",
+      "actual_helper_exit_code": 0,
+      "source_and_archive_unchanged": true,
+      "samples_completed_at_this_record": 0,
+      "not_full_scale_acceptance": true
+    },
+    {
+      "scope": "C3ff MSRV compilation",
+      "run": 37908825870,
+      "job": 113748746718,
+      "actual_checkout": "54031d548d4199c84bc8ff5ea056adb26470f930",
+      "actual_checkout_tree_equal_C": true,
+      "toolchain": "1.95.0",
+      "commands": [
+        "cargo check --workspace --all-targets --locked",
+        "cargo check -p cc-eval --all-targets --features eval-http --locked"
+      ],
+      "runtime_test_credit": false,
+      "current_check_and_other_gates_pending": true
+    },
+    {
+      "scope": "E6 original atomic-ready parent execution",
+      "run": 37903872639,
+      "job": 113732521456,
+      "execution_source": "e6ab28bc5956e225e2015a57f601bc4d867d3732",
+      "actual_parent": "independently_observed_sigkill_boundaries",
+      "parent_result": "ok",
+      "whole_target_source_equal_C": true,
+      "current_C_run_credit": false
+    },
+    {
+      "scope": "C3ff runtime/lifecycle intake adaptation",
+      "original_predicates_preserved": true,
+      "added_assertions": "report latency and latency_by_operation must equal original Rust statistics legacy_ns fields",
+      "synthetic_boundary_controls": 10,
+      "first_control_fixture_setup_failure_preserved": true,
+      "native_measurement_or_rerun": false
+    }
+  ],
+  "original_acceptance_gap": {
+    "task": "P8-007",
+    "requirement": "Original 09-BENCHMARK.md section 9 explicitly requires DB lock wait observations in actual C1/4/8/16 mixed load.",
+    "confirmed_missing": "Actual mixed-operation database lock acquisition waits; existing client phase timers and separate backfill DB availability probes do not measure these waits.",
+    "existing_worker_contention_evidence": "Retain real quiet/held populations, four held workers, progress, drain and DB availability with their original limits.",
+    "not_added_requirements": [
+      "No mandatory full per-RPC backend span tree.",
+      "No new four-concurrency one-hour soak matrix.",
+      "No arbitrary new performance threshold."
+    ],
+    "independent_reviews": [
+      "contracts/original-attribution-scope.json",
+      "contracts/actual-original-raw-scope.json"
+    ],
+    "dependent_tasks_remain_blocked": true
+  },
+  "main_management": {
+    "observed_main": "f7a003636b4902f569404f4e493e1fff7630093e",
+    "externally_merged_prs": [
+      175,
+      179
+    ],
+    "root_claims_these_merges": false,
+    "local_composition_only": {
+      "resolved_tree": "59707ad866f5ce30d455b51616061b6eaecd3bd1",
+      "guard_conflicts_resolved_with_current_C": 2,
+      "product_and_validation_entries_equal_C": true,
+      "changes_relative_C": {
+        "new_audit_artifacts": 20,
+        "current_main_documentation_files": 5
+      },
+      "actual_merge_or_C_push": false
+    },
+    "obsolete_E6_wholly_unstarted_runtime_cancellation": {
+      "run": 37903872591,
+      "executed": false,
+      "reason": "No supported connector cancellation operation; direct UI had no signed-in cancellation control. Optional cleanup left pending without login or cancellation."
+    }
+  },
+  "following_round_authorization": {
+    "round": 28,
+    "worktree": "/workspace/scratch/a217aaae3bde/p8-lock-observation-work",
+    "scope": "Minimal explicitly opt-in compile-time DB lock observation feature plus separate original four-C mixed diagnostic profile; core DB and server/harness implementation delegated with disjoint ownership.",
+    "proposal_is_preserved_as_historical_pre_authorization_document": true,
+    "default_off_equivalence_not_yet_established": true,
+    "current_C_150_shard_study_remains_frozen": true,
+    "measurement_relabeling_or_population_mixing": false,
+    "new_native_runs_not_yet_started": true
+  },
+  "preservation": {
+    "prefix": "artifacts/checkpoints/p8-round27-a217-20261009/",
+    "files": [
+      {
+        "target": "contracts/original-attribution-scope.json",
+        "source": "original-173-platform-gates/C3ff-ci/P8-007-010-original-attribution-contract-scoped-review.json",
+        "bytes": 10691,
+        "sha256": "9bfd52f945f628183d67ca667fb7e09472f161d08f9d2724c7ed2a62138da878",
+        "git_blob": "f52c7111096a00bdaa4a1c8ca3972cf0ab4c79e0"
+      },
+      {
+        "target": "contracts/actual-original-raw-scope.json",
+        "source": "original-C3ff-runtime/attribution-gap-review/independent-contract-and-raw-scope-review.json",
+        "bytes": 14975,
+        "sha256": "dc25b25e762ba339ba5535beb68264e6804d904bbc7d7b2a96ad6e59fa6b89ba",
+        "git_blob": "a30c3f564c3cfa27c6f37b680b4fd527804ea34e"
+      },
+      {
+        "target": "contracts/original-field-readback.json",
+        "source": "original-C3ff-runtime/attribution-gap-review/existing-original-field-readback.json",
+        "bytes": 62607,
+        "sha256": "02c1b0d14d1813b838d31e5afd33d6fb1e9ef69436f466367873e48d73a8aab8",
+        "git_blob": "eaf10d1766e76e06492bebde31f1ca2e3df6b9c1"
+      },
+      {
+        "target": "contracts/minimal-supplement-proposal.json",
+        "source": "original-C3ff-runtime/attribution-gap-review/minimal-supplement-proposal.json",
+        "bytes": 11544,
+        "sha256": "9c148274903dc3c1768b413a6b2cfad111322f2e21abe37e263bb8ced5ed9555",
+        "git_blob": "dd57ee20473d1c09180e69dbb8d9c32048cf5997"
+      },
+      {
+        "target": "C3ff-scale/build-init-execution.json",
+        "source": "scale-pr180-C-review/executions/init-11607655032.json",
+        "bytes": 3547,
+        "sha256": "198325860c1a63a7e879cc843108042da4747cea8045834c30542b68e689d53e",
+        "git_blob": "901ba303eb263d3bff50be9ac61bba5b6b3d5b9a"
+      },
+      {
+        "target": "C3ff-scale/build-init.stdout",
+        "source": "scale-pr180-C-review/executions/init-11607655032.stdout",
+        "bytes": 50,
+        "sha256": "cb751f8f11efea577e62465a322bf08a4cf0213a87191f795aae97f057fd2512",
+        "git_blob": "1c69aa2c83946da897717bf714ee6f3458ad997d"
+      },
+      {
+        "target": "C3ff-scale/build-init.stderr",
+        "source": "scale-pr180-C-review/executions/init-11607655032.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+      },
+      {
+        "target": "C3ff-scale/build-init-original-review.json",
+        "source": "scale-pr180-C-review/validated/initialization-review.json",
+        "bytes": 855,
+        "sha256": "d284ef73fed6e9049e54a48118e781a85804c7c5bdae9e82228d1e9cc05cac6e",
+        "git_blob": "f179b938ce1ae065c4a757ea5bc85ab1f15118b4"
+      },
+      {
+        "target": "C3ff-scale/build-original-metadata.json",
+        "source": "scale-pr180-C-review/artifact-metadata/11607655032.json",
+        "bytes": 806,
+        "sha256": "10d51f651946bc3acbb3032d75d0d77a47411f647a10c249d0927240530febd3",
+        "git_blob": "75561c7c4f6bd9ac4b46fccd3866a4ac40a59612"
+      },
+      {
+        "target": "C3ff-scale/study-registration.json",
+        "source": "scale-pr180-C-review/study-registration.json",
+        "bytes": 1264,
+        "sha256": "c4fdade3206dd3009270de533dda005946498595bab27167599e2b770b331034",
+        "git_blob": "39693bb72e0c4edfa3f2f5d4fc21ec87d716c7aa"
+      },
+      {
+        "target": "C3ff-scale/fixed-source-view-binding.json",
+        "source": "scale-pr180-C-review/fixed-source-view-binding.json",
+        "bytes": 1058,
+        "sha256": "ef05a8a6395fcf9670c6be192a20abef3fcd208e5dc4ac55beb0ab4cbe3bd2ed",
+        "git_blob": "3807df0b3cff39c68499303915cad0c84c431cbb"
+      },
+      {
+        "target": "C3ff-scale/original-review-helper.py",
+        "source": "scale-pr180-C-review/review_scale_fixed_source.py",
+        "bytes": 19399,
+        "sha256": "b10728501358eb2a55a043d9a67e18cb6105a19398b84baae3b0689a9b0d0fee",
+        "git_blob": "faea1a002ebd7810bc49e5b6f514c2e49239ccfc"
+      },
+      {
+        "target": "C3ff-runtime/helper-independent-admission.json",
+        "source": "scale-pr180-C-review/runtime-helper-independent-admission.json",
+        "bytes": 8518,
+        "sha256": "b150e6b19fd4f730baaa7dba6ed547da5af94a2f5c99d635c30171a5ddeb06d5",
+        "git_blob": "17169a133cda848e4c5fcd3a137985c9f258f0ac"
+      },
+      {
+        "target": "C3ff-runtime/lifecycle-helper-identity-independent-review.json",
+        "source": "original-173-platform-gates/C3ff-ci/C3ff-lifecycle-helper-identity-independent-review.json",
+        "bytes": 3715,
+        "sha256": "7019727111bdc9766ab6801a7ebee34c290edd79e9df43cd0c773fd966fec72a",
+        "git_blob": "43c8ea943b963ca8a004be4983e9c7649f4f689a"
+      },
+      {
+        "target": "C3ff-ci/msrv-original.log",
+        "source": "original-173-platform-gates/C3ff-ci/C3ff-msrv-113748746718-original.log",
+        "bytes": 38333,
+        "sha256": "2817351326cb1cedb700334f553a6164094369f5320bc01b8d3b21fc4fdbaacb",
+        "git_blob": "cdfbc6a5380a235c6561fd744147e06e64ac4efd"
+      },
+      {
+        "target": "C3ff-ci/msrv-independent-review.json",
+        "source": "original-173-platform-gates/C3ff-ci/C3ff-msrv-independent-review.json",
+        "bytes": 5448,
+        "sha256": "c3a9c89ccd01ca3150299725042bb1ab5cccc512f60ef64e8c8a0f154efa3495",
+        "git_blob": "13edc127d506c308657c1dae58439341b869a9ad"
+      },
+      {
+        "target": "E6-ci/atomic-ready-independent-review.json",
+        "source": "original-173-platform-gates/C3ff-ci/E6-closeout-atomic-ready-independent-review.json",
+        "bytes": 10485,
+        "sha256": "155aa56cd243012330d2455bd055844a3843c9cb46dc81698f3d9c52b4a8023d",
+        "git_blob": "97bbec6c71a9acd815ec4370a2e78deac5888802"
+      },
+      {
+        "target": "main-f7-C-resolved-tree-precheck.json",
+        "source": "pr180-integration-r25/main-f7-C-resolved-tree-precheck.json",
+        "bytes": 8895,
+        "sha256": "be61857a91960689253a454ddc6cd305cf5f218573a3fbaf9a0d1ba501b1e692",
+        "git_blob": "3813ee57df63fa8aa2e198b5592e692bb4b47d5a"
+      },
+      {
+        "target": "C3ff-runtime/helpers/adaptation-manifest.json",
+        "source": "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/helpers-C3ff-v1/adaptation-manifest.json",
+        "bytes": 10288,
+        "sha256": "b293187b0a46e1e02157986dbb23661da23cb6f9136866ac2050a73ad85f2e58",
+        "git_blob": "f0d15f8d47090a24017829660f621710af2d3724"
+      },
+      {
+        "target": "C3ff-runtime/helpers/e_raw_cache_audit.py",
+        "source": "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/helpers-C3ff-v1/e_raw_cache_audit.py",
+        "bytes": 11312,
+        "sha256": "6d6bfdf29140f04aa27f90479526ccf168d5abea5a4a88bd6b8ba7d247401bbe",
+        "git_blob": "60a93f27fe3d3a929b28f38e80575a76ce6ec310"
+      },
+      {
+        "target": "C3ff-runtime/helpers/e_raw_cache_audit.py.diff",
+        "source": "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/helpers-C3ff-v1/e_raw_cache_audit.py.diff",
+        "bytes": 1101,
+        "sha256": "24e0dda5e1275a74750867ed3128305c4f4915dd2103f1732d7448dacdc42ff8",
+        "git_blob": "bf3c434dc9afd5702565af2e1a0cec5ed455f558"
+      },
+      {
+        "target": "C3ff-runtime/helpers/lifecycle_cargo_audit.py",
+        "source": "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/helpers-C3ff-v1/lifecycle_cargo_audit.py",
+        "bytes": 3494,
+        "sha256": "51dd19658053ef72244cde17a00c66470f3bc0a48fc06f729a6b3121b2aafefb",
+        "git_blob": "e6773f5f0a2431c8a12cfb2816ab28dd9b78b001"
+      },
+      {
+        "target": "C3ff-runtime/helpers/lifecycle_cargo_audit.py.diff",
+        "source": "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/helpers-C3ff-v1/lifecycle_cargo_audit.py.diff",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+      },
+      {
+        "target": "C3ff-runtime/helpers/preflight_e_lifecycle_zip.py",
+        "source": "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/helpers-C3ff-v1/preflight_e_lifecycle_zip.py",
+        "bytes": 4023,
+        "sha256": "86e3a9bc2ca8357adb9363202fac4780af2c9ae4ea059e8d4e3cbd3db479553c",
+        "git_blob": "6b369c4b1486a260dbc9f7a8204f0ba018187f6e"
+      },
+      {
+        "target": "C3ff-runtime/helpers/preflight_e_lifecycle_zip.py.diff",
+        "source": "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/helpers-C3ff-v1/preflight_e_lifecycle_zip.py.diff",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+      },
+      {
+        "target": "C3ff-runtime/helpers/preflight_e_runtime_zip.py",
+        "source": "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/helpers-C3ff-v1/preflight_e_runtime_zip.py",
+        "bytes": 4120,
+        "sha256": "1520889aca1f6a70d225bc5b4a3b94413ffb0391eff2515e9edd28b22f3db8d3",
+        "git_blob": "1e14105d93d39bf6d7050d6fb13b8f098b792ce7"
+      },
+      {
+        "target": "C3ff-runtime/helpers/preflight_e_runtime_zip.py.diff",
+        "source": "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/helpers-C3ff-v1/preflight_e_runtime_zip.py.diff",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+      },
+      {
+        "target": "C3ff-runtime/helpers/review_e_backfill_original.py",
+        "source": "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/helpers-C3ff-v1/review_e_backfill_original.py",
+        "bytes": 10427,
+        "sha256": "6b2035c034f3c71f52507f362ee1ec5107b41d7b6168380dbfa6604ebbe80178",
+        "git_blob": "64ff39db570a5363a173b95c7dc403c2ed09ca61"
+      },
+      {
+        "target": "C3ff-runtime/helpers/review_e_backfill_original.py.diff",
+        "source": "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/helpers-C3ff-v1/review_e_backfill_original.py.diff",
+        "bytes": 5935,
+        "sha256": "8563f1ca706a53fe3fef6dcb59de55bd7ebb25a325927a60a81081bad7aa9dd3",
+        "git_blob": "702764ab60202e41d8aa0c296d3f29596308ebdb"
+      },
+      {
+        "target": "C3ff-runtime/helpers/review_e_lifecycle_original.py",
+        "source": "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/helpers-C3ff-v1/review_e_lifecycle_original.py",
+        "bytes": 15132,
+        "sha256": "7e8ca1bb3074497cf06686738914264fa9ada1540710f342aedd40b0987a9374",
+        "git_blob": "4de1dab1d3344d66a6c68dd7d4a8a4202f9dbe1d"
+      },
+      {
+        "target": "C3ff-runtime/helpers/review_e_lifecycle_original.py.diff",
+        "source": "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/helpers-C3ff-v1/review_e_lifecycle_original.py.diff",
+        "bytes": 2490,
+        "sha256": "90785b76e0ee5528f3a79c4a3c2bf607ee6b933ade23b36e0a18a61418e2b796",
+        "git_blob": "b6e744875293cb7f77e991b4ba9f8954178e3964"
+      },
+      {
+        "target": "C3ff-runtime/helpers/review_e_runtime_original.py",
+        "source": "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/helpers-C3ff-v1/review_e_runtime_original.py",
+        "bytes": 17988,
+        "sha256": "cc411845b11cee51d3ff963bf0f648d4b92bea11240b61b4da113e3fcb966129",
+        "git_blob": "72a264f5de78e15f8af7816bee0286296ed91314"
+      },
+      {
+        "target": "C3ff-runtime/helpers/review_e_runtime_original.py.diff",
+        "source": "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/helpers-C3ff-v1/review_e_runtime_original.py.diff",
+        "bytes": 6828,
+        "sha256": "d6e01a56f6bb81af3d3a7bf808deb5b495eade8af7ce2c899e6ca1557f61b27d",
+        "git_blob": "c4efbb6f16785dc2301f4ddc8fa672a0d026b219"
+      },
+      {
+        "target": "C3ff-runtime/helpers/test_helper_controls.py",
+        "source": "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/helpers-C3ff-v1/test_helper_controls.py",
+        "bytes": 9348,
+        "sha256": "e5b1be2363caf65936eeffd40b94445335574f0e2bd74b19930b3ee3cebbd6f4",
+        "git_blob": "f29f7d15c5ddb7e8f34c20f5b92e458c8189d22b"
+      },
+      {
+        "target": "C3ff-runtime/helpers/test_helper_controls.py.diff",
+        "source": "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/helpers-C3ff-v1/test_helper_controls.py.diff",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+      },
+      {
+        "target": "C3ff-runtime/helpers/test_lifecycle_helper_controls.py",
+        "source": "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/helpers-C3ff-v1/test_lifecycle_helper_controls.py",
+        "bytes": 4522,
+        "sha256": "12e94ab9dec0f3e93b9efa0660959a6aff6a636b65ac753027b468fbec6d939a",
+        "git_blob": "89b627916e631b34d2b67bafd4aafbc8036dcbc3"
+      },
+      {
+        "target": "C3ff-runtime/helpers/test_lifecycle_helper_controls.py.diff",
+        "source": "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/helpers-C3ff-v1/test_lifecycle_helper_controls.py.diff",
+        "bytes": 764,
+        "sha256": "ce4b1a9f8e6a28aeff94fa851fa8ce56c368043cd8daee38da77e583266e5819",
+        "git_blob": "d890e0884949433e6d647df3d8349578dd379ef7"
+      },
+      {
+        "target": "C3ff-runtime/binding-controls/review_e_runtime_original.py.wrong-checkout.stderr",
+        "source": "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/binding-controls/review_e_runtime_original.py.wrong-checkout.stderr",
+        "bytes": 433,
+        "sha256": "5f527d42453b40de4ae9efd093c598c566347b89712cb903d780b86766cbe923",
+        "git_blob": "daa0fc20c981dcc490081fe88a011326d10149b8"
+      },
+      {
+        "target": "C3ff-runtime/binding-controls/review_e_runtime_original.py.wrong-checkout.stdout",
+        "source": "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/binding-controls/review_e_runtime_original.py.wrong-checkout.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+      },
+      {
+        "target": "C3ff-runtime/binding-controls/review_e_runtime_original.py.wrong-head.stderr",
+        "source": "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/binding-controls/review_e_runtime_original.py.wrong-head.stderr",
+        "bytes": 327,
+        "sha256": "847f3ff88f94f86e39b98c593accce9c077d7ce77ccd13838a51762399cb9d24",
+        "git_blob": "cd6da2d122d9e1b7fa941929c174b7bfccf3329a"
+      },
+      {
+        "target": "C3ff-runtime/binding-controls/review_e_runtime_original.py.wrong-head.stdout",
+        "source": "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/binding-controls/review_e_runtime_original.py.wrong-head.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+      },
+      {
+        "target": "C3ff-runtime/binding-controls/v1-setup-failure.json",
+        "source": "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/binding-controls/v1-setup-failure.json",
+        "bytes": 919,
+        "sha256": "122de506fbe02f17ca7f32ddddb4954d46d79b5cd3523fe7f79dd99403d93269",
+        "git_blob": "542db3a58a4bea688839e6dd23410ecab53e81a8"
+      },
+      {
+        "target": "C3ff-runtime/binding-controls-v2/controls.json",
+        "source": "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/binding-controls-v2/controls.json",
+        "bytes": 17404,
+        "sha256": "871195aaa8744402dd56c969cb8fb2658514264e2e9d60bbf4357f3655202682",
+        "git_blob": "5ac3064f794ea1af4bb9d5411f757946364ee870"
+      },
+      {
+        "target": "C3ff-runtime/binding-controls-v2/review_e_backfill_original.py.wrong-checkout.stderr",
+        "source": "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/binding-controls-v2/review_e_backfill_original.py.wrong-checkout.stderr",
+        "bytes": 434,
+        "sha256": "37224edaffd071f375cdb2d40664f6c8ff170b238320af90b73fdd9966a21433",
+        "git_blob": "4b804153633c1effe9e4f028b0557842021d33d5"
+      },
+      {
+        "target": "C3ff-runtime/binding-controls-v2/review_e_backfill_original.py.wrong-checkout.stdout",
+        "source": "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/binding-controls-v2/review_e_backfill_original.py.wrong-checkout.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+      },
+      {
+        "target": "C3ff-runtime/binding-controls-v2/review_e_backfill_original.py.wrong-head.stderr",
+        "source": "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/binding-controls-v2/review_e_backfill_original.py.wrong-head.stderr",
+        "bytes": 328,
+        "sha256": "314cfd4194519d7c68eb71ce384a61653168b0b0c9e2ffd91e56d340ed25bdd2",
+        "git_blob": "d8554c6d58738f22c6cfd1bd99798d7cc62ef402"
+      },
+      {
+        "target": "C3ff-runtime/binding-controls-v2/review_e_backfill_original.py.wrong-head.stdout",
+        "source": "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/binding-controls-v2/review_e_backfill_original.py.wrong-head.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+      },
+      {
+        "target": "C3ff-runtime/binding-controls-v2/review_e_runtime_original.py.wrong-checkout.stderr",
+        "source": "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/binding-controls-v2/review_e_runtime_original.py.wrong-checkout.stderr",
+        "bytes": 433,
+        "sha256": "5f527d42453b40de4ae9efd093c598c566347b89712cb903d780b86766cbe923",
+        "git_blob": "daa0fc20c981dcc490081fe88a011326d10149b8"
+      },
+      {
+        "target": "C3ff-runtime/binding-controls-v2/review_e_runtime_original.py.wrong-checkout.stdout",
+        "source": "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/binding-controls-v2/review_e_runtime_original.py.wrong-checkout.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+      },
+      {
+        "target": "C3ff-runtime/binding-controls-v2/review_e_runtime_original.py.wrong-head.stderr",
+        "source": "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/binding-controls-v2/review_e_runtime_original.py.wrong-head.stderr",
+        "bytes": 327,
+        "sha256": "847f3ff88f94f86e39b98c593accce9c077d7ce77ccd13838a51762399cb9d24",
+        "git_blob": "cd6da2d122d9e1b7fa941929c174b7bfccf3329a"
+      },
+      {
+        "target": "C3ff-runtime/binding-controls-v2/review_e_runtime_original.py.wrong-head.stdout",
+        "source": "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/binding-controls-v2/review_e_runtime_original.py.wrong-head.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+      },
+      {
+        "target": "C3ff-runtime/binding-controls-v2/synthetic-empty-manifest.json",
+        "source": "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/binding-controls-v2/synthetic-empty-manifest.json",
+        "bytes": 3,
+        "sha256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356",
+        "git_blob": "0967ef424bce6791893e9a57bb952f80fd536e93"
+      },
+      {
+        "target": "E6-ci/closeout-original.log",
+        "source": "original-173-platform-gates/C3ff-ci/E6-closeout-113732521456-original.log",
+        "bytes": 1918744,
+        "sha256": "da6f5748589ae5cde55fe8690ff02b814d6ac393b2384fcf4ec164f7a214bf9b",
+        "git_blob": "4c4c27fd01466f2b1401fadb87a913bf228db9ad"
+      }
+    ],
+    "original_ZIP_binary_transport_ids_excluded": true,
+    "full_original_artifact_ZIPs_not_claimed_published": true,
+    "prior_receipt_commit": "01b91c15af400beae2dcb58cee39329a1daa49b4"
+  },
+  "limits": [
+    "No original TODO status, dependency, acceptance text or historical failed/open subgate was modified.",
+    "Review or compile successes are credited only at the recorded scopes; none is counted as a completed TODO.",
+    "The user-requested minimum of ten completed original TODOs remains unfulfilled and work continues."
+  ]
+}

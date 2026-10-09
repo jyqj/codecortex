@@ -1,0 +1,485 @@
+{
+  "actual_ns_assertion_count": 2,
+  "controls": [
+    {
+      "actual_accept": true,
+      "case": "empty-shape-copy",
+      "error": null,
+      "expected_accept": true,
+      "inputs": {
+        "report": {
+          "latency": {
+            "maximum_ns": null,
+            "n": 0,
+            "p50_ns": null,
+            "p95_ns": null,
+            "p99_ns": null,
+            "scope": "descriptive",
+            "tail_estimate_reliable": false
+          },
+          "latency_by_operation": {
+            "build": {
+              "maximum_ns": null,
+              "n": 0,
+              "p50_ns": null,
+              "p95_ns": null,
+              "p99_ns": null,
+              "scope": "descriptive",
+              "tail_estimate_reliable": false
+            },
+            "read": {
+              "maximum_ns": null,
+              "n": 0,
+              "p50_ns": null,
+              "p95_ns": null,
+              "p99_ns": null,
+              "scope": "descriptive",
+              "tail_estimate_reliable": false
+            }
+          }
+        },
+        "stats": {
+          "legacy_ns": {
+            "latency": {
+              "maximum_ns": null,
+              "n": 0,
+              "p50_ns": null,
+              "p95_ns": null,
+              "p99_ns": null,
+              "scope": "descriptive",
+              "tail_estimate_reliable": false
+            },
+            "latency_by_operation": {
+              "build": {
+                "maximum_ns": null,
+                "n": 0,
+                "p50_ns": null,
+                "p95_ns": null,
+                "p99_ns": null,
+                "scope": "descriptive",
+                "tail_estimate_reliable": false
+              },
+              "read": {
+                "maximum_ns": null,
+                "n": 0,
+                "p50_ns": null,
+                "p95_ns": null,
+                "p99_ns": null,
+                "scope": "descriptive",
+                "tail_estimate_reliable": false
+              }
+            }
+          }
+        }
+      },
+      "scope": "Actual added assertion AST; synthetic wire shape only, no computed quantiles or native acceptance"
+    },
+    {
+      "actual_accept": true,
+      "case": "non-microsecond-copy",
+      "error": null,
+      "expected_accept": true,
+      "inputs": {
+        "report": {
+          "latency": {
+            "maximum_ns": 1001,
+            "n": 2,
+            "p50_ns": 999,
+            "p95_ns": 1001,
+            "p99_ns": 1001,
+            "scope": "descriptive",
+            "tail_estimate_reliable": false
+          },
+          "latency_by_operation": {
+            "build": {
+              "maximum_ns": null,
+              "n": 0,
+              "p50_ns": null,
+              "p95_ns": null,
+              "p99_ns": null,
+              "scope": "descriptive",
+              "tail_estimate_reliable": false
+            },
+            "read": {
+              "maximum_ns": 1001,
+              "n": 2,
+              "p50_ns": 999,
+              "p95_ns": 1001,
+              "p99_ns": 1001,
+              "scope": "descriptive",
+              "tail_estimate_reliable": false
+            }
+          }
+        },
+        "stats": {
+          "legacy_ns": {
+            "latency": {
+              "maximum_ns": 1001,
+              "n": 2,
+              "p50_ns": 999,
+              "p95_ns": 1001,
+              "p99_ns": 1001,
+              "scope": "descriptive",
+              "tail_estimate_reliable": false
+            },
+            "latency_by_operation": {
+              "build": {
+                "maximum_ns": null,
+                "n": 0,
+                "p50_ns": null,
+                "p95_ns": null,
+                "p99_ns": null,
+                "scope": "descriptive",
+                "tail_estimate_reliable": false
+              },
+              "read": {
+                "maximum_ns": 1001,
+                "n": 2,
+                "p50_ns": 999,
+                "p95_ns": 1001,
+                "p99_ns": 1001,
+                "scope": "descriptive",
+                "tail_estimate_reliable": false
+              }
+            }
+          }
+        }
+      },
+      "scope": "Actual added assertion AST; synthetic wire shape only, no computed quantiles or native acceptance"
+    },
+    {
+      "actual_accept": false,
+      "case": "missing-legacy-field",
+      "error": "KeyError: 'legacy_ns'",
+      "expected_accept": false,
+      "inputs": {
+        "report": {
+          "latency": {
+            "maximum_ns": 1001,
+            "n": 2,
+            "p50_ns": 999,
+            "p95_ns": 1001,
+            "p99_ns": 1001,
+            "scope": "descriptive",
+            "tail_estimate_reliable": false
+          },
+          "latency_by_operation": {
+            "build": {
+              "maximum_ns": null,
+              "n": 0,
+              "p50_ns": null,
+              "p95_ns": null,
+              "p99_ns": null,
+              "scope": "descriptive",
+              "tail_estimate_reliable": false
+            },
+            "read": {
+              "maximum_ns": 1001,
+              "n": 2,
+              "p50_ns": 999,
+              "p95_ns": 1001,
+              "p99_ns": 1001,
+              "scope": "descriptive",
+              "tail_estimate_reliable": false
+            }
+          }
+        },
+        "stats": {}
+      },
+      "scope": "Actual added assertion AST; synthetic wire shape only, no computed quantiles or native acceptance"
+    },
+    {
+      "actual_accept": false,
+      "case": "overall-copy-tamper",
+      "error": "AssertionError: runtime legacy ns overall copy differs from bound Rust statistics",
+      "expected_accept": false,
+      "inputs": {
+        "report": {
+          "latency": {
+            "maximum_ns": 1001,
+            "n": 2,
+            "p50_ns": 999,
+            "p95_ns": 1000,
+            "p99_ns": 1001,
+            "scope": "descriptive",
+            "tail_estimate_reliable": false
+          },
+          "latency_by_operation": {
+            "build": {
+              "maximum_ns": null,
+              "n": 0,
+              "p50_ns": null,
+              "p95_ns": null,
+              "p99_ns": null,
+              "scope": "descriptive",
+              "tail_estimate_reliable": false
+            },
+            "read": {
+              "maximum_ns": 1001,
+              "n": 2,
+              "p50_ns": 999,
+              "p95_ns": 1001,
+              "p99_ns": 1001,
+              "scope": "descriptive",
+              "tail_estimate_reliable": false
+            }
+          }
+        },
+        "stats": {
+          "legacy_ns": {
+            "latency": {
+              "maximum_ns": 1001,
+              "n": 2,
+              "p50_ns": 999,
+              "p95_ns": 1001,
+              "p99_ns": 1001,
+              "scope": "descriptive",
+              "tail_estimate_reliable": false
+            },
+            "latency_by_operation": {
+              "build": {
+                "maximum_ns": null,
+                "n": 0,
+                "p50_ns": null,
+                "p95_ns": null,
+                "p99_ns": null,
+                "scope": "descriptive",
+                "tail_estimate_reliable": false
+              },
+              "read": {
+                "maximum_ns": 1001,
+                "n": 2,
+                "p50_ns": 999,
+                "p95_ns": 1001,
+                "p99_ns": 1001,
+                "scope": "descriptive",
+                "tail_estimate_reliable": false
+              }
+            }
+          }
+        }
+      },
+      "scope": "Actual added assertion AST; synthetic wire shape only, no computed quantiles or native acceptance"
+    },
+    {
+      "actual_accept": false,
+      "case": "operation-copy-tamper",
+      "error": "AssertionError: runtime legacy ns operation copy differs from bound Rust statistics",
+      "expected_accept": false,
+      "inputs": {
+        "report": {
+          "latency": {
+            "maximum_ns": 1001,
+            "n": 2,
+            "p50_ns": 999,
+            "p95_ns": 1001,
+            "p99_ns": 1001,
+            "scope": "descriptive",
+            "tail_estimate_reliable": false
+          },
+          "latency_by_operation": {
+            "build": {
+              "maximum_ns": null,
+              "n": 0,
+              "p50_ns": null,
+              "p95_ns": null,
+              "p99_ns": null,
+              "scope": "descriptive",
+              "tail_estimate_reliable": false
+            },
+            "read": {
+              "maximum_ns": 1001,
+              "n": 0,
+              "p50_ns": 999,
+              "p95_ns": 1001,
+              "p99_ns": 1001,
+              "scope": "descriptive",
+              "tail_estimate_reliable": false
+            }
+          }
+        },
+        "stats": {
+          "legacy_ns": {
+            "latency": {
+              "maximum_ns": 1001,
+              "n": 2,
+              "p50_ns": 999,
+              "p95_ns": 1001,
+              "p99_ns": 1001,
+              "scope": "descriptive",
+              "tail_estimate_reliable": false
+            },
+            "latency_by_operation": {
+              "build": {
+                "maximum_ns": null,
+                "n": 0,
+                "p50_ns": null,
+                "p95_ns": null,
+                "p99_ns": null,
+                "scope": "descriptive",
+                "tail_estimate_reliable": false
+              },
+              "read": {
+                "maximum_ns": 1001,
+                "n": 2,
+                "p50_ns": 999,
+                "p95_ns": 1001,
+                "p99_ns": 1001,
+                "scope": "descriptive",
+                "tail_estimate_reliable": false
+              }
+            }
+          }
+        }
+      },
+      "scope": "Actual added assertion AST; synthetic wire shape only, no computed quantiles or native acceptance"
+    },
+    {
+      "actual_accept": false,
+      "case": "null-to-zero-tamper",
+      "error": "AssertionError: runtime legacy ns overall copy differs from bound Rust statistics",
+      "expected_accept": false,
+      "inputs": {
+        "report": {
+          "latency": {
+            "maximum_ns": 0,
+            "n": 0,
+            "p50_ns": null,
+            "p95_ns": null,
+            "p99_ns": null,
+            "scope": "descriptive",
+            "tail_estimate_reliable": false
+          },
+          "latency_by_operation": {
+            "build": {
+              "maximum_ns": null,
+              "n": 0,
+              "p50_ns": null,
+              "p95_ns": null,
+              "p99_ns": null,
+              "scope": "descriptive",
+              "tail_estimate_reliable": false
+            },
+            "read": {
+              "maximum_ns": null,
+              "n": 0,
+              "p50_ns": null,
+              "p95_ns": null,
+              "p99_ns": null,
+              "scope": "descriptive",
+              "tail_estimate_reliable": false
+            }
+          }
+        },
+        "stats": {
+          "legacy_ns": {
+            "latency": {
+              "maximum_ns": null,
+              "n": 0,
+              "p50_ns": null,
+              "p95_ns": null,
+              "p99_ns": null,
+              "scope": "descriptive",
+              "tail_estimate_reliable": false
+            },
+            "latency_by_operation": {
+              "build": {
+                "maximum_ns": null,
+                "n": 0,
+                "p50_ns": null,
+                "p95_ns": null,
+                "p99_ns": null,
+                "scope": "descriptive",
+                "tail_estimate_reliable": false
+              },
+              "read": {
+                "maximum_ns": null,
+                "n": 0,
+                "p50_ns": null,
+                "p95_ns": null,
+                "p99_ns": null,
+                "scope": "descriptive",
+                "tail_estimate_reliable": false
+              }
+            }
+          }
+        }
+      },
+      "scope": "Actual added assertion AST; synthetic wire shape only, no computed quantiles or native acceptance"
+    },
+    {
+      "case": "review_e_runtime_original.py.wrong-head",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/helpers-C3ff-v1/review_e_runtime_original.py",
+        "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/binding-controls-v2/synthetic-empty-manifest.json",
+        "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/intentionally-nonexistent-artifacts",
+        "275e8799d4947d297329073eaa3ca675d3fd0777",
+        "/workspace/scratch/a217aaae3bde/scale-original-c3ff",
+        "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/binding-controls-v2"
+      ],
+      "returncode": 1,
+      "scope": "Full evidence-helper CLI stops at exact identity check before opening any artifact or executing a native binary",
+      "stderr": "Traceback (most recent call last):\n  File \"/workspace/scratch/a217aaae3bde/original-C3ff-runtime/helpers-C3ff-v1/review_e_runtime_original.py\", line 8, in <module>\n    assert head==HEAD, 'helper frozen for exact fixed C3ff execution only'\n           ^^^^^^^^^^\nAssertionError: helper frozen for exact fixed C3ff execution only\n",
+      "stdout": ""
+    },
+    {
+      "case": "review_e_runtime_original.py.wrong-checkout",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/helpers-C3ff-v1/review_e_runtime_original.py",
+        "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/binding-controls-v2/synthetic-empty-manifest.json",
+        "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/intentionally-nonexistent-artifacts",
+        "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+        "/workspace/scratch/a217aaae3bde/scale-original-275e",
+        "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/binding-controls-v2"
+      ],
+      "returncode": 1,
+      "scope": "Full evidence-helper CLI stops at exact identity check before opening any artifact or executing a native binary",
+      "stderr": "Traceback (most recent call last):\n  File \"/workspace/scratch/a217aaae3bde/original-C3ff-runtime/helpers-C3ff-v1/review_e_runtime_original.py\", line 9, in <module>\n    assert subprocess.check_output(['git','rev-parse','HEAD'],cwd=repo,text=True).strip()==head, 'frozen checkout HEAD differs'\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: frozen checkout HEAD differs\n",
+      "stdout": ""
+    },
+    {
+      "case": "review_e_backfill_original.py.wrong-head",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/helpers-C3ff-v1/review_e_backfill_original.py",
+        "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/binding-controls-v2/synthetic-empty-manifest.json",
+        "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/intentionally-nonexistent-artifacts",
+        "275e8799d4947d297329073eaa3ca675d3fd0777",
+        "/workspace/scratch/a217aaae3bde/scale-original-c3ff",
+        "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/binding-controls-v2"
+      ],
+      "returncode": 1,
+      "scope": "Full evidence-helper CLI stops at exact identity check before opening any artifact or executing a native binary",
+      "stderr": "Traceback (most recent call last):\n  File \"/workspace/scratch/a217aaae3bde/original-C3ff-runtime/helpers-C3ff-v1/review_e_backfill_original.py\", line 8, in <module>\n    assert head==HEAD, 'helper frozen for exact fixed C3ff execution only'\n           ^^^^^^^^^^\nAssertionError: helper frozen for exact fixed C3ff execution only\n",
+      "stdout": ""
+    },
+    {
+      "case": "review_e_backfill_original.py.wrong-checkout",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/helpers-C3ff-v1/review_e_backfill_original.py",
+        "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/binding-controls-v2/synthetic-empty-manifest.json",
+        "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/intentionally-nonexistent-artifacts",
+        "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+        "/workspace/scratch/a217aaae3bde/scale-original-275e",
+        "/workspace/scratch/a217aaae3bde/original-C3ff-runtime/binding-controls-v2"
+      ],
+      "returncode": 1,
+      "scope": "Full evidence-helper CLI stops at exact identity check before opening any artifact or executing a native binary",
+      "stderr": "Traceback (most recent call last):\n  File \"/workspace/scratch/a217aaae3bde/original-C3ff-runtime/helpers-C3ff-v1/review_e_backfill_original.py\", line 9, in <module>\n    assert subprocess.check_output(['git','rev-parse','HEAD'],cwd=repo,text=True).strip()==head, 'frozen checkout HEAD differs'\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: frozen checkout HEAD differs\n",
+      "stdout": ""
+    }
+  ],
+  "helper_sha256": "cc411845b11cee51d3ff963bf0f648d4b92bea11240b61b4da113e3fcb966129",
+  "native_executed": false,
+  "original_zip_opened": false,
+  "passed": 10,
+  "schema": "C3ff-helper-new-boundary-controls-v1",
+  "tasks_changed": false
+}

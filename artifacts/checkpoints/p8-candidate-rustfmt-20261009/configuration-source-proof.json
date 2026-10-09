@@ -1,0 +1,67 @@
+{
+  "schema": "p8-candidate-rustfmt-configuration-source-observation-v1",
+  "source_commit": "4866ec5558f1cedd34c7dc54231af65b77f706ec",
+  "root_tree": "7236f68d4d814d4e607d8c2c774ac227a91a092b",
+  "crates_tree": "4121c0fadd9b74c7b696fed13d8e15c388f8a7a6",
+  "actual_root_entries": 13,
+  "actual_crates_recursive_entries": 1298,
+  "actual_tree_response_truncated": false,
+  "root_or_crates_rustfmt_configs": [],
+  "workspace_edition": "2021",
+  "crate_edition": "workspace inherited for all five touched crates",
+  "Cargo_manifests": [
+    {
+      "path": "Cargo.toml",
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c376fdc70465a237022de8a05b7b27cc28f72cc8",
+      "bytes": 1594
+    },
+    {
+      "path": "crates/cc-db/Cargo.toml",
+      "mode": "100644",
+      "type": "blob",
+      "blob": "69c83252f99328ab8c5cea62ac1e804d5f29423b",
+      "bytes": 427
+    },
+    {
+      "path": "crates/cc-server/Cargo.toml",
+      "mode": "100644",
+      "type": "blob",
+      "blob": "b43687e2190c7a814675483998d7186fa49e5f8b",
+      "bytes": 1433
+    },
+    {
+      "path": "crates/cc-search/Cargo.toml",
+      "mode": "100644",
+      "type": "blob",
+      "blob": "0957d84e5c555ea6130017e8692e04bba322173b",
+      "bytes": 837
+    },
+    {
+      "path": "crates/cc-semantic/Cargo.toml",
+      "mode": "100644",
+      "type": "blob",
+      "blob": "5342b782e83a76c1431b1e94e6ea9b30beae356d",
+      "bytes": 311
+    },
+    {
+      "path": "crates/cc-eval/Cargo.toml",
+      "mode": "100644",
+      "type": "blob",
+      "blob": "c2f6dc531a42a5643c866856eae36f312e6f30d1",
+      "bytes": 1715
+    }
+  ],
+  "original_cargo_root_body": "[workspace]\nresolver = \"2\"\nmembers = [\n    \"crates/cc-model\",\n    \"crates/cc-db\",\n    \"crates/cc-parsers\",\n    \"crates/cc-index\",\n    \"crates/cc-search\",\n    \"crates/cc-server\",\n    \"crates/cc-eval\",\n    \"crates/cc-semantic\",\n]\n\n[workspace.package]\nversion = \"1.0.0\"\nedition = \"2021\"\n# MSRV 1.95: rusqlite 0.40 / libsqlite3-sys 0.38 use `cfg_select!` (stabilized in 1.95).\nrust-version = \"1.95\"\nlicense = \"MIT\"\n\n[workspace.dependencies]\n# Serialization\nserde = { version = \"1\", features = [\"derive\"] }\nserde_json = { version = \"1\", features = [\"float_roundtrip\"] }\n\n# Error handling\nthiserror = \"2\"\n\n# SQLite\nrusqlite = { version = \"0.40\", features = [\"bundled\", \"vtab\", \"functions\"] }\nr2d2 = \"0.8\"\nr2d2_sqlite = \"0.35\"\n\n# Hashing\nblake3 = \"1\"\n\n# CLI\nclap = { version = \"4\", features = [\"derive\"] }\n\n# Directories\ndirs = \"5\"\n\n# Async\ntokio = { version = \"1\", features = [\"full\"] }\n\n# Parallelism\nrayon = \"1\"\n\n# File watching\nnotify = \"8.2\"\n\n# File scanning (gitignore-aware)\nignore = \"0.4\"\n\n# Tree-sitter\ntree-sitter = \"0.24\"\ntree-sitter-python = \"0.23\"\ntree-sitter-javascript = \"0.23\"\ntree-sitter-typescript = \"0.23\"\ntree-sitter-rust = \"0.23\"\ntree-sitter-go = \"0.23\"\ntree-sitter-java = \"0.23\"\ntree-sitter-c = \"0.23\"\ntree-sitter-cpp = \"0.23\"\n\n# Logging\ntracing = \"0.1\"\ntracing-subscriber = { version = \"0.3\", features = [\"env-filter\"] }\n\n# Regex\nregex = \"1\"\n\n# LRU cache\nlru = \"0.18.2\"\n\n# Time\nchrono = { version = \"0.4\", features = [\"serde\"] }\nlibc = \"0.2\"\n\n# MCP\nrmcp = { version = \"2.2\", features = [\"server\", \"transport-io\"] }\n\n[profile.release]\nlto = \"thin\"\ncodegen-units = 1\nstrip = true\n",
+  "formatting_config": "Explicit empty owned TOML preserves repository default settings and prevents unrelated runner home configuration. --edition 2021 matches the original workspace. No skip_children or other unstable option is set.",
+  "module_rule": {
+    "method": "stdin",
+    "reason": "Formatting text input avoids resolving out-of-line modules not present in the fixed candidate subset.",
+    "source_reference": "rust-lang/rustfmt src/modules.rs: visit_crate skips visiting submodules when input is stdin; actual 1.95 tool identity/version and command output will be recorded during execution."
+  },
+  "limitations": [
+    "This is a configuration/source observation, not Rust parsing, compilation or semantic execution.",
+    "Final normal repository CI remains required after formatted candidate bytes are reviewed and installed."
+  ]
+}

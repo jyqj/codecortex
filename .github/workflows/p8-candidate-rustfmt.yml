@@ -1,0 +1,47 @@
+name: P8 isolated candidate rustfmt
+on:
+  push:
+    branches:
+      - task/p8-candidate-rustfmt-20261009
+permissions:
+  contents: read
+jobs:
+  format_candidates:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Require first attempt
+        shell: bash
+        run: test "$GITHUB_RUN_ATTEMPT" = "1"
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Install exact formatter toolchain
+        shell: bash
+        run: rustup toolchain install 1.95.0 --profile minimal --component rustfmt --no-self-update
+      - name: Verify fixed byte inputs and format isolated copies
+        shell: bash
+        run: |
+          python3 -B - <<'PY'
+          import hashlib
+          from pathlib import Path
+          expected = {
+              "artifacts/checkpoints/p8-candidate-rustfmt-20261009/run.py": "fa62052a10fd79da4ce54ec32f6f91bf4940fe5e80509b993074b320b7416332",
+              "artifacts/checkpoints/p8-candidate-rustfmt-20261009/plan.json": "cadb1c3e96b7d2fa594fef394e975621beaf8c24e3ef2d80452e951b720a7929",
+              "artifacts/checkpoints/p8-candidate-rustfmt-20261009/candidate-sources.json": "5d578f386cf84a72017ea666417bc376e84a85c563bae0313a44cb0b4f3878f7",
+          }
+          for name, digest in expected.items():
+              if hashlib.sha256(Path(name).read_bytes()).hexdigest() != digest:
+                  raise SystemExit("fixed formatter input mismatch: " + name)
+          PY
+          python3 -B artifacts/checkpoints/p8-candidate-rustfmt-20261009/run.py
+      - name: Preserve all formatter originals and outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-candidate-rustfmt-${{ github.sha }}
+          path: ${{ runner.temp }}/p8-candidate-rustfmt-${{ github.run_id }}
+          include-hidden-files: true
+          if-no-files-found: error

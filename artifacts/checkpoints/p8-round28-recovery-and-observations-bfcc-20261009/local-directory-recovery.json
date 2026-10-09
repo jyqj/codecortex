@@ -1,0 +1,58 @@
+{
+  "schema": "round28-local-executor-directory-recovery-v1",
+  "recorded_utc": "2026-10-09 22:13:12 UTC",
+  "scope": "Recovery of the original task directory after its disappearance; no remote studies, PRs, source definitions, or measurement counts were changed.",
+  "original_task_directory": "/workspace/scratch/bfccb8494ba0",
+  "observed_original_directory_absent": true,
+  "observed_parent_directories_present": true,
+  "directory_recreated": true,
+  "recovery_observations": [
+    {
+      "key": "round28-executor-availability-observation",
+      "original": [
+        {
+          "error": "environment `ccarenv_b64_Y2NhcmVudl82YTkwODlhMGI1YjQ4MTkxYWNkZjcwN2Y5Mjk1ZWFiMQ` only supports `bash`"
+        },
+        {
+          "current_time": "2026-10-09 22:10:15 UTC"
+        }
+      ]
+    },
+    {
+      "key": "round28-executor-bash-alias-check",
+      "original": [
+        {
+          "error": "exec_command failed: CreateProcess { message: \"Rejected(\\\"Failed to create unified exec process: exec-server rejected request (-32603): No such file or directory (os error 2)\\\")\" }"
+        }
+      ]
+    },
+    {
+      "key": "round28-executor-root-cwd-check",
+      "original": [
+        {
+          "chunk_id": "79f876",
+          "wall_time_seconds": 0.000022233,
+          "exit_code": 0,
+          "original_token_count": 1,
+          "output": "/\n"
+        }
+      ]
+    },
+    {
+      "key": "round28-recreated-task-directory",
+      "original": {
+        "chunk_id": "4ad68e",
+        "wall_time_seconds": 0.000022804,
+        "exit_code": 0,
+        "original_token_count": 0,
+        "output": ""
+      }
+    }
+  ],
+  "prior_local_bytes_must_not_be_assumed_present": true,
+  "restore_policy": "Recover necessary exact original files from already published immutable Git objects. Preserve recovery provenance; do not treat restoration as a new sample or repeat old measurement/validation.",
+  "counts": {
+    "newly_completed_original_todos": 0,
+    "remaining": 29
+  }
+}

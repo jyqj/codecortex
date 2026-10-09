@@ -1,0 +1,255 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_triage",
+  "created_at": "2026-10-09T22:02:12.533621+00:00",
+  "scope": "Read-only interpretation of original P8-006 acceptance and the already established oracle compatibility defect; no new execution or task change.",
+  "status": "conditional_claim_by_claim_boundary_not_study_acceptance",
+  "complete_aggregate_observed_in_this_review": false,
+  "original_task": {
+    "id": "P8-006",
+    "phase": "P8",
+    "phase_name": "规模、质量与发行认证",
+    "batch": "P8-B",
+    "title": "增量规模与fanout曲线",
+    "status": "in_progress",
+    "priority": "normal",
+    "scope": [
+      "crates/cc-eval/src/benchmark/mutations.rs",
+      "crates/cc-index/"
+    ],
+    "depends_on": [
+      "P7-020",
+      "P8-001",
+      "P8-005"
+    ],
+    "steps": [
+      "测no-op/body/API/config/batch和超预算闭包",
+      "输出各phase计数"
+    ],
+    "deliverables": [
+      "增量规模与fanout曲线的实现/配置或规格变更",
+      "artifacts/benchmarks/<run-id>/ 中对应 V07, V20 验证证据（实施时生成）"
+    ],
+    "acceptance": [
+      "时间可归因且闭包完成后full parity，未完成有显式status",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validations": [
+      "V07",
+      "V20"
+    ],
+    "contracts_doc": "02-CONTRACTS.md",
+    "benchmark_doc": "09-BENCHMARK.md",
+    "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+    "conditional": null,
+    "required_for": [
+      "M4-local",
+      "M4-semantic"
+    ],
+    "evidence": [
+      {
+        "status": "local_engineering_advanced_not_full_acceptance",
+        "round": 2,
+        "source": "4917a43c04f72022240537761eeb785a745f3153",
+        "artifacts": [
+          "artifacts/checkpoints/p8-scale-20261007",
+          "artifacts/checkpoints/p8-local-waves-20261007/round2",
+          "docs/roadmap/code-index-v2/P8-SCALE.md"
+        ],
+        "limitations": "原硬依赖和正式验收保留；60文件本地正确性样本不是完整1k到100k、质量、性能或发布认证。scale最终CACHE_DIR单行修补f94e3205仅静态检查；其后整合检查另记。"
+      },
+      {
+        "target_sha": "df140ad1dc97f080afd748e9571b360e0cade5fe",
+        "artifact_paths": [
+          "artifacts/checkpoints/p8-oracle-compat-20261008/README.md"
+        ],
+        "scope": "completed engineering repairs and scoped validation only; original task dependencies and full V02/V03/V04/V07/V19/V20 acceptance remain open",
+        "review": "independent per-path review by build_validation and pr_audit; actual source, validation identities, successes and failures retained",
+        "rollback_status": "revert the integrated source and matching new guard selector together; retain original records in Git history",
+        "summary": "2026-10-08 本会话第2/3轮：大表parity路径保持重复行、原Value判等、只读一致快照和原FK/integrity；行/字节/磁盘预算错误不变成采样相等，closure未完即使行相同仍incomplete_not_certified。18项oracle/defects/scale/route相关回归通过（7项新增、11项原有）；完整增量/fanout矩阵和前置P8-005正式验收继续开放。"
+      },
+      {
+        "date": "2026-10-09",
+        "round": 19,
+        "target_sha": "275e8799d4947d297329073eaa3ca675d3fd0777",
+        "status": "partial_original_incremental_evidence_not_full_acceptance",
+        "artifact_paths": [
+          "https://github.com/jyqj/codecortex/blob/cd92ce4b931e770994770ba3dba6fd0a47a505ea/artifacts/checkpoints/p8-round19-evidence-20261009/formal/first-three-original-validator-inspection.json",
+          "https://github.com/jyqj/codecortex/blob/cd92ce4b931e770994770ba3dba6fd0a47a505ea/artifacts/checkpoints/p8-round19-evidence-20261009/formal/three-shards-five-capacity-original-transport.json",
+          "https://github.com/jyqj/codecortex/blob/cd92ce4b931e770994770ba3dba6fd0a47a505ea/artifacts/checkpoints/p8-round19-evidence-20261009/formal/first-three-original-validator-independent-review.json",
+          "https://github.com/jyqj/codecortex/blob/cd92ce4b931e770994770ba3dba6fd0a47a505ea/artifacts/checkpoints/p8-round18-evidence-20261009/README.md"
+        ],
+        "summary": "同一275e正式run37896198208首1k/5k/10k三片的cold/no_op/body/API/config及1/10/100/1000批次原raw全部由原inspect_raw重读，1k另含五fanout组，共32样本；完成状态、阶段归因、闭包预算与完整15表parity原谓词保持。这里只接受原3片与五容量回执，不以摘要替代全150输入；完整增量/fanout总体和前置P8-005仍未闭合。",
+        "ci_scope": "原 CI run37890756949 的实际 checkout 是 d53ea0be17a53d1354ee1d6f0a111c5e588e91f5；其12个非artifact根与275e一致。保留原3281次Rust通过/132次原ignore及636个Python方法的范围，不重标为275e字面checkout。",
+        "dependency_status": "仅追加已有证据；原status、硬依赖、验收与历史记录保持。P8-005/P8-006完整规模验证尚未完成，不能据此将任务标done。",
+        "rollback_status": "仅撤销本条新增evidence并重生成四个派生视图即可回退；保留原测量、原失败与不可变归档。",
+        "original_run": 37896198208,
+        "accepted_measurement_shards": 3,
+        "registered_measurement_shards": 150,
+        "accepted_original_samples": 32,
+        "full_aggregate_accepted": false
+      }
+    ],
+    "conditional_dependencies": [],
+    "implementation_notes": "\n2026-10-07 P8本地推进第二轮：新增真实no-op/body/API/config/batch增量及fanout预算恢复，与重新全量构建完整15表对账并保留手写call-edge断言。新驱动发现并修复派生route_node误作解析输入的问题；2文件回归红转绿，60文件9样本通过。原120秒timeout与失败raw保留；300秒测试工作预算不是性能阈值。\n2026-10-08 本会话第2/3轮：大表parity路径保持重复行、原Value判等、只读一致快照和原FK/integrity；行/字节/磁盘预算错误不变成采样相等，closure未完即使行相同仍incomplete_not_certified。18项oracle/defects/scale/route相关回归通过（7项新增、11项原有）；完整增量/fanout矩阵和前置P8-005正式验收继续开放。"
+  },
+  "original_clause_locators": [
+    {
+      "path": "round28-dependent-closeout-preparation/original/P8-SCALE.md",
+      "lines": [
+        45,
+        47,
+        53,
+        55,
+        57,
+        59,
+        63,
+        77,
+        81,
+        85,
+        87,
+        141,
+        147,
+        149,
+        159,
+        217,
+        222,
+        228,
+        234
+      ],
+      "meaning": "Actual completed closure; full-value equality, both-side disk sorting and failure on resource exhaustion; separate phase/oracle/fanout timing; immutable fixed-source cohort and complete registered population. These statements cannot be silently replaced by the observed shortcut."
+    },
+    {
+      "path": "round28-dependent-closeout-preparation/original/09-BENCHMARK.md",
+      "lines": [
+        163,
+        167,
+        171,
+        173
+      ],
+      "meaning": "Independent A incremental/B full at checkpoints; full facts and independent controls; distinct workload/time scopes and no unsupported tail claims."
+    }
+  ],
+  "fixed_historical_cohorts": [
+    {
+      "source": "4fe927488d5cb7f26bd27c7624745fb1b6ca202b",
+      "run": 37962416564,
+      "attempt": 1,
+      "work_profile": "scale_capacity_v1",
+      "dirty_resume": [
+        200,
+        1024
+      ]
+    },
+    {
+      "source": "008f1ec0ae16b9b6aff9f20d033b17b2219168f8",
+      "run": 37982220020,
+      "attempt": 1,
+      "work_profile": "scale_wide_dirty_v1",
+      "dirty_resume": [
+        4096,
+        1024
+      ]
+    }
+  ],
+  "cohort_common": {
+    "required_population_for_these_registered_studies": "150 original shards, 1500 samples, N=30 per group; no pooling, prefixes or replacements",
+    "fanout_dirty_resume": [
+      8,
+      128
+    ],
+    "oracle_physical_profile": "scale_capacity_v1",
+    "deadline_ms": 18000000,
+    "future_completion_is_not_assumed": true
+  },
+  "known_defect": {
+    "old_formatted_streaming_git_blob": "9fe4d6ea4619c23953b48a1afdd73ebf795ba872",
+    "mechanism": "A is fully spooled; only complete same-layout stored-table raw typed-cell equality through both EOFs lets the shortcut skip B scratch insertion and reuse A sorted values. B projection/count/canonical-byte checks remain. Fallback retains both spools. This is not sampling or hash-only equality.",
+    "affected_contract": "Skipping B insertion changes the simultaneously occupied scratch footprint and the original SQLITE_FULL error boundary. A alone can fit when A+B would fail. The added public equal_input_order_witness key also changes the original public table JSON field set.",
+    "not_established": "The compatibility defect alone does not prove a logical false-equality result in every historical row or invalidate recorded original engine/phase timing. No claim that every old table hit the shortcut, or that the repaired cohort would complete within the same deadline, follows.",
+    "future_aggregate_limit": "An aggregate passing its frozen validator cannot erase a known producer-contract defect that the validator did not detect."
+  },
+  "three_distinct_decisions": {
+    "historical_measurement_validity": {
+      "retained": "Original emitted engine phase counts/times, build/fanout events and full typed-cell equality observations remain attributable to their exact original source and executable, subject to complete raw/source/slot validation.",
+      "required_annotation": "Oracle hit/fallback is an implementation characteristic of that historical cohort; raw scratch peaks and oracle/fanout whole-wall times measure that implementation only. Public extra-field output remains the historical schema.",
+      "not_transferred": "No repaired-source throughput, scratch peak, SQLITE_FULL behavior, 5-hour completion or release claim; no recomputed counterfactual time or simple doubling of scratch."
+    },
+    "P8_006_scoped_coverage": {
+      "possible_after_real_completion": "A truly complete independently accepted historical fixed cohort can support the explicitly historical no-op/body/API/config/batch/fanout curves, phase attribution, observed closure status and full logical equality portions. Original source-bound regression evidence and current repair controls are separate evidence components, with their applicability stated.",
+      "still_missing_now": "The full 150/1500 aggregate and all required exact-source receipts are not accepted by this review. Thus no P8-006 done decision or count change is authorized.",
+      "cannot_be_claimed_even_if_old_aggregate_passes": "Unqualified compliance of the old cohort with unchanged original dual-spool scratch/error/public-schema semantics, or complete performance certification of the repaired current source.",
+      "decision_boundary": "The task wording does not explicitly demand a new full cohort after every observer/API repair. A narrowly stated historical-coverage acceptance requires the task owner to record the deviation and separate current regression applicability; it must not masquerade as proof that the original fixed oracle resource contract passed. If the intended acceptance claim includes that exact repaired-resource execution, the affected claim remains blocked."
+    },
+    "current_source_adoption_and_release": {
+      "source": "b8ab8ecdc5b32993fc02ce43877b7e172b8a4b3f",
+      "repair": "Restores A+B dual spool/dual cursor and the original nine public table fields; test-only formatting follows the actual formatter output.",
+      "required_evidence": "Actual current-source related Rust controls including A-fits/A+B-SQLITE_FULL and public-field regression, plus original source admission and current applicable CI. This review does not itself execute or grant those results.",
+      "boundary": "These regression controls can establish current compatibility repair. They do not produce a repaired-source scale curve, prove representative speedup, or establish current full-matrix 5-hour feasibility. Engineering acceptance and release scope remain distinct from historical performance."
+    }
+  },
+  "minimal_legal_convergence": [
+    "Keep both original cohorts and every failure immutable; wait for real terminal aggregate and complete exact-source population before any historical coverage acceptance.",
+    "Accept or reject each measured proposition against raw scope: engine phases and logical completed parity separately from scratch/error/public-output compatibility and oracle-inclusive elapsed time.",
+    "Use current b8ab source-bound regression/CI only for the repair it actually exercises; document which product/observer changes prevent transfer of old timing or budget-success claims.",
+    "A new full fixed-source registered study is required if the desired claim is repaired-source full 150/1500 execution under the original dual-spool resource/deadline contract or repaired-source performance. Original build/run/replay same-commit rules and oracle-inclusive deadline/fanout scopes are the concrete reason; no small replay, static estimate, or relabeling can prove that claim.",
+    "Do not impose that new study as an invented universal gate merely to preserve historical incremental coverage; equally, do not mark the old resource contract satisfied by a later two-case fix. Any task closeout must explicitly choose and justify its actual scope using original acceptance and dependencies."
+  ],
+  "execution": {
+    "new_measurements": 0,
+    "new_validators": 0,
+    "new_CI_or_native_runs": 0,
+    "source_or_task_mutations": 0,
+    "historical_logs_redownloaded": 0
+  },
+  "inputs": [
+    {
+      "local_path": "/workspace/scratch/bfccb8494ba0/round28-dependent-closeout-preparation/original/P8-SCALE.md",
+      "bytes": 26078,
+      "sha256": "7093bcdb74a7bcd6ff32e05f5cd2c7a7bd6576c90fff42b36251884cfbfe1442",
+      "git_blob": "d23c80666c8885ee7274cdffc3c023e6a0ef9e08"
+    },
+    {
+      "local_path": "/workspace/scratch/bfccb8494ba0/round28-dependent-closeout-preparation/original/09-BENCHMARK.md",
+      "bytes": 20488,
+      "sha256": "0c8bcbed17ea4e83b1dc55e9828f93a27e2a334a0d0eaa056302944260d0a731",
+      "git_blob": "5ced0c455e7e774a9d95da23187c64dcefc37314"
+    },
+    {
+      "local_path": "/workspace/scratch/bfccb8494ba0/round28-dependent-closeout-preparation/restored-P8-006-pending-fields.json",
+      "bytes": 4358,
+      "sha256": "452cf42223e1e6427b34443ded5a2f499be8f3e3839ffb8ca9a3e74eed0ddb38",
+      "git_blob": "0f584e207a5f4e35e763bd474cc88e11782b953a"
+    },
+    {
+      "local_path": "/workspace/scratch/bfccb8494ba0/round28-main-task-scope-and-template-recovery/tasks.main23eab.original.json",
+      "bytes": 864471,
+      "sha256": "d51f61a920d887d375e95ca529509d0750233ea22477e40f7d43b3caa985c495",
+      "git_blob": "959a25ba851ff88f286bab0fa14167878129b1dd"
+    },
+    {
+      "local_path": "/workspace/scratch/bfccb8494ba0/round27-oracle-dual-spool-compatibility-candidate/original/crates/cc-eval/src/benchmark/oracle/streaming.rs",
+      "bytes": 34867,
+      "sha256": "57d81ab8d249c5358eca356283a6fb4d40bd2f56f5ad59f1eaa0ba2c3ad7b8c0",
+      "git_blob": "9fe4d6ea4619c23953b48a1afdd73ebf795ba872"
+    },
+    {
+      "local_path": "/workspace/scratch/bfccb8494ba0/round27-oracle-compatibility-independent/independent-compatibility-review.json",
+      "bytes": 5500,
+      "sha256": "b0514ad80f1a1ebf7cb32b779448c04c669aa698a9678588322ac7d648a3a35b",
+      "git_blob": "db26a662613b8cf68a9f97786d31ccd904ead0e1"
+    },
+    {
+      "local_path": "/workspace/scratch/bfccb8494ba0/round28-oracle-format-independent/independent-format-increment-review.json",
+      "bytes": 3311,
+      "sha256": "17f0ef8052b9b09555f8d7282909c11aa1092974a6506098591bd9c1e4015168",
+      "git_blob": "b9c99d8e0d9d2fa9b85885fa9b2beab220f9a15e"
+    },
+    {
+      "local_path": "/workspace/scratch/bfccb8494ba0/GW4-next-original-intake/sealed-50k-evidence/summary.json",
+      "bytes": 6885,
+      "sha256": "f5b0cbb4d24d6ddfaec52412c9d53e35a1ac1dea3574879dc48d21862f0b0a8f",
+      "git_blob": "166ce5e637d35500ee295e51402fb3f804a44e01"
+    }
+  ]
+}

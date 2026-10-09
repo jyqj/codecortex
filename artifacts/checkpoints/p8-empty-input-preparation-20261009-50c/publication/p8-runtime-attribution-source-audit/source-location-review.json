@@ -1,0 +1,440 @@
+{
+  "schema": "p8-runtime-attribution-source-location-review-v1",
+  "reviewer": "/root/todo_audit",
+  "reviewed_at_utc": "2026-10-09T09:04:45.180048+00:00",
+  "verdict": "partial_existing_observer_data_reusable_but_full_spec_attribution_requires_product_changes",
+  "main": "bd4693351149a443bd0054a37508c53f74ed7b52",
+  "pr175_head": "8da1f956f6b0dd3413a37c639a79e1e0d939de81",
+  "pr175_base": "bd4693351149a443bd0054a37508c53f74ed7b52",
+  "pr175_complete_changed_file_count": 18,
+  "core_executor_db_worker_product_paths_absent_from_pr175_complete_delta": true,
+  "pr175_four_fetched_files_match_original_git_blob_oids": true,
+  "source_inputs": "source-inputs.json",
+  "source_inputs_sha256": "23bde0d50b395e043b821b1e6e76d4cd20b2f3bf28895192df87be9ccb03806f",
+  "requirements": {
+    "task_ledger": {
+      "source": "50d9b3bc7d1ecca1b6b1c3822a36c12b546b0529",
+      "path": "docs/roadmap/code-index-v2/tasks.json",
+      "sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207"
+    },
+    "performance_sampling": {
+      "source": "bd4693351149a443bd0054a37508c53f74ed7b52",
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "section_or_symbol": "section 9",
+      "url": "https://github.com/jyqj/codecortex/blob/bd4693351149a443bd0054a37508c53f74ed7b52/docs/roadmap/code-index-v2/09-BENCHMARK.md"
+    },
+    "completion_definition": {
+      "source": "bd4693351149a443bd0054a37508c53f74ed7b52",
+      "path": "docs/roadmap/code-index-v2/02-CONTRACTS.md",
+      "section_or_symbol": "C15/C16",
+      "url": "https://github.com/jyqj/codecortex/blob/bd4693351149a443bd0054a37508c53f74ed7b52/docs/roadmap/code-index-v2/02-CONTRACTS.md"
+    },
+    "validation_layers_and_minimums": {
+      "source": "bd4693351149a443bd0054a37508c53f74ed7b52",
+      "path": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+      "section_or_symbol": "sections 1/2/3/4",
+      "url": "https://github.com/jyqj/codecortex/blob/bd4693351149a443bd0054a37508c53f74ed7b52/docs/roadmap/code-index-v2/06-VALIDATION.md"
+    }
+  },
+  "findings": [
+    {
+      "domain": "existing client timings",
+      "available": true,
+      "observer_only_reusable": true,
+      "references": [
+        {
+          "source": "bd4693351149a443bd0054a37508c53f74ed7b52",
+          "path": "scripts/p8_runtime.py",
+          "section_or_symbol": "operation; scheduled_ns/offered_ns/started_ns/call_started_ns/finished_ns",
+          "url": "https://github.com/jyqj/codecortex/blob/bd4693351149a443bd0054a37508c53f74ed7b52/scripts/p8_runtime.py"
+        },
+        {
+          "source": "8da1f956f6b0dd3413a37c639a79e1e0d939de81",
+          "path": "crates/cc-eval/src/bin/p8-runtime-statistics.rs",
+          "section_or_symbol": "stratum timings / latency_scope",
+          "url": "https://github.com/jyqj/codecortex/blob/8da1f956f6b0dd3413a37c639a79e1e0d939de81/crates/cc-eval/src/bin/p8-runtime-statistics.rs"
+        }
+      ],
+      "fields": [
+        "client_dispatch_wait",
+        "write_admission_and_preparation",
+        "client_call_to_terminal_including_validation",
+        "all_attempt_offered_to_terminal",
+        "scheduled_to_terminal"
+      ],
+      "meaning": "Dispatch delay, combined write admission/preparation, client call through validation, and full client offered/scheduled elapsed already have distributions and CI. They are not backend queue or backend service measurements."
+    },
+    {
+      "domain": "legacy in-process load and ablation timing",
+      "available": true,
+      "observer_only_reusable": "existing named harness layers only; no product-internal DB/worker timing",
+      "references": [
+        {
+          "source": "bd4693351149a443bd0054a37508c53f74ed7b52",
+          "path": "crates/cc-eval/src/benchmark/p8_load.rs",
+          "section_or_symbol": "terminal / backend_call / execute_work / backend_call_peak",
+          "url": "https://github.com/jyqj/codecortex/blob/bd4693351149a443bd0054a37508c53f74ed7b52/crates/cc-eval/src/benchmark/p8_load.rs"
+        },
+        {
+          "source": "bd4693351149a443bd0054a37508c53f74ed7b52",
+          "path": "crates/cc-eval/src/benchmark/ablation.rs",
+          "section_or_symbol": "mixed row client_queue_us / service_and_transport_us",
+          "url": "https://github.com/jyqj/codecortex/blob/bd4693351149a443bd0054a37508c53f74ed7b52/crates/cc-eval/src/benchmark/ablation.rs"
+        }
+      ],
+      "fields": [
+        "p8_load.queue_us",
+        "p8_load.service_us",
+        "p8_load.writer_wait_us",
+        "p8_load.backend_call_started/finished.at_us",
+        "p8_load.backend_call_peak",
+        "ablation.client_queue_us",
+        "ablation.service_and_transport_us",
+        "ablation.end_to_end_us"
+      ],
+      "meaning": "p8_load queue_us is harness admission to execute_work start (or pre-service terminal), and service_us is execute_work start through terminal, including harness writer wait, mutation and response checking. writer_wait_us times the harness writer mutex. backend_call events and active/peak counters wrap the entire backend call and observe overlap, without separating production executor admission, DB locks or semantic worker waits. ablation explicitly records client queue and combined service/transport. These older observations are real and useful at their named layer, but do not change the missing production-attribution conclusion.",
+      "execution_identity_limit": "The older 36-operation smoke was not rerun or transferred to G275. This is an exact-main source check; these two paths are absent from the inspected PR175 complete 18-file delta."
+    },
+    {
+      "domain": "existing build stage attribution",
+      "available": true,
+      "observer_only_reusable": true,
+      "references": [
+        {
+          "source": "bd4693351149a443bd0054a37508c53f74ed7b52",
+          "path": "crates/cc-index/src/indexer.rs",
+          "section_or_symbol": "IndexReport / PhaseTiming / BuildTiming",
+          "url": "https://github.com/jyqj/codecortex/blob/bd4693351149a443bd0054a37508c53f74ed7b52/crates/cc-index/src/indexer.rs"
+        }
+      ],
+      "fields": [
+        "response.build_timing.prepare_us",
+        "response.build_timing.commit_write_us",
+        "response.build_timing.postprocess_compute_us",
+        "response.build_timing.postprocess_apply_us",
+        "response.build_timing.between_stages_us",
+        "response.build_timing.total_us",
+        "response.build_timing.prepare_snapshot_us",
+        "response.build_timing.full_staging_us"
+      ],
+      "original_presence_check": "Read the first actual build operation from each of c1/c4/c8/c16/soak: all retained these fields. No workload was run.",
+      "meaning": "Indexer stage wall time is available. commit_write_us includes write work, not a separated lock wait. prepare_snapshot/full_staging are nested subsets, not extra additive stages. Client elapsed minus build total cannot be relabeled server queue."
+    },
+    {
+      "domain": "query executor",
+      "available": "capacity_and_counters_only",
+      "observer_only_reusable": "counts only",
+      "references": [
+        {
+          "source": "bd4693351149a443bd0054a37508c53f74ed7b52",
+          "path": "crates/cc-search/src/execution.rs",
+          "section_or_symbol": "ExecutionStats / stats / run_cpu / run_async",
+          "url": "https://github.com/jyqj/codecortex/blob/bd4693351149a443bd0054a37508c53f74ed7b52/crates/cc-search/src/execution.rs"
+        },
+        {
+          "source": "bd4693351149a443bd0054a37508c53f74ed7b52",
+          "path": "crates/cc-server/src/engine.rs",
+          "section_or_symbol": "diagnostics_info",
+          "url": "https://github.com/jyqj/codecortex/blob/bd4693351149a443bd0054a37508c53f74ed7b52/crates/cc-server/src/engine.rs"
+        },
+        {
+          "source": "bd4693351149a443bd0054a37508c53f74ed7b52",
+          "path": "crates/cc-server/src/handlers/facade.rs",
+          "section_or_symbol": "handle_status / attach_status_extras",
+          "url": "https://github.com/jyqj/codecortex/blob/bd4693351149a443bd0054a37508c53f74ed7b52/crates/cc-server/src/handlers/facade.rs"
+        }
+      ],
+      "fields": [
+        "diagnostics.query_execution.cpu_limit",
+        "async_limit",
+        "queue_limit",
+        "cpu_in_flight",
+        "cpu_admitted",
+        "async_in_flight",
+        "async_admitted",
+        "rejected",
+        "completed"
+      ],
+      "missing_boundaries": [
+        "permit-wait start/end",
+        "spawn_blocking submitted/start",
+        "actual closure service start/end",
+        "async work polling/terminal duration",
+        "per-request attribution"
+      ],
+      "meaning": "No timestamp/duration accumulators or request-bound execution receipt exist. All reviewed status samples therefore cannot recover these times."
+    },
+    {
+      "domain": "database acquisition",
+      "available": false,
+      "observer_only_reusable": false,
+      "references": [
+        {
+          "source": "bd4693351149a443bd0054a37508c53f74ed7b52",
+          "path": "crates/cc-db/src/index_db.rs",
+          "section_or_symbol": "IndexDb::read_conn / write_conn / busy_timeout pragmas",
+          "url": "https://github.com/jyqj/codecortex/blob/bd4693351149a443bd0054a37508c53f74ed7b52/crates/cc-db/src/index_db.rs"
+        },
+        {
+          "source": "bd4693351149a443bd0054a37508c53f74ed7b52",
+          "path": "crates/cc-db/src/unit_of_work.rs",
+          "section_or_symbol": "UnitOfWork::begin",
+          "url": "https://github.com/jyqj/codecortex/blob/bd4693351149a443bd0054a37508c53f74ed7b52/crates/cc-db/src/unit_of_work.rs"
+        },
+        {
+          "source": "bd4693351149a443bd0054a37508c53f74ed7b52",
+          "path": "crates/cc-db/src/semantic_queue.rs",
+          "section_or_symbol": "queue_txn and claim/renew/retry/reclaim write mutex",
+          "url": "https://github.com/jyqj/codecortex/blob/bd4693351149a443bd0054a37508c53f74ed7b52/crates/cc-db/src/semantic_queue.rs"
+        },
+        {
+          "source": "bd4693351149a443bd0054a37508c53f74ed7b52",
+          "path": "crates/cc-db/src/semantic_publish.rs",
+          "section_or_symbol": "publish write mutex",
+          "url": "https://github.com/jyqj/codecortex/blob/bd4693351149a443bd0054a37508c53f74ed7b52/crates/cc-db/src/semantic_publish.rs"
+        }
+      ],
+      "missing_boundaries": [
+        "read-pool RwLock wait",
+        "r2d2 checkout wait",
+        "write mutex acquisition wait",
+        "SQLite BEGIN IMMEDIATE acquisition elapsed / internal busy time"
+      ],
+      "meaning": "The production paths acquire locks/connection and execute BEGIN without exporting timing. busy_timeout=5000 is configuration, not observed wait. Existing backfill db_control is a three-seed separate availability probe, not mixed-operation lock attribution."
+    },
+    {
+      "domain": "semantic worker contention",
+      "available": "internal state and boundedness controls only",
+      "observer_only_reusable": false,
+      "references": [
+        {
+          "source": "bd4693351149a443bd0054a37508c53f74ed7b52",
+          "path": "crates/cc-server/src/semantic_runtime.rs",
+          "section_or_symbol": "SemanticRuntime::schedule / Running / run_round_with",
+          "url": "https://github.com/jyqj/codecortex/blob/bd4693351149a443bd0054a37508c53f74ed7b52/crates/cc-server/src/semantic_runtime.rs"
+        },
+        {
+          "source": "bd4693351149a443bd0054a37508c53f74ed7b52",
+          "path": "crates/cc-server/src/service_factory.rs",
+          "section_or_symbol": "SemanticWorkerStatus",
+          "url": "https://github.com/jyqj/codecortex/blob/bd4693351149a443bd0054a37508c53f74ed7b52/crates/cc-server/src/service_factory.rs"
+        },
+        {
+          "source": "bd4693351149a443bd0054a37508c53f74ed7b52",
+          "path": "crates/cc-semantic/src/admission.rs",
+          "section_or_symbol": "ProviderGate::snapshot / GateSnapshot / GateAcquireError",
+          "url": "https://github.com/jyqj/codecortex/blob/bd4693351149a443bd0054a37508c53f74ed7b52/crates/cc-semantic/src/admission.rs"
+        },
+        {
+          "source": "bd4693351149a443bd0054a37508c53f74ed7b52",
+          "path": "crates/cc-eval/tests/p7_worker_contention.rs",
+          "section_or_symbol": "db_control / samples / quiet and held phases",
+          "url": "https://github.com/jyqj/codecortex/blob/bd4693351149a443bd0054a37508c53f74ed7b52/crates/cc-eval/tests/p7_worker_contention.rs"
+        }
+      ],
+      "fields_present": [
+        "internal GateSnapshot.waiting/in_flight/per_project_in_flight",
+        "GateAcquireError::Timeout.waited",
+        "public semantic_pending / failure_reason / query_pins"
+      ],
+      "missing_boundaries": [
+        "successful global worker capacity wait duration",
+        "coalesced schedule attribution",
+        "successful provider-admission wait duration linked to request/round",
+        "worker execution duration by round"
+      ],
+      "meaning": "The scheduler Instant bounds a job at 64 rounds / 30 seconds; it is not published performance telemetry. Failure-only SemanticWorkerStatus and queue counts do not supply per-round wait/service measurements."
+    },
+    {
+      "domain": "RPC identity and observation",
+      "available": "wire journal IDs but no operation link",
+      "observer_only_reusable": "can add ID linkage for future observer runs; cannot reconstruct unique links for repeated old reads",
+      "references": [
+        {
+          "source": "bd4693351149a443bd0054a37508c53f74ed7b52",
+          "path": "scripts/resource_harness/runtime.py",
+          "section_or_symbol": "StdioRPC.rpc / on_timing",
+          "url": "https://github.com/jyqj/codecortex/blob/bd4693351149a443bd0054a37508c53f74ed7b52/scripts/resource_harness/runtime.py"
+        },
+        {
+          "source": "bd4693351149a443bd0054a37508c53f74ed7b52",
+          "path": "scripts/p8_runtime.py",
+          "section_or_symbol": "operation / Product.tool response capture",
+          "url": "https://github.com/jyqj/codecortex/blob/bd4693351149a443bd0054a37508c53f74ed7b52/scripts/p8_runtime.py"
+        }
+      ],
+      "fields_present": [
+        "rpc_send.request_id",
+        "offered_ns",
+        "sent_ns",
+        "finish_ns callback",
+        "client_queue_ms",
+        "wire_to_response_ms",
+        "offered_to_response_ms"
+      ],
+      "fields_explicitly_unavailable": [
+        "backend_queue_ms",
+        "backend_service_ms"
+      ],
+      "meaning": "The timing callback has no request_id field in its value, while the journal has it. Product.tool returns the value only. Future explicit callback/operation linkage is small observer plumbing; it does not create missing server timestamps."
+    }
+  ],
+  "original_statistics_checks": [
+    {
+      "cell": "c1",
+      "original_statistics_sha256": "6db5c42c9cdf311cc0ecc87861605a362bef2ac62fcd69f5dc09947fae5325e9",
+      "retained_independent_replay_byte_identical": true,
+      "N": 900,
+      "missing_samples": 0,
+      "existing_client_timing_families": [
+        "client_dispatch_wait",
+        "write_admission_and_preparation",
+        "client_call_to_terminal_including_validation",
+        "all_attempt_offered_to_terminal",
+        "scheduled_to_terminal"
+      ],
+      "backend_service_and_queue_claim": false
+    },
+    {
+      "cell": "c4",
+      "original_statistics_sha256": "8031b14e27337cec852eba520943a23f10277e0eb75d2025a6d669375e709f8c",
+      "retained_independent_replay_byte_identical": true,
+      "N": 900,
+      "missing_samples": 0,
+      "existing_client_timing_families": [
+        "client_dispatch_wait",
+        "write_admission_and_preparation",
+        "client_call_to_terminal_including_validation",
+        "all_attempt_offered_to_terminal",
+        "scheduled_to_terminal"
+      ],
+      "backend_service_and_queue_claim": false
+    },
+    {
+      "cell": "c8",
+      "original_statistics_sha256": "f2f3681b4492c3677897230928e1d8dfbb704cd2f680114e8f4827081359671a",
+      "retained_independent_replay_byte_identical": true,
+      "N": 900,
+      "missing_samples": 0,
+      "existing_client_timing_families": [
+        "client_dispatch_wait",
+        "write_admission_and_preparation",
+        "client_call_to_terminal_including_validation",
+        "all_attempt_offered_to_terminal",
+        "scheduled_to_terminal"
+      ],
+      "backend_service_and_queue_claim": false
+    },
+    {
+      "cell": "c16",
+      "original_statistics_sha256": "d1f88ab75b95326f5de0791dbb19fe2d1e0a2213942e81ba96b2258a4dd0b9a1",
+      "retained_independent_replay_byte_identical": true,
+      "N": 900,
+      "missing_samples": 0,
+      "existing_client_timing_families": [
+        "client_dispatch_wait",
+        "write_admission_and_preparation",
+        "client_call_to_terminal_including_validation",
+        "all_attempt_offered_to_terminal",
+        "scheduled_to_terminal"
+      ],
+      "backend_service_and_queue_claim": false
+    },
+    {
+      "cell": "soak",
+      "original_statistics_sha256": "2e7b356c831989b1bee66b6dfd0453e44f88b46278bda59667cbe9dab9170c53",
+      "retained_independent_replay_byte_identical": true,
+      "N": 3601,
+      "missing_samples": 0,
+      "existing_client_timing_families": [
+        "client_dispatch_wait",
+        "write_admission_and_preparation",
+        "client_call_to_terminal_including_validation",
+        "all_attempt_offered_to_terminal",
+        "scheduled_to_terminal"
+      ],
+      "backend_service_and_queue_claim": false
+    }
+  ],
+  "minimal_followup": {
+    "complete_gap_is_observer_only": false,
+    "cannot_recover_from_original_raw": [
+      "backend queue/service times",
+      "per-operation DB lock acquisition waits",
+      "worker capacity/admission/service timing",
+      "unique RPC IDs for identical old operation responses"
+    ],
+    "safe_observer_only_partial_work": [
+      "Keep the existing five client timing families visible instead of reporting only legacy end-to-end quantiles.",
+      "Keep original p8_load harness queue/service, writer wait, backend call events/peak and ablation service_and_transport labels when discussing their own source/run. They do not measure production internal queue, DB lock or worker contention and cannot be transplanted into G275 raw.",
+      "Read already-retained IndexReport.build_timing and report its named stage/total boundaries separately. Do not subtract it from client time and call the remainder a queue.",
+      "Keep existing discrete query_executor and semantic queue counters and their sample times/limits; do not infer continuous maxima.",
+      "For future runs, pass request_id through the existing StdioRPC timing callback to operation rows. Preserve raw wire IDs and every terminal attempt."
+    ],
+    "minimum_product_work_for_full_attribution": [
+      {
+        "area": "Executor and request context",
+        "likely_paths": [
+          "crates/cc-search/src/execution.rs",
+          "crates/cc-model/src/query.rs",
+          "crates/cc-server/src/query_handle.rs",
+          "crates/cc-server/src/handlers/context.rs"
+        ],
+        "change": "Add optional bounded in-memory request/operation observation context. Time semaphore wait, blocking submission-to-start, and actual work-to-exit separately. Propagate context across await and spawn_blocking; late work owns its completion recording just as it owns permits. Existing completed/rejected counter semantics, cancellation, deadline, and permit lifetime remain unchanged."
+      },
+      {
+        "area": "Index/RPC envelope",
+        "likely_paths": [
+          "crates/cc-server/src/mcp.rs",
+          "crates/cc-server/src/handlers/core.rs",
+          "crates/cc-server/src/engine.rs",
+          "crates/cc-server/src/handlers/facade.rs"
+        ],
+        "change": "Record request dispatch/terminal and build-gate acquisition boundaries using the same optional observation context; publish explicit diagnostic scope and identity. Global before/after counter subtraction under overlapping RPCs cannot provide individual request service time."
+      },
+      {
+        "area": "DB lock ownership",
+        "likely_paths": [
+          "crates/cc-db/src/index_db.rs",
+          "crates/cc-db/src/unit_of_work.rs",
+          "crates/cc-db/src/semantic_queue.rs",
+          "crates/cc-db/src/semantic_publish.rs"
+        ],
+        "change": "Time read-pool lock/checkout and writer-mutex acquisition at the owner. Audit all participating write facades so observed coverage is explicit; keep mutex guards and transaction ordering intact. BEGIN acquisition elapsed includes SQLite work, so label it as such. Replacing SQLite busy_handler is not needed for application-mutex timing and must not be done casually: exact internal busy-sleep timing would require separate instrumentation without changing the existing timeout/retry behavior."
+      },
+      {
+        "area": "Worker contention",
+        "likely_paths": [
+          "crates/cc-server/src/semantic_runtime.rs",
+          "crates/cc-server/src/service_factory.rs",
+          "crates/cc-semantic/src/admission.rs"
+        ],
+        "change": "Record scheduler capacity wait, coalesced scheduling, provider admission and actual round duration with runtime incarnation and operation/round identity. Disabled or never-run phases remain unavailable, not zero. Do not make observation writes update semantic epochs or persisted product telemetry."
+      },
+      {
+        "area": "Observer and single statistics owner",
+        "likely_paths": [
+          "scripts/resource_harness/runtime.py",
+          "scripts/p8_rollback.py",
+          "scripts/p8_runtime.py",
+          "crates/cc-eval/src/bin/p8-runtime-statistics.rs",
+          "docs/P8_RUNTIME_EVIDENCE.md"
+        ],
+        "change": "Collect the new real diagnostics/IDs, validate field chronology and explicit scope, and let the existing Rust statistics owner produce distributions/CI. Do not add a second Python quantile implementation or change old populations, offered denominators, timeouts, workload, or pass thresholds. Coordinate with PR #175 before touching its owned runtime/statistics paths."
+      }
+    ],
+    "estimated_change_surface": "At least 4 product crates (cc-model/cc-search/cc-server/cc-db), plus cc-semantic if provider admission timing is included, and cc-eval/observer adapters, focused controls, documentation and exact source admission. Several listed paths can be avoided by a carefully scoped shared context, but this is not a one-file observer fix; no exact LOC estimate is asserted before a design review.",
+    "validation_needed_after_implementation": [
+      "Use held permit/worker/DB barriers to verify positive wait and ordered boundaries without fragile absolute timing SLAs.",
+      "Keep success/error/rejection/cancellation/late-worker terminal populations and unset fields explicit; prove no changed permit, lock, transaction, epoch or timeout behavior.",
+      "Verify source/binary/observer identity, additive output scope and data budget; preserve the original raw and original acceptance checker.",
+      "Run a new exact candidate under the existing registered profile/approval process. Old G275 samples cannot be relabeled as the new diagnostics-enabled candidate."
+    ],
+    "performed_in_this_review": "Read-only source and existing evidence examination; no implementation, compiler, tests, product workload, new study, provider, dispatch or remote comment."
+  },
+  "acceptance_constraints": [
+    "No new saturation, continuous monitoring, stable-p99 or released-tag gate is added.",
+    "The missing attribution is already required by the original benchmark section 9; raw completeness is a separate property.",
+    "Do not change current study inputs, registered workload, prior reports, guard algorithms or task status."
+  ]
+}

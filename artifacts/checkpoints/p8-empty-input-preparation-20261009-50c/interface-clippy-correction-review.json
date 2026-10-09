@@ -1,0 +1,187 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/todo_audit",
+  "reviewed_at_utc": "2026-10-09T08:03:50.395415+00:00",
+  "decision": "approved_for_the_three_test_error_unwrap_corrections_only",
+  "scope": "Independent source review of exact P0 to P2 correction; no production-code or performance acceptance claim. This report does not replace the earlier config/interface reviews or their original execution identities.",
+  "source": {
+    "pre_correction_product_commit": "0fe5f110a3c1c0fd39e83031fc935d3e7cfe1114",
+    "corrected_local_product_commit": "a224fa4e1d9fbc34644d116d2a16f89dadc23fa1",
+    "corrected_remote_product_commit": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+    "corrected_full_tree": "8d790cbcfdc56ee2d57001de0d1c79177184b2da",
+    "local_remote_full_tree_equal": true,
+    "changed_paths_entire_tree": [
+      "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs"
+    ],
+    "diff_sha256": "f7b30f01d9bc630a670a96b69ba78b5b52e7fec757f903991e53564403653607",
+    "files": {
+      "crates/cc-index/src/dispatch_synthesis/interface_dispatch_tests.rs": {
+        "before": {
+          "git_blob": "77eb31f25d0daf2c18e6010a6cbd37152f41a4cc",
+          "sha256": "f94829eed06d69bb250d751fda89fa89685ae4db7aa315df2c79dc1da52ea923"
+        },
+        "after": {
+          "git_blob": "d1888e13cb6bc1e4748cf372209b9686a705a1da",
+          "sha256": "1647126f382e4fed5e47b42780e08348d8239432eefc7c2012efa628df3c7c41"
+        }
+      },
+      "crates/cc-index/src/dispatch_synthesis/interface_dispatch.rs": {
+        "after": {
+          "git_blob": "8d230b0a463bd53ab21e80e56af9d7fc9d3a0a2d",
+          "sha256": "d2fa652cff62511546ad36d67bb402fa9a307ef060223fb12610ef31da69084a"
+        },
+        "unchanged_from_pre_correction": true
+      },
+      "crates/cc-index/src/indexer_phases/snapshot.rs": {
+        "after": {
+          "git_blob": "b1db699f6597d8a948e3797e153a75fe8f5b07de",
+          "sha256": "f5aba522582adc5f206ab2c3a8a2de2217e0ea99058928396ab0bc473c55b2e5"
+        },
+        "unchanged_from_pre_correction": true
+      }
+    }
+  },
+  "exact_reconstruction": {
+    "passed": true,
+    "method": "Replace exactly the three listed expected-result .err().expect(message) sequences once each, preserving indentation and messages, then require byte equality with the corrected Git blob. Require whole-tree changed-path list to contain only this test file.",
+    "corrections": [
+      {
+        "test_function": "malformed_calls_are_not_hidden_by_empty_implements_or_later_errors",
+        "expected_error_message": "negative line must fail typed call decoding",
+        "before": ".err().expect(message)",
+        "after": ".expect_err(message)"
+      },
+      {
+        "test_function": "malformed_symbols_are_not_hidden_by_empty_implements",
+        "expected_error_message": "BLOB container must fail typed symbol decoding",
+        "before": ".err().expect(message)",
+        "after": ".expect_err(message)"
+      },
+      {
+        "test_function": "malformed_implements_and_query_errors_propagate_after_the_original_guards",
+        "expected_error_message": "malformed implements input must fail",
+        "before": ".err().expect(message)",
+        "after": ".expect_err(message)"
+      }
+    ]
+  },
+  "semantic_findings": [
+    "For Err results, both forms return the identical underlying database error; the existing to_string and assert_eq(actual, expected) remain byte-identical.",
+    "For unexpected Ok results, both forms fail the test. expect_err additionally prints the Debug representation of the unexpected success value; this is a diagnostic difference and does not weaken the assertion.",
+    "All SQL corruptions, SQL getters, expected messages, actual compute_interface_dispatch_synthesis calls, actual .err().expect assertions, and equality assertions are unchanged.",
+    "DispatchCallEdgeRow and SymbolDispatchRow derive Debug in crates/cc-db/src/index_db_types.rs. The implements getter returns String pairs, so these three expected-success types support expect_err without any product type changes.",
+    "The actual compute_interface_dispatch_synthesis error unwraps are deliberately unchanged; this review does not add a Debug requirement to the production EdgeDelta success type."
+  ],
+  "execution_evidence": {
+    "independent_rerun_in_this_correction_review": "not_run; review is exact-source reconstruction and semantic inspection",
+    "root_initial_commands": {
+      "source_commit": "0fe5f110a3c1c0fd39e83031fc935d3e7cfe1114",
+      "source_after_commit": "0fe5f110a3c1c0fd39e83031fc935d3e7cfe1114",
+      "source_inputs_equal": true,
+      "commands": [
+        {
+          "command": [
+            "cargo",
+            "fmt",
+            "--all",
+            "--",
+            "--check"
+          ],
+          "exit_code": 0,
+          "name": "format",
+          "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "command": [
+            "cargo",
+            "clippy",
+            "--workspace",
+            "--all-targets",
+            "--locked",
+            "--offline",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "exit_code": 101,
+          "name": "clippy",
+          "log_sha256": "6d5e15fbbd19521f5ceb3bfd7091410c91dc1858336f5134ef6b88d79edfa8c3"
+        }
+      ],
+      "artifact_receipt": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/initial-product-checks/receipt.json",
+      "failure_retained": "P0 strict Clippy failed with exactly three clippy::err_expect diagnostics; it is not relabeled as a P2 run."
+    },
+    "root_corrected_commands_observed_so_far": {
+      "source_before_commit": "b4fef72211e5967f4fba729d25d0ca2958094fd5",
+      "commands": [
+        {
+          "command": [
+            "cargo",
+            "fmt",
+            "--all",
+            "--",
+            "--check"
+          ],
+          "exit_code": 0,
+          "name": "format",
+          "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "command": [
+            "cargo",
+            "clippy",
+            "--workspace",
+            "--all-targets",
+            "--locked",
+            "--offline",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "exit_code": 0,
+          "name": "clippy",
+          "log_sha256": "29eb62b1de14d5a2ffae098dbf6b66dfa3b2c05e1fc2352610f515fb837ae093"
+        },
+        {
+          "command": [
+            "cargo",
+            "test",
+            "--workspace",
+            "--locked",
+            "--offline"
+          ],
+          "exit_code": 101,
+          "name": "workspace-tests",
+          "log_sha256": "7a06196e4c466cdb72fca5ced685b5697871352279f0bf97a4afad9bf802c987"
+        }
+      ],
+      "final_receipt_complete_at_review_time": true,
+      "artifact_receipt": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/final-product-checks/receipt.json",
+      "limitation": "Only completed command entries observed at review time are reported. Source-after and any later workspace results must be read from the final receipt; this report does not certify commands still running."
+    },
+    "prior_interface_independent_execution": "11 interface-dispatch controls passed on original local 6ffce3cea9534d3f253d3d0f7f2c5f9169495cca. Its historical execution identity remains unchanged and is not claimed as a corrected P2 rerun."
+  },
+  "preserved_previous_reviews": [
+    {
+      "artifact_path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/config-independent-review.json",
+      "sha256": "9ec207415fe9aee9c1626f2962b2058a8b49a929182a5253df5ed9290b3d139c"
+    },
+    {
+      "artifact_path": "artifacts/checkpoints/p8-empty-input-preparation-20261009-50c/interface-independent-review.json",
+      "sha256": "3224324e6926ee987751fd0cecbd2f4a9c051e6fc5ce031733b4a913b1aecf21"
+    }
+  ],
+  "acceptance_boundary": {
+    "task_id": "P8-005",
+    "task_status": "in_progress",
+    "original_tasks_total": 192,
+    "original_tasks_done": 163,
+    "original_tasks_remaining": 29,
+    "new_original_tasks_closed_by_this_review": 0,
+    "requested_ten_original_task_goal": "not_completed",
+    "full_scale_acceptance": "not_run_by_this_review",
+    "performance_claim": "none",
+    "provider_platform_quality_release_certification": "not_run_by_this_review"
+  },
+  "mutations": "Only this scratch review artifact was written; no tracked repository source, task state, or guard was modified by this review."
+}

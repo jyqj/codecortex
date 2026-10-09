@@ -1,0 +1,482 @@
+{
+  "reviewed_at_utc": "2026-10-09T08:22:21.427173+00:00",
+  "source_commit": "275e8799d4947d297329073eaa3ca675d3fd0777",
+  "source_tree": "5859c18f6ead4f8eff5abc3be05d80dfc2fc5b46",
+  "run_id": 37890757049,
+  "artifact_id": 11597589468,
+  "checks": {
+    "event_sample_and_witness_bijection": true,
+    "all_raw_rpc_and_stdout_bindings": true,
+    "all_session_cleanup": true,
+    "all_cache_counter_controls": true,
+    "persisted_generation_in_all_query_statuses": true,
+    "all_resource_raw_ledger_and_identity_bindings": true,
+    "all_30_closed_sqlite_and_fts_checks": true,
+    "all_original_unknown_and_statistical_limits_preserved": true
+  },
+  "event_counts": {
+    "pristine_fixture": 30,
+    "session_started": 431,
+    "resource": 1261,
+    "cold_build": 30,
+    "session_closed": 431,
+    "closed_fixture_storage": 30,
+    "reopen_existing_index": 400,
+    "query_attempt": 1201,
+    "final_closed_fixture_storage": 30
+  },
+  "rpc_event_counts": {
+    "request": 4555,
+    "rpc_send": 4555,
+    "stdout_wire": 4555,
+    "response": 4555,
+    "notification": 431,
+    "terminal": 862
+  },
+  "query_phase_counts": {
+    "process_reopen": 400,
+    "warmup": 1,
+    "warm_uncached": 400,
+    "cache_hit": 400
+  },
+  "cache_control_owners": {
+    "graph_result_cache": 1201
+  },
+  "cache_results": [
+    {
+      "phase": "cache_hit",
+      "result": "hit",
+      "count": 400
+    },
+    {
+      "phase": "process_reopen",
+      "result": "miss",
+      "count": 400
+    },
+    {
+      "phase": "warm_uncached",
+      "result": "miss",
+      "count": 400
+    },
+    {
+      "phase": "warmup",
+      "result": "miss",
+      "count": 1
+    }
+  ],
+  "sample_counts": {
+    "cold_build": 30,
+    "process_reopen": 400,
+    "warm_uncached": 400,
+    "cache_hit": 400,
+    "total_recorded": 1230,
+    "additional_unrecorded_warmup": 1,
+    "source_verified_query_witnesses": 1200,
+    "missing": 0,
+    "unexpected": 0
+  },
+  "fixtures": {
+    "count": 30,
+    "source_files_each": 32,
+    "symbols_each": 402,
+    "chunks_each": 402,
+    "fresh_empty_index_raw_events": 30,
+    "source_manifests_equal_across_fixtures": true,
+    "all_authored_content_matches_original_deterministic_generator": true,
+    "configuration": {
+      "auto_index": {
+        "enabled": false
+      },
+      "semantic": {
+        "enabled": false
+      },
+      "indexing": {
+        "max_concurrent_parse": 2
+      },
+      "query": {
+        "strategy": "local",
+        "deadline_ms": 30000
+      }
+    }
+  },
+  "lifecycle_timing": {
+    "unit": "microseconds",
+    "scope": "synchronous client end-to-end call including transport and raw journal; before/after status and resource probes excluded",
+    "layers": [
+      {
+        "all_attempt_elapsed": {
+          "max_us": 164582,
+          "p50_us": 155865,
+          "p95_us": 162452,
+          "samples": 30,
+          "tail_claim": "insufficient_for_tail_claim"
+        },
+        "cancelled": 0,
+        "completed": 30,
+        "completed_elapsed": {
+          "max_us": 164582,
+          "p50_us": 155865,
+          "p95_us": 162452,
+          "samples": 30,
+          "tail_claim": "insufficient_for_tail_claim"
+        },
+        "error_rate": 0.0,
+        "errors": 0,
+        "missing_timings": 0,
+        "p95_completed_ci": {
+          "confidence": 0.95,
+          "estimate_us": 162452,
+          "lower_us": 160413,
+          "method": "binomial_order_statistics_95pct_iid_assumption",
+          "quantile": 0.95,
+          "samples": 30,
+          "upper_us": null
+        },
+        "p99_completed_ci": {
+          "confidence": 0.95,
+          "estimate_us": 164582,
+          "lower_us": 161295,
+          "method": "binomial_order_statistics_95pct_iid_assumption",
+          "quantile": 0.99,
+          "samples": 30,
+          "upper_us": null
+        },
+        "partial": 0,
+        "samples": 30,
+        "statistical_status": "inconclusive_insufficient_tail_samples",
+        "stratum": "cold_build",
+        "timeout_rate": 0.0,
+        "timeouts": 0
+      },
+      {
+        "all_attempt_elapsed": {
+          "max_us": 11479,
+          "p50_us": 9952,
+          "p95_us": 10731,
+          "samples": 400,
+          "tail_claim": "empirical_distribution_only"
+        },
+        "cancelled": 0,
+        "completed": 400,
+        "completed_elapsed": {
+          "max_us": 11479,
+          "p50_us": 9952,
+          "p95_us": 10731,
+          "samples": 400,
+          "tail_claim": "empirical_distribution_only"
+        },
+        "error_rate": 0.0,
+        "errors": 0,
+        "missing_timings": 0,
+        "p95_completed_ci": {
+          "confidence": 0.95,
+          "estimate_us": 10731,
+          "lower_us": 10659,
+          "method": "binomial_order_statistics_95pct_iid_assumption",
+          "quantile": 0.95,
+          "samples": 400,
+          "upper_us": 10851
+        },
+        "p99_completed_ci": {
+          "confidence": 0.95,
+          "estimate_us": 11015,
+          "lower_us": 10917,
+          "method": "binomial_order_statistics_95pct_iid_assumption",
+          "quantile": 0.99,
+          "samples": 400,
+          "upper_us": 11479
+        },
+        "partial": 0,
+        "samples": 400,
+        "statistical_status": "observations_only_requires_controlled_release_profile",
+        "stratum": "process_reopen",
+        "timeout_rate": 0.0,
+        "timeouts": 0
+      },
+      {
+        "all_attempt_elapsed": {
+          "max_us": 7594,
+          "p50_us": 4814,
+          "p95_us": 5099,
+          "samples": 400,
+          "tail_claim": "empirical_distribution_only"
+        },
+        "cancelled": 0,
+        "completed": 400,
+        "completed_elapsed": {
+          "max_us": 7594,
+          "p50_us": 4814,
+          "p95_us": 5099,
+          "samples": 400,
+          "tail_claim": "empirical_distribution_only"
+        },
+        "error_rate": 0.0,
+        "errors": 0,
+        "missing_timings": 0,
+        "p95_completed_ci": {
+          "confidence": 0.95,
+          "estimate_us": 5099,
+          "lower_us": 5077,
+          "method": "binomial_order_statistics_95pct_iid_assumption",
+          "quantile": 0.95,
+          "samples": 400,
+          "upper_us": 5159
+        },
+        "p99_completed_ci": {
+          "confidence": 0.95,
+          "estimate_us": 5438,
+          "lower_us": 5272,
+          "method": "binomial_order_statistics_95pct_iid_assumption",
+          "quantile": 0.99,
+          "samples": 400,
+          "upper_us": 7594
+        },
+        "partial": 0,
+        "samples": 400,
+        "statistical_status": "observations_only_requires_controlled_release_profile",
+        "stratum": "warm_uncached",
+        "timeout_rate": 0.0,
+        "timeouts": 0
+      },
+      {
+        "all_attempt_elapsed": {
+          "max_us": 2842,
+          "p50_us": 2421,
+          "p95_us": 2516,
+          "samples": 400,
+          "tail_claim": "empirical_distribution_only"
+        },
+        "cancelled": 0,
+        "completed": 400,
+        "completed_elapsed": {
+          "max_us": 2842,
+          "p50_us": 2421,
+          "p95_us": 2516,
+          "samples": 400,
+          "tail_claim": "empirical_distribution_only"
+        },
+        "error_rate": 0.0,
+        "errors": 0,
+        "missing_timings": 0,
+        "p95_completed_ci": {
+          "confidence": 0.95,
+          "estimate_us": 2516,
+          "lower_us": 2500,
+          "method": "binomial_order_statistics_95pct_iid_assumption",
+          "quantile": 0.95,
+          "samples": 400,
+          "upper_us": 2540
+        },
+        "p99_completed_ci": {
+          "confidence": 0.95,
+          "estimate_us": 2619,
+          "lower_us": 2564,
+          "method": "binomial_order_statistics_95pct_iid_assumption",
+          "quantile": 0.99,
+          "samples": 400,
+          "upper_us": 2842
+        },
+        "partial": 0,
+        "samples": 400,
+        "statistical_status": "observations_only_requires_controlled_release_profile",
+        "stratum": "cache_hit",
+        "timeout_rate": 0.0,
+        "timeouts": 0
+      },
+      {
+        "all_attempt_elapsed": {
+          "max_us": null,
+          "p50_us": null,
+          "p95_us": null,
+          "samples": 0,
+          "tail_claim": "insufficient_for_tail_claim"
+        },
+        "cancelled": 0,
+        "completed": 0,
+        "completed_elapsed": {
+          "max_us": null,
+          "p50_us": null,
+          "p95_us": null,
+          "samples": 0,
+          "tail_claim": "insufficient_for_tail_claim"
+        },
+        "error_rate": null,
+        "errors": 0,
+        "missing_timings": 0,
+        "p95_completed_ci": null,
+        "p99_completed_ci": null,
+        "partial": 0,
+        "samples": 0,
+        "statistical_status": "unavailable",
+        "stratum": "unknown",
+        "timeout_rate": null,
+        "timeouts": 0
+      }
+    ],
+    "os_page_cache": "not_cleared_unknown_not_cold_disk",
+    "statistical_scope": "empirical per-lifecycle distributions; existing IID interval assumption; no baseline ratio or stable p99 claim from sample count alone",
+    "conclusions": [
+      "All recorded attempts are retained; no best-of or sample replacement is found.",
+      "The single warmup is explicitly unrecorded and uses query 401, distinct from the 400 measured queries 0..399.",
+      "Cold build N=30 has unbounded upper p95 and p99 confidence endpoints. Query N=400 retains empirical distributions and the original IID interval assumption; it is not proof of stable tail behavior.",
+      "Cold timings cover the synchronous full-index RPC on a newly created fixture after initialization; they exclude process launch, initialization and bracketing status/probe time. The process_reopen stratum times the first query in a freshly opened process, not total process startup duration.",
+      "OS page cache was not cleared. These records do not certify cold disk performance, causal speedup or a release."
+    ]
+  },
+  "disk": {
+    "fixture_count": 30,
+    "physical_objects": 90,
+    "physical_bytes_all_retained_fixtures": 128901120,
+    "physical_bytes_each_fixture": 4296704,
+    "sqlite_database_bytes_each": 4263936,
+    "shm_bytes_each": 32768,
+    "wal_bytes_each": 0,
+    "all_database_integrity": "ok",
+    "all_foreign_key_errors": 0,
+    "all_schema_version": 25,
+    "logical_fts_bytes_across_all_fixtures": {
+      "chunks_fts": 3563520,
+      "file_paths_fts": 614400,
+      "files_fts": 1105920,
+      "literal_fts": 614400,
+      "symbols_fts": 2703360
+    },
+    "logical_fts_counted_in_physical_total_again": false,
+    "measurement_receipt_artifact_bytes_observed": {
+      "components": {
+        "fixture_source": 669540,
+        "fixture_storage": 128901120,
+        "raw_and_reports": 214033793
+      },
+      "scope": "logical file lengths before writing the final receipt; not an allocated-disk or archive-complete total",
+      "total": 343604453
+    },
+    "scope": "final inventory of all retained cold fixture indexes after all product sessions and SQLite observations close; each fixture separately reported; not one active-index footprint; logical FTS pages are already within physical SQLite bytes",
+    "limits": [
+      "Physical bytes are all thirty retained fixture indexes, not a single active index footprint.",
+      "Logical FTS pages are included within shared SQLite storage and are not added again.",
+      "Historical device/inode identities are reconciled internally and to archived path sizes; they are not regenerated from this review machine.",
+      "Original artifact size observations are logical file lengths before the final receipt, not allocated bytes or a complete compressed-archive total."
+    ]
+  },
+  "cost": {
+    "profile": {
+      "estimated": null,
+      "input_tokens": null,
+      "network_filter": "not_measured",
+      "output_tokens": null,
+      "reason": "provider disabled; no live billing receipt; unavailable amounts are not zero",
+      "reported": null,
+      "requests_billed": null,
+      "status": "not_applicable_to_disabled_profile"
+    },
+    "ledger": {
+      "duplicate_observations": 0,
+      "status": "unavailable",
+      "totals": []
+    },
+    "no_receipts_or_prices_inferred": true,
+    "limits": [
+      "Provider and semantic services were explicitly disabled and observed disabled through product status.",
+      "Reported and estimated billing amounts, token counts and billed requests remain null. No zero-cost billing assertion is made.",
+      "No live-provider or network filter certification is inferred from this local profile."
+    ]
+  },
+  "scope": "Independent read-only review of fixed G275 original observed data and pure offline replay only. No product workload, dispatch, rebuild, source/guard/task edit, or certification of b4fef722/#181 is performed.",
+  "resources": {
+    "snapshot_count": 1261,
+    "stages": {
+      "cold_build_before": 30,
+      "cold_build_after": 30,
+      "process_reopen": 400,
+      "warmup": 1,
+      "warm_uncached": 400,
+      "cache_hit": 400
+    },
+    "distinct_server_sessions": 431,
+    "runner_pid": 7007,
+    "all_owned_tree_status": "observed",
+    "members_per_observed_tree": 1,
+    "same_root_identity_within_each_session": true,
+    "memory_roles": [
+      {
+        "available_samples": 0,
+        "peak_observed_bytes": null,
+        "role": "client_runner_ps",
+        "status": "unavailable",
+        "unavailable_samples": 1261,
+        "distinct_root_pid_count": 1
+      },
+      {
+        "available_samples": 1261,
+        "peak_observed_bytes": 150142976,
+        "role": "client_runner_native_alternative",
+        "status": "observed",
+        "unavailable_samples": 0,
+        "distinct_root_pid_count": 1
+      },
+      {
+        "available_samples": 1261,
+        "peak_observed_bytes": 34009088,
+        "role": "server_process_included_in_tree",
+        "status": "observed",
+        "unavailable_samples": 0,
+        "distinct_root_pid_count": 431
+      },
+      {
+        "available_samples": 1261,
+        "peak_observed_bytes": 33484800,
+        "role": "server_process_tree",
+        "status": "observed",
+        "unavailable_samples": 0,
+        "distinct_root_pid_count": 431
+      },
+      {
+        "available_samples": 0,
+        "peak_observed_bytes": null,
+        "role": "external_service_unspecified",
+        "status": "unavailable",
+        "unavailable_samples": 1261,
+        "distinct_root_pid_count": 0
+      },
+      {
+        "available_samples": 0,
+        "peak_observed_bytes": null,
+        "role": "lsp_or_model_service",
+        "status": "unavailable",
+        "unavailable_samples": 1261,
+        "distinct_root_pid_count": 0
+      },
+      {
+        "available_samples": 0,
+        "peak_observed_bytes": null,
+        "role": "oce_external_container",
+        "status": "unavailable",
+        "unavailable_samples": 1261,
+        "distinct_root_pid_count": 0
+      }
+    ],
+    "measurement": "stage_snapshots_not_continuous_peak; no sampling interval recorded",
+    "total_rss_bytes": null,
+    "total_reason": "role overlap and simultaneous disjoint coverage are not proven; do not add runner ps/native or server PID/tree or per-role peaks",
+    "limits": [
+      "Current RSS snapshots, per-process lifetime counters, and driver final lifetime high-water are distinct measurements.",
+      "Server SELF and separately sampled owned tree observations are not simultaneous; their per-role maxima must not be added or required to order numerically.",
+      "No continuous peak coverage or sampling interval is asserted. Runner ps and external/model/OCE service roles remain unavailable rather than zero."
+    ],
+    "driver_final_usage_summary": {
+      "block_counts_are_not_bytes": true,
+      "block_inputs": 368,
+      "block_outputs": 440864,
+      "lifetime_peak_resident_bytes": 319336448,
+      "method": "getrusage(RUSAGE_SELF); /proc/self native current RSS and IO separately",
+      "namespace_pid": 7007,
+      "native_unavailable_reason": null,
+      "system_cpu_seconds": 35.729852,
+      "user_cpu_seconds": 50.635059,
+      "native_current_rss_bytes": 183287808
+    }
+  },
+  "storage_sqlite_review_count": 30,
+  "complete_scratch_observations_review_sha256": "cfba9e31a2687d800873513ccd402f849034ba840c163e8e6f79cefd383421ef"
+}

@@ -1,0 +1,27 @@
+Traceback (most recent call last):
+  File "/workspace/scratch/50c364fd60b1/codecortex/scripts/verify_reviewed_source_v15.py", line 245, in <module>
+    main()
+  File "/workspace/scratch/50c364fd60b1/codecortex/scripts/verify_reviewed_source_v15.py", line 231, in main
+    expected = approved_union(load_registry())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/50c364fd60b1/codecortex/scripts/verify_reviewed_source_v15.py", line 202, in approved_union
+    verify_snapshots(root)
+  File "/workspace/scratch/50c364fd60b1/codecortex/scripts/verify_reviewed_source_v15.py", line 138, in verify_snapshots
+    history.verify_current_history(root)
+  File "/workspace/scratch/50c364fd60b1/codecortex/scripts/v15_historical_context.py", line 153, in verify_current_history
+    blobs, protected = catalogue()
+                       ^^^^^^^^^^^
+  File "/workspace/scratch/50c364fd60b1/codecortex/scripts/v15_historical_context.py", line 132, in catalogue
+    blobs, protected = _catalogue(HISTORICAL_HEAD)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/50c364fd60b1/codecortex/scripts/v15_historical_context.py", line 120, in _catalogue
+    blobs = {path: _blob(ref, path) for path in sorted(names)}
+                   ^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/50c364fd60b1/codecortex/scripts/v15_historical_context.py", line 93, in _blob
+    return git("show", ref + ":" + path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/50c364fd60b1/codecortex/scripts/v15_historical_context.py", line 70, in git
+    require(result.returncode == 0 and len(result.stdout) <= MAX_BLOB, "historical Git input unavailable")
+  File "/workspace/scratch/50c364fd60b1/codecortex/scripts/v15_historical_context.py", line 47, in require
+    raise AssertionError(message)
+AssertionError: historical Git input unavailable

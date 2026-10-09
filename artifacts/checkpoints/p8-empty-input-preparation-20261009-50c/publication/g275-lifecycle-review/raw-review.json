@@ -1,0 +1,152 @@
+{
+  "schema": "g275-lifecycle-original-raw-review-v1",
+  "reviewer": "/root/todo_audit",
+  "reviewed_at_utc": "2026-10-09T08:24:24.891351+00:00",
+  "verdict": "accepted_original_g275_observation_scope_only",
+  "scope": "Independent review of already executed G275 lifecycle/resource originals plus unmodified offline acceptance replay. This does not certify original TODO completion, cold-disk performance, continuous memory peaks, live-provider cost, release readiness, or the b4fef722/#181 source.",
+  "source": {
+    "commit": "275e8799d4947d297329073eaa3ca675d3fd0777",
+    "tree": "5859c18f6ead4f8eff5abc3be05d80dfc2fc5b46",
+    "complete_product_inputs": 1089,
+    "manifest_sha256": "593cf443fc914998dd2cb5a30c3caf180eb8d0d7a398a86e4624e3df2ca65e83",
+    "product_binary_sha256": "0279923c877f1ed0e256c65a68a027ffb890b7b493e7a7991385330ed523656f",
+    "evaluator_binary_sha256": "8409bdc18ef409deee27f509817090bd63b73498b4626fda088906f5fb6e9ebc",
+    "actual_profile": "release/default; semantic and auto-index disabled",
+    "product_and_replay_builds_bound_to_same_source": true
+  },
+  "original_artifact": {
+    "run_id": 37890757049,
+    "artifact_id": 11597589468,
+    "run_url": "https://github.com/jyqj/codecortex/actions/runs/37890757049",
+    "artifact_api_url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11597589468",
+    "name": "p8-lifecycle-275e8799d4947d297329073eaa3ca675d3fd0777",
+    "bytes": 49286914,
+    "sha256": "e0315c535a51ed7629308463296e6714c63e14731e14d7019be9b266524c7fd1",
+    "zip_entries": 2391,
+    "uncompressed_bytes": 373108940,
+    "measurement_sealed_files": 2381
+  },
+  "independent_execution": {
+    "original_inventory_verifier_exit_code": 0,
+    "original_inventory_verifier_source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+    "original_replay_exit_code": 0,
+    "input_sha256": "17bb12b0258831b4e234d4864285a8d82e0618492868f380028eaf42af2e578f",
+    "report_sha256": "f9e18817b19755da8922b2b62746c43f7e64c4756662b5a372458fa16d8f3570",
+    "report_byte_identical_to_original": true,
+    "fixture_handling": "33 already hash-verified original authored files restored at the raw input recorded absolute root; every target required absent or byte-identical. No input/evaluator edits. Only created files/directories were removed afterward.",
+    "new_product_workloads": 0,
+    "dispatches": 0,
+    "rebuilds": 0
+  },
+  "raw_integrity_and_cross_checks": {
+    "full_archive_digest_and_crc": true,
+    "complete_measurement_inventory": true,
+    "all_7_recorded_observer_sources_match_G275_git_blobs": true,
+    "source_builder_helper_and_actual_Cargo_profiles_verified": true,
+    "event_rows": 3844,
+    "rpc_requests": 4555,
+    "all_raw_stdout_response_request_bindings": true,
+    "sessions": 431,
+    "all_normal_EOF_exit_0": true,
+    "samples": 1230,
+    "all_recorded_samples_match_events": true,
+    "source_verified_measured_queries": 1200,
+    "all_cache_controls_recomputed": true,
+    "all_reopen_queries_use_same_persisted_generation": true,
+    "resource_snapshots": 1261,
+    "all_raw_identity_and_ledger_bindings": true,
+    "closed_sqlite_databases_verified": 30,
+    "all_integrity_ok_and_fk_zero": true,
+    "all_database_bytes_unchanged_by_immutable_reads": true,
+    "physical_objects_reconciled": 90
+  },
+  "task_subreviews": [
+    {
+      "task": "P8-008",
+      "subreview": "G275 original lifecycle observations and their offline normalization/source/statistics replay accepted in declared scope",
+      "counts": {
+        "cold_build": 30,
+        "process_reopen": 400,
+        "warm_uncached": 400,
+        "cache_hit": 400,
+        "unrecorded_explicit_warmup": 1
+      },
+      "missing_samples": 0,
+      "unexpected_samples": 0,
+      "failures": 0,
+      "no_best_of_or_replacement_found": true,
+      "important_limits": [
+        "OS page cache is explicitly not cleared; this is not cold disk evidence.",
+        "Cold full-index RPC excludes process startup/initialization; reopen means first-query latency after a fresh process reopens the index, not startup duration.",
+        "Cold N30 has unbounded upper endpoints for both p95 and p99 confidence intervals; all intervals and the original IID assumption remain visible.",
+        "Query N400 gives empirical distributions, not a causal speedup or stable-tail/release certificate."
+      ],
+      "hard_dependencies": {
+        "P8-007": "in_progress"
+      },
+      "original_task_status": "in_progress",
+      "original_task_accepted_done": false
+    },
+    {
+      "task": "P8-009",
+      "subreview": "G275 original resource/disk/cost accounting accepted in declared local disabled-provider observation scope",
+      "current_rss_stage_observed_max_bytes": {
+        "client_runner_native_alternative": 150142976,
+        "server_process_included_in_tree": 34009088,
+        "server_process_tree": 33484800
+      },
+      "total_rss_bytes": null,
+      "disk_physical_bytes_all_30_retained_fixtures": 128901120,
+      "disk_physical_bytes_each_fixture": 4296704,
+      "FTS_logical_pages_double_counted": false,
+      "provider_reported_amount": null,
+      "provider_estimated_amount": null,
+      "billing_requests": null,
+      "important_limits": [
+        "The 1261 resources are stage snapshots, not continuous peaks; root/tree/runner roles overlap and their maxima are not summed.",
+        "The final driver high-water measurement is distinct from earlier current-RSS snapshots.",
+        "The disk total spans all 30 retained fixtures, not one active index. FTS pages are already within shared SQLite bytes.",
+        "Unknown ps/external/model/OCE resources remain unavailable. Disabled semantic/provider profile supplies no billing receipt; null does not mean zero.",
+        "No network filter or live-provider certification is inferred."
+      ],
+      "hard_dependencies": {
+        "P8-008": "in_progress"
+      },
+      "original_task_status": "in_progress",
+      "original_task_accepted_done": false
+    }
+  ],
+  "accounting": {
+    "original_total": 192,
+    "original_done": 163,
+    "original_remaining": 29,
+    "new_original_tasks_closed": 0,
+    "requested_ten_original_task_goal": "not_completed",
+    "ledger_source": {
+      "commit": "275e8799d4947d297329073eaa3ca675d3fd0777",
+      "path": "docs/roadmap/code-index-v2/tasks.json",
+      "sha256": "6e2ab2e90cbd820228e8ff397d70c770561ba20d3110e6eca31338f29a945207",
+      "status_counts": {
+        "done": 163,
+        "blocked": 1,
+        "in_progress": 16,
+        "todo": 12
+      }
+    }
+  },
+  "mutations": "Only scratch download/extraction/review outputs and temporary verified fixture copies. No source, guard, tasks, product execution or remote workflow changes.",
+  "artifact_storage": "The 49 MB original ZIP and 373 MB extracted raw/DB/binaries stay in scratch. Only metadata, receipts and this compact summary are proposed for repository publication.",
+  "evidence_files": [
+    "artifact-metadata.json",
+    "run-metadata.json",
+    "download-receipt.json",
+    "source-build-review.json",
+    "offline-seal-receipt.json",
+    "offline-replay-receipt.json",
+    "original-observations-summary.json",
+    "replay.stdout",
+    "replay.stderr",
+    "sealed-inventory.stdout",
+    "sealed-inventory.stderr"
+  ]
+}

@@ -1,0 +1,971 @@
+{
+  "schema": "main55-engineering-scope-review-v1",
+  "reviewer": "/root/scale_audit",
+  "reviewed_at_utc": "2026-10-09T10:39:39.489546+00:00",
+  "verdict": "bounded_combined_source_validation_scope_identified; existing_offline_cache_covers_added_dependency_edge; no_P4_execution_certified",
+  "scope": "Read-only #185 original command/log/identity inspection, exact FD9-to-main55 product inventory/dependency comparison, and existing local dependency-cache presence/checksum verification. The parent owns P4 execution; /root/pr_audit owns product semantics and canonical source review.",
+  "reviewed_source": {
+    "main": "55aa2bcf355441585bcf980e1d6f4fab8eebe59d",
+    "main_url": "https://github.com/jyqj/codecortex/commit/55aa2bcf355441585bcf980e1d6f4fab8eebe59d",
+    "PR": 185,
+    "PR_url": "https://github.com/jyqj/codecortex/pull/185",
+    "PR_head": "ff8a4e388dd103999b782811c7019ba38e10e511",
+    "base": "fd9ca5db6485b575872c722995c451db926d05c9",
+    "actual_product_counts": {
+      "FD9": 1089,
+      "main55": 1090
+    },
+    "actual_product_delta": [
+      {
+        "path": "Cargo.lock",
+        "before": {
+          "mode": "100644",
+          "type": "blob",
+          "blob": "c83b9a3dae16231117e3c3c12dc56479988e1b24"
+        },
+        "after": {
+          "mode": "100644",
+          "type": "blob",
+          "blob": "0c0bdc1601013b195c3580be4b0a9238557251cd"
+        },
+        "status": "M"
+      },
+      {
+        "path": "crates/cc-search/src/engine.rs",
+        "before": {
+          "mode": "100644",
+          "type": "blob",
+          "blob": "916311a4d748f3dffbb149f5ad0f8255cf1ab36f"
+        },
+        "after": {
+          "mode": "100644",
+          "type": "blob",
+          "blob": "cbd1f6e75036c217737f3df838b65b47a591399b"
+        },
+        "status": "M"
+      },
+      {
+        "path": "crates/cc-server/Cargo.toml",
+        "before": {
+          "mode": "100644",
+          "type": "blob",
+          "blob": "b43687e2190c7a814675483998d7186fa49e5f8b"
+        },
+        "after": {
+          "mode": "100644",
+          "type": "blob",
+          "blob": "cffa60193db9dd5903f408f4ee46ad981be41bf3"
+        },
+        "status": "M"
+      },
+      {
+        "path": "crates/cc-server/src/cli.rs",
+        "before": {
+          "mode": "100644",
+          "type": "blob",
+          "blob": "55ba0d875c87b449fcde2bf0bf4efd5451a50a41"
+        },
+        "after": {
+          "mode": "100644",
+          "type": "blob",
+          "blob": "fc3e41e22858f4156d5140185c461366b6990b9f"
+        },
+        "status": "M"
+      },
+      {
+        "path": "crates/cc-server/src/installer/helpers.rs",
+        "before": {
+          "mode": "100644",
+          "type": "blob",
+          "blob": "a2da5b0e4d39fabeb301082f1b492fa02928d628"
+        },
+        "after": {
+          "mode": "100644",
+          "type": "blob",
+          "blob": "a98a106bb10b0b05628dc48c6b0dcca63e162e3d"
+        },
+        "status": "M"
+      },
+      {
+        "path": "crates/cc-server/src/installer/targets/codex_cli.rs",
+        "before": {
+          "mode": "100644",
+          "type": "blob",
+          "blob": "9801f53a1d8785467aa495ffd3e6e545c467eb27"
+        },
+        "after": {
+          "mode": "100644",
+          "type": "blob",
+          "blob": "9d99bb940fc104257d8fea78f99c0d2f2dd23925"
+        },
+        "status": "M"
+      },
+      {
+        "path": "crates/cc-server/tests/installer_cli.rs",
+        "before": null,
+        "after": {
+          "mode": "100644",
+          "type": "blob",
+          "blob": "3752e3b3a8e2b2ee80822a1317f13a35ef860bea"
+        },
+        "status": "A"
+      }
+    ]
+  },
+  "main_point_zh": "本轮无需为了新增依赖更新Cargo.lock或联网取新版本。按已授权P4组合范围保留一次fmt/严格Clippy、cc-index all-targets、cc-search lib、完整installer::二进制单测、真实installer_cli以及原2+5统计和另1个corpus筛选即可采集有意义的新组合证据。每项必须记录P4实际source与结果；旧b069/P3运行保持原身份。",
+  "dependency_assessment": {
+    "packages_before": 338,
+    "packages_after": 338,
+    "added_packages": [],
+    "removed_packages": [],
+    "version_source_checksum_changes": false,
+    "only_changed_lock_package": "cc-server 1.0.0",
+    "only_added_dependency": "toml_edit 0.22.27",
+    "server_toml_only_adds_dependency_and_comments": true,
+    "cached_structural_lock_closure": [
+      {
+        "name": "equivalent",
+        "version": "1.0.2",
+        "already_locked_before": true,
+        "crate_bytes": 7419,
+        "crate_sha256": "877a4ace8713b0bcf2a4e7eec82529c029f1d0619886d18145fea96c3ffe5c0f",
+        "matches_lock_checksum": true,
+        "unpacked_manifest_present": true,
+        "sparse_index_cache_present": true
+      },
+      {
+        "name": "foldhash",
+        "version": "0.2.0",
+        "already_locked_before": true,
+        "crate_bytes": 23329,
+        "crate_sha256": "77ce24cb58228fbb8aa041425bb1050850ac19177686ea6e0f41a70416f56fdb",
+        "matches_lock_checksum": true,
+        "unpacked_manifest_present": true,
+        "sparse_index_cache_present": true
+      },
+      {
+        "name": "hashbrown",
+        "version": "0.16.1",
+        "already_locked_before": true,
+        "crate_bytes": 147785,
+        "crate_sha256": "841d1cc9bed7f9236f321df977030373f4a4163ae1a7dbfe1a51a2c1a51d9100",
+        "matches_lock_checksum": true,
+        "unpacked_manifest_present": true,
+        "sparse_index_cache_present": true
+      },
+      {
+        "name": "indexmap",
+        "version": "2.13.0",
+        "already_locked_before": true,
+        "crate_bytes": 102206,
+        "crate_sha256": "7714e70437a7dc3ac8eb7e6f8df75fd8eb422675fc7678aff7364301092b1017",
+        "matches_lock_checksum": true,
+        "unpacked_manifest_present": true,
+        "sparse_index_cache_present": true
+      },
+      {
+        "name": "memchr",
+        "version": "2.8.0",
+        "already_locked_before": true,
+        "crate_bytes": 97780,
+        "crate_sha256": "f8ca58f447f06ed17d5fc4043ce1b10dd205e060fb3ce5b979b8ed8e59ff3f79",
+        "matches_lock_checksum": true,
+        "unpacked_manifest_present": true,
+        "sparse_index_cache_present": true
+      },
+      {
+        "name": "proc-macro2",
+        "version": "1.0.106",
+        "already_locked_before": true,
+        "crate_bytes": 59765,
+        "crate_sha256": "8fd00f0bb2e90d81d1044c2b32617f68fcb9fa3bb7640c23e9c748e53fb30934",
+        "matches_lock_checksum": true,
+        "unpacked_manifest_present": true,
+        "sparse_index_cache_present": true
+      },
+      {
+        "name": "quote",
+        "version": "1.0.45",
+        "already_locked_before": true,
+        "crate_bytes": 31564,
+        "crate_sha256": "41f2619966050689382d2b44f664f4bc593e129785a36d6ee376ddf37259b924",
+        "matches_lock_checksum": true,
+        "unpacked_manifest_present": true,
+        "sparse_index_cache_present": true
+      },
+      {
+        "name": "serde",
+        "version": "1.0.228",
+        "already_locked_before": true,
+        "crate_bytes": 83652,
+        "crate_sha256": "9a8e94ea7f378bd32cbbd37198a4a91436180c5bb472411e48b5ec2e2124ae9e",
+        "matches_lock_checksum": true,
+        "unpacked_manifest_present": true,
+        "sparse_index_cache_present": true
+      },
+      {
+        "name": "serde_core",
+        "version": "1.0.228",
+        "already_locked_before": true,
+        "crate_bytes": 63111,
+        "crate_sha256": "41d385c7d4ca58e59fc732af25c3983b67ac852c1a25000afe1175de458b67ad",
+        "matches_lock_checksum": true,
+        "unpacked_manifest_present": true,
+        "sparse_index_cache_present": true
+      },
+      {
+        "name": "serde_derive",
+        "version": "1.0.228",
+        "already_locked_before": true,
+        "crate_bytes": 59605,
+        "crate_sha256": "d540f220d3187173da220f885ab66608367b6574e925011a9353e4badda91d79",
+        "matches_lock_checksum": true,
+        "unpacked_manifest_present": true,
+        "sparse_index_cache_present": true
+      },
+      {
+        "name": "serde_spanned",
+        "version": "0.6.9",
+        "already_locked_before": true,
+        "crate_bytes": 10210,
+        "crate_sha256": "bf41e0cfaf7226dca15e8197172c295a782857fcb97fad1808a166870dee75a3",
+        "matches_lock_checksum": true,
+        "unpacked_manifest_present": true,
+        "sparse_index_cache_present": true
+      },
+      {
+        "name": "syn",
+        "version": "2.0.117",
+        "already_locked_before": true,
+        "crate_bytes": 306011,
+        "crate_sha256": "e665b8803e7b1d2a727f4023456bbbbe74da67099c585258af0ad9c5013b9b99",
+        "matches_lock_checksum": true,
+        "unpacked_manifest_present": true,
+        "sparse_index_cache_present": true
+      },
+      {
+        "name": "toml_datetime",
+        "version": "0.6.11",
+        "already_locked_before": true,
+        "crate_bytes": 16125,
+        "crate_sha256": "22cddaf88f4fbc13c51aebbf5f8eceb5c7c5a9da2ac40a13519eb5b0a0e8f11c",
+        "matches_lock_checksum": true,
+        "unpacked_manifest_present": true,
+        "sparse_index_cache_present": true
+      },
+      {
+        "name": "toml_edit",
+        "version": "0.22.27",
+        "already_locked_before": true,
+        "crate_bytes": 78602,
+        "crate_sha256": "41fe8c660ae4257887cf66394862d21dbca4a6ddd26f04a3560410406a2f819a",
+        "matches_lock_checksum": true,
+        "unpacked_manifest_present": true,
+        "sparse_index_cache_present": true
+      },
+      {
+        "name": "toml_write",
+        "version": "0.1.2",
+        "already_locked_before": true,
+        "crate_bytes": 15660,
+        "crate_sha256": "5d99f8c9a7727884afe522e9bd5edbfc91a3312b36a77b5fb8926e4c31a41801",
+        "matches_lock_checksum": true,
+        "unpacked_manifest_present": true,
+        "sparse_index_cache_present": true
+      },
+      {
+        "name": "unicode-ident",
+        "version": "1.0.24",
+        "already_locked_before": true,
+        "crate_bytes": 49298,
+        "crate_sha256": "e6e4313cd5fcd3dad5cafa179702e2b244f760991f45397d14d4ebf38247da75",
+        "matches_lock_checksum": true,
+        "unpacked_manifest_present": true,
+        "sparse_index_cache_present": true
+      },
+      {
+        "name": "winnow",
+        "version": "0.7.15",
+        "already_locked_before": true,
+        "crate_bytes": 187092,
+        "crate_sha256": "df79d97927682d2fd8adb29682d1140b343be4ac0f08fd68b7765d9c059d3945",
+        "matches_lock_checksum": true,
+        "unpacked_manifest_present": true,
+        "sparse_index_cache_present": true
+      }
+    ],
+    "closure_count": 17,
+    "scope": "Cargo.lock structural dependency graph, a conservative superset of a selected feature graph; no Cargo resolution/build was run"
+  },
+  "offline_cache_conclusion": {
+    "status": "available_for_the_added_direct_dependency_edge",
+    "cargo_home": "/workspace/scratch/50c364fd60b1/cargo",
+    "package_count_unchanged": 338,
+    "direct_edge": "cc-server -> existing toml_edit 0.22.27",
+    "lock_records_other_than_cc_server_unchanged": true,
+    "all_17_structural_closure_archives_present_and_match_lock_checksum": true,
+    "all_17_unpacked_manifests_present": true,
+    "all_17_sparse_index_entries_present": true,
+    "original_185_used_this_same_CARGO_HOME": true,
+    "limit": "This proves cache availability/checksums for the unchanged lock-graph edge, not that P4 compilation has succeeded or that a particular feature/build artifact can be reused without compilation. No cargo update, metadata, fetch or build was run by this reviewer."
+  },
+  "original_execution_identity": {
+    "actual_Rust_source": "b069c73a0d76736e1dfb3eb64e79cad6980b773f",
+    "environment": {
+      "environment": {
+        "CARGO_BUILD_JOBS": "2",
+        "CARGO_HOME": "/workspace/scratch/50c364fd60b1/cargo",
+        "CARGO_INCREMENTAL": "0",
+        "CARGO_PROFILE_DEV_DEBUG": "0",
+        "CARGO_PROFILE_TEST_DEBUG": "0",
+        "CARGO_TARGET_DIR": "/workspace/scratch/36fea31f96e3/target-validation",
+        "RUSTUP_HOME": "/workspace/scratch/50c364fd60b1/rustup",
+        "RUSTUP_TOOLCHAIN": "1.95.0"
+      },
+      "platform": [
+        "Linux",
+        "d68b7f253e72",
+        "6.18.44",
+        "#1 SMP Sat Sep 26 20:02:31 UTC 2026",
+        "x86_64"
+      ],
+      "rustc": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.95.0\nLLVM version: 22.1.2\n",
+      "source": "b069c73a0d76736e1dfb3eb64e79cad6980b773f",
+      "target_precondition": "after ENOSPC in an attempted full workspace link, cargo clean removed only cc-eval/server/index/search from this isolated target; dependencies retained; corpus and affected modules checked in batches with cc-eval cache cleanup between them; not cold-build certification"
+    },
+    "original_product_input_count": 1090,
+    "local_R": "733b70584fd9cf5581096fb2edfc7006f9a7dd80",
+    "local_G": "2295e53c07117331faf4adbcfd967cfa8104401b",
+    "published_P_prime": "49a03e1f9fa33b7b85cbc9680b47f521afbd8abd",
+    "published_R_prime": "bd9f7979ee76bf1ca3f0d8be284fd1a8f39fea22",
+    "published_G_prime": "dad1098d89ec7ab7771ec69e7cc61c50ab4a2c18",
+    "source_bridge_scope": "Original publication/source review preserves a complete product+validation input equality relation. It does not rename the original b069 Rust runs into the API publication, main55 or P4 execution. The parent/canonical reviewer owns any new P4 complete input binding."
+  },
+  "original_test_receipts": {
+    "installer_unit": {
+      "command": {
+        "command": [
+          "/workspace/scratch/50c364fd60b1/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+          "test",
+          "-p",
+          "cc-server",
+          "--bin",
+          "codecortex",
+          "--offline",
+          "--locked",
+          "installer::",
+          "--",
+          "--test-threads=1"
+        ],
+        "elapsed_seconds": 1.435361734998878,
+        "exit_code": 0,
+        "finished_at": "2026-10-09T09:40:29.325943+00:00",
+        "free_bytes_after": 1605939200,
+        "free_bytes_before": 1017581568,
+        "name": "installer-unit",
+        "started_at": "2026-10-09T09:40:27.890580+00:00"
+      },
+      "log": {
+        "url": "https://github.com/jyqj/codecortex/blob/55aa2bcf355441585bcf980e1d6f4fab8eebe59d/artifacts/checkpoints/p8-install-compat-36fea-20261009/validation/bounded-gates/installer-unit.log",
+        "retrieved_at": "2026-10-09T10:33:54.954Z",
+        "bytes": 4587,
+        "sha256": "5a1dd0f81481c3bab2c69e5613c756d0eac410a692dcc81f2ac513393bc9ed20",
+        "git_blob": "332e8bf68a1d209d4948e9ca14954a9bc66adc76",
+        "actual_fixed_tree_blob_verified": true
+      },
+      "actual_log_summary": {
+        "results": [
+          {
+            "passed": 49,
+            "failed": 0,
+            "ignored": 0,
+            "measured": 0,
+            "filtered_out": 0
+          }
+        ],
+        "binary_invocations": [
+          "     Running unittests src/main.rs (/workspace/scratch/36fea31f96e3/target-validation/debug/deps/codecortex-8de8b929e7cb3005)"
+        ],
+        "profile_lines": [
+          "    Finished `test` profile [unoptimized] target(s) in 1.35s"
+        ]
+      }
+    },
+    "installer_cli": {
+      "command": {
+        "command": [
+          "/workspace/scratch/50c364fd60b1/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+          "test",
+          "-p",
+          "cc-server",
+          "--test",
+          "installer_cli",
+          "--offline",
+          "--locked",
+          "--",
+          "--test-threads=1"
+        ],
+        "elapsed_seconds": 1.545960527000716,
+        "exit_code": 0,
+        "finished_at": "2026-10-09T09:40:30.873082+00:00",
+        "free_bytes_after": 1536425984,
+        "free_bytes_before": 1605939200,
+        "name": "installer-cli",
+        "started_at": "2026-10-09T09:40:29.327120+00:00"
+      },
+      "log": {
+        "url": "https://github.com/jyqj/codecortex/blob/55aa2bcf355441585bcf980e1d6f4fab8eebe59d/artifacts/checkpoints/p8-install-compat-36fea-20261009/validation/bounded-gates/installer-cli.log",
+        "retrieved_at": "2026-10-09T10:33:55.080Z",
+        "bytes": 550,
+        "sha256": "1b075fce07646084c48716d44ede019b043bbfd4ee727c15b42e9e7c91291fb8",
+        "git_blob": "80be76e868ed84ad1889cf540142f8603f1c1b55",
+        "actual_fixed_tree_blob_verified": true
+      },
+      "actual_log_summary": {
+        "results": [
+          {
+            "passed": 2,
+            "failed": 0,
+            "ignored": 0,
+            "measured": 0,
+            "filtered_out": 0
+          }
+        ],
+        "binary_invocations": [
+          "     Running tests/installer_cli.rs (/workspace/scratch/36fea31f96e3/target-validation/debug/deps/installer_cli-9b42a075e2e09db4)"
+        ],
+        "profile_lines": [
+          "    Finished `test` profile [unoptimized] target(s) in 1.48s"
+        ],
+        "test_names": [
+          "install_and_uninstall_round_trip_the_exact_server_entry",
+          "malformed_codex_config_makes_install_and_uninstall_fail_without_rewriting"
+        ]
+      }
+    },
+    "index_and_search_libraries": {
+      "command": {
+        "command": [
+          "/workspace/scratch/50c364fd60b1/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+          "test",
+          "-p",
+          "cc-index",
+          "-p",
+          "cc-search",
+          "--lib",
+          "--offline",
+          "--locked"
+        ],
+        "elapsed_seconds": 37.17184895800165,
+        "exit_code": 0,
+        "finished_at": "2026-10-09T09:40:27.887398+00:00",
+        "free_bytes_after": 1013981184,
+        "free_bytes_before": 2180718592,
+        "name": "index-search-libs",
+        "started_at": "2026-10-09T09:39:50.715549+00:00"
+      },
+      "log": {
+        "url": "https://github.com/jyqj/codecortex/blob/55aa2bcf355441585bcf980e1d6f4fab8eebe59d/artifacts/checkpoints/p8-install-compat-36fea-20261009/validation/bounded-gates/index-search-libs.log",
+        "retrieved_at": "2026-10-09T10:33:55.045Z",
+        "bytes": 58431,
+        "sha256": "33fb5019815bfc0f81d68322b4bcc35054d893e39ec0a934fc33f397550511d2",
+        "git_blob": "512fee1223491b9cdba8519162c5ece84d11cfb9",
+        "actual_fixed_tree_blob_verified": true
+      },
+      "actual_log_summary": {
+        "results": [
+          {
+            "passed": 427,
+            "failed": 0,
+            "ignored": 1,
+            "measured": 0,
+            "filtered_out": 0
+          },
+          {
+            "passed": 301,
+            "failed": 0,
+            "ignored": 0,
+            "measured": 0,
+            "filtered_out": 0
+          }
+        ],
+        "binary_invocations": [
+          "     Running unittests src/lib.rs (/workspace/scratch/36fea31f96e3/target-validation/debug/deps/cc_index-d8dafc938f874f85)",
+          "     Running unittests src/lib.rs (/workspace/scratch/36fea31f96e3/target-validation/debug/deps/cc_search-d3e865e2a63da579)"
+        ],
+        "profile_lines": [
+          "    Finished `test` profile [unoptimized] target(s) in 20.56s"
+        ]
+      }
+    },
+    "original_statistics_commands": {
+      "library": {
+        "command": [
+          "/workspace/scratch/50c364fd60b1/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+          "test",
+          "-p",
+          "cc-eval",
+          "--lib",
+          "--offline",
+          "--locked",
+          "benchmark::statistics"
+        ],
+        "elapsed_seconds": 0.26488043300196296,
+        "exit_code": 0,
+        "finished_at": "2026-10-09T09:40:31.141078+00:00",
+        "free_bytes_after": 1536421888,
+        "free_bytes_before": 1536425984,
+        "name": "statistics-lib",
+        "started_at": "2026-10-09T09:40:30.876197+00:00"
+      },
+      "binary": {
+        "command": [
+          "/workspace/scratch/50c364fd60b1/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+          "test",
+          "-p",
+          "cc-eval",
+          "--bin",
+          "p8-runtime-statistics",
+          "--offline",
+          "--locked"
+        ],
+        "elapsed_seconds": 1.213171160001366,
+        "exit_code": 0,
+        "finished_at": "2026-10-09T09:40:32.357510+00:00",
+        "free_bytes_after": 1530994688,
+        "free_bytes_before": 1536421888,
+        "name": "statistics-bin",
+        "started_at": "2026-10-09T09:40:31.144339+00:00"
+      },
+      "scope": "#185 original library selector is benchmark::statistics. Keep the parent original P3 selector legacy_latency_ns_tests for the combined run; do not invent a new filter or new count."
+    }
+  },
+  "original_format_clippy_evidence": {
+    "canonical": {
+      "source": "b069c73a0d76736e1dfb3eb64e79cad6980b773f",
+      "path": "artifacts/checkpoints/p8-install-compat-36fea-20261009/independent-source-review.json",
+      "bytes": 777770,
+      "sha256": "187d9b22ab7f09ed0bf52c25a16f514c1f3e93e13827e221c96d2dc3a7e571d5"
+    },
+    "field": "review_execution.fixed_P_local_static_checks.completed_commands_observed_before_disk_exhaustion",
+    "preserved_observations": [
+      {
+        "command": [
+          "/workspace/scratch/50c364fd60b1/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo-fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "elapsed_seconds": 3.2733764219992736,
+        "exit_code": 0,
+        "finished_at": "2026-10-09T09:33:04.537191+00:00",
+        "log": {
+          "bytes": 0,
+          "path_at_review": "validation/integrated-gates-restored/format.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "name": "format",
+        "started_at": "2026-10-09T09:33:01.263814+00:00"
+      },
+      {
+        "command": [
+          "/workspace/scratch/50c364fd60b1/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo-clippy",
+          "clippy",
+          "--workspace",
+          "--all-targets",
+          "--offline",
+          "--locked",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "elapsed_seconds": 45.34507705099895,
+        "exit_code": 0,
+        "finished_at": "2026-10-09T09:33:49.882782+00:00",
+        "log": {
+          "bytes": 787,
+          "path_at_review": "validation/integrated-gates-restored/clippy.log",
+          "sha256": "9a812d3870d9c857e2c318d7a1e869654ebd15a92106fab836143cb3aa134e8e"
+        },
+        "name": "clippy",
+        "started_at": "2026-10-09T09:33:04.537688+00:00"
+      }
+    ],
+    "receipt_note": "Reviewer actually read these two entries from integrated-gates-restored/commands.json before a later workspace ENOSPC truncated that mutable receipt to zero bytes. The entries above preserve that tool observation, not a fabricated replacement original receipt.",
+    "original_clippy_raw": {
+      "url": "https://github.com/jyqj/codecortex/blob/55aa2bcf355441585bcf980e1d6f4fab8eebe59d/artifacts/checkpoints/p8-install-compat-36fea-20261009/validation/integrated-gates-restored/clippy.log",
+      "retrieved_at": "2026-10-09T10:33:55.106Z",
+      "bytes": 787,
+      "sha256": "9a812d3870d9c857e2c318d7a1e869654ebd15a92106fab836143cb3aa134e8e",
+      "git_blob": "8016d01f6fefa6c5ebf114ce4fe415d4b743cfb6",
+      "actual_fixed_tree_blob_verified": true
+    },
+    "numeric_exit_basis": "The original non-author reviewer preserved the actual pre-truncation tool observations at b069: fmt exit0 and strict workspace/all-targets Clippy exit0. The later empty commands.json is not reconstructed or presented as a complete original receipt.",
+    "old_failures_still_preserved": {
+      "earlier_final_gates": {
+        "source_record": {
+          "url": "https://github.com/jyqj/codecortex/blob/55aa2bcf355441585bcf980e1d6f4fab8eebe59d/artifacts/checkpoints/p8-install-compat-36fea-20261009/validation/final-gates/commands.json",
+          "retrieved_at": "2026-10-09T10:33:55.020Z",
+          "bytes": 1413,
+          "sha256": "ef01d3678c432251ebc0a63ff8d3adc5db0ca4437b1f17dd8d8d0d1eab64402b",
+          "git_blob": "9964ddcd288bcf06d847a1d68d67d4619b5f1c14",
+          "actual_fixed_tree_blob_verified": true
+        },
+        "observed_format_exit": 0,
+        "observed_clippy_exit": 101
+      },
+      "earlier_integrated_format": {
+        "source_record": {
+          "url": "https://github.com/jyqj/codecortex/blob/55aa2bcf355441585bcf980e1d6f4fab8eebe59d/artifacts/checkpoints/p8-install-compat-36fea-20261009/validation/integrated-gates/commands.json",
+          "retrieved_at": "2026-10-09T10:33:55.023Z",
+          "bytes": 377,
+          "sha256": "828d580f46dacd9c51136cfa8a280b2aee14df2833bf5e599d41e48d7a490b47",
+          "git_blob": "f0131e95908b8f026bba97a6b772809be4a89752",
+          "actual_fixed_tree_blob_verified": true
+        },
+        "observed_exit": 1
+      },
+      "full_workspace_cargo_exit": null,
+      "full_workspace_wrapper_exit": 1,
+      "full_workspace_status": "incomplete_ENOSPC; saved log8192bytes; original commands.json zero bytes; no complete workspace pass",
+      "all_historical_source_integrity_status": "interrupted_not_passed after 35 observed completed cases; not a complete suite pass"
+    }
+  },
+  "recommended_P4_commands": [
+    {
+      "name": "format",
+      "argv": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "purpose": "Check formatting of the actual combined P4 source once.",
+      "original_basis": "Original P3 and #185 formatting gate; no new feature/profile."
+    },
+    {
+      "name": "clippy",
+      "argv": [
+        "cargo",
+        "clippy",
+        "--workspace",
+        "--all-targets",
+        "--locked",
+        "--offline",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "purpose": "Compile and lint all original workspace targets against the combined source/dependency graph.",
+      "original_basis": "Both existing component gates use this exact scope; no --all-features extension."
+    },
+    {
+      "name": "index-all-targets",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-index",
+        "--all-targets",
+        "--locked",
+        "--offline"
+      ],
+      "purpose": "Retain the parent-authorized combined-source coverage for the four P3 empty-input implementation/test paths and their actual index integration targets.",
+      "original_basis": "Existing P3 command; current P4 counts must come from the new log, not #185 old lib-only 427 count."
+    },
+    {
+      "name": "search-lib",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-search",
+        "--lib",
+        "--locked",
+        "--offline"
+      ],
+      "purpose": "Execute the remaining search engine/lane tests after duplicate-test removal and link against the combined source.",
+      "original_basis": "#185 original search library: 301 passed; expected historical reference only."
+    },
+    {
+      "name": "installer-unit",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-server",
+        "--bin",
+        "codecortex",
+        "--locked",
+        "--offline",
+        "installer::",
+        "--",
+        "--test-threads=1"
+      ],
+      "purpose": "Keep all installer target/unit regressions, including Codex structure/comments/path escaping/idempotence/fail-before-write cases.",
+      "original_basis": "#185 original 49 passed. The installer module is in the binary target; a cc-server --lib-only selection would not provide this coverage."
+    },
+    {
+      "name": "installer-cli",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-server",
+        "--test",
+        "installer_cli",
+        "--locked",
+        "--offline",
+        "--",
+        "--test-threads=1"
+      ],
+      "purpose": "Run the actual compiled CLI against isolated configurations for multi-target failure and malformed Codex install/uninstall exit/write behavior.",
+      "original_basis": "#185 original 2 passed; retain explicit target and serialized test setting."
+    },
+    {
+      "name": "statistics-lib-controls",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-eval",
+        "--lib",
+        "--locked",
+        "--offline",
+        "legacy_latency_ns_tests"
+      ],
+      "purpose": "Retain P3 exact original latency unit filter without expanding it.",
+      "original_basis": "P3 actual 2 passed, 0 failed, 0 ignored; not 3."
+    },
+    {
+      "name": "runtime-statistics-bin",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-eval",
+        "--bin",
+        "p8-runtime-statistics",
+        "--locked",
+        "--offline"
+      ],
+      "purpose": "Retain the original five statistics binary controls for unchanged population/precision/terminal semantics.",
+      "original_basis": "P3 and #185 actual 5 passed; current execution retains its own P4 identity."
+    },
+    {
+      "name": "eval-corpus-lib",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-eval",
+        "--lib",
+        "--locked",
+        "--offline",
+        "integration_fixtures_and_corpus"
+      ],
+      "purpose": "Retain the existing named corpus check at its actual library target.",
+      "original_basis": "P3 original 1 passed. This is separate from the 2+5 statistics checks. #185 old wider invocation also ran 88 filtered-zero targets, which are not extra passing cases."
+    }
+  ],
+  "filter_and_count_correction": {
+    "earlier_message_error": "This reviewer initially called the parent combined total 8 legacy3+binary5. That allocation was not supported by the script and is withdrawn.",
+    "correct_original_counts": {
+      "legacy_latency_ns_tests": 2,
+      "runtime_statistics_binary": 5,
+      "statistics_subtotal": 7,
+      "integration_fixtures_and_corpus_separate": 1,
+      "combined_eval_total": 8
+    },
+    "evidence": {
+      "eval-corpus-lib.log": {
+        "path": "artifacts/checkpoints/p8-empty-input-main-f7-integration-20261009-50c/engineering-checks/eval-corpus-lib.log",
+        "bytes": 342,
+        "sha256": "2968ed73cf66b3300d78aa50be1f800d686f73eb336e6fd9bb41af7af240f5b8",
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0,
+        "actual_execution_source": "034982202bdccc90b4938c6a6d6a56a36d4678af"
+      },
+      "runtime-statistics-bin.log": {
+        "path": "artifacts/checkpoints/p8-empty-input-main-f7-integration-20261009-50c/engineering-checks/runtime-statistics-bin.log",
+        "bytes": 834,
+        "sha256": "3cb05c2183aa3d40efa6282dfc53046efd93797b5c8baed6e333c578587e6cdc",
+        "passed": 5,
+        "failed": 0,
+        "ignored": 0,
+        "actual_execution_source": "034982202bdccc90b4938c6a6d6a56a36d4678af"
+      },
+      "statistics-lib-controls.log": {
+        "path": "artifacts/checkpoints/p8-empty-input-main-f7-integration-20261009-50c/engineering-checks/statistics-lib-controls.log",
+        "bytes": 804,
+        "sha256": "00a7e2fb69586ef3764d8793d50df49e33992faae167173dcdb94623e511e238",
+        "passed": 2,
+        "failed": 0,
+        "ignored": 0,
+        "actual_execution_source": "034982202bdccc90b4938c6a6d6a56a36d4678af"
+      }
+    },
+    "current_execution_rule": "Record actual P4 counts from its new logs; no parent estimate or historical component count is a P4 result."
+  },
+  "minimal_scope_rules": [
+    "Run each combined-source format/clippy/test target once; the historical #185 results identify relevant regressions, not a substitute for the new composition result.",
+    "Preserve --locked and --offline for Cargo build/test/lint commands; fmt has its original --all -- --check form.",
+    "Preserve --bin codecortex plus installer:: and the explicit installer_cli integration target; retain --test-threads=1 from both original installer commands.",
+    "Preserve the original exact legacy_latency_ns_tests and integration_fixtures_and_corpus library filters; retain the complete p8-runtime-statistics binary target.",
+    "Do not expand into all features, cold-build/platform/live-provider tests, full scale or a fresh full workspace suite solely because of this seven-input installer/search change.",
+    "The current-source guard and any required final CI remain their own original gates; this engineering-scope review does not replace them or claim they ran."
+  ],
+  "new_execution_receipt_requirements": {
+    "target_source": "Actual immutable P4 chosen by parent, not supplied/assumed in this report",
+    "source_before_after": "Exact product manifest and HEAD before/after; preserve original commands, feature/profile/toolchain and target directory",
+    "per_command": "Actual command, terminal exit, log SHA and measured test counts; zero filtered targets do not add passes",
+    "binary_paths": "Retain actual new test/CLI paths and available build identity; historical binaries and timings keep original source",
+    "result": "No P4 command executed by this reviewer; all current combination results pending the parent execution record"
+  },
+  "fixed_input_provenance": {
+    "summary": {
+      "url": "https://github.com/jyqj/codecortex/blob/55aa2bcf355441585bcf980e1d6f4fab8eebe59d/artifacts/checkpoints/p8-install-compat-36fea-20261009/SUMMARY.md",
+      "retrieved_at": "2026-10-09T10:31:21.796Z",
+      "bytes": 9683,
+      "sha256": "d346f5fc7594d0dda55cb869c36413700b3584dae96afc2e1f93a2b171418480",
+      "git_blob": "35f3c8793286e69078626d244955549626c85039",
+      "actual_fixed_tree_blob_verified": true
+    },
+    "final_checks": {
+      "url": "https://github.com/jyqj/codecortex/blob/55aa2bcf355441585bcf980e1d6f4fab8eebe59d/artifacts/checkpoints/p8-install-compat-36fea-20261009/publication-final-checks.json",
+      "retrieved_at": "2026-10-09T10:31:21.800Z",
+      "bytes": 717,
+      "sha256": "7c896a64166588061f86e042bd1d4578094ad20545a7afbc26e206748611ffa1",
+      "git_blob": "e8f2d537e9217fdd392e05a33f2523620874a875",
+      "actual_fixed_tree_blob_verified": true
+    },
+    "bounded_commands": {
+      "url": "https://github.com/jyqj/codecortex/blob/55aa2bcf355441585bcf980e1d6f4fab8eebe59d/artifacts/checkpoints/p8-install-compat-36fea-20261009/validation/bounded-gates/commands.json",
+      "retrieved_at": "2026-10-09T10:31:21.828Z",
+      "bytes": 4898,
+      "sha256": "d8ed1902e0d3d3be685ccc3bf06b8be423c95ec299d48a5a0118856431526c23",
+      "git_blob": "76aecc5063c9d94835ecd37e18b2e1fd94b58d7e",
+      "actual_fixed_tree_blob_verified": true
+    },
+    "new_lock": {
+      "url": "https://github.com/jyqj/codecortex/blob/55aa2bcf355441585bcf980e1d6f4fab8eebe59d/Cargo.lock",
+      "retrieved_at": "2026-10-09T10:33:18.986Z",
+      "bytes": 82701,
+      "sha256": "8a38d631ab3d489c7e4fc111c2d8f966d7e34d6502b8180c184907a27235c5d6",
+      "git_blob": "0c0bdc1601013b195c3580be4b0a9238557251cd",
+      "actual_fixed_tree_blob_verified": true
+    },
+    "old_lock": {
+      "url": "https://github.com/jyqj/codecortex/blob/fd9ca5db6485b575872c722995c451db926d05c9/Cargo.lock",
+      "retrieved_at": "2026-10-09T10:33:19.007Z",
+      "bytes": 82687,
+      "sha256": "ea6b177872de3749702e2cd967f4504efff5bcc67cd2a2459205d182243d1000",
+      "git_blob": "c83b9a3dae16231117e3c3c12dc56479988e1b24",
+      "actual_fixed_tree_blob_verified": true
+    },
+    "new_server_toml": {
+      "url": "https://github.com/jyqj/codecortex/blob/55aa2bcf355441585bcf980e1d6f4fab8eebe59d/crates/cc-server/Cargo.toml",
+      "retrieved_at": "2026-10-09T10:33:18.830Z",
+      "bytes": 1610,
+      "sha256": "4b316a3dc3e35c0d1b3b3423025223c28ef4b35fa86b61096f142c53ff6a47b5",
+      "git_blob": "cffa60193db9dd5903f408f4ee46ad981be41bf3",
+      "actual_fixed_tree_blob_verified": true
+    },
+    "old_server_toml": {
+      "url": "https://github.com/jyqj/codecortex/blob/fd9ca5db6485b575872c722995c451db926d05c9/crates/cc-server/Cargo.toml",
+      "retrieved_at": "2026-10-09T10:33:18.993Z",
+      "bytes": 1433,
+      "sha256": "867140f1a44758e9486f0453fdb671dca69811c5ae3afea4e831f1d420d38949",
+      "git_blob": "b43687e2190c7a814675483998d7186fa49e5f8b",
+      "actual_fixed_tree_blob_verified": true
+    },
+    "installer_unit": {
+      "url": "https://github.com/jyqj/codecortex/blob/55aa2bcf355441585bcf980e1d6f4fab8eebe59d/artifacts/checkpoints/p8-install-compat-36fea-20261009/validation/bounded-gates/installer-unit.log",
+      "retrieved_at": "2026-10-09T10:33:54.954Z",
+      "bytes": 4587,
+      "sha256": "5a1dd0f81481c3bab2c69e5613c756d0eac410a692dcc81f2ac513393bc9ed20",
+      "git_blob": "332e8bf68a1d209d4948e9ca14954a9bc66adc76",
+      "actual_fixed_tree_blob_verified": true
+    },
+    "installer_cli": {
+      "url": "https://github.com/jyqj/codecortex/blob/55aa2bcf355441585bcf980e1d6f4fab8eebe59d/artifacts/checkpoints/p8-install-compat-36fea-20261009/validation/bounded-gates/installer-cli.log",
+      "retrieved_at": "2026-10-09T10:33:55.080Z",
+      "bytes": 550,
+      "sha256": "1b075fce07646084c48716d44ede019b043bbfd4ee727c15b42e9e7c91291fb8",
+      "git_blob": "80be76e868ed84ad1889cf540142f8603f1c1b55",
+      "actual_fixed_tree_blob_verified": true
+    },
+    "index_search_libs": {
+      "url": "https://github.com/jyqj/codecortex/blob/55aa2bcf355441585bcf980e1d6f4fab8eebe59d/artifacts/checkpoints/p8-install-compat-36fea-20261009/validation/bounded-gates/index-search-libs.log",
+      "retrieved_at": "2026-10-09T10:33:55.045Z",
+      "bytes": 58431,
+      "sha256": "33fb5019815bfc0f81d68322b4bcc35054d893e39ec0a934fc33f397550511d2",
+      "git_blob": "512fee1223491b9cdba8519162c5ece84d11cfb9",
+      "actual_fixed_tree_blob_verified": true
+    },
+    "bounded_identity": {
+      "url": "https://github.com/jyqj/codecortex/blob/55aa2bcf355441585bcf980e1d6f4fab8eebe59d/artifacts/checkpoints/p8-install-compat-36fea-20261009/validation/bounded-gates/identity.json",
+      "retrieved_at": "2026-10-09T10:33:55.079Z",
+      "bytes": 1086,
+      "sha256": "a2487a03d5b21f979a7c351328761d8d9c329438d09b66179fb8dee4d631e4c7",
+      "git_blob": "f81738e45dec7196ac4f781ea4bf7d992e11d8ba",
+      "actual_fixed_tree_blob_verified": true
+    },
+    "clippy_log": {
+      "url": "https://github.com/jyqj/codecortex/blob/55aa2bcf355441585bcf980e1d6f4fab8eebe59d/artifacts/checkpoints/p8-install-compat-36fea-20261009/validation/integrated-gates-restored/clippy.log",
+      "retrieved_at": "2026-10-09T10:33:55.106Z",
+      "bytes": 787,
+      "sha256": "9a812d3870d9c857e2c318d7a1e869654ebd15a92106fab836143cb3aa134e8e",
+      "git_blob": "8016d01f6fefa6c5ebf114ce4fe415d4b743cfb6",
+      "actual_fixed_tree_blob_verified": true
+    },
+    "environment_review": {
+      "url": "https://github.com/jyqj/codecortex/blob/55aa2bcf355441585bcf980e1d6f4fab8eebe59d/artifacts/checkpoints/p8-install-compat-36fea-20261009/validation/review/environment-baseline-review.json",
+      "retrieved_at": "2026-10-09T10:33:55.151Z",
+      "bytes": 13747,
+      "sha256": "1909c7e6c3cb7e7de2486bdd24525d257bfedb0f0b672195b398e32ce2a6bd8b",
+      "git_blob": "cba2a23166a27f46c695bf05b3d527f0afdb2b27",
+      "actual_fixed_tree_blob_verified": true
+    },
+    "final_gate_commands": {
+      "url": "https://github.com/jyqj/codecortex/blob/55aa2bcf355441585bcf980e1d6f4fab8eebe59d/artifacts/checkpoints/p8-install-compat-36fea-20261009/validation/final-gates/commands.json",
+      "retrieved_at": "2026-10-09T10:33:55.020Z",
+      "bytes": 1413,
+      "sha256": "ef01d3678c432251ebc0a63ff8d3adc5db0ca4437b1f17dd8d8d0d1eab64402b",
+      "git_blob": "9964ddcd288bcf06d847a1d68d67d4619b5f1c14",
+      "actual_fixed_tree_blob_verified": true
+    },
+    "integrated_gate_commands": {
+      "url": "https://github.com/jyqj/codecortex/blob/55aa2bcf355441585bcf980e1d6f4fab8eebe59d/artifacts/checkpoints/p8-install-compat-36fea-20261009/validation/integrated-gates/commands.json",
+      "retrieved_at": "2026-10-09T10:33:55.023Z",
+      "bytes": 377,
+      "sha256": "828d580f46dacd9c51136cfa8a280b2aee14df2833bf5e599d41e48d7a490b47",
+      "git_blob": "f0131e95908b8f026bba97a6b772809be4a89752",
+      "actual_fixed_tree_blob_verified": true
+    }
+  },
+  "supporting_readback": {
+    "path": "validation/main-55-integration/engineering-source-readback.json",
+    "bytes": 22683,
+    "sha256": "c2cc80576bb9f7b986e718d3be9d47437acecbae148b22d41fd2d76d7f211d6c"
+  },
+  "actions_performed": {
+    "GitHub_fixed_text_reads": 15,
+    "actual_fixed_tree_blob_hash_comparisons": 15,
+    "immutable_Git_product_metadata_comparison": true,
+    "project_commands_or_tests_run": false,
+    "git_fetch_or_ref_mutation_requested": false,
+    "source_or_existing_artifact_writes": false,
+    "scale_state_refreshed": false,
+    "note": "One local raw diff read returned128; fixed GitHub raw inputs were used and checked against immutable tree blob IDs. No missing blob was fetched by a reviewer command."
+  },
+  "ledger": {
+    "total": 192,
+    "done": 163,
+    "remaining": 29,
+    "new_original_todos_closed": 0,
+    "status_changed": false
+  }
+}

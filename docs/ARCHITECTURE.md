@@ -94,8 +94,12 @@ RRF 融合 + 重排  -->  ContextEnvelope  -->  MCP 工具响应
    resolver 目录停靠槽）同理无手工失效钩子，但以写时维护的
    `symbols_seed` 聚合 token 为效期证明（内容等价性，而非单调时钟）；
    目录停靠槽对 cc-db 类型擦除，依赖方向不变。
-3. **写隔离**：多语句写只经 `UnitOfWork`；commit 恰好推进一次
-   `index_epoch`；未 commit 即回滚。
+3. **写隔离**：SQL 与事务边界由 cc-db 的受控写入口拥有。`UnitOfWork`
+   用于短批量写；默认 `commit()` 恰好推进一次 `index_epoch`，
+   `commit_with()` 只推进声明的 Index/Evidence/Semantic 时钟，Auxiliary
+   或空 effect set 不推进时钟；未提交即回滚。全量内容写由独立的
+   `SnapshotWriteTxn` 写入 temp-db / DirectWriter 重建连接，本身不推进 epoch；
+   外层重建协议在发布新库前设置重建 generation。
 4. **分域时钟失效**：索引内容走 `index_epoch`，运行时证据走
    `evidence_epoch`，语义可见集合/期望集合变化走 `semantic_epoch`；
    `Auxiliary` 队列簿记不推进这些时钟。缓存按其声明的代际域自失效，没有常规的手工失效

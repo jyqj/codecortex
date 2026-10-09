@@ -485,10 +485,40 @@ fn subprocess_descendant_cannot_hold_stderr_past_worker_deadline() {
     // the inherited stderr pipe open after the worker itself exits normally.
     std::fs::write(
         &helper,
-        "#!/bin/sh\nwhile [ \"$#\" -gt 0 ]; do\n case \"$1\" in --output) shift; out=\"$1\";; esac\n shift\ndone\nsleep 20 &\nprintf '{\"passed\":true}' > \"$out/worker-summary.json\"\n",
+        "#!/bin/sh\nif [ \"$1\" = \"--fixture-preflight\" ]; then exit 0; fi\nwhile [ \"$#\" -gt 0 ]; do\n case \"$1\" in --output) shift; out=\"$1\";; esac\n shift\ndone\nsleep 20 &\nprintf '{\"passed\":true}' > \"$out/worker-summary.json\"\n",
     )
     .unwrap();
     std::fs::set_permissions(&helper, std::fs::Permissions::from_mode(0o700)).unwrap();
+    // Preparing the freshly written executable is separate from the scenario:
+    // a cold executable launch may exceed 250ms before reaching the shell.
+    // Run this no-descendant branch exactly once, with its own bounded setup.
+    // The supervised invocation below still includes its entire child lifetime.
+    let preflight_started = std::time::Instant::now();
+    let mut preflight = std::process::Command::new(&helper)
+        .arg("--fixture-preflight")
+        .stdin(std::process::Stdio::null())
+        .stdout(std::process::Stdio::null())
+        .spawn()
+        .unwrap();
+    loop {
+        if preflight_started.elapsed() >= std::time::Duration::from_secs(2) {
+            let _ = preflight.kill();
+            let _ = preflight.wait();
+            panic!("fixture preflight exceeded its 2s setup bound");
+        }
+        match preflight.try_wait() {
+            Ok(Some(status)) => {
+                assert!(status.success(), "fixture preflight failed: {status}");
+                break;
+            }
+            Ok(None) => std::thread::sleep(std::time::Duration::from_millis(10)),
+            Err(error) => {
+                let _ = preflight.kill();
+                let _ = preflight.wait();
+                panic!("fixture preflight could not collect child status: {error}");
+            }
+        }
+    }
     let plan = ScalePlan {
         deadline_ms: 250,
         ..ScalePlan::default()
@@ -500,6 +530,8 @@ fn subprocess_descendant_cannot_hold_stderr_past_worker_deadline() {
         "a descendant must not turn the 250ms deadline into a 20s join"
     );
     assert_eq!(report["exit_code"], 0, "{report}");
+    assert_eq!(report["worker_exit_code"], 0, "{report}");
+    assert_eq!(report["summary"]["passed"], true, "{report}");
     assert_eq!(report["stderr_complete"], true);
     assert_eq!(report["release_certification"], "not_run");
 }

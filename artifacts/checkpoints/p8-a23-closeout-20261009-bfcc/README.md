@@ -24,11 +24,13 @@ The CI merge checkout is recorded as actually observed. Official Git commit meta
 | P8-008 / 009 lifecycle / resources | 1230 original samples, 1261 resource snapshots, physical/logical storage attribution and null/unknown cost boundaries independently checked | Original prior-task dependency closure |
 | P8-010 soak | Original one-hour workload began at 02:48:58 UTC on 2026-10-09 | Actual terminal run, all offered operations, original resource trends, four completion-time cache windows and unrepaired final parity |
 | P8-011 / 016 recovery / rollback | Actual local/active fault records, 14 database-copy integrity/FK checks, source/config preservation and historical 25→24→25→backup rollback reviewed | Original hard dependencies |
-| P8-012 platforms | Eight original fresh release builds and eight-cell collector passed; actual Linux/macOS × Rust 1.95.0 / observed stable 1.99.0 × default/semantic | Original hard dependencies and final mapping |
+| P8-012 platforms | Eight original fresh release builds and eight-cell collector passed; actual Linux/macOS × Rust 1.95.0 / observed stable 1.99.0 × default/semantic | Original hard dependencies |
 | P8-013 failure gates | Six non-ignored original Rust controls and seven exact retained-CLI scenario replays with expected nonzero exits; original bytes unchanged | Original hard dependencies |
 | Common CI / P7 regression | Original CI and P7 workflows succeeded; all seven new inline Rust tests appear as `ok` in the original CI log | No replacement of scale/soak acceptance is inferred |
 
 The [copied audit manifest](round4-reviewed-progress/copied-audit-manifest.json) records exact bytes and SHA-256 for this progress snapshot. The [runtime evidence map](round4-reviewed-progress/review-runtime/round4-p8-007-009-evidence-map.json) and [scale acceptance checklist](round4-reviewed-progress/review-scale/scoped-acceptance-checklist.json) distinguish actual required gates from allowed unknown/not-established results. Original source registrations and all sampling budgets remain unchanged.
+
+The [platform/PR addendum manifest](round4-reviewed-progress/platform-pr-addendum-manifest.json) preserves the completed [platform, recovery, rollback and failure-gate acceptance mapping](round4-reviewed-progress/review-platform/independent-acceptance.json), the [exact seven-scenario CLI replay](round4-reviewed-progress/review-platform/gates-retained-cli/replay-report-v2.json), and the conditional PR #160 adoption review. These additions do not change task counts.
 
 ## Original artifacts and deterministic replay
 
@@ -38,7 +40,7 @@ Other original ZIPs remain identified by their official artifact IDs, names, siz
 
 ## PR and queue management
 
-PR #167 is the single frozen candidate for these ten original tasks. Exact scope inventories for #160 and #161 are retained under `round4-reviewed-progress/review-pr/`; matching engineering files do not imply matching historical evidence or new a23 measurement credit. Their old branches and original records are retained pending final disposition.
+PR #167 is the frozen measured candidate tracked by this checkpoint. PR #168 is a separate later source under its own review and execution; none of its results are credited here. Exact scope inventories for #160 and #161 are retained under `round4-reviewed-progress/review-pr/`; matching engineering files do not imply matching historical evidence or new a23 measurement credit. Their old branches and original records are retained pending final disposition.
 
 The two already-invalid historical scale studies G (`37830173594`) and D0 (`37854240827`), plus the old e95 runtime (`37859755918`), were administratively stopped to release queue capacity. This was a resource-management decision outside their measurement protocols. Original failures and final aggregate rejections remain failures; active interrupted work is cancelled, queued work was not run, and no primary was replaced or retried. Before/after API captures and original aggregate logs are retained in this checkpoint.
 

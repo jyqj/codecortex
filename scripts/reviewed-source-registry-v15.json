@@ -6,7 +6,7 @@
     "crates/cc-db/Cargo.toml": "169278d054b2575aae1123650dfa2c8f8e9fe0aabe575fbb2d67e4d168a9b047",
     "crates/cc-db/src/capability_read.rs": "732e45a55b1ddbdb394f4a279eba051e58721ea6dd9286903c89e00d8a213ee9",
     "crates/cc-db/src/community_carry.rs": "56b22a4d24eb981e2c06d42ddfd53c8430f3bca7fa05debc76de1de083c2b624",
-    "crates/cc-db/src/direct_writer.rs": "f503106e972535c273bcd1bebb34b844e0f1e3091ae33a9f39f6854590c292be",
+    "crates/cc-db/src/direct_writer.rs": "f524cf3f23f3bb3b7d1926605681d78010f7a056b7c8766561db4a8030971e5b",
     "crates/cc-db/src/document_store.rs": "affe3cfa66341a0f739d49b054c98492554c0dfdaca4703fd5c62ca16b6f3c77",
     "crates/cc-db/src/epoch_rules.rs": "e28c186cc75bdad9f2bd6f05d8c2e05ffe68a99f5f94777dd3d3338bde2c1498",
     "crates/cc-db/src/file_state_cache.rs": "48bd5f2e566f930cce6562cb5ca433f8b90d77685d324145e8b72c20f062670a",
@@ -28,7 +28,7 @@
     "crates/cc-db/src/index_db_tests.rs": "b20e04ef98ab3a778e4ef909045a8934aa185a894a606ca0cbd5a1819c6684f3",
     "crates/cc-db/src/index_db_types.rs": "f1b1b499879d721e6024b40e28050f705b74b2d13afdda98f55b8bc2c6591d67",
     "crates/cc-db/src/index_db_write_batch.rs": "8968b406f5c8f513489ace72bfc0077233484db687c97a92dbc13704d2e6fb7a",
-    "crates/cc-db/src/index_migrate.rs": "db6c7377fa47f27c7c163a40bdf8d93ea4db90c72e5ea78e587186e5eb39dcd2",
+    "crates/cc-db/src/index_migrate.rs": "97fb618da9eaff1088998942fcc1396c3c515314e048ac6081515c83447a873c",
     "crates/cc-db/src/lib.rs": "2ee1fd4600ce4625725c5c673b9ce96be5eab6d74ce7a8c407de4f92a3ee983f",
     "crates/cc-db/src/public_surface_store.rs": "35c5b03670b3a2ed7add767f66ea46b4a7cd265dfffa3a77f81f04a8ed8d4650",
     "crates/cc-db/src/read_generation.rs": "54d9b0834214f6e58fbe2fa7a5ec00df77e7aaba1a11eb533498e7a9798f563f",
@@ -51,7 +51,7 @@
     "crates/cc-db/src/statement_work.rs": "e32e6ce3e78cb78088b7aa126420d450db6cbbf37f624872c2663fa2ef2dbdfe",
     "crates/cc-db/src/symbol_identity_store.rs": "e4d9ae569cfe557c9b3ea11ba779be32b781d5383fd620072a069e7ce38ffb49",
     "crates/cc-db/src/unit_of_work.rs": "265a0c4cbddfd237e1cde1e199599389b10b87aa140ea72ecb7a85439aa39142",
-    "crates/cc-db/tests/ci_schema_guard_contract.rs": "24850989991ef584c559fd0a5b73382ba0434181c6abd69cba80ede6acbe7e42",
+    "crates/cc-db/tests/ci_schema_guard_contract.rs": "db47e6215a7cead2e28d04a9df26e96e97d1c2737f27502e15566001767254c4",
     "crates/cc-db/tests/fixtures/p7-ci-schema-v21.sql": "00a7d1fc249c562160fc0cdc7978ba2198b4ee063f8c6cf77cc564dd3f27407f",
     "crates/cc-db/tests/fixtures/p7-ci-schema-v24.sql": "a6ffa4911557211897fb8aaf9b3a61bffd2355714b32d0ce1915cf109f5e8be2",
     "crates/cc-db/tests/fts_identifier_expansion.rs": "e6d96c9b95aad8edeff1e9596b6db71759a2c4e3667163ba008071a43c2cca36",
@@ -1094,6 +1094,10 @@
     "crates/cc-server/tests/v11_consumption_independent_review.rs": "42e13a105eb8b03e96454eb2bd58b0224b8a86798dc50b9fc6926a031937bece"
   },
   "delta": {
+    "crates/cc-db/src/direct_writer.rs": {
+      "before_sha256": "f503106e972535c273bcd1bebb34b844e0f1e3091ae33a9f39f6854590c292be",
+      "sha256": "f524cf3f23f3bb3b7d1926605681d78010f7a056b7c8766561db4a8030971e5b"
+    },
     "crates/cc-db/src/index_db_multi_insert.rs": {
       "before_sha256": "9bcc38670163280c0b475474ac02d198b940ab2c621c29e9525e2968a12a3261",
       "sha256": "b621f633f231a98af42b6ead8c300956ad96ff1544bbbc392c3743b2e3038101"
@@ -1108,7 +1112,7 @@
     },
     "crates/cc-db/src/index_migrate.rs": {
       "before_sha256": "fcfa9073ffb82abb024380d5996836ff51b4ccc89caca4e99149de748c440b0d",
-      "sha256": "db6c7377fa47f27c7c163a40bdf8d93ea4db90c72e5ea78e587186e5eb39dcd2"
+      "sha256": "97fb618da9eaff1088998942fcc1396c3c515314e048ac6081515c83447a873c"
     },
     "crates/cc-db/src/lib.rs": {
       "before_sha256": "640dc126385015e2418f0776e0e68e882075d5548761cde7918bfc44e4df7d9f",
@@ -1132,7 +1136,7 @@
     },
     "crates/cc-db/tests/ci_schema_guard_contract.rs": {
       "before_sha256": "94ce67ed025afb484fb630411859697fa87e9dd91e3d118725a08c336d218694",
-      "sha256": "24850989991ef584c559fd0a5b73382ba0434181c6abd69cba80ede6acbe7e42"
+      "sha256": "db47e6215a7cead2e28d04a9df26e96e97d1c2737f27502e15566001767254c4"
     },
     "crates/cc-db/tests/p2b_resolution_store.rs": {
       "before_sha256": "bd5cf52dcdea030916142d4dcaaa058f2be8d6ef89ace9eb577792dc4c67674f",
@@ -1280,9 +1284,9 @@
     }
   },
   "previous_source_version": "p8-oracle-compat-source-20261008-v14",
-  "product_source": "fced7366cee6aa727aa10d775539c3ef9df5c8d2",
-  "review_sha256": "98e6382f62ccdbede80095dca68f1898fc9c6600b0eea483e55014dc0b98ad16",
-  "review_source": "d9581c4c9fa0c46cdd792cffb1a19689af946c6d",
+  "product_source": "b04b555aeaa624eea83e384c7fae67de818e9af7",
+  "review_sha256": "91ba3881e55c6c05cae78cdf604b0e388707891154c44129a1511f150aafb1e2",
+  "review_source": "e9fe713e1d3ad4dd0e8398da79757708a294e571",
   "runtime_and_quality_claims": "require_separate_execution_evidence",
   "schema_version": 10,
   "scope": "independently_reviewed_source_and_validation_inputs",

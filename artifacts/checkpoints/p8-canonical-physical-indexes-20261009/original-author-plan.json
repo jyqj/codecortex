@@ -1,0 +1,255 @@
+{
+  "schema": "p8-017-canonical-maintenance-index-owner-draft-v1",
+  "author": "/root/scale_engineering",
+  "status": "implementation_draft_pending_independent_review_and_execution",
+  "repository": "jyqj/codecortex",
+  "parent_source": "8da6bd93d6bd735e30daba11d821726a21ad8424",
+  "parent_scope": "PR179 stacked on PR175 at8da1; no current source/ref/CI changed.",
+  "main_reference": "900539f25ed9f9f78cf15895257f82f78810831e",
+  "task": {
+    "id": "P8-017",
+    "definition_unchanged": true,
+    "dependency_completion_claimed": false,
+    "newly_done": 0,
+    "remaining": 29
+  },
+  "rules": {
+    "root_AGENTS": "actual fixed900 lookup404; no AGENTS exists in fetched complete crates/scripts tree",
+    "contributing": {
+      "git_blob": "e70d34871f78f394578a6e4273df75dd92afa35f",
+      "scope": "Read original Rust1.95, fmt, workspace Clippy/tests, source/platform and evidence-boundary rules; no check weakened."
+    }
+  },
+  "finding": {
+    "kind": "two_active_copies_of_the_same_physical_schema_definitions",
+    "not_claimed": "No current on-disk schema corruption or divergent index behavior was observed; the two current definitions are equivalent.",
+    "canonical": {
+      "path": "crates/cc-db/src/sql/index_v1.sql",
+      "git_blob": "998608d9c6d07eb4afec0ce7e13c1f85bfc7a441",
+      "bytes": 25396,
+      "sha256": "6d7ee2193f388281aeef3dc98b914f0fa6f9478dda90833bf41f6bc12350cd06"
+    },
+    "canonical_lines": {
+      "chunk_symbol_identity_doc_key": 120,
+      "semantic_outbox_fifo_pending": 560
+    },
+    "duplicate": {
+      "path": "crates/cc-db/src/index_migrate.rs",
+      "git_blob": "0de28f327cc989fafc112d6415491026de167bd1",
+      "bytes": 7941,
+      "sha256": "db6c7377fa47f27c7c163a40bdf8d93ea4db90c72e5ea78e587186e5eb39dcd2",
+      "lines": [
+        66,
+        67,
+        68
+      ]
+    },
+    "call_frequency": "Every normal writable IndexDb open reaches open_and_ensure_schema_inner then migrate_index_db; matching schema previously executed the two duplicate literals on each open.",
+    "previous_coverage": "PR175 owns runtime nearest-rank consolidation. PR179 owns only resolver allocations; neither changes these three old blobs.",
+    "old_blobs_identical_in_main_and_parent": true
+  },
+  "implementation": {
+    "files": [
+      {
+        "path": "crates/cc-db/src/direct_writer.rs",
+        "mode": "100644",
+        "before": {
+          "git_blob": "681c500b4ddd203582e87a874d268be68db3c1fe",
+          "bytes": 21881,
+          "sha256": "f503106e972535c273bcd1bebb34b844e0f1e3091ae33a9f39f6854590c292be"
+        },
+        "after": {
+          "git_blob": "603e8060ad36c0a46242184e74d4e56805e1d8d9",
+          "bytes": 24666,
+          "sha256": "f524cf3f23f3bb3b7d1926605681d78010f7a056b7c8766561db4a8030971e5b"
+        },
+        "full_get_equal": true
+      },
+      {
+        "path": "crates/cc-db/src/index_migrate.rs",
+        "mode": "100644",
+        "before": {
+          "git_blob": "0de28f327cc989fafc112d6415491026de167bd1",
+          "bytes": 7941,
+          "sha256": "db6c7377fa47f27c7c163a40bdf8d93ea4db90c72e5ea78e587186e5eb39dcd2"
+        },
+        "after": {
+          "git_blob": "55ce1194ab0e890ad43793077cf1238ab150da5d",
+          "bytes": 8481,
+          "sha256": "97fb618da9eaff1088998942fcc1396c3c515314e048ac6081515c83447a873c"
+        },
+        "full_get_equal": true
+      },
+      {
+        "path": "crates/cc-db/tests/ci_schema_guard_contract.rs",
+        "mode": "100644",
+        "before": {
+          "git_blob": "62b998e3c62d150f2d776a0073eb1d6ac8a8e627",
+          "bytes": 12152,
+          "sha256": "24850989991ef584c559fd0a5b73382ba0434181c6abd69cba80ede6acbe7e42"
+        },
+        "after": {
+          "git_blob": "f581c77eb8f6d414712c584fbf66ae24fc50a049",
+          "bytes": 12307,
+          "sha256": "db47e6215a7cead2e28d04a9df26e96e97d1c2737f27502e15566001767254c4"
+        },
+        "full_get_equal": true
+      }
+    ],
+    "patch": {
+      "git_blob": "6b2abd25a5420d5e902ef5cee5cc64641fa33086",
+      "bytes": 7788,
+      "sha256": "42a348a320fa6ceb0c9988e4fa4433d40ede00eefbe358fab97de036f32a5012",
+      "full_get_equal": true
+    },
+    "modified_functions": [
+      {
+        "path": "crates/cc-db/src/direct_writer.rs",
+        "function": "selected_index_statements",
+        "kind": "new crate-private selector; all existing functions unchanged",
+        "complete_body": "/// Select explicitly maintained indexes from the canonical schema, in caller order.\n/// Missing or repeated names fail closed rather than silently changing maintenance.\npub(crate) fn selected_index_statements(sql: &str, names: &[&str]) -> Option<String> {\n    let statements = split_sql_statements(sql);\n    let mut result = String::new();\n    for (position, name) in names.iter().enumerate() {\n        if names[..position].contains(name) {\n            return None;\n        }\n        let mut matching = statements.iter().copied().filter(|stmt| {\n            matches!(\n                classify_statement(stmt),\n                StmtKind::CreateIndex | StmtKind::CreateUniqueIndex\n            ) && index_name(stmt) == Some(*name)\n        });\n        let statement = matching.next()?;\n        if matching.next().is_some() {\n            return None;\n        }\n        result.push_str(statement);\n        result.push_str(\";\\n\");\n    }\n    Some(result)\n}\n\n"
+      },
+      {
+        "path": "crates/cc-db/src/index_migrate.rs",
+        "function": "physical_index_maintenance_sql",
+        "kind": "new private immutable SQL cache",
+        "complete_body": "/// Only immutable compiled SQL is cached, never a database state or read epoch.\n/// Normal writable opens keep executing the original two statements in order.\nfn physical_index_maintenance_sql() -> CcResult<&'static str> {\n    static SQL: OnceLock<Option<String>> = OnceLock::new();\n    SQL.get_or_init(|| {\n        crate::direct_writer::selected_index_statements(\n            FULL_SCHEMA_SQL,\n            &[\n                \"semantic_outbox_fifo_pending\",\n                \"chunk_symbol_identity_doc_key\",\n            ],\n        )\n    })\n    .as_deref()\n    .ok_or_else(|| {\n        CcError::Database(\n            \"canonical physical index maintenance requires one definition per index\".into(),\n        )\n    })\n}\n\n"
+      },
+      {
+        "path": "crates/cc-db/src/index_migrate.rs",
+        "function": "migrate_index_db",
+        "kind": "replace only duplicated execute_batch argument with selected canonical SQL; all other body and original errors untouched",
+        "old_fragment": "        conn.execute_batch(\n            \"CREATE INDEX IF NOT EXISTS semantic_outbox_fifo_pending ON semantic_outbox(space_id,task_id,available_at) WHERE state='pending';\n             CREATE INDEX IF NOT EXISTS chunk_symbol_identity_doc_key ON chunk_symbol_identity(doc_key);\",\n        ).map_err(db_err)?;",
+        "new_fragment": "        conn.execute_batch(physical_index_maintenance_sql()?)\n            .map_err(db_err)?;"
+      }
+    ],
+    "cache": "Function-local OnceLock<Option<String>> parses the immutable compiled schema once per process. No database state, incarnation, epoch, connection, transaction, read snapshot or observed result is cached. Existing schema parser is reused; no framework or dependency added.",
+    "selection": [
+      "semantic_outbox_fifo_pending",
+      "chunk_symbol_identity_doc_key"
+    ],
+    "preserved": "Original order, entire IF NOT EXISTS statement bodies and partial predicate; only these two indexes. SQL schema file/version25, migration mismatch/rebuild logic, public SchemaStatus variants, read-only refusal and epoch/incarnation update semantics unchanged.",
+    "rejection": "Canonical missing or repeated selected index name, or repeated requested name returnsNone and a database error before either maintenance statement executes. No silent skip."
+  },
+  "regression_draft": {
+    "new_helper_test": "selected_indexes_keep_order_and_reject_missing_or_duplicate_definitions",
+    "new_helper_behavior": "Actual SQLite execution of selected DDL, caller ordering, unique/nonunique index types, partial predicate with quoted semicolon, ignored trigger text and unrelated index; missing/duplicate definitions/duplicate requested names rejected.",
+    "extended_existing_test": "current_schema_identity_index_preserves_rows_and_uses_indexed_fk_cascade",
+    "extended_behavior": "Record the fresh database's full sqlite_schema, drop both maintained indexes, retain original read-only rejection/all-table typed-value snapshot including metadata, reopen twice, require all schema object SQL equal fresh plus all original row/epoch/incarnation and indexed FK cascade assertions. Historical v21/v24 and mismatch tests retained.",
+    "commands": [
+      {
+        "argv": [
+          "cargo",
+          "test",
+          "-p",
+          "cc-db",
+          "--lib",
+          "direct_writer::tests::"
+        ],
+        "expected_nonignored_methods": [
+          "direct_writer::tests::selected_indexes_keep_order_and_reject_missing_or_duplicate_definitions",
+          "direct_writer::tests::sqlite_boundaries_preserve_triggers_quotes_comments_and_tail",
+          "direct_writer::tests::full_schema_preserves_seed_views_triggers_and_defers_explicit_indexes",
+          "direct_writer::tests::schema_and_deferred_unique_errors_propagate_without_dropping_input",
+          "direct_writer::tests::extract_index_stmts",
+          "direct_writer::tests::drop_index_stmts_match_create_set",
+          "direct_writer::tests::direct_writer_creates_valid_db",
+          "direct_writer::tests::direct_writer_handles_fts_tables",
+          "direct_writer::tests::direct_writer_write_fn_error_propagates",
+          "direct_writer::tests::direct_writer_bulk_insert_perf",
+          "direct_writer::tests::split_sql_handles_comments_and_strings"
+        ]
+      },
+      {
+        "argv": [
+          "cargo",
+          "test",
+          "-p",
+          "cc-db",
+          "--lib",
+          "index_migrate::tests::"
+        ],
+        "expected_nonignored_methods": [
+          "index_migrate::tests::fresh_db_initializes_schema",
+          "index_migrate::tests::matching_version_returns_up_to_date",
+          "index_migrate::tests::old_version_returns_mismatch",
+          "index_migrate::tests::legacy_parse_and_resolution_versions_require_rebuild",
+          "index_migrate::tests::non_adjacent_versions_keep_rebuild_on_mismatch"
+        ]
+      },
+      {
+        "argv": [
+          "cargo",
+          "test",
+          "-p",
+          "cc-db",
+          "--test",
+          "ci_schema_guard_contract"
+        ],
+        "expected_nonignored_methods": [
+          "fresh_index_really_initializes_current_schema",
+          "current_schema_identity_index_preserves_rows_and_uses_indexed_fk_cascade",
+          "committed_v21_upgrade_invalidates_legacy_rows_and_incarnation",
+          "nonadjacent_versions_still_require_rebuild",
+          "committed_v24_requires_rebuild_and_invalidates_legacy_rows"
+        ]
+      }
+    ],
+    "expected_methods": 21,
+    "expected_new_methods": 1,
+    "expected_ignored": 0,
+    "format_command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "clippy_command": [
+      "cargo",
+      "clippy",
+      "--workspace",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "execution_status": "NOT_RUN: no Cargo/rustfmt/Rust/SQLite/product/native/CI execution in this preparation. Counts are source-defined expected methods, not passes."
+  },
+  "author_checks": {
+    "environment": "pure V8 over fixed Git UTF8 bodies",
+    "all3_source_blob_full_get_equal": true,
+    "patch_full_get_equal": true,
+    "inverse": [
+      {
+        "path": "crates/cc-db/src/direct_writer.rs",
+        "full_old_body_recovered": true
+      },
+      {
+        "path": "crates/cc-db/src/index_migrate.rs",
+        "full_old_body_recovered": true
+      },
+      {
+        "path": "crates/cc-db/tests/ci_schema_guard_contract.rs",
+        "full_old_body_recovered": true
+      }
+    ],
+    "old_source_function_and_assertions_retained": true,
+    "source_tables_and_version_unmodified": true,
+    "selected_current_DDL_bodies_match_original_after_ignoring_leading_comments": true,
+    "performance_claim": "No measured speedup. ImmutableOnceLock prevents repeated full schema parsing on subsequent opens; original two SQLite statements still execute every matching-version open."
+  },
+  "other_narrow_findings": {
+    "percentiles": "All active cc-eval Rust src files were text-read; benchmark/legacy reports use statistics::nearest_rank. Parent runtime Python copies verified Rustlegacy_ns (PR175); it no longer computes quantiles. Binomial quantile confidence endpoints and family bootstrap remain distinct algorithms and also reuse canonical helpers where appropriate.",
+    "scoring": "Benchmark report delegates to metrics::score; native and OCE compatibility share dcg/ndcg but keep distinct gold/matching/dedup populations. Legacy expected_symbols is an external assertion over symbol names, with unbounded first-hit MRR versus native MRR10/primary/path/symbol/span gold; merging them would change behavior.",
+    "preserved_schema_compatibility": "Current schema constructor and rebuild paths already share FULL_SCHEMA_SQL. Public historical SchemaStatus::Migrated variant and stored legacy_auto read compatibility retained rather than mistaken for an active second migration/scoring owner.",
+    "scope_limit": "This is a concrete remaining owner cleanup, not a declaration that the whole P8-017 task, its hard dependency or all temporary compatibility audit has passed."
+  },
+  "incidents": [
+    {
+      "kind": "pure_V8_replacement_guard_rejected",
+      "reason": "A draft string replacement expected a comma after the sole final SQL literal; the actual execute_batch argument has no comma.",
+      "effects": "No blob or file was written; all original bodies remain unchanged."
+    }
+  ]
+}

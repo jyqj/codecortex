@@ -1,0 +1,458 @@
+//! Rebuild-only statement reuse controls and an opt-in cost observation.
+//! No scale samples or performance threshold are defined here.
+use crate::index_db::{compress_chunk_text, FileWriteUnit, IndexDb};
+use cc_model::source::{ByteSpan, ChunkSource, SourceEncoding, SourceIdentity};
+use cc_model::{CcResult, ChunkRecord, Language, ParseOutcome, ParserTier};
+use rusqlite::{types::Value, Connection};
+
+fn connection() -> Connection {
+    let conn = Connection::open_in_memory().unwrap();
+    conn.execute_batch("PRAGMA foreign_keys=ON").unwrap();
+    conn.execute_batch(crate::index_migrate::FULL_SCHEMA_SQL)
+        .unwrap();
+    conn.execute_batch(&crate::direct_writer::drop_index_statements(
+        crate::index_migrate::FULL_SCHEMA_SQL,
+    ))
+    .unwrap();
+    conn.set_prepared_statement_cache_capacity(64);
+    conn
+}
+
+fn unit(count: usize) -> FileWriteUnit {
+    let path = "src/chunks.rs".to_string();
+    let chunks = (0..count)
+        .map(|n| ChunkRecord {
+            source: None,
+            chunk_id: format!("chunk:{n}"),
+            file_path: path.clone(),
+            language: Language::Rust,
+            chunk_index: n as u32,
+            start_line: 1,
+            end_line: 2,
+            breadcrumb: format!("root::{n}"),
+            text: format!("chunk text {n} λ\0tail"),
+            symbol_name: (n % 2 == 0).then(|| format!("symbol_{n}")),
+            symbol_kind: None,
+            token_estimate: 4,
+            parser_tier: ParserTier::Generic,
+            parser_confidence: 0.8,
+        })
+        .collect();
+    FileWriteUnit {
+        rel_path: path,
+        language: Language::Rust,
+        content_hash: "fixture-hash".into(),
+        mtime: 1.0,
+        size: 1,
+        outcome: ParseOutcome {
+            chunks,
+            ..Default::default()
+        },
+    }
+}
+
+fn source(text: &str) -> ChunkSource {
+    let digest = blake3::hash(text.as_bytes()).to_hex().to_string();
+    ChunkSource {
+        source: SourceIdentity {
+            snapshot_id: blake3::hash(b"snapshot").to_hex().to_string(),
+            content_digest: digest.clone(),
+            byte_len: text.len(),
+            encoding: SourceEncoding::Utf8,
+        },
+        span: ByteSpan::new(0, text.len()).unwrap(),
+        slice_digest: digest,
+        boundary: "chunk".into(),
+        owner: None,
+        signature: None,
+    }
+}
+
+fn seed_parent(conn: &Connection) {
+    IndexDb::insert_file_data_precompressed(conn, &unit(0), None).unwrap();
+}
+
+fn rows(conn: &Connection, table: &str) -> Vec<Vec<Value>> {
+    let mut statement = conn
+        .prepare(&format!("SELECT rowid,* FROM {table} ORDER BY rowid"))
+        .unwrap();
+    // Only this independently produced wall clock is excluded. Keep rowids,
+    // SQLite value types, source_json, compressed blobs and every other column.
+    let columns: Vec<_> = statement
+        .column_names()
+        .iter()
+        .enumerate()
+        .filter_map(|(n, name)| (!(table == "files" && *name == "indexed_at")).then_some(n))
+        .collect();
+    statement
+        .query_map([], |row| columns.iter().map(|&n| row.get(n)).collect())
+        .unwrap()
+        .collect::<rusqlite::Result<_>>()
+        .unwrap()
+}
+
+fn dump(conn: &Connection) -> Vec<(String, Vec<Vec<Value>>)> {
+    let names: Vec<String> = conn
+        .prepare("SELECT name FROM pragma_table_list WHERE schema='main' AND type IN ('table','virtual') AND name NOT LIKE 'sqlite_%' ORDER BY name")
+        .unwrap().query_map([], |row| row.get(0)).unwrap()
+        .collect::<rusqlite::Result<_>>().unwrap();
+    names
+        .into_iter()
+        .map(|name| {
+            let values = rows(conn, &name);
+            (name, values)
+        })
+        .collect()
+}
+
+fn result_text(result: CcResult<()>) -> Result<(), String> {
+    result.map_err(|error| error.to_string())
+}
+
+fn compare_prefix(
+    file: &FileWriteUnit,
+    blobs: Option<&[Option<Vec<u8>>]>,
+    setup: &str,
+) -> (Connection, Result<(), String>) {
+    let old = connection();
+    let new = connection();
+    for conn in [&old, &new] {
+        seed_parent(conn);
+        conn.execute_batch(setup).unwrap();
+    }
+    let expected = result_text(original_chunks(&old, file, blobs));
+    let actual = result_text(IndexDb::insert_rebuild_chunks(&new, file, blobs));
+    assert_eq!(actual, expected);
+    assert_eq!(dump(&new), dump(&old));
+    (new, actual)
+}
+
+fn original_chunks(
+    conn: &Connection,
+    file: &FileWriteUnit,
+    chunk_blobs: Option<&[Option<Vec<u8>>]>,
+) -> CcResult<()> {
+    let outcome = &file.outcome;
+    // chunks + chunks_fts
+    for (chunk_idx, c) in outcome.chunks.iter().enumerate() {
+        let source_json = c.source_json()?;
+        // Compress chunk text with zstd when it saves space. Prefer the
+        // payload pre-compressed during prepare (off the write lock);
+        // fall back to compressing here for callers without a side-car.
+        let fallback;
+        let use_compressed: Option<&[u8]> = match chunk_blobs.and_then(|b| b.get(chunk_idx)) {
+            Some(precomputed) => precomputed.as_deref(),
+            None => {
+                fallback = compress_chunk_text(&c.text);
+                fallback.as_deref()
+            }
+        };
+        if let Some(blob) = use_compressed {
+            IndexDb::execute_cached(
+                conn,
+                "INSERT INTO chunks(chunk_id,file_path,language,chunk_index,start_line,end_line,breadcrumb,symbol_name,symbol_kind,text,text_encoding,token_estimate,parser_tier,parser_confidence,source_json) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)",
+                rusqlite::params![c.chunk_id, c.file_path, c.language.as_str(), c.chunk_index, c.start_line, c.end_line, c.breadcrumb, c.symbol_name, c.symbol_kind.map(|k| k.as_str().to_string()), blob, "zstd", c.token_estimate, c.parser_tier.as_str(), c.parser_confidence, source_json],
+            )?;
+        } else {
+            IndexDb::execute_cached(
+                conn,
+                "INSERT INTO chunks(chunk_id,file_path,language,chunk_index,start_line,end_line,breadcrumb,symbol_name,symbol_kind,text,text_encoding,token_estimate,parser_tier,parser_confidence,source_json) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)",
+                rusqlite::params![c.chunk_id, c.file_path, c.language.as_str(), c.chunk_index, c.start_line, c.end_line, c.breadcrumb, c.symbol_name, c.symbol_kind.map(|k| k.as_str().to_string()), c.text, "plain", c.token_estimate, c.parser_tier.as_str(), c.parser_confidence, source_json],
+            )?;
+        }
+        // FTS always receives uncompressed text (rowid aligned with the
+        // chunks row just inserted)
+        IndexDb::execute_cached(
+            conn,
+            "INSERT INTO chunks_fts(rowid,chunk_id,file_path,breadcrumb,symbol_name,text) VALUES(?1,?2,?3,?4,?5,?6)",
+            rusqlite::params![conn.last_insert_rowid(), c.chunk_id, c.file_path, c.breadcrumb, c.symbol_name, c.text],
+        )?;
+    }
+    Ok(())
+}
+
+#[test]
+fn rebuild_chunks_match_plain_compressed_source_and_short_sidecar() {
+    let mut file = unit(6);
+    file.outcome.chunks[0].text.clear();
+    file.outcome.chunks[1].text = "compressible unicode λ\0text ".repeat(256);
+    file.outcome.chunks[2].text = "fallback compressed text ".repeat(256);
+    let text = file.outcome.chunks[3].text.clone();
+    file.outcome.chunks[3].source = Some(source(&text));
+    let compressed = compress_chunk_text(&file.outcome.chunks[1].text).unwrap();
+    let sidecar = vec![None, Some(compressed)];
+    let (conn, result) = compare_prefix(&file, Some(&sidecar), "");
+    assert!(result.is_ok());
+    assert_eq!(rows(&conn, "chunks").len(), 6);
+    assert_eq!(rows(&conn, "chunks_fts").len(), 6);
+    let encodings: Vec<String> = conn
+        .prepare("SELECT text_encoding FROM chunks ORDER BY rowid")
+        .unwrap()
+        .query_map([], |row| row.get(0))
+        .unwrap()
+        .collect::<rusqlite::Result<_>>()
+        .unwrap();
+    assert_eq!(&encodings[..3], &["plain", "zstd", "zstd"]);
+
+    // Supplied empty/raw sidecar blobs are stored as supplied; this seam must
+    // not introduce a new decompression check or alter failure ordering.
+    let supplied = vec![Some(Vec::new()), Some(vec![0, 255, 1])];
+    let (_, result) = compare_prefix(&unit(2), Some(&supplied), "");
+    assert!(result.is_ok());
+}
+
+#[test]
+fn rebuild_chunks_keep_lazy_empty_missing_fts_and_source_error_prefixes() {
+    let (_, empty) = compare_prefix(
+        &unit(0),
+        None,
+        "DROP TABLE chunks_fts; DROP TABLE chunks;",
+    );
+    assert!(empty.is_ok());
+
+    let (conn, missing) = compare_prefix(&unit(2), None, "DROP TABLE chunks_fts;");
+    assert!(missing.unwrap_err().contains("no such table: chunks_fts"));
+    assert_eq!(rows(&conn, "chunks").len(), 1);
+
+    let mut invalid = unit(2);
+    invalid.outcome.chunks[0].source = Some(source(&invalid.outcome.chunks[0].text));
+    invalid.outcome.chunks[0].source.as_mut().unwrap().slice_digest = "invalid".into();
+    let (conn, early) = compare_prefix(&invalid, None, "DROP TABLE chunks_fts;");
+    assert!(early.unwrap_err().contains("invalid chunk source evidence"));
+    assert!(rows(&conn, "chunks").is_empty());
+
+    invalid.outcome.chunks.swap(0, 1);
+    let (conn, late) = compare_prefix(&invalid, None, "");
+    assert!(late.unwrap_err().contains("invalid chunk source evidence"));
+    assert_eq!(rows(&conn, "chunks").len(), 1);
+    assert_eq!(rows(&conn, "chunks_fts").len(), 1);
+}
+
+#[test]
+fn rebuild_chunks_keep_constraint_trigger_order_and_transaction_rollback() {
+    let mut duplicate = unit(3);
+    duplicate.outcome.chunks[2].chunk_id = duplicate.outcome.chunks[0].chunk_id.clone();
+    let (conn, result) = compare_prefix(&duplicate, None, "BEGIN;");
+    assert!(result.unwrap_err().contains("UNIQUE constraint failed"));
+    assert_eq!(rows(&conn, "chunks").len(), 2);
+    conn.execute_batch("ROLLBACK").unwrap();
+    assert!(rows(&conn, "chunks").is_empty());
+    assert!(rows(&conn, "chunks_fts").is_empty());
+    IndexDb::insert_rebuild_chunks(&conn, &unit(3), None).unwrap();
+    assert_eq!(rows(&conn, "chunks").len(), 3);
+
+    // An ordinary mirror with triggers deliberately exercises SQLite failure
+    // and rowid ordering outside the canonical schema too.
+    let setup = "DROP TABLE chunks_fts;
+        CREATE TABLE chunks_fts(chunk_id TEXT,file_path TEXT,breadcrumb TEXT,symbol_name TEXT,text TEXT);
+        CREATE TABLE audit(kind TEXT,chunk_rowid INTEGER);
+        CREATE TRIGGER observe_base AFTER INSERT ON chunks BEGIN
+            INSERT INTO audit VALUES('base',new.rowid); END;
+        CREATE TRIGGER observe_fts AFTER INSERT ON chunks_fts BEGIN
+            INSERT INTO audit VALUES('fts',new.rowid); END;
+        CREATE TRIGGER reject_fts BEFORE INSERT ON chunks_fts
+            WHEN new.chunk_id='chunk:1' BEGIN SELECT RAISE(ABORT,'rejected FTS'); END;";
+    let (conn, result) = compare_prefix(&unit(3), None, setup);
+    assert!(result.unwrap_err().contains("rejected FTS"));
+    assert_eq!(rows(&conn, "chunks").len(), 2);
+    assert_eq!(rows(&conn, "chunks_fts").len(), 1);
+    let events = rows(&conn, "audit");
+    assert_eq!(events.len(), 3);
+    assert_eq!(events[0][1], Value::Text("base".into()));
+    assert_eq!(events[1][1], Value::Text("fts".into()));
+    assert_eq!(events[2][1], Value::Text("base".into()));
+    assert_eq!(events[0][2], events[1][2]);
+}
+
+#[test]
+fn retained_statement_clears_bindings_on_success_and_each_failure() {
+    let conn = Connection::open_in_memory().unwrap();
+    conn.execute_batch("CREATE TABLE sample(a TEXT UNIQUE,b BLOB)")
+        .unwrap();
+    let sql = "INSERT INTO sample(a,b) VALUES(?1,?2)";
+    let unbound = "INSERT INTO sample(a,b) VALUES(NULL,NULL)";
+    let mut slot = None;
+    let large = "large λ\0parameter".repeat(1024);
+    IndexDb::execute_rebuild_chunk_statement(
+        &conn,
+        &mut slot,
+        sql,
+        rusqlite::params![large, vec![0_u8, 255, 17]],
+    )
+    .unwrap();
+    assert_eq!(slot.as_ref().unwrap().expanded_sql().unwrap(), unbound);
+    let expected = IndexDb::execute_cached(&conn, sql, rusqlite::params![large, vec![2_u8]])
+        .unwrap_err()
+        .to_string();
+    let actual = IndexDb::execute_rebuild_chunk_statement(
+        &conn,
+        &mut slot,
+        sql,
+        rusqlite::params![large, vec![2_u8]],
+    )
+    .unwrap_err()
+    .to_string();
+    assert_eq!(actual, expected);
+    assert_eq!(slot.as_ref().unwrap().expanded_sql().unwrap(), unbound);
+    let expected = IndexDb::execute_cached(&conn, sql, rusqlite::params!["partial"])
+        .unwrap_err()
+        .to_string();
+    let actual = IndexDb::execute_rebuild_chunk_statement(
+        &conn,
+        &mut slot,
+        sql,
+        rusqlite::params!["partial"],
+    )
+    .unwrap_err()
+    .to_string();
+    assert_eq!(actual, expected);
+    assert_eq!(slot.as_ref().unwrap().expanded_sql().unwrap(), unbound);
+    IndexDb::execute_rebuild_chunk_statement(
+        &conn,
+        &mut slot,
+        sql,
+        rusqlite::params!["next", None::<Vec<u8>>],
+    )
+    .unwrap();
+    assert_eq!(slot.as_ref().unwrap().expanded_sql().unwrap(), unbound);
+    assert_eq!(rows(&conn, "sample").len(), 2);
+}
+
+#[test]
+fn retained_statement_resets_before_schema_changes_and_reprepares() {
+    let old = Connection::open_in_memory().unwrap();
+    let new = Connection::open_in_memory().unwrap();
+    for conn in [&old, &new] {
+        conn.execute_batch("CREATE TABLE sample(a INTEGER)").unwrap();
+    }
+    let sql = "INSERT INTO sample(a) VALUES(?1)";
+    let mut slot = None;
+    IndexDb::execute_cached(&old, sql, [1]).unwrap();
+    IndexDb::execute_rebuild_chunk_statement(&new, &mut slot, sql, [1]).unwrap();
+    for conn in [&old, &new] {
+        conn.execute_batch("DROP TABLE sample; CREATE TABLE sample(b INTEGER)")
+            .unwrap();
+    }
+    let expected = IndexDb::execute_cached(&old, sql, [2])
+        .unwrap_err()
+        .to_string();
+    let actual = IndexDb::execute_rebuild_chunk_statement(&new, &mut slot, sql, [2])
+        .unwrap_err()
+        .to_string();
+    assert_eq!(actual, expected);
+    assert_eq!(rows(&new, "sample"), rows(&old, "sample"));
+    for conn in [&old, &new] {
+        conn.execute_batch("DROP TABLE sample; CREATE TABLE sample(a INTEGER)")
+            .unwrap();
+    }
+    IndexDb::execute_cached(&old, sql, [3]).unwrap();
+    IndexDb::execute_rebuild_chunk_statement(&new, &mut slot, sql, [3]).unwrap();
+    assert_eq!(rows(&new, "sample"), rows(&old, "sample"));
+}
+
+#[test]
+fn public_and_rebuild_file_paths_keep_complete_database_values() {
+    let old = connection();
+    let new = connection();
+    let file = unit(6);
+    IndexDb::insert_file_data_precompressed(&old, &file, None).unwrap();
+    IndexDb::insert_snapshot_file_data_for_rebuild(&new, &file, None).unwrap();
+    assert_eq!(dump(&new), dump(&old));
+}
+
+fn cost_round(
+    conn: &Connection,
+    file: &FileWriteUnit,
+    blobs: &[Option<Vec<u8>>],
+    retained: bool,
+) -> (u128, Vec<Vec<Value>>, Vec<Vec<Value>>) {
+    conn.execute_batch("BEGIN").unwrap();
+    let started = std::time::Instant::now();
+    let result = if retained {
+        IndexDb::insert_rebuild_chunks(conn, file, Some(blobs))
+    } else {
+        original_chunks(conn, file, Some(blobs))
+    };
+    let elapsed = started.elapsed().as_nanos();
+    result.unwrap();
+    let base = rows(conn, "chunks");
+    let fts = rows(conn, "chunks_fts");
+    conn.execute_batch("ROLLBACK").unwrap();
+    (elapsed, base, fts)
+}
+
+#[test]
+#[ignore = "finite release cost observation; no performance assertion or scale credit"]
+fn rebuild_chunk_statements_release_cost_probe() {
+    for (case, count, compress) in [
+        ("single_plain", 1, false),
+        ("short_plain_6", 6, false),
+        ("mixed_32", 32, false),
+        ("compressed_64", 64, true),
+    ] {
+        let mut file = unit(count);
+        let mut blobs = Vec::new();
+        for (n, chunk) in file.outcome.chunks.iter_mut().enumerate() {
+            if compress || (case == "mixed_32" && n % 2 == 0) {
+                chunk.text = format!("compressible text {n} λ\0").repeat(128);
+                blobs.push(Some(compress_chunk_text(&chunk.text).unwrap()));
+            } else {
+                if n % 3 == 0 {
+                    chunk.text.clear();
+                }
+                blobs.push(None);
+            }
+        }
+        let old = connection();
+        let new = connection();
+        seed_parent(&old);
+        seed_parent(&new);
+        // Warm both exact paths once, outside all recorded time slots. Each
+        // round uses the same input, connections and rollback-restored state.
+        let warm_old = cost_round(&old, &file, &blobs, false);
+        let warm_new = cost_round(&new, &file, &blobs, true);
+        assert_eq!((&warm_old.1, &warm_old.2), (&warm_new.1, &warm_new.2));
+        for round in 0..20 {
+            let (original, retained) = if round % 2 == 0 {
+                (
+                    cost_round(&old, &file, &blobs, false),
+                    cost_round(&new, &file, &blobs, true),
+                )
+            } else {
+                let retained = cost_round(&new, &file, &blobs, true);
+                let original = cost_round(&old, &file, &blobs, false);
+                (original, retained)
+            };
+            assert_eq!((&original.1, &original.2), (&retained.1, &retained.2));
+            let original_digest =
+                blake3::hash(format!("{:?}", (&original.1, &original.2)).as_bytes())
+                    .to_hex()
+                    .to_string();
+            let retained_digest =
+                blake3::hash(format!("{:?}", (&retained.1, &retained.2)).as_bytes())
+                    .to_hex()
+                    .to_string();
+            assert_eq!(original_digest, retained_digest);
+            println!(
+                "{}",
+                serde_json::json!({
+                    "schema": "p8-rebuild-chunk-statements-cost-v1",
+                    "case": case,
+                    "round": round,
+                    "chunks": count,
+                    "first": if round % 2 == 0 { "original" } else { "retained" },
+                    "original_ns": original.0.to_string(),
+                    "retained_ns": retained.0.to_string(),
+                    "original_typed_rows_debug_blake3": original_digest,
+                    "retained_typed_rows_debug_blake3": retained_digest,
+                    "original_base_rows": original.1.len(),
+                    "original_fts_rows": original.2.len(),
+                    "retained_base_rows": retained.1.len(),
+                    "retained_fts_rows": retained.2.len(),
+                    "timed_scope": "chunk-loop including compression selection and both inserts; excludes begin/readback/rollback",
+                    "performance_threshold": null
+                })
+            );
+        }
+    }
+}

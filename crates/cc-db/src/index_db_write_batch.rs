@@ -831,6 +831,77 @@ impl IndexDb {
         Self::insert_file_data_impl(conn, file, chunk_blobs, true, true, true)
     }
 
+    // Rebuild-owned only: keep two handles for this file, not its row values.
+    // Lazy preparation preserves the original source/compression/base/FTS error
+    // order, including the base row visible before an FTS preparation failure.
+    fn insert_rebuild_chunks(
+        conn: &Connection,
+        file: &FileWriteUnit,
+        chunk_blobs: Option<&[Option<Vec<u8>>]>,
+    ) -> CcResult<()> {
+        let outcome = &file.outcome;
+        let mut chunks = None;
+        let mut fts = None;
+        // chunks + chunks_fts
+        for (chunk_idx, c) in outcome.chunks.iter().enumerate() {
+            let source_json = c.source_json()?;
+            // Compress chunk text with zstd when it saves space. Prefer the
+            // payload pre-compressed during prepare (off the write lock);
+            // fall back to compressing here for callers without a side-car.
+            let fallback;
+            let use_compressed: Option<&[u8]> = match chunk_blobs.and_then(|b| b.get(chunk_idx)) {
+                Some(precomputed) => precomputed.as_deref(),
+                None => {
+                    fallback = compress_chunk_text(&c.text);
+                    fallback.as_deref()
+                }
+            };
+            if let Some(blob) = use_compressed {
+                Self::execute_rebuild_chunk_statement(
+                    conn,
+                    &mut chunks,
+                    "INSERT INTO chunks(chunk_id,file_path,language,chunk_index,start_line,end_line,breadcrumb,symbol_name,symbol_kind,text,text_encoding,token_estimate,parser_tier,parser_confidence,source_json) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)",
+                    rusqlite::params![c.chunk_id, c.file_path, c.language.as_str(), c.chunk_index, c.start_line, c.end_line, c.breadcrumb, c.symbol_name, c.symbol_kind.map(|k| k.as_str().to_string()), blob, "zstd", c.token_estimate, c.parser_tier.as_str(), c.parser_confidence, source_json],
+                )?;
+            } else {
+                Self::execute_rebuild_chunk_statement(
+                    conn,
+                    &mut chunks,
+                    "INSERT INTO chunks(chunk_id,file_path,language,chunk_index,start_line,end_line,breadcrumb,symbol_name,symbol_kind,text,text_encoding,token_estimate,parser_tier,parser_confidence,source_json) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)",
+                    rusqlite::params![c.chunk_id, c.file_path, c.language.as_str(), c.chunk_index, c.start_line, c.end_line, c.breadcrumb, c.symbol_name, c.symbol_kind.map(|k| k.as_str().to_string()), c.text, "plain", c.token_estimate, c.parser_tier.as_str(), c.parser_confidence, source_json],
+                )?;
+            }
+            // FTS always receives uncompressed text (rowid aligned with the
+            // chunks row just inserted)
+            Self::execute_rebuild_chunk_statement(
+                conn,
+                &mut fts,
+                "INSERT INTO chunks_fts(rowid,chunk_id,file_path,breadcrumb,symbol_name,text) VALUES(?1,?2,?3,?4,?5,?6)",
+                rusqlite::params![conn.last_insert_rowid(), c.chunk_id, c.file_path, c.breadcrumb, c.symbol_name, c.text],
+            )?;
+        }
+        Ok(())
+    }
+
+    fn execute_rebuild_chunk_statement<'conn, P: rusqlite::Params>(
+        conn: &'conn Connection,
+        slot: &mut Option<rusqlite::CachedStatement<'conn>>,
+        sql: &str,
+        params: P,
+    ) -> CcResult<usize> {
+        if slot.is_none() {
+            *slot = Some(conn.prepare_cached(sql).map_err(db_err)?);
+        }
+        let statement = slot.as_mut().expect("statement initialized above");
+        let result = statement.execute(params).map_err(db_err);
+        // rusqlite 0.40 execute resets after stepping, but CachedStatement Drop
+        // separately clears bindings when returning the handle to its cache.
+        // Match that per-call cleanup even for bind/check/step failures; do not
+        // keep a previous chunk's text/blob alive until the end of the file.
+        statement.clear_bindings();
+        result
+    }
+
     fn insert_file_data_impl(
         conn: &Connection,
         file: &FileWriteUnit,
@@ -875,40 +946,44 @@ impl IndexDb {
             crate::public_surface_store::insert_on(conn, file)?;
         }
 
-        // chunks + chunks_fts
-        for (chunk_idx, c) in outcome.chunks.iter().enumerate() {
-            let source_json = c.source_json()?;
-            // Compress chunk text with zstd when it saves space. Prefer the
-            // payload pre-compressed during prepare (off the write lock);
-            // fall back to compressing here for callers without a side-car.
-            let fallback;
-            let use_compressed: Option<&[u8]> = match chunk_blobs.and_then(|b| b.get(chunk_idx)) {
-                Some(precomputed) => precomputed.as_deref(),
-                None => {
-                    fallback = compress_chunk_text(&c.text);
-                    fallback.as_deref()
+        if rebuild_dependency_batches {
+            Self::insert_rebuild_chunks(conn, file, chunk_blobs)?;
+        } else {
+            // chunks + chunks_fts
+            for (chunk_idx, c) in outcome.chunks.iter().enumerate() {
+                let source_json = c.source_json()?;
+                // Compress chunk text with zstd when it saves space. Prefer the
+                // payload pre-compressed during prepare (off the write lock);
+                // fall back to compressing here for callers without a side-car.
+                let fallback;
+                let use_compressed: Option<&[u8]> = match chunk_blobs.and_then(|b| b.get(chunk_idx)) {
+                    Some(precomputed) => precomputed.as_deref(),
+                    None => {
+                        fallback = compress_chunk_text(&c.text);
+                        fallback.as_deref()
+                    }
+                };
+                if let Some(blob) = use_compressed {
+                    Self::execute_cached(
+                        conn,
+                        "INSERT INTO chunks(chunk_id,file_path,language,chunk_index,start_line,end_line,breadcrumb,symbol_name,symbol_kind,text,text_encoding,token_estimate,parser_tier,parser_confidence,source_json) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)",
+                        rusqlite::params![c.chunk_id, c.file_path, c.language.as_str(), c.chunk_index, c.start_line, c.end_line, c.breadcrumb, c.symbol_name, c.symbol_kind.map(|k| k.as_str().to_string()), blob, "zstd", c.token_estimate, c.parser_tier.as_str(), c.parser_confidence, source_json],
+                    )?;
+                } else {
+                    Self::execute_cached(
+                        conn,
+                        "INSERT INTO chunks(chunk_id,file_path,language,chunk_index,start_line,end_line,breadcrumb,symbol_name,symbol_kind,text,text_encoding,token_estimate,parser_tier,parser_confidence,source_json) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)",
+                        rusqlite::params![c.chunk_id, c.file_path, c.language.as_str(), c.chunk_index, c.start_line, c.end_line, c.breadcrumb, c.symbol_name, c.symbol_kind.map(|k| k.as_str().to_string()), c.text, "plain", c.token_estimate, c.parser_tier.as_str(), c.parser_confidence, source_json],
+                    )?;
                 }
-            };
-            if let Some(blob) = use_compressed {
+                // FTS always receives uncompressed text (rowid aligned with the
+                // chunks row just inserted)
                 Self::execute_cached(
                     conn,
-                    "INSERT INTO chunks(chunk_id,file_path,language,chunk_index,start_line,end_line,breadcrumb,symbol_name,symbol_kind,text,text_encoding,token_estimate,parser_tier,parser_confidence,source_json) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)",
-                    rusqlite::params![c.chunk_id, c.file_path, c.language.as_str(), c.chunk_index, c.start_line, c.end_line, c.breadcrumb, c.symbol_name, c.symbol_kind.map(|k| k.as_str().to_string()), blob, "zstd", c.token_estimate, c.parser_tier.as_str(), c.parser_confidence, source_json],
-                )?;
-            } else {
-                Self::execute_cached(
-                    conn,
-                    "INSERT INTO chunks(chunk_id,file_path,language,chunk_index,start_line,end_line,breadcrumb,symbol_name,symbol_kind,text,text_encoding,token_estimate,parser_tier,parser_confidence,source_json) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)",
-                    rusqlite::params![c.chunk_id, c.file_path, c.language.as_str(), c.chunk_index, c.start_line, c.end_line, c.breadcrumb, c.symbol_name, c.symbol_kind.map(|k| k.as_str().to_string()), c.text, "plain", c.token_estimate, c.parser_tier.as_str(), c.parser_confidence, source_json],
+                    "INSERT INTO chunks_fts(rowid,chunk_id,file_path,breadcrumb,symbol_name,text) VALUES(?1,?2,?3,?4,?5,?6)",
+                    rusqlite::params![conn.last_insert_rowid(), c.chunk_id, c.file_path, c.breadcrumb, c.symbol_name, c.text],
                 )?;
             }
-            // FTS always receives uncompressed text (rowid aligned with the
-            // chunks row just inserted)
-            Self::execute_cached(
-                conn,
-                "INSERT INTO chunks_fts(rowid,chunk_id,file_path,breadcrumb,symbol_name,text) VALUES(?1,?2,?3,?4,?5,?6)",
-                rusqlite::params![conn.last_insert_rowid(), c.chunk_id, c.file_path, c.breadcrumb, c.symbol_name, c.text],
-            )?;
         }
 
         crate::document_store::insert_on(conn, file)?;
@@ -1052,3 +1127,7 @@ impl IndexDb {
         Ok(())
     }
 }
+
+#[cfg(test)]
+#[path = "rebuild_chunk_statement_tests.rs"]
+mod rebuild_chunk_statement_tests;

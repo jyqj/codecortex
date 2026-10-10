@@ -1,0 +1,41 @@
+{
+  "round": 46,
+  "recorded_at": "2026-10-10T00:41:00Z",
+  "counts": {
+    "total": 192,
+    "done": 164,
+    "in_progress": 15,
+    "todo": 12,
+    "blocked": 1,
+    "remaining": 28
+  },
+  "this_round": {
+    "newly_completed_original_todos": [],
+    "count": 0
+  },
+  "since_baseline": {
+    "baseline_done": 163,
+    "newly_completed_original_todos": [
+      "P8-005"
+    ],
+    "count": 1,
+    "target": 10,
+    "still_required": 9
+  },
+  "completed_work": [
+    "Accepted the existing dirty4096 run's terminal failure without rerun, cancellation, pooling, or relabeling.",
+    "Downloaded the original failure matrix once; verified official/local SHA-256 equality, ZIP CRC, and failed matrix payload.",
+    "Reviewed new current-main PR199 and retained it open because two exact-head jobs were nonterminal.",
+    "Reviewed PR191's complete finite observer without promoting it to a universal performance claim."
+  ],
+  "blockers": {
+    "P8-006": "both dirty200 and dirty4096 studies fail at 100k and lack a successful 150-shard/1500-observation aggregate",
+    "P8-007": "hard dependency P8-006 remains open",
+    "P8-008..P8-013,P8-016": "hard dependency chain remains unsatisfied"
+  },
+  "next_actions": [
+    "Receive PR199 exact-head check and one-hour soak terminal results; merge only if both succeed and head/base do not move.",
+    "If PR199 merges, reassess whether fixed-base PR190 can be closed as superseded while preserving its branch and evidence.",
+    "Do not dispatch the separate 1350-slot PR192 study or create replacement scale studies to escape the preserved failures."
+  ]
+}

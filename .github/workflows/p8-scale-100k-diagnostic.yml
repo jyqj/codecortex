@@ -55,9 +55,9 @@ jobs:
     needs: build
     runs-on: ubuntu-24.04
     timeout-minutes: 350
-    env:
-      DIAGNOSTIC_DIR: ${{ runner.temp }}/p8-100k-diagnostic
     steps:
+      - name: Set diagnostic directory after runner allocation
+        run: echo "DIAGNOSTIC_DIR=$RUNNER_TEMP/p8-100k-diagnostic" >> "$GITHUB_ENV"
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}

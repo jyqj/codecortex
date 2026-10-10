@@ -1,0 +1,122 @@
+{
+  "schema": "p8-round48-pr200-diagnostic-prefix-review-v1",
+  "observed_at_utc": "2026-10-10T02:57:30Z",
+  "run_id": 38012409915,
+  "source": "9cc6bf49f6dd81e4069a8004eed49addba0ab79b",
+  "artifacts": [
+    {
+      "checkpoint": 0,
+      "id": 11655358015,
+      "sha256": "895e8eafca92808eef0a914b85a375d47459265acaec4e64574126105ddacb9c"
+    },
+    {
+      "checkpoint": 1,
+      "id": 11655694522,
+      "sha256": "c95db6ac09b99d1f91043bd4a96a55965999da4dfbb95d932bdad4de85165b3b"
+    },
+    {
+      "checkpoint": 2,
+      "id": 11656371239,
+      "sha256": "9789306184d0a0056122dc147888136cd12c85e8a8936f45866021ef2faa2801"
+    },
+    {
+      "checkpoint": 3,
+      "id": 11656517936,
+      "sha256": "642999f56ec745914dbbc01c7ebdbbc7e6b9ea840e725da8b986e668c83ab08e"
+    },
+    {
+      "checkpoint": 4,
+      "id": 11656209993,
+      "sha256": "0625855284b86a6f0d6c2270e431d4691141903ff44a5808c8c9d0e8d2543277"
+    },
+    {
+      "checkpoint": 5,
+      "id": 11656794128,
+      "sha256": "2f6830c3461f44535969796ff7c03f8695f8e417653a5272e162c6ac8e9d599a"
+    }
+  ],
+  "continuous_prefix": {
+    "start": 0,
+    "end_exclusive": 13992488
+  },
+  "identity": {
+    "profile": "scale_wide_dirty_v1",
+    "dirty_budget": 4096,
+    "resume": 1024,
+    "seed": 12648430,
+    "deadline_ms": 18000000,
+    "shard_count": 30,
+    "repetitions": 30,
+    "diagnostic_only": true,
+    "skip_fanout": true,
+    "whole_cohort_completion_credit": false,
+    "registered_plan_sha256": "63343fd274d8fb302165e74bbb37ac2b8834b60da2c26e9572a5a625933a54f1"
+  },
+  "custody": {
+    "all_zip_crc": "pass",
+    "capture_faults": [],
+    "supervisor_terminal_observed": false,
+    "native_EOF_claimed": false,
+    "tail_after_last_ack": "unknown"
+  },
+  "findings": {
+    "no_op": {
+      "passed": true,
+      "parity_tables": 15,
+      "parity_equal": true,
+      "incremental_us": 2631434,
+      "full_control_us": 615685136,
+      "parity_us": 1623147962,
+      "combined_us": 2241464532,
+      "scratch_peak_bytes": 5984387072
+    },
+    "body": {
+      "incremental_builds": 24,
+      "budget_exceeded_indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22
+      ],
+      "normal_index": 23,
+      "cumulative_wall_us": 517857701,
+      "max_completed_files": 94209,
+      "final_selected_dependents": 3791,
+      "full_control_started_us": 4867461321,
+      "terminal_observed": false,
+      "max_single_pid_rss_snapshot_bytes": 10463698944
+    }
+  },
+  "supported": [
+    "full-control/parity consumes substantial 100k stage time",
+    "dirty4096 body mutation requires a long bounded-resume chain",
+    "combined stage costs create material pressure against the unchanged five-hour native budget"
+  ],
+  "not_supported": [
+    "unique cause of the historical dirty200 failure",
+    "terminal outcome of this live diagnostic",
+    "cross-source/profile pooling or relabeling",
+    "OOM or whole-process-tree peak",
+    "P8-006 acceptance"
+  ],
+  "todo_credit": 0
+}

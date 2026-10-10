@@ -1,0 +1,240 @@
+{
+  "schema": "p8-fixed-source-bounded-oracle-algorithm-review-v1",
+  "reviewer": "execution_recon",
+  "recorded_at_utc": "2026-10-10T03:52:59.045571+00:00",
+  "source": {
+    "commit": "9cc6bf49f6dd81e4069a8004eed49addba0ab79b",
+    "tree": "6461938788665701cfa4fa095a064a3a404ec492",
+    "files": [
+      {
+        "repository_path": "crates/cc-eval/src/benchmark/oracle.rs",
+        "local_path": "/workspace/scratch/bfccb8494ba0/round32-capture-context-admission/guard-view/crates/cc-eval/src/benchmark/oracle.rs",
+        "bytes": 37632,
+        "sha256": "b4175911e4bad1669afcaaab68385de89821045d71181b38ef8db478e76811b2",
+        "git_blob": "9936bdda7293d2f27a296a6d24419bb3f2e00f7a"
+      },
+      {
+        "repository_path": "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+        "local_path": "/workspace/scratch/bfccb8494ba0/round32-capture-context-admission/guard-view/crates/cc-eval/src/benchmark/oracle/streaming.rs",
+        "bytes": 30271,
+        "sha256": "fadf2722a56132022ff47487bb151384277c9d217bf2e64c85da40b9bfc8b7f0",
+        "git_blob": "70394ba06bf714bce1af64a9b9c400f0e0584a46"
+      },
+      {
+        "repository_path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+        "local_path": "/workspace/scratch/bfccb8494ba0/round32-capture-context-admission/guard-view/crates/cc-eval/src/benchmark/p8_scale.rs",
+        "bytes": 51010,
+        "sha256": "9cc69645b214e8c530b47ebdf469e2cfb09498a3f5ac4f2640b3c1a97e053b53",
+        "git_blob": "7c257c02d4ce97f20ffe80de8d12f96345c713c8"
+      },
+      {
+        "repository_path": "crates/cc-eval/tests/benchmark_oracle_streaming.rs",
+        "local_path": "/workspace/scratch/bfccb8494ba0/round32-capture-context-admission/guard-view/crates/cc-eval/tests/benchmark_oracle_streaming.rs",
+        "bytes": 20129,
+        "sha256": "48398f6df301cf5716e59336c990a3da3ff18a480bca306058c3d9ecd91e3701",
+        "git_blob": "a2a0c48b6f9bc7cbdb92ad5c505a5f38ae141174"
+      }
+    ]
+  },
+  "scope": "Read-only source and previously accepted report review; no product changes, Rust, ELF, measurement, reader, validator, ZIP traversal or CRC; no new task/study gate. This is a design-risk note, not acceptance of an unimplemented optimization.",
+  "conclusion": {
+    "necessary_correctness_fix_found": false,
+    "unconditional_quadratic_or_repeated_external_sort_found": false,
+    "narrow_future_candidate": "Avoid owned String materialization of the already-written sorted scratch rows; preserve every existing spool, read, comparison, error and output boundary. Candidate unimplemented and unmeasured.",
+    "lower_priority_redundancy": "The borrowed streaming serializer clears a Map already containing only Null values; cannot delete the general cleanup unconditionally because owned-project/error recovery is explicitly supported.",
+    "speedup_or_deadline_prediction": null,
+    "current_registered_runs_changed": false
+  },
+  "current_algorithm": [
+    {
+      "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+      "lines": "513-541,655-676",
+      "fact": "parity first executes COUNT(*) for each of 15 tables on each side, records DB+WAL/SHM bytes and selects streaming when over the legacy row limit. These count reads are separate from spool counts, but select mode and preserve original evidence/error timing; not recommended for silent elimination."
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/oracle.rs",
+      "lines": "60-83",
+      "fact": "Each side opens a read-only connection, BEGIN DEFERRED, integrity_check and foreign_key_check in its own consistent snapshot. These are validation operations, not interchangeable with row equality or a cached prior-stage success."
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+      "lines": "189-225,298-345",
+      "fact": "For each table, complete A spool and then complete B spool into one WITHOUT ROWID PRIMARY KEY(side,value,ordinal). Ordinal retains duplicates. Both sides must coexist under the same original scratch limit. Existing insert tiers64/8/1 and pending64KiB are already implemented."
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+      "lines": "295-319,346-376,719-762",
+      "fact": "The primary B-tree also supplies ORDER BY value COLLATE BINARY reads. The existing control asserts PRIMARY KEY and no TEMP B-TREE. No second external sorting pass is evident in this query; comparison consumes each sorted side once to EOF. Source review of that control is not a new execution."
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+      "lines": "235-247",
+      "fact": "The proposed identical-byte JSON-parser concern is false: a==b immediately returns true without parsing either side. Only different Some strings are each parsed as Value, preserving signed-zero/value equality. Do not add a second redundant equality shortcut or force a new parse of equal rows."
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/oracle.rs",
+      "lines": "258-281",
+      "fact": "The separate small-table legacy path already uses sort_by_cached_key, caching each JSON sort key once. Repeated comparator serialization was already removed; not a new candidate."
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+      "lines": "957-980",
+      "fact": "After all required incremental/resume builds for a stage, one original full-control build and one parity occur. They are required independent work, not removable duplicate validation."
+    }
+  ],
+  "candidate_1_sorted_cursor_borrow": {
+    "source_lines": [
+      "streaming.rs:228-232",
+      "streaming.rs:358-374"
+    ],
+    "proven_work": "next_row returns Option<String> via row.get::<_,String>(0). Comparison, digest update and examples immediately use as_deref. This materializes owned canonical row text again after full serialization and SQLite storage. The ordinary equal-row path has no need to retain that owned row beyond the current A/B pair.",
+    "future_design_only": "Read each independent sorted cursor in the same A-then-B order, expose text only while its Row remains valid, compare/hash/form any bounded example before advancing either cursor. Keep A and B full spool, both cursor steps through full EOF, exact Value fallback, duplicate ordinal order, two digests and all JSON fields unchanged.",
+    "source_and_record_derived_work_not_a_timing_measurement": {
+      "per_side_rows": 6653993,
+      "both_sides_owned_row_values": 13307986,
+      "canonical_payload_bytes_materialized_by_get_String": 10302684584,
+      "applicability": "Successful complete cold/no-op retained parity records only; this is arithmetic on accepted counts and source structure, not measured allocator calls, copy bandwidth or predicted saved seconds."
+    },
+    "risks_and_required_equivalence": [
+      "Do not keep a borrowed row past Rows::next/reset/finalize; two cursors have independent statements, and the Rust implementation must respect their borrow lifetimes without unsafe lifetime extension.",
+      "Preserve the original A-step/A-text-conversion before B-step/B-text-conversion order, including errors; simply stepping both first changes precedence.",
+      "ValueRef/as_str has different error API from row.get<String>; preserve original invalid-type/UTF8/DB error conversion and messages, not only successful valid scratch text.",
+      "Do not shortcut B write or cursor EOF even when A/B current row bytes match. A fits but A+B SQLITE_FULL remains an error.",
+      "Any new control must compare full report bytes, signed-zero/different-text Value fallback, duplicate/missing/late differing rows and error order; existing full-15-table, malformed-schema/UTF8/FK, B-budget and scratch-full controls remain. This report does not execute or add those controls."
+    ]
+  },
+  "candidate_2_null_map_cleanup": {
+    "source_lines": [
+      "oracle.rs:198-201",
+      "oracle.rs:204-247",
+      "oracle.rs:421-451",
+      "streaming.rs:189-215"
+    ],
+    "proven_work": "On a fresh streaming RowProjection used exclusively by serialize_row, layout initialization inserts only Null and serialization never writes owned values, yet every row visits all Map values and assigns Null. This is O(number of unique columns) per row source-level bookkeeping.",
+    "restriction": "The type also supports project() populating owned values; the existing project→invalid-UTF8 serialize→recovery control requires cleanup even on error. An unconditional deletion is incorrect for that supported path. A private explicit dirty-state or separate immutable layout could skip only known-clean work, but requires a narrow future semantic review and adds state complexity.",
+    "priority": "Lower than the direct owned cursor-copy candidate; no measured importance or recommendation to implement now."
+  },
+  "not_safely_removable_as_obvious_redundancy": [
+    {
+      "source": "streaming.rs:49-77;oracle.rs:204-219",
+      "reason": "check_row_size reads all input-cell sizes before UTF8/blob projection. Combining the two cell passes naively changes error precedence, e.g. an early invalid UTF8 value versus a later oversized value. Current per-row work is linear in cells/bytes, not shown quadratic."
+    },
+    {
+      "source": "streaming.rs:332-345;benchmark_oracle_streaming.rs:507-545",
+      "reason": "Two complete scratch spools and their simultaneous capacity are a compatibility requirement. The former witness that skipped B was removed; same-A/empty-B succeeds but same-A/equal-B must really hit SQLITE_FULL under64KiB."
+    },
+    {
+      "source": "oracle.rs:60-83;p8_scale.rs:973-980",
+      "reason": "No dropping integrity/foreign-key checks or required full-control/parity; no cross-checkpoint reuse based only on prior equal digests."
+    }
+  ],
+  "observations": {
+    "report": {
+      "local_path": "/workspace/scratch/bfccb8494ba0/round36-parity-record-comparison/comparison.json",
+      "bytes": 22441,
+      "sha256": "ea94f1112c2bdb27c956eb42f8a2748d84a49bc8fe7174f08f4aa56ddbd5f180",
+      "git_blob": "aecc9ebf014747e1bc449a6230818bdcb429c3c6"
+    },
+    "already_published_support_git": "be0eae273054415398d82c72dfd3688f05645f98",
+    "run": 38012409915,
+    "attempt": 1,
+    "cold_parity_seconds": 921.74298,
+    "no_op_parity_seconds": 1623.147962,
+    "all_15_complete_table_records_equal": true,
+    "common_rows_each_side": 6653993,
+    "canonical_bytes": 10302684584,
+    "scratch_peak_bytes": 5984387072,
+    "known_differences": "Only two input DB+WAL/SHM byte totals in full parity objects; logical row counts, digests and reported layout/limits/cache configuration equal.",
+    "missing_attribution": "No per-table, integrity-check, count-query, serialize, spool, ordered-read, hashing wall/CPU, cache hit, disk-I/O or parity RSS measurement. Adjacent build snapshots are not parity resource usage. Cannot identify the 701.404982s difference, the dominant oracle cost or cause of old G8/GW4 failures from these records."
+  },
+  "held_paths_not_reintroduced": {
+    "PR188": {
+      "report": {
+        "local_path": "/workspace/scratch/bfccb8494ba0/round29-three-performance-holds/188-original-scoped-performance-risk-review.json",
+        "bytes": 14600,
+        "sha256": "dfb506509ccb7792a7f670a7215077f51f5bf31303b548b05f34e2880e5f14df",
+        "git_blob": "cb7cb350f40c12384f32641117cae805fd5f03b9"
+      },
+      "prior_sparse_VM_regression": {
+        "change_percent_rounded": 22.57,
+        "fixture": "author Python SQLite3.53.1; scattered2500 exclusions; two keys; 5000files/10000dependencies",
+        "locally_read_review": {
+          "bytes": 899946,
+          "git_blob": "527000332dc442d68ab957af345aef1cb2331e87",
+          "mode": "0o644",
+          "path": "C8-resume-diagnostic/PR188-overlap/review-527000332dc442d68ab957af345aef1cb2331e87.json",
+          "sha256": "f8384ec7620c1f69be155f0a2c870e9c2fd06ff6de40920d7389c08d03d01080"
+        },
+        "new_callbacks": 163001,
+        "official_review_git_blob": "527000332dc442d68ab957af345aef1cb2331e87",
+        "old_callbacks": 132988,
+        "pointers": [
+          "/acceptance_boundary/counterexample",
+          "/prior_SQL_probe/required_negative_counterexample"
+        ],
+        "scope": "Read from exact published review JSON. Original author probe itself not rerun or downloaded by this review; new local probe has separately recorded different cases."
+      },
+      "boundary": "Exclusion/frontier json_each membership candidate concerns business query work, not this scratch oracle. Existing bounded review also records repeat membership-index work across statement executions and adverse sparse cases. No revival, production adoption, threshold tuning or new probe proposed."
+    },
+    "PR191": {
+      "verdict": {
+        "local_path": "/workspace/scratch/bfccb8494ba0/round31-PR191-equal-lifetime-independent-review/independent-verdict.json",
+        "bytes": 7122,
+        "sha256": "ac9c4bc4ce5c4314c35c32a3ae897c72c5792ddfafbc6e114359203c4c5b346c",
+        "git_blob": "e24223316204313fb4af4fa4f4712566cf04caef"
+      },
+      "negative_pairs": 17,
+      "cases": [
+        {
+          "all20_median_retained_over_original": 0.9878087466983558,
+          "case": "single_plain",
+          "equal": 0,
+          "original_first_median_ratio": 0.9064284577788888,
+          "pairs": 20,
+          "retained_faster": 10,
+          "retained_first_median_ratio": 1.1336644913542542,
+          "retained_slower": 10,
+          "zero_denominators": []
+        },
+        {
+          "all20_median_retained_over_original": 0.9236396347917569,
+          "case": "short_plain_6",
+          "equal": 0,
+          "original_first_median_ratio": 0.9128923237444448,
+          "pairs": 20,
+          "retained_faster": 18,
+          "retained_first_median_ratio": 0.9765797088830164,
+          "retained_slower": 2,
+          "zero_denominators": []
+        },
+        {
+          "all20_median_retained_over_original": 0.9226148603546359,
+          "case": "mixed_32",
+          "equal": 0,
+          "original_first_median_ratio": 0.9104644175438548,
+          "pairs": 20,
+          "retained_faster": 17,
+          "retained_first_median_ratio": 0.9262413476096414,
+          "retained_slower": 3,
+          "zero_denominators": []
+        },
+        {
+          "all20_median_retained_over_original": 0.9869783151274238,
+          "case": "compressed_64",
+          "equal": 0,
+          "original_first_median_ratio": 0.9844463032680513,
+          "pairs": 20,
+          "retained_faster": 18,
+          "retained_first_median_ratio": 0.9909762940424612,
+          "retained_slower": 2,
+          "zero_denominators": []
+        }
+      ],
+      "boundary": "Evidence integrity and full observation accepted; not a universal speedup. Single-plain has a pronounced first-order split: all ten retained-first pairs are slower. The other three cases have medians below one in both orders but contain seven slower individual pairs. Preserve all seventeen slower pairs and all eighty observations. No significance, machine-independent, end-to-end indexing, whole-scale or release-performance claim.",
+      "different_path": "Business chunk/FTS retained insert statements are distinct from already-adopted oracle scratch64/8/1 batching. These finite same-connection results are not evidence of full rebuild or parity gains."
+    }
+  },
+  "next_action": "No immediate source or study action required by this review. If an independently authorized future candidate is desired, cursor text borrowing is the most direct bounded target; preserve all original semantics and do not predict current5h success.",
+  "task_credit": 0,
+  "cohort_credit": 0
+}

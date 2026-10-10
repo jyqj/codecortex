@@ -1,0 +1,892 @@
+{
+  "schema": "p8_original_doc_baseline_terminal_review_v1",
+  "created_at_utc": "2026-10-10T03:45:48.929826+00:00",
+  "reviewer": "/root/todo_audit",
+  "status": "accepted_scoped_original_command_execution_with_three_historical_baseline_drifts",
+  "apply_now": false,
+  "source_and_run": {
+    "workflow_commit": "de14e6c7e80524efb0e43bec74bb48f518cfbc67",
+    "fixed_product_and_docs_commit": "b9b089bb4eae072affe9326681d4980eae15fd84",
+    "product_tree": "6461938788665701cfa4fa095a064a3a404ec492",
+    "run_id": 38020782259,
+    "attempt": 1,
+    "event": "push",
+    "job_id": 114121097102,
+    "artifact_id": 11658346818,
+    "workflow_identity": {
+      "path": "executed-workflow.yml",
+      "bytes": 8685,
+      "sha256": "238b0ebf768f3e8da2c2e21bb2227de9ddeec988eaffd78c4e191f31fc0cfc38",
+      "git_blob": "1745c95f54ca9865acbf2d2954ff0dbe8398ee35",
+      "zip_crc32": "1f1975ed",
+      "zip_mode": "0o100644",
+      "crc_verified_by_zipfile_read": true
+    },
+    "script_identity": {
+      "path": "original-update-doc-baselines.sh",
+      "bytes": 3571,
+      "sha256": "04d63124fc8405610c91fb4a591e17e2dd06ce1f20cf995123263b12a4b0b59c",
+      "git_blob": "e33fa140e9a6e5461f77cb66e633ec4ba38d2700",
+      "zip_crc32": "c5c4bb98",
+      "zip_mode": "0o100644",
+      "crc_verified_by_zipfile_read": true
+    }
+  },
+  "original_ZIP": {
+    "created_at": "2026-10-10T03:42:18.758407+00:00",
+    "zip_path": "/workspace/scratch/bfccb8494ba0/round39-baseline-original-artifacts/p8-doc-baseline-original-38020782259-1-original.zip",
+    "zip_bytes": 1329132,
+    "zip_sha256": "e705baaa44c1184d35b9c8f1a6a89a6aa7f96839ccf129d1df40ebfcf58db48e",
+    "zip_git_blob": "03568389c0c15fd9a9bde6e978dd1c2381980ab9",
+    "member_count": 60,
+    "expanded_bytes": 8383618,
+    "all_members_preserved": true,
+    "crc_passes": 1,
+    "new_script_or_product_runs": 0
+  },
+  "original_registration": {
+    "GITHUB_REPOSITORY": "jyqj/codecortex",
+    "GITHUB_SHA": "de14e6c7e80524efb0e43bec74bb48f518cfbc67",
+    "GITHUB_REF": "refs/heads/task/p8-doc-baseline-original-bfcc-20261010",
+    "GITHUB_EVENT_NAME": "push",
+    "GITHUB_RUN_ID": "38020782259",
+    "GITHUB_RUN_ATTEMPT": "1",
+    "GITHUB_JOB": "original_baseline",
+    "WORKFLOW_REF": "jyqj/codecortex/.github/workflows/p8-doc-baseline-original.yml@refs/heads/task/p8-doc-baseline-original-bfcc-20261010",
+    "WORKFLOW_SHA": "de14e6c7e80524efb0e43bec74bb48f518cfbc67",
+    "source_head": "b9b089bb4eae072affe9326681d4980eae15fd84",
+    "workflow_sha256": "238b0ebf768f3e8da2c2e21bb2227de9ddeec988eaffd78c4e191f31fc0cfc38",
+    "script_sha256": "04d63124fc8405610c91fb4a591e17e2dd06ce1f20cf995123263b12a4b0b59c",
+    "command": [
+      "./scripts/update-doc-baselines.sh"
+    ],
+    "cargo_command_as_written": [
+      "cargo",
+      "test",
+      "--workspace",
+      "--all-targets"
+    ],
+    "cargo_target_dir": "/home/runner/work/_temp/p8-doc-baseline-original-target",
+    "artifact_scope": "original command output and source changes; not a new task acceptance gate"
+  },
+  "original_execution": {
+    "argv": [
+      "./scripts/update-doc-baselines.sh"
+    ],
+    "cwd": "/home/runner/work/codecortex/codecortex/source",
+    "started_at": "2026-10-10T03:31:02.559350+00:00",
+    "returncode": 0,
+    "completed_at": "2026-10-10T03:38:46.711550+00:00",
+    "wall_seconds": 464.15219657700004,
+    "pid": 2547,
+    "terminating_signal": null,
+    "stdout_sha256": "4f15fc5268b06c954a99ae3111f3be4a1da9b592a349301844a9a5082ad5bb51",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "drift_lines_emitted": [
+      "DRIFT: cc-db tests changed: doc=142 actual=206",
+      "DRIFT: passed count changed: doc=1258 actual=2815",
+      "DRIFT: ignored count changed: doc=15 actual=76"
+    ],
+    "limitations": [
+      "The unmodified script captures Cargo output internally. On Cargo failure, set -e can terminate before that output is printed; the outer output is complete only for bytes actually emitted by the script.",
+      "DRIFT=1 does not force a nonzero script exit.",
+      "Missing command-terminal.json after cancellation or runner loss leaves outcome unknown."
+    ]
+  },
+  "outer_stdout": {
+    "member": "command.stdout",
+    "path": "command.stdout",
+    "bytes": 496,
+    "sha256": "4f15fc5268b06c954a99ae3111f3be4a1da9b592a349301844a9a5082ad5bb51",
+    "git_blob": "bfeef9007c3ea3b7f490d6c9619946d62a779c27",
+    "zip_crc32": "0ad7bc81",
+    "zip_mode": "0o100644",
+    "crc_verified_by_zipfile_read": true,
+    "content": "=== Collecting baselines ===\n\nSchema version:      v25\nMCP tools:           14\nEval corpus cases:   94\nFramework resolvers: 16\nTotal tests:         2891 (2815 passed + 76 ignored)\n\nPer-crate breakdown:\n  cc-db:      206\n  cc-eval:    68\n0 passed + 7\n0 ignored\n  cc-index:   437\n  cc-model:   92\n  cc-parsers: 184\n  cc-search:  305\n  cc-server:  259\n\nDRIFT: cc-db tests changed: doc=142 actual=206\n\nDRIFT: passed count changed: doc=1258 actual=2815\n\nDRIFT: ignored count changed: doc=15 actual=76\n"
+  },
+  "outer_stderr": {
+    "member": "command.stderr",
+    "path": "command.stderr",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+    "zip_crc32": "00000000",
+    "zip_mode": "0o100644",
+    "crc_verified_by_zipfile_read": true,
+    "content": ""
+  },
+  "observed_counts": {
+    "interpretation": "Unmodified script-emitted values for this exact command; not an independently reconstructed unique-test inventory.",
+    "schema_version": "v25",
+    "mcp_tools": 14,
+    "corpus_cases": 94,
+    "framework_resolvers": 16,
+    "footer_passed_sum": 2815,
+    "footer_ignored_sum": 76,
+    "footer_passed_plus_ignored": 2891,
+    "per_crate_raw_strings": {
+      "cc-db": "206",
+      "cc-eval": "68\n0 passed + 7\n0 ignored",
+      "cc-index": "437",
+      "cc-model": "92",
+      "cc-parsers": "184",
+      "cc-search": "305",
+      "cc-server": "259"
+    },
+    "raw_cargo_stdout_stderr_retained": false,
+    "cargo_internal_returncode": "Not separately serialized. Original unchanged set -e assignment completed and the outer script continued to summaries and returncode 0.",
+    "unique_test_count": null,
+    "deduplicated_per_crate_counts": null,
+    "all_features_coverage": null,
+    "release_or_performance_pass": false,
+    "limitations": [
+      "The script sums all matching test result footers, including any repeated/nested invocations that occur; the internal Cargo text is not emitted or archived.",
+      "passed_for cc_eval matches more than one binary footer, yielding the actual multiline value. Do not silently normalize it or invent a unique cc-eval total.",
+      "Original argv has no --all-features/--release/--locked/--offline. The observed unchanged Cargo.lock is a postcondition, not an invented --locked execution.",
+      "Schema/tool/corpus/resolver output is script source inspection; no oracle table-count check exists in this script."
+    ]
+  },
+  "drift": {
+    "count": 3,
+    "exact_lines": [
+      "DRIFT: cc-db tests changed: doc=142 actual=206",
+      "DRIFT: passed count changed: doc=1258 actual=2815",
+      "DRIFT: ignored count changed: doc=15 actual=76"
+    ],
+    "no_drift_claim": false,
+    "script_exit_does_not_encode_drift": true,
+    "comparison": [
+      {
+        "field": "cc-db",
+        "historical_doc": 142,
+        "this_command_emitted": 206
+      },
+      {
+        "field": "passed",
+        "historical_doc": 1258,
+        "this_command_emitted": 2815
+      },
+      {
+        "field": "ignored",
+        "historical_doc": 15,
+        "this_command_emitted": 76
+      }
+    ],
+    "corpus_drift_emitted": false,
+    "semantic_boundary": "These are real comparisons against explicitly historical baseline values, not evidence of test failure. Neither CI success nor script returncode 0 means no drift."
+  },
+  "tracked_state": {
+    "before_after_head": "b9b089bb4eae072affe9326681d4980eae15fd84",
+    "before_after_tree": "6461938788665701cfa4fa095a064a3a404ec492",
+    "complete_before_after_index_identical": true,
+    "index_bytes": 4055482,
+    "index_sha256": "ac675db3a2dcba5699cb8e430506759050ddc3658258a1f7a9abaf05ac028d83",
+    "all_12_snapshot_git_command_exit_codes": 0,
+    "all_12_snapshot_git_command_stderr_empty": true,
+    "empty_diffs_and_status_members": [
+      "before-tracked-status.stdout",
+      "before-source-diff.stdout",
+      "before-lock-diff.stdout",
+      "after-tracked-status.stdout",
+      "after-source-diff.stdout",
+      "after-lock-diff.stdout",
+      "final-tracked-status.txt",
+      "final-source.diff"
+    ],
+    "source_diff_scope": [
+      "crates",
+      "Cargo.toml",
+      "Cargo.lock",
+      "scripts/update-doc-baselines.sh",
+      "docs/TEST_PLAN.md"
+    ],
+    "tracked_status_scope": "all tracked files; untracked files explicitly excluded by original command",
+    "Cargo_lock_before_after_final_identical": true,
+    "Cargo_lock_sha256": "8a38d631ab3d489c7e4fc111c2d8f966d7e34d6502b8180c184907a27235c5d6",
+    "before_after_file_hashes": {
+      "Cargo.lock": "8a38d631ab3d489c7e4fc111c2d8f966d7e34d6502b8180c184907a27235c5d6",
+      "scripts/update-doc-baselines.sh": "04d63124fc8405610c91fb4a591e17e2dd06ce1f20cf995123263b12a4b0b59c",
+      "docs/TEST_PLAN.md": "8f2a388ebf48a4f47562919e7dfa236d2363bc51376de32628d1516c31b7f11d"
+    },
+    "selected_original_index_entries": {
+      "CONTRIBUTING.md": {
+        "mode": "100644",
+        "git_blob": "e70d34871f78f394578a6e4273df75dd92afa35f"
+      },
+      "Cargo.lock": {
+        "mode": "100644",
+        "git_blob": "0c0bdc1601013b195c3580be4b0a9238557251cd"
+      },
+      "docs/TEST_PLAN.md": {
+        "mode": "100644",
+        "git_blob": "c86e4628c8fb3d94385a2fe5c5ecbef8f4b1dc2c"
+      },
+      "scripts/update-doc-baselines.sh": {
+        "mode": "100755",
+        "git_blob": "e33fa140e9a6e5461f77cb66e633ec4ba38d2700"
+      }
+    },
+    "untracked_workspace_clean": null,
+    "other_host_state_unchanged": null,
+    "mode_boundary": "ZIP copy modes are the stored receipt modes. The original script executable mode is taken from the tracked index, not from its copied ZIP member."
+  },
+  "toolchain": {
+    "rustc": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.95.0\nLLVM version: 22.1.2\n",
+    "cargo": "cargo 1.95.0 (f2d3ce0bd 2026-03-21)\n",
+    "git": "git version 2.55.0\n"
+  },
+  "official_API": {
+    "job": {
+      "id": 114121097102,
+      "run_id": 38020782259,
+      "workflow_name": "P8 original documentation baseline command",
+      "head_branch": "task/p8-doc-baseline-original-bfcc-20261010",
+      "run_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/38020782259",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOSnV9Ys8AAAAakiW_jg",
+      "head_sha": "de14e6c7e80524efb0e43bec74bb48f518cfbc67",
+      "url": "https://api.github.com/repos/jyqj/codecortex/actions/jobs/114121097102",
+      "html_url": "https://github.com/jyqj/codecortex/actions/runs/38020782259/job/114121097102",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-10T03:30:15Z",
+      "started_at": "2026-10-10T03:30:18Z",
+      "completed_at": "2026-10-10T03:38:51Z",
+      "name": "original_baseline",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-10T03:30:18Z",
+          "completed_at": "2026-10-10T03:30:20Z"
+        },
+        {
+          "name": "Retain the actual workflow source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-10T03:30:20Z",
+          "completed_at": "2026-10-10T03:30:21Z"
+        },
+        {
+          "name": "Checkout the fixed documentation and product source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-10T03:30:21Z",
+          "completed_at": "2026-10-10T03:30:54Z"
+        },
+        {
+          "name": "Run dtolnay/rust-toolchain@1.95.0",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-10T03:30:54Z",
+          "completed_at": "2026-10-10T03:31:02Z"
+        },
+        {
+          "name": "Prepare isolated command receipts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-10-10T03:31:02Z",
+          "completed_at": "2026-10-10T03:31:02Z"
+        },
+        {
+          "name": "Run the unchanged baseline script exactly once",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-10-10T03:31:02Z",
+          "completed_at": "2026-10-10T03:38:46Z"
+        },
+        {
+          "name": "Retain source state even after a command failure",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-10-10T03:38:46Z",
+          "completed_at": "2026-10-10T03:38:46Z"
+        },
+        {
+          "name": "Upload original command receipts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-10-10T03:38:46Z",
+          "completed_at": "2026-10-10T03:38:48Z"
+        },
+        {
+          "name": "Post Checkout the fixed documentation and product source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-10-10T03:38:48Z",
+          "completed_at": "2026-10-10T03:38:48Z"
+        },
+        {
+          "name": "Post Retain the actual workflow source",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16,
+          "started_at": "2026-10-10T03:38:48Z",
+          "completed_at": "2026-10-10T03:38:48Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17,
+          "started_at": "2026-10-10T03:38:48Z",
+          "completed_at": "2026-10-10T03:38:48Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/114121097102",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000007253,
+      "runner_name": "GitHub Actions 1000007253",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    "artifact": {
+      "id": 11658346818,
+      "node_id": "MDg6QXJ0aWZhY3QxMTY1ODM0NjgxOA==",
+      "name": "p8-doc-baseline-original-38020782259-1",
+      "size_in_bytes": 1329132,
+      "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11658346818",
+      "archive_download_url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11658346818/zip",
+      "expired": false,
+      "digest": "sha256:e705baaa44c1184d35b9c8f1a6a89a6aa7f96839ccf129d1df40ebfcf58db48e",
+      "created_at": "2026-10-10T03:38:48Z",
+      "updated_at": "2026-10-10T03:38:48Z",
+      "expires_at": "2026-11-09T03:38:47Z",
+      "workflow_run": {
+        "id": 38020782259,
+        "repository_id": 1249213794,
+        "head_repository_id": 1249213794,
+        "head_branch": "task/p8-doc-baseline-original-bfcc-20261010",
+        "head_sha": "de14e6c7e80524efb0e43bec74bb48f518cfbc67"
+      }
+    },
+    "files": [
+      {
+        "path": "/workspace/scratch/bfccb8494ba0/round38-0340-baseline-and-studies-observation/baseline-jobs.original.json",
+        "bytes": 2921,
+        "sha256": "511f3fb180ced3719567fe163fc5ced60e04a0f478644e760d9d15ba58746620",
+        "git_blob": "eed33b5a4a6e6e92db8095e5d3f0423acbdc82d9"
+      },
+      {
+        "path": "/workspace/scratch/bfccb8494ba0/round38-0340-baseline-and-studies-observation/baseline-artifacts.original.json",
+        "bytes": 769,
+        "sha256": "2dfe2b322d65b93c4151d5acbb756641af2b7bb513b14e73d8fdd266d6807033",
+        "git_blob": "2de19a6241b33856359abdcc5a123e3054238246"
+      }
+    ],
+    "no_new_API_or_Actions_download": true
+  },
+  "document_applicability": {
+    "TEST_PLAN": {
+      "path": "/workspace/scratch/bfccb8494ba0/round36-P8-018-baseline-script-applicability/fixed-main-originals/docs/TEST_PLAN.md",
+      "bytes": 9133,
+      "sha256": "8f2a388ebf48a4f47562919e7dfa236d2363bc51376de32628d1516c31b7f11d",
+      "git_blob": "c86e4628c8fb3d94385a2fe5c5ecbef8f4b1dc2c"
+    },
+    "CONTRIBUTING": {
+      "path": "/workspace/scratch/bfccb8494ba0/round36-P8-018-baseline-script-applicability/fixed-main-originals/CONTRIBUTING.md",
+      "bytes": 3565,
+      "sha256": "a832246f555c6418f3071c335a09200f6cbc8e8155095d5cad342badd7c33780",
+      "git_blob": "e70d34871f78f394578a6e4273df75dd92afa35f"
+    },
+    "TEST_PLAN_excerpts": [
+      {
+        "first_line": 1,
+        "last_line": 36,
+        "lines": [
+          {
+            "line": 1,
+            "text": "# 测试计划"
+          },
+          {
+            "line": 2,
+            "text": ""
+          },
+          {
+            "line": 3,
+            "text": "历史全仓测试基线（保留原记录）：1258 passed + 15 ignored"
+          },
+          {
+            "line": 4,
+            "text": "（15 个 ignored：cc-eval 的 5 个真实工作区/增量基准、`scale_bench` 的 4 个"
+          },
+          {
+            "line": 5,
+            "text": "合成规模/冷建相位基准、`soak` 的长驻 RSS soak、cc-db 的"
+          },
+          {
+            "line": 6,
+            "text": "`incremental_write_bench` 写阶段基准与重建压力循环、cc-index 的"
+          },
+          {
+            "line": 7,
+            "text": "`type_catalog_bench`/`catalog_bench` 与 cc-server 的"
+          },
+          {
+            "line": 8,
+            "text": "`graph_traversal_bench` 共 3 个 release-only 微基准）。基线数字与本文档"
+          },
+          {
+            "line": 9,
+            "text": "的一致性由 `scripts/update-doc-baselines.sh` 核对。"
+          },
+          {
+            "line": 10,
+            "text": ""
+          },
+          {
+            "line": 11,
+            "text": "## 当前局部执行记录（2026-10-09）"
+          },
+          {
+            "line": 12,
+            "text": ""
+          },
+          {
+            "line": 13,
+            "text": "产品提交 `b069c73a0d76736e1dfb3eb64e79cad6980b773f` 的本地全仓尝试在编译/链接"
+          },
+          {
+            "line": 14,
+            "text": "阶段遇到 ENOSPC，未取得完整成功结果及可用于刷新本文的全仓计数。"
+          },
+          {
+            "line": 15,
+            "text": "随后分批实际通过：`cc-index --lib` 427 项（另有 1 项原 ignored）、"
+          },
+          {
+            "line": 16,
+            "text": "`cc-search --lib` 301 项、installer 单元 49 项、真实 installer CLI 集成 2 项，"
+          },
+          {
+            "line": 17,
+            "text": "以及 `integration_fixtures_and_corpus` 筛选的 1 个 Rust test。"
+          },
+          {
+            "line": 18,
+            "text": "这些是各次命令的执行范围，不相加作为全仓总数。"
+          },
+          {
+            "line": 19,
+            "text": "完整命令、源码身份、原失败和复核见"
+          },
+          {
+            "line": 20,
+            "text": "[本轮验证记录](../artifacts/checkpoints/p8-install-compat-36fea-20261009/SUMMARY.md)。"
+          },
+          {
+            "line": 21,
+            "text": ""
+          },
+          {
+            "line": 22,
+            "text": "以下表格保留历史快照，数量及覆盖描述不代表本提交已经重新执行的全仓基线。"
+          },
+          {
+            "line": 23,
+            "text": "完整 workspace 测试实际通过后，应由 `scripts/update-doc-baselines.sh` 重新采集并核对，"
+          },
+          {
+            "line": 24,
+            "text": "再据此更新文档中的基线；该脚本不自动改写文档。"
+          },
+          {
+            "line": 25,
+            "text": ""
+          },
+          {
+            "line": 26,
+            "text": "## 单元测试（历史基线）"
+          },
+          {
+            "line": 27,
+            "text": ""
+          },
+          {
+            "line": 28,
+            "text": "| Crate | 测试数 | 覆盖重点 |"
+          },
+          {
+            "line": 29,
+            "text": "|-------|-------|----------|"
+          },
+          {
+            "line": 30,
+            "text": "| cc-db | 142 | schema v6 rebuild-on-mismatch、chunk 文本编码（含预压缩 blob 边车）、SQL 注入、architecture、ADR、边、frontier、图、查询、批量导出指纹、签名聚合维护、seed 符号快照缓存、file-state 快照缓存 |"
+          },
+          {
+            "line": 31,
+            "text": "| cc-eval | 18 passed + 5 ignored | 断言类型（含 field_equals、output_not_contains、field_matches_regex、array_contains_item、带 per-case `min_recall` 的 expected_symbols Recall@5 阈值、expect_error）、语料加载、走真实 MCP 线路的 fixture 集成、合成仓库生成器确定性、ignored 的真实工作区/增量基准 |"
+          },
+          {
+            "line": 32,
+            "text": "| cc-index | 347 | 框架 resolver（16 个，含跨文件）、dispatch 合成、多级 Louvain 社区检测、resolver 层级别名、路由解析来源、脏闭包状态分类、dirty-reload 清除策略、框架检测信号、导出指纹契约、自适应内存预算、三段提交 generation guard、config-linker 签名门、targeted scan 定向构建、全量 staging 提交、跨构建 catalog cache（remove_files 精确性、TypeCatalog 增量删除/复位、缓存命中/折叠/清槽生命周期与全量重建等价）、phase_write 行为锁（单事务 epoch 推进、同批删除清仓、zstd 边车往返）、analysis 阶段门禁（无 git 跳过、infra 四类产物、ADR 索引与清空、同内容跳过） |"
+          },
+          {
+            "line": 33,
+            "text": "| cc-model | 62 | 路由归一化、数据结构、枚举往返、元素置信度矩阵基线、项目根发现、部分配置默认值、外部缓存目录路径、GraphExplain 信封、tool_graph_subsets 目录一致性 + 矩阵快照 |"
+          },
+          {
+            "line": 34,
+            "text": "| cc-parsers | 180 | 10 种语言的 tree-sitter 解析、符号提取、基于 AST 的 Rust/C/C++ 调用图、spec 驱动的启发式文件内调用边、C/C++/Rust 参数/返回数据流、共享 import 提取缝（import_common） |"
+          },
+          {
+            "line": 35,
+            "text": "| cc-search | 222 | Cypher 解析器/执行器、变长路径上限、正则校验、WHERE/Degree 标识符校验、FTS5/RRF 搜索、grep SQL 作用域、搜索引擎、结果缓存 Arc 复用、图感知结果缓存（epoch 键控、降级结果排除）、目录派生的 fast-path kinds、trigram 子串预选召回 |"
+          },
+          {
+            "line": 36,
+            "text": "| cc-server | 216 | 引擎生命周期、影响分析 BFS、置信度阈值过滤、explore/trace 暴露参数、handler 分发集成、stdio MCP E2E、输出上限、UTF-8 安全截断、图 trace、环检测、flow、构建门串行化、watcher acquire-before-drain、graph_explain 附着、installer 8 个 IDE target（安装/合并/卸载/幂等） |"
+          }
+        ]
+      }
+    ],
+    "CONTRIBUTING_excerpts": [
+      {
+        "first_line": 77,
+        "last_line": 84,
+        "lines": [
+          {
+            "line": 77,
+            "text": "## 文档约定"
+          },
+          {
+            "line": 78,
+            "text": ""
+          },
+          {
+            "line": 79,
+            "text": "- 文档语言为简体中文；代码标识符、命令、日志、错误信息保留原文。"
+          },
+          {
+            "line": 80,
+            "text": "  `docs/benchmarks/` 下的报告由测试生成（英文），不手工编辑。"
+          },
+          {
+            "line": 81,
+            "text": "- 文档里的可核对数字（测试数、语料数、schema 版本等）改动后运行"
+          },
+          {
+            "line": 82,
+            "text": "  `scripts/update-doc-baselines.sh` 核对 `docs/TEST_PLAN.md` 的基线。"
+          },
+          {
+            "line": 83,
+            "text": "- 跨 crate 的结构性决策写 ADR，约定见"
+          },
+          {
+            "line": 84,
+            "text": "  [docs/adr/README.md](docs/adr/README.md)。"
+          }
+        ]
+      }
+    ],
+    "original_script_excerpts": [
+      {
+        "first_line": 15,
+        "last_line": 18,
+        "lines": [
+          {
+            "line": 15,
+            "text": "TEST_OUTPUT=$(cargo test --workspace --all-targets 2>&1)"
+          },
+          {
+            "line": 16,
+            "text": "TOTAL_PASSED=$(echo \"$TEST_OUTPUT\" | grep '^test result:' | awk '{sum+=$4} END {print sum}')"
+          },
+          {
+            "line": 17,
+            "text": "TOTAL_IGNORED=$(echo \"$TEST_OUTPUT\" | grep '^test result:' | awk '{sum+=$8} END {print sum}')"
+          },
+          {
+            "line": 18,
+            "text": "TOTAL=$((TOTAL_PASSED + TOTAL_IGNORED))"
+          }
+        ]
+      },
+      {
+        "first_line": 20,
+        "last_line": 41,
+        "lines": [
+          {
+            "line": 20,
+            "text": "# Pair each \"Running ... (target/debug/deps/<binary>-<hash>)\" line with its"
+          },
+          {
+            "line": 21,
+            "text": "# following \"test result:\" line, so counts are keyed by binary name instead of"
+          },
+          {
+            "line": 22,
+            "text": "# positional line numbers (which break whenever a test target is added)."
+          },
+          {
+            "line": 23,
+            "text": "RESULTS=$(echo \"$TEST_OUTPUT\" | awk '"
+          },
+          {
+            "line": 24,
+            "text": "    /^ *Running / {"
+          },
+          {
+            "line": 25,
+            "text": "        bin = $0"
+          },
+          {
+            "line": 26,
+            "text": "        sub(/.*deps\\//, \"\", bin)"
+          },
+          {
+            "line": 27,
+            "text": "        sub(/-[0-9a-f]+\\)$/, \"\", bin)"
+          },
+          {
+            "line": 28,
+            "text": "    }"
+          },
+          {
+            "line": 29,
+            "text": "    /^test result:/ { print bin, $4, $8 }"
+          },
+          {
+            "line": 30,
+            "text": "')"
+          },
+          {
+            "line": 31,
+            "text": "passed_for() { echo \"$RESULTS\" | awk -v b=\"$1\" '$1 == b { print $2 }'; }"
+          },
+          {
+            "line": 32,
+            "text": "ignored_for() { echo \"$RESULTS\" | awk -v b=\"$1\" '$1 == b { print $3 }'; }"
+          },
+          {
+            "line": 33,
+            "text": ""
+          },
+          {
+            "line": 34,
+            "text": "DB_TESTS=$(passed_for cc_db)"
+          },
+          {
+            "line": 35,
+            "text": "EVAL_PASSED=$(passed_for cc_eval)"
+          },
+          {
+            "line": 36,
+            "text": "EVAL_IGNORED=$(ignored_for cc_eval)"
+          },
+          {
+            "line": 37,
+            "text": "INDEX_TESTS=$(passed_for cc_index)"
+          },
+          {
+            "line": 38,
+            "text": "MODEL_TESTS=$(passed_for cc_model)"
+          },
+          {
+            "line": 39,
+            "text": "PARSER_TESTS=$(passed_for cc_parsers)"
+          },
+          {
+            "line": 40,
+            "text": "SEARCH_TESTS=$(passed_for cc_search)"
+          },
+          {
+            "line": 41,
+            "text": "SERVER_TESTS=$(passed_for cc_server)"
+          }
+        ]
+      },
+      {
+        "first_line": 56,
+        "last_line": 89,
+        "lines": [
+          {
+            "line": 56,
+            "text": "echo \"  cc-search:  ${SEARCH_TESTS}\""
+          },
+          {
+            "line": 57,
+            "text": "echo \"  cc-server:  ${SERVER_TESTS}\""
+          },
+          {
+            "line": 58,
+            "text": ""
+          },
+          {
+            "line": 59,
+            "text": "EXPECTED_DB=$(grep 'cc-db' docs/TEST_PLAN.md | grep -o '| [0-9]* |' | head -1 | tr -dc '0-9')"
+          },
+          {
+            "line": 60,
+            "text": "EXPECTED_PASSED=$(head -5 docs/TEST_PLAN.md | grep -o '[0-9]* passed' | head -1 | grep -o '[0-9]*')"
+          },
+          {
+            "line": 61,
+            "text": "EXPECTED_IGNORED=$(head -5 docs/TEST_PLAN.md | grep -o '[0-9]* ignored' | head -1 | grep -o '[0-9]*')"
+          },
+          {
+            "line": 62,
+            "text": "EXPECTED_CORPUS=$(grep -o '[0-9]* 个 corpus 用例' docs/TEST_PLAN.md | head -1 | grep -o '[0-9]*')"
+          },
+          {
+            "line": 63,
+            "text": ""
+          },
+          {
+            "line": 64,
+            "text": "DRIFT=0"
+          },
+          {
+            "line": 65,
+            "text": "if [ \"$DB_TESTS\" != \"$EXPECTED_DB\" ] 2>/dev/null; then"
+          },
+          {
+            "line": 66,
+            "text": "    echo \"\""
+          },
+          {
+            "line": 67,
+            "text": "    echo \"DRIFT: cc-db tests changed: doc=${EXPECTED_DB} actual=${DB_TESTS}\""
+          },
+          {
+            "line": 68,
+            "text": "    DRIFT=1"
+          },
+          {
+            "line": 69,
+            "text": "fi"
+          },
+          {
+            "line": 70,
+            "text": "if [ \"$TOTAL_PASSED\" != \"$EXPECTED_PASSED\" ] 2>/dev/null; then"
+          },
+          {
+            "line": 71,
+            "text": "    echo \"\""
+          },
+          {
+            "line": 72,
+            "text": "    echo \"DRIFT: passed count changed: doc=${EXPECTED_PASSED} actual=${TOTAL_PASSED}\""
+          },
+          {
+            "line": 73,
+            "text": "    DRIFT=1"
+          },
+          {
+            "line": 74,
+            "text": "fi"
+          },
+          {
+            "line": 75,
+            "text": "if [ \"$TOTAL_IGNORED\" != \"$EXPECTED_IGNORED\" ] 2>/dev/null; then"
+          },
+          {
+            "line": 76,
+            "text": "    echo \"\""
+          },
+          {
+            "line": 77,
+            "text": "    echo \"DRIFT: ignored count changed: doc=${EXPECTED_IGNORED} actual=${TOTAL_IGNORED}\""
+          },
+          {
+            "line": 78,
+            "text": "    DRIFT=1"
+          },
+          {
+            "line": 79,
+            "text": "fi"
+          },
+          {
+            "line": 80,
+            "text": "if [ \"$CORPUS_COUNT\" != \"$EXPECTED_CORPUS\" ] 2>/dev/null; then"
+          },
+          {
+            "line": 81,
+            "text": "    echo \"\""
+          },
+          {
+            "line": 82,
+            "text": "    echo \"DRIFT: corpus case count changed: doc=${EXPECTED_CORPUS} actual=${CORPUS_COUNT}\""
+          },
+          {
+            "line": 83,
+            "text": "    DRIFT=1"
+          },
+          {
+            "line": 84,
+            "text": "fi"
+          },
+          {
+            "line": 85,
+            "text": ""
+          },
+          {
+            "line": 86,
+            "text": "if [ \"$DRIFT\" -eq 0 ]; then"
+          },
+          {
+            "line": 87,
+            "text": "    echo \"\""
+          },
+          {
+            "line": 88,
+            "text": "    echo \"All baselines match docs/TEST_PLAN.md\""
+          },
+          {
+            "line": 89,
+            "text": "fi"
+          }
+        ]
+      }
+    ],
+    "contribution_command_requirement": "The previously not_run original script now has a real fixed-source execution receipt. This resolves the missing-command-execution fact without inventing a waiver.",
+    "historical_semantics": "TEST_PLAN explicitly labels the 1258/15 total and crate table as retained historical snapshots; b069 ENOSPC and partial runs remain dated, source-bound history. The new b9 run does not falsify those old statements.",
+    "original_document_refresh_instruction": "The document says to run this script after a complete workspace success and then update the baseline; it does not authorize silently deleting historical observations, combining partial totals, or calling this emitted total unique/all-features.",
+    "required_current_false_statement_fix": null,
+    "recommended_minimal_followup": "Append a dated current execution record with Wde14/product b9/run38020782259, actual outer exit0, 2815/76 footer-sum semantics, all three DRIFT lines, unchanged tracked state and original evidence link; keep historical total/table under their historical labels. Do not replace each historical crate cell from this limited summary.",
+    "no_new_gate": "No new requirement to make DRIFT disappear, rerun the script, repair its parser, or rerun unrelated tests is added by this intake. Task/dependency closure remains root-owned; no task is marked done here.",
+    "not_claimed": [
+      "No current unique-method/per-crate census",
+      "No complete feature/platform/release profile",
+      "No direct oracle 15-table check",
+      "No statistical/performance or nine-task completion credit"
+    ]
+  },
+  "custody": {
+    "all_60_members_retained_locally": "/workspace/scratch/bfccb8494ba0/round39-doc-baseline-original-intake/original-members",
+    "producer_files_json_59_entries_exact": true,
+    "original_whole_ZIP_publication": "root-owned ordered immutable whole-ZIP parts; publication commit not yet supplied to this report",
+    "actual_publication_commit": null,
+    "whole_ZIP_identity_is_final": {
+      "bytes": 1329132,
+      "sha256": "e705baaa44c1184d35b9c8f1a6a89a6aa7f96839ccf129d1df40ebfcf58db48e",
+      "git_blob": "03568389c0c15fd9a9bde6e978dd1c2381980ab9"
+    },
+    "support_scope": "Selected original text receipts, complete 60-member inventory, actual API metadata and independent analysis; large original index/lock copies are referenced by member hashes and retained by root whole-ZIP custody, not duplicated."
+  },
+  "operations": {
+    "new_original_script_runs": 0,
+    "new_Cargo_or_product_runs": 0,
+    "new_validator_runs": 0,
+    "new_downloads": 0,
+    "original_ZIP_member_CRC_read_passes": 1,
+    "task_mutations": 0,
+    "document_mutations": 0,
+    "ref_mutations": 0,
+    "outcome_of_this_reader": "receipt consistency parsing only; never substituted for original execution"
+  }
+}

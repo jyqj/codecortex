@@ -1,0 +1,137 @@
+{
+  "schema": "p8-doc-baseline-terminal-interpretation-independent-review-v1",
+  "created_at_utc": "2026-10-10T03:49:28.751808+00:00",
+  "reviewer": "/root/pr_triage",
+  "intake_reviewer": "/root/todo_audit",
+  "status": "accepted_scoped_original_execution_and_historical_fact_reconciliation",
+  "apply_now": false,
+  "repository_prefix": "artifacts/checkpoints/p8-round39-complete-bfcc-20261010/baseline/terminal/",
+  "source": {
+    "product_source": "b9b089bb4eae072affe9326681d4980eae15fd84",
+    "product_tree": "6461938788665701cfa4fa095a064a3a404ec492",
+    "workflow_source": "de14e6c7e80524efb0e43bec74bb48f518cfbc67",
+    "workflow_git_blob": "1745c95f54ca9865acbf2d2954ff0dbe8398ee35",
+    "run_id": 38020782259,
+    "attempt": 1,
+    "job_id": 114121097102,
+    "event": "push",
+    "artifact_id": 11658346818
+  },
+  "execution": {
+    "argv": [
+      "./scripts/update-doc-baselines.sh"
+    ],
+    "cargo_argv": [
+      "cargo",
+      "test",
+      "--workspace",
+      "--all-targets"
+    ],
+    "cwd": "/home/runner/work/codecortex/codecortex/source",
+    "started_at": "2026-10-10T03:31:02.559350+00:00",
+    "completed_at": "2026-10-10T03:38:46.711550+00:00",
+    "exit_code": 0,
+    "wall_seconds": 464.15219657700004,
+    "stdout_bytes": 496,
+    "stderr_bytes": 0,
+    "read_only_review_no_command_rerun": true
+  },
+  "counts": {
+    "reported_total": 2891,
+    "reported_passed_footer_sum": 2815,
+    "reported_ignored_footer_sum": 76,
+    "arithmetic": "2815 + 76 = 2891",
+    "unique_test_methods": "not_derivable_from_retained_outer_stdout",
+    "formula": "Original script greps lines starting test result: and sums awk field 4 for passed and field 8 for ignored, across all matching target footers. There is no method-name deduplication.",
+    "ignored_boundary": "76 is the summed ignored count; it is not 76 executed methods.",
+    "feature_boundary": "The original argv has --workspace --all-targets. It has no --all-features, --features, --ignored, --release, --locked or --offline flags. Do not describe this as all-feature coverage.",
+    "per_crate_stdout_exact": "  cc-db:      206\n  cc-eval:    68\n0 passed + 7\n0 ignored\n  cc-index:   437\n  cc-model:   92\n  cc-parsers: 184\n  cc-search:  305\n  cc-server:  259",
+    "per_crate_boundary": "passed_for/ignored_for print every matching stripped binary-name row. The exact cc-eval multiline output is retained; this review does not invent target identities, unique-method counts, or normalize it into a new scalar. These per-crate lines do not constitute the complete workspace integration-test breakdown."
+  },
+  "three_drifts": [
+    "DRIFT: cc-db tests changed: doc=142 actual=206",
+    "DRIFT: passed count changed: doc=1258 actual=2815",
+    "DRIFT: ignored count changed: doc=15 actual=76"
+  ],
+  "exit_and_drift_semantics": {
+    "script_set_euo_pipefail": true,
+    "cargo_output_capture": "TEST_OUTPUT=$(cargo test --workspace --all-targets 2>&1)",
+    "drift_logic": "DRIFT=1 suppresses the All baselines match message, but does not execute exit 1. Exit 0 and three DRIFT messages are consistent with the original implementation.",
+    "inference": "Successful completion past the set-e Cargo command substitution supports successful completion of that original Cargo invocation. Its complete internal Cargo log and individual method identities were not emitted into the retained outer stdout; do not fabricate them.",
+    "new_no_drift_gate": false
+  },
+  "historical_document": {
+    "git_blob": "c86e4628c8fb3d94385a2fe5c5ecbef8f4b1dc2c",
+    "sha256": "8f2a388ebf48a4f47562919e7dfa236d2363bc51376de32628d1516c31b7f11d",
+    "exact_scope": [
+      "Header explicitly labels 1258 passed + 15 ignored as a retained historical full-workspace baseline.",
+      "The cc-db=142 and other crate table is explicitly headed historical baseline; the preceding paragraph says these counts do not claim a newly executed baseline for the current commit.",
+      "The dated 2026-10-09 partial record belongs to b069c73a0d76736e1dfb3eb64e79cad6980b773f and retains ENOSPC, partial results, and a warning not to sum them as a full-workspace total.",
+      "The document says the script collects and compares baselines after a real complete workspace run, and does not automatically edit the document."
+    ],
+    "current_false_claim_found": false,
+    "minimal_reconciliation": "Append a dated immutable record of this b9 source, exact command/run, 2815 passed-footer plus 76 ignored-footer totals, the exact multiline per-crate output and all three drifts. Label it separately from historical tables. Preserve the earlier ENOSPC and its source; do not overwrite history or silently relabel its old table as this execution.",
+    "effect": "This supplies the previously absent actual original baseline-script execution and the current-versus-historical numerical comparison for the fixed b9 scope. It does not require a second run or zero DRIFT to be a valid comparison."
+  },
+  "source_preservation": {
+    "basis": "The already completed intake report and extracted before/after records bind the same source HEAD/tree/index, script, Cargo.lock and TEST_PLAN. This peer did not reopen the ZIP, repeat CRC, or rerun source checks.",
+    "unchanged_lock_boundary": "An unchanged Cargo.lock is a postcondition here; the actual original command did not pass --locked."
+  },
+  "limitations": [
+    "No script, Cargo, test, benchmark, validator, workflow or Actions run was executed by this peer.",
+    "No Actions download, ZIP extraction, CRC repetition, ELF execution or held-out content read.",
+    "No distinct-method inventory, all-feature coverage, full internal Cargo output, ignored-probe execution, performance claim, release approval or task completion is inferred.",
+    "No new no-DRIFT requirement, document-table rewrite prerequisite, nine-task gate or additional study prerequisite is introduced.",
+    "Current state remains 164 done and 28 remaining; this review grants no new task credit."
+  ],
+  "evidence": [
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round39-doc-baseline-original-intake/original-members/command.stdout",
+      "bytes": 496,
+      "sha256": "4f15fc5268b06c954a99ae3111f3be4a1da9b592a349301844a9a5082ad5bb51",
+      "git_blob": "bfeef9007c3ea3b7f490d6c9619946d62a779c27"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round39-doc-baseline-original-intake/original-members/command.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round39-doc-baseline-original-intake/original-members/command-terminal.json",
+      "bytes": 1077,
+      "sha256": "2266273ab83f0a722873775610de8a4b3878963cabcfda53f5fc7d12f83b23ed",
+      "git_blob": "927ef489dd1c1a3a8f2a21644c8950135c1220b7"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round39-doc-baseline-original-intake/original-members/registration.json",
+      "bytes": 1088,
+      "sha256": "61518a2af04f3f45a4f35f833a0ad8043d80aefa892299dd291fff96da360b89",
+      "git_blob": "e9919c2ffc6965393d6455d5a2e474708e4ff6b7"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round39-doc-baseline-original-intake/original-members/original-update-doc-baselines.sh",
+      "bytes": 3571,
+      "sha256": "04d63124fc8405610c91fb4a591e17e2dd06ce1f20cf995123263b12a4b0b59c",
+      "git_blob": "e33fa140e9a6e5461f77cb66e633ec4ba38d2700"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round39-doc-baseline-original-intake/independent-original-baseline-terminal-review.json",
+      "bytes": 34859,
+      "sha256": "d6ad263555739cda5004b5966b9c06dc1af20381dfbc10da87d9ed00cf4902e6",
+      "git_blob": "565e1c18e24a382c43f18f8bf9ecef8873d4b4d0"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round36-P8-018-baseline-script-applicability/fixed-main-originals/docs/TEST_PLAN.md",
+      "bytes": 9133,
+      "sha256": "8f2a388ebf48a4f47562919e7dfa236d2363bc51376de32628d1516c31b7f11d",
+      "git_blob": "c86e4628c8fb3d94385a2fe5c5ecbef8f4b1dc2c"
+    }
+  ],
+  "immutable_intake_report": {
+    "git_blob": "565e1c18e24a382c43f18f8bf9ecef8873d4b4d0",
+    "support_git_blob": "a441c437f3c121568417ab490e722d644dd16a7b",
+    "selection_git_blob": "f70a585d1b5d152700a57a3f20e8e557ab4f0401"
+  },
+  "publication_note": "This is an append-only interpretation peer. It does not change any original pending or terminal record, documentation, task ledger, ref, PR or label."
+}

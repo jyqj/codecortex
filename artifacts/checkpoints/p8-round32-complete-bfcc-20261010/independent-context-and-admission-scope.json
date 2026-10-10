@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_triage",
+  "created_at": "2026-10-10T01:01:48.584529+00:00",
+  "source": "bcc3ada39603d5dfa0a902d7e188f1a86accafca",
+  "workflow": {
+    "path": ".github/workflows/p8-scale-100k-diagnostic.yml",
+    "git_blob": "d11f83361707dae7f7a218c1522579d1b9c374c6",
+    "sha256": "9086900e97ade7f896cd35d22c6022b320307c7ea691a2a211e603a346a78fc5",
+    "bytes": 23586,
+    "job": "diagnose",
+    "key": "jobs.diagnose.env.DIAGNOSTIC_DIR",
+    "line": 59,
+    "expression": "DIAGNOSTIC_DIR: ${{ runner.temp }}/p8-100k-diagnostic"
+  },
+  "independent_static_finding": {
+    "status": "confirmed_context_availability_violation",
+    "basis": "Official GitHub context-availability table permits runner in step environment and step action inputs, but excludes runner from a job-level environment map. The current expression is at that excluded job-level position.",
+    "official_reference": "https://docs.github.com/en/actions/reference/workflows-and-actions/contexts",
+    "source_retrieval": "GitHub official documentation via web search; not third-party speculation.",
+    "scope": "This independently establishes a concrete invalid expression position. It does not claim that all other syntax is valid or replace the original server error annotation."
+  },
+  "local_lint": {
+    "command": "command -v actionlint",
+    "found_on_PATH": false,
+    "lint_executed": false
+  },
+  "distinct_evidence_scopes": {
+    "original_source_and_task_admission": {
+      "status": "passed",
+      "report_git_blob": "d93154fb89c0ee476f1907a1a492beb5f331dbff",
+      "full_originals_zip_git_blob": "222e9881c1794974b1eca9b55f1abb7f393249eb",
+      "boundary": "Hashes, reviewed source and original task/source proof passed; this did not execute or lint the GitHub workflow."
+    },
+    "workflow_startup": {
+      "run_id": 38011378256,
+      "attempt": 1,
+      "event": "push",
+      "status": "completed",
+      "conclusion": "failure",
+      "diagnostic_job_exists": false,
+      "metadata_basis": "Reported by root; original server metadata/annotation custody remains root-owned and was not re-fetched in this review.",
+      "product_or_scale_execution_credit": 0
+    }
+  },
+  "next_step_boundary": "Author prepares a minimal valid placement of the same runtime path; new actual source/review/bindings and original admission follow only after independent review. No rerun, ref, label, CLI or product action performed here."
+}

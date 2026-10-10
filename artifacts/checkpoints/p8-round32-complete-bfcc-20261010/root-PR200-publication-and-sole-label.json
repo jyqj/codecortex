@@ -1,0 +1,150 @@
+{
+  "branch": {
+    "started": {
+      "current_time": "2026-10-10 00:59:39 UTC"
+    },
+    "request": {
+      "repository_full_name": "jyqj/codecortex",
+      "branch_name": "task/p8-100k-diagnostic-capture-bfcc-20261010",
+      "sha": "bcc3ada39603d5dfa0a902d7e188f1a86accafca"
+    },
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Action completed."
+        }
+      ],
+      "structuredContent": {
+        "branch": "task/p8-100k-diagnostic-capture-bfcc-20261010"
+      },
+      "isError": false
+    },
+    "ended": {
+      "current_time": "2026-10-10 00:59:39 UTC"
+    }
+  },
+  "pull_request": {
+    "started": {
+      "current_time": "2026-10-10 00:59:43 UTC"
+    },
+    "request": {
+      "repository_full_name": "jyqj/codecortex",
+      "base": "main",
+      "head": "task/p8-100k-diagnostic-capture-bfcc-20261010",
+      "title": "ci(eval): retain original progress during an independent 100k diagnostic",
+      "body": "## 问题与用途\n\n旧 wide 100k 研究的 runner 在末尾上传之前终止，原始 100k job 日志也无法取回，导致失败原因与末段执行状态仍未知。这项变更为**独立的新 100k 诊断**增加运行中的原始字节采集，便于在下一次中断时保留已上传的进度。\n\n原研究及其失败记录保留。本 PR 没有修改原始任务状态；当前主线账本为 192 项、164 完成、28 剩余，本次会话仅新完成 P8-005。\n\n## 变更\n\n- 新增独立工作流 `.github/workflows/p8-scale-100k-diagnostic.yml`，显式 label `p8-scale-100k-diagnostic-run` 或 `workflow_dispatch` 启动。\n- 新增采集 wrapper，每个绝对 15 分钟检查点冻结新增的原始字节，记录各流的 offset、chunk 摘要、采集故障及实际上传 ACK。失败或未确认上传的数据可在下一个有限检查点重发。\n- 捕获原始测量、worker、native supervisor、driver 和 wrapper 的相关日志。记录源文件与实际 Git HEAD，保留真实子进程返回码及信号。\n- 新增 15 项无规模负载的控制测试，并更新原有源码 registry 与 guard 的实际来源绑定。guard 算法没有改动。\n\n## 原有协议与范围\n\n诊断调用原 `p8_scale_matrix.py` 的完整 100k rep0 命令，保持注册 N=30、shard_count=30、seed=12648430、wide=4096、resume=1024、fanout=8、native 5 小时和 512 MiB 等原有设置。原始 Rust 产品域、原规模驱动和旧工作流保持原样。\n\n该诊断单独命名，不能合并进入任一旧 150 分片队列，也不能作为完整 P8-006 验收。检查点采集与上传本身会带来 I/O，测量解释需保留这一边界。只有实际成功上传的前缀可以确认；中断后的未知尾部、采集故障或未完成阶段必须继续显式保留。原 driver/原生报告仍决定执行结果，wrapper 存活或返回 0 不代表完整验收。\n\n## 来源与验证\n\n- 上游 PR199：借用 oracle 文本及 V18 状态读取时序修补。\n- 新源码链：`5ce1ed4306ddf1a791f12da45d5892383e453d65` → `c9f95c9a21e4aeb28a8cfcde5f3afc94c142e119`。\n- 独立审查 R：`48917a5b48a386c0fd49804a089183e641ad2bba`。\n- 最终绑定 G：`bcc3ada39603d5dfa0a902d7e188f1a86accafca`，tree `7afc7fcab3bedfd31c05b87ab0cd10c70d148997`。\n- 最终 15 项 host controls 实际通过。独立源码与实际 R/G 审查通过：1096 product、79 BASE delta 保持，原 146 validation 保持，新增 3 项 validation 后合计 149。\n- 原 v15 准入于 2026-10-10 00:57:24–00:59:03 UTC 实际退出 0；原 task-plan 于 00:59:03–00:59:04 UTC 实际退出 0。每个命令各自的 1444 项选定输入、实际 HEAD 与 index 前后相同，NoLazy=1；账本为 192 / 164 / 28。\n- CI 与独立诊断：尚未启动；以后续原始执行结果为准。\n\n[独立完整源码审查](https://github.com/jyqj/codecortex/blob/48917a5b48a386c0fd49804a089183e641ad2bba/artifacts/checkpoints/p8-100k-diagnostic-capture-bfcc-20261009/independent-source-review.json)\n",
+      "draft": true
+    },
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Action completed."
+        }
+      ],
+      "structuredContent": {
+        "url": "https://github.com/jyqj/codecortex/pull/200",
+        "number": 200,
+        "state": "open",
+        "merged": false,
+        "mergeable": false,
+        "draft": true,
+        "body": "## 问题与用途\n\n旧 wide 100k 研究的 runner 在末尾上传之前终止，原始 100k job 日志也无法取回，导致失败原因与末段执行状态仍未知。这项变更为**独立的新 100k 诊断**增加运行中的原始字节采集，便于在下一次中断时保留已上传的进度。\n\n原研究及其失败记录保留。本 PR 没有修改原始任务状态；当前主线账本为 192 项、164 完成、28 剩余，本次会话仅新完成 P8-005。\n\n## 变更\n\n- 新增独立工作流 `.github/workflows/p8-scale-100k-diagnostic.yml`，显式 label `p8-scale-100k-diagnostic-run` 或 `workflow_dispatch` 启动。\n- 新增采集 wrapper，每个绝对 15 分钟检查点冻结新增的原始字节，记录各流的 offset、chunk 摘要、采集故障及实际上传 ACK。失败或未确认上传的数据可在下一个有限检查点重发。\n- 捕获原始测量、worker、native supervisor、driver 和 wrapper 的相关日志。记录源文件与实际 Git HEAD，保留真实子进程返回码及信号。\n- 新增 15 项无规模负载的控制测试，并更新原有源码 registry 与 guard 的实际来源绑定。guard 算法没有改动。\n\n## 原有协议与范围\n\n诊断调用原 `p8_scale_matrix.py` 的完整 100k rep0 命令，保持注册 N=30、shard_count=30、seed=12648430、wide=4096、resume=1024、fanout=8、native 5 小时和 512 MiB 等原有设置。原始 Rust 产品域、原规模驱动和旧工作流保持原样。\n\n该诊断单独命名，不能合并进入任一旧 150 分片队列，也不能作为完整 P8-006 验收。检查点采集与上传本身会带来 I/O，测量解释需保留这一边界。只有实际成功上传的前缀可以确认；中断后的未知尾部、采集故障或未完成阶段必须继续显式保留。原 driver/原生报告仍决定执行结果，wrapper 存活或返回 0 不代表完整验收。\n\n## 来源与验证\n\n- 上游 PR199：借用 oracle 文本及 V18 状态读取时序修补。\n- 新源码链：`5ce1ed4306ddf1a791f12da45d5892383e453d65` → `c9f95c9a21e4aeb28a8cfcde5f3afc94c142e119`。\n- 独立审查 R：`48917a5b48a386c0fd49804a089183e641ad2bba`。\n- 最终绑定 G：`bcc3ada39603d5dfa0a902d7e188f1a86accafca`，tree `7afc7fcab3bedfd31c05b87ab0cd10c70d148997`。\n- 最终 15 项 host controls 实际通过。独立源码与实际 R/G 审查通过：1096 product、79 BASE delta 保持，原 146 validation 保持，新增 3 项 validation 后合计 149。\n- 原 v15 准入于 2026-10-10 00:57:24–00:59:03 UTC 实际退出 0；原 task-plan 于 00:59:03–00:59:04 UTC 实际退出 0。每个命令各自的 1444 项选定输入、实际 HEAD 与 index 前后相同，NoLazy=1；账本为 192 / 164 / 28。\n- CI 与独立诊断：尚未启动；以后续原始执行结果为准。\n\n[独立完整源码审查](https://github.com/jyqj/codecortex/blob/48917a5b48a386c0fd49804a089183e641ad2bba/artifacts/checkpoints/p8-100k-diagnostic-capture-bfcc-20261009/independent-source-review.json)\n",
+        "title": "ci(eval): retain original progress during an independent 100k diagnostic",
+        "base": "main",
+        "base_sha": "09d4454fa45455dc5a8bfdfec67e31bb7ed162c7",
+        "head": "task/p8-100k-diagnostic-capture-bfcc-20261010",
+        "head_sha": "bcc3ada39603d5dfa0a902d7e188f1a86accafca",
+        "head_repo_id": 1249213794,
+        "head_repo_full_name": "jyqj/codecortex",
+        "merge_commit_sha": null,
+        "user": {
+          "login": "jyqj",
+          "name": "jyqj",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/174292474?v=4",
+          "id": 174292474
+        },
+        "requested_reviewers": null,
+        "requested_team_reviewers": null,
+        "diff": null,
+        "comments": null,
+        "created_at": "2026-10-10T00:59:44Z",
+        "updated_at": "2026-10-10T00:59:44Z",
+        "closed_at": null,
+        "merged_at": null,
+        "commits": 8,
+        "changed_files": 11,
+        "additions": 23203,
+        "deletions": 15,
+        "display_url": "https://github.com/jyqj/codecortex/pull/200",
+        "display_title": "ci(eval): retain original progress during an independent 100k diagnostic"
+      },
+      "isError": false
+    },
+    "ended": {
+      "current_time": "2026-10-10 00:59:45 UTC"
+    }
+  },
+  "sole_diagnostic_label": {
+    "started": {
+      "current_time": "2026-10-10 00:59:50 UTC"
+    },
+    "request": {
+      "repository_full_name": "jyqj/codecortex",
+      "issue_number": 200,
+      "labels": [
+        "p8-scale-100k-diagnostic-run"
+      ]
+    },
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Action completed."
+        }
+      ],
+      "structuredContent": {
+        "issue": {
+          "url": "https://github.com/jyqj/codecortex/pull/200",
+          "title": "ci(eval): retain original progress during an independent 100k diagnostic",
+          "issue_number": 200,
+          "body": "## 问题与用途\n\n旧 wide 100k 研究的 runner 在末尾上传之前终止，原始 100k job 日志也无法取回，导致失败原因与末段执行状态仍未知。这项变更为**独立的新 100k 诊断**增加运行中的原始字节采集，便于在下一次中断时保留已上传的进度。\n\n原研究及其失败记录保留。本 PR 没有修改原始任务状态；当前主线账本为 192 项、164 完成、28 剩余，本次会话仅新完成 P8-005。\n\n## 变更\n\n- 新增独立工作流 `.github/workflows/p8-scale-100k-diagnostic.yml`，显式 label `p8-scale-100k-diagnostic-run` 或 `workflow_dispatch` 启动。\n- 新增采集 wrapper，每个绝对 15 分钟检查点冻结新增的原始字节，记录各流的 offset、chunk 摘要、采集故障及实际上传 ACK。失败或未确认上传的数据可在下一个有限检查点重发。\n- 捕获原始测量、worker、native supervisor、driver 和 wrapper 的相关日志。记录源文件与实际 Git HEAD，保留真实子进程返回码及信号。\n- 新增 15 项无规模负载的控制测试，并更新原有源码 registry 与 guard 的实际来源绑定。guard 算法没有改动。\n\n## 原有协议与范围\n\n诊断调用原 `p8_scale_matrix.py` 的完整 100k rep0 命令，保持注册 N=30、shard_count=30、seed=12648430、wide=4096、resume=1024、fanout=8、native 5 小时和 512 MiB 等原有设置。原始 Rust 产品域、原规模驱动和旧工作流保持原样。\n\n该诊断单独命名，不能合并进入任一旧 150 分片队列，也不能作为完整 P8-006 验收。检查点采集与上传本身会带来 I/O，测量解释需保留这一边界。只有实际成功上传的前缀可以确认；中断后的未知尾部、采集故障或未完成阶段必须继续显式保留。原 driver/原生报告仍决定执行结果，wrapper 存活或返回 0 不代表完整验收。\n\n## 来源与验证\n\n- 上游 PR199：借用 oracle 文本及 V18 状态读取时序修补。\n- 新源码链：`5ce1ed4306ddf1a791f12da45d5892383e453d65` → `c9f95c9a21e4aeb28a8cfcde5f3afc94c142e119`。\n- 独立审查 R：`48917a5b48a386c0fd49804a089183e641ad2bba`。\n- 最终绑定 G：`bcc3ada39603d5dfa0a902d7e188f1a86accafca`，tree `7afc7fcab3bedfd31c05b87ab0cd10c70d148997`。\n- 最终 15 项 host controls 实际通过。独立源码与实际 R/G 审查通过：1096 product、79 BASE delta 保持，原 146 validation 保持，新增 3 项 validation 后合计 149。\n- 原 v15 准入于 2026-10-10 00:57:24–00:59:03 UTC 实际退出 0；原 task-plan 于 00:59:03–00:59:04 UTC 实际退出 0。每个命令各自的 1444 项选定输入、实际 HEAD 与 index 前后相同，NoLazy=1；账本为 192 / 164 / 28。\n- CI 与独立诊断：尚未启动；以后续原始执行结果为准。\n\n[独立完整源码审查](https://github.com/jyqj/codecortex/blob/48917a5b48a386c0fd49804a089183e641ad2bba/artifacts/checkpoints/p8-100k-diagnostic-capture-bfcc-20261009/independent-source-review.json)\n",
+          "state": "open",
+          "user": {
+            "login": "jyqj",
+            "name": "jyqj",
+            "email": null,
+            "avatar_url": "https://avatars.githubusercontent.com/u/174292474?v=4",
+            "id": 174292474
+          },
+          "assignees": null,
+          "labels": [
+            {
+              "name": "p8-scale-100k-diagnostic-run",
+              "color": "ededed",
+              "description": null
+            }
+          ],
+          "milestone": null,
+          "state_reason": null,
+          "comments": 0,
+          "created_at": "2026-10-10T00:59:44Z",
+          "updated_at": "2026-10-10T00:59:51Z",
+          "closed_at": null,
+          "display_url": "https://github.com/jyqj/codecortex/pull/200",
+          "display_title": "ci(eval): retain original progress during an independent 100k diagnostic"
+        },
+        "url": "https://github.com/jyqj/codecortex/pull/200",
+        "title": "ci(eval): retain original progress during an independent 100k diagnostic",
+        "display_url": "https://github.com/jyqj/codecortex/pull/200",
+        "display_title": "ci(eval): retain original progress during an independent 100k diagnostic"
+      },
+      "isError": false
+    },
+    "ended": {
+      "current_time": "2026-10-10 00:59:51 UTC"
+    }
+  }
+}

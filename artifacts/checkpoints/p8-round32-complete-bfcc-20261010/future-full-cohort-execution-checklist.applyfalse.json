@@ -1,0 +1,187 @@
+{
+  "schema": "P8-006-future-same-source-wide-complete-cohort-execution-checklist-v1",
+  "apply_now": false,
+  "source_candidate": {
+    "G": "bcc3ada39603d5dfa0a902d7e188f1a86accafca",
+    "tree": "7afc7fcab3bedfd31c05b87ab0cd10c70d148997",
+    "P": "c9f95c9a21e4aeb28a8cfcde5f3afc94c142e119",
+    "R": "48917a5b48a386c0fd49804a089183e641ad2bba",
+    "new_full_cohort_run": null,
+    "new_full_cohort_attempt": null,
+    "new_full_cohort_samples": 0
+  },
+  "existing_pending_closeout": {
+    "git_blob": "0fee0f4d7e40dbe483644f4663ec45b9c75a4e76",
+    "bytes": 98727,
+    "scope": "Previously frozen P8-006 plus eight dependent rows, apply_now false. Reuse without rewriting original protected fields. Root supplied exact immutable blob; this check did not refetch the package. Full SHA256 is not asserted because only its prefix is currently available."
+  },
+  "original_task": {
+    "id": "P8-006",
+    "title": "增量规模与fanout曲线",
+    "depends_on": [
+      "P7-020",
+      "P8-001",
+      "P8-005"
+    ],
+    "dependency_states_at_preserved_G4786_tasks": [
+      "done",
+      "done",
+      "done"
+    ],
+    "steps": [
+      "测no-op/body/API/config/batch和超预算闭包",
+      "输出各phase计数"
+    ],
+    "acceptance": [
+      "时间可归因且闭包完成后full parity，未完成有显式status",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validations": [
+      "V07",
+      "V20"
+    ],
+    "source_location": "docs/roadmap/code-index-v2/tasks.json:12145-12175",
+    "scope_boundary": "This is an executable route for a future complete registered wide cohort, not a new interpretation of the original task or an automatic done update."
+  },
+  "source_inputs": [
+    {
+      "path": ".github/workflows/p8-scale-wide-dirty.yml",
+      "git_blob": "7fa4723860df70178ce6ed58cd305acaa7c76069",
+      "sha256": "6a85b4d0a3e93c2ec77f49b7804d1320510cdaa457673c701846a70c21f830a9",
+      "bytes": 9544
+    },
+    {
+      "path": ".github/workflows/p8-scale.yml",
+      "git_blob": "74f1b64ed447ef24da584f1c1f8d090d2fa1e03e",
+      "sha256": "4258476dd37d8af223aaa7ad45d7c97d7298be1ba4ec5ffd9af9949785ed8f3d",
+      "bytes": 8621
+    },
+    {
+      "path": "scripts/p8_scale_matrix.py",
+      "git_blob": "86f6dd904a4a981302b45675f013319e5d442d0f",
+      "sha256": "ea1b4a60854b8bbbfc057760ef055861a3279440b3df7f9c39dd1e32505b1a43",
+      "bytes": 66810
+    }
+  ],
+  "execution_checklist": [
+    {
+      "step": 1,
+      "action": "Freeze the intended source before creating a new label event.",
+      "details": "Root publishes/chooses the reviewed exact G on a PR branch, records the PR head/ref and actual Git SHA at the event, and adds p8-scale-wide-dirty-run once. If that exact label already exists, remove it then add it once to create the intended labeled event. This is preparation only; no label/ref was changed here.",
+      "source": ".github/workflows/p8-scale-wide-dirty.yml:3-5,19,25",
+      "boundary": "The workflow uses github.event.pull_request.head.sha || github.sha. Record the event source and actual checkout/build source, not merely a later PR head or UI summary. workflow_dispatch exists in YAML but no substitute dispatch mechanism is invented."
+    },
+    {
+      "step": 2,
+      "action": "Record the new run identity and preserve its own immutable build.",
+      "details": "A new wide run has its own run_id/attempt. Original build job runs Rust1.95+rustfmt, cargo fmt --all -- --check and cargo test --locked -p cc-eval --test p8_scale in the protocol target, then the original build driver creates one fresh release executable in a different target. Preserve p8-scale-wide-dirty-build-RUN_ID: binary, original cargo JSONL/stderr, producer/copy identity, before/after source, driver/helper and build receipt.",
+      "source": ".github/workflows/p8-scale-wide-dirty.yml:32-53; scripts/p8_scale_matrix.py:263-341",
+      "boundary": "Do not substitute the independent diagnostic build or an old run's binary/receipt. All 150 cohort shards must bind to this one build.json SHA256 and exact source/binary/driver identities. Ordinary PR CI may run in parallel; an extra requirement that all unrelated CI finish before label is not added."
+    },
+    {
+      "step": 3,
+      "action": "Let the existing five rep0 jobs run, without replacing one by the independent diagnostic.",
+      "details": "The workflow preflight is actual cohort measurements, scales100000/50000/10000/5000/1000, shard0, max-parallel5, fail-fast false, job350min. Each uses original capacity preparation, source checkout, downloaded cohort binary and original run command.",
+      "source": ".github/workflows/p8-scale-wide-dirty.yml:55-108",
+      "boundary": "All five original preflight jobs must succeed before measure becomes eligible. A successful separate diagnostic at100k does not satisfy this run's100k rep0."
+    },
+    {
+      "step": 4,
+      "action": "Run the remaining 145 slots using the original matrix.",
+      "details": "needs:[build,preflight], five scales x shard1..29, max-parallel10, fail-fast false, job350min. This is150 total slots, not155. Preserve each measurement and capacity artifact even on failure.",
+      "source": ".github/workflows/p8-scale-wide-dirty.yml:110-202",
+      "boundary": "Do not reschedule successful old-run samples into this run, combine different attempts/sources/profiles, alter seed/budgets or drop a slow slot. A failed preflight skips the145 by the existing workflow design; failure evidence remains useful but incomplete."
+    },
+    {
+      "step": 5,
+      "action": "Preserve official run/job/artifact identities and exact original ZIPs, then use the original aggregate.",
+      "details": "Measurement artifact names are p8-scale-wide-dirty-shard-SCALE-SHARD-RUN_ID; capacity names use the matching scale/shard/run; matrix is p8-scale-wide-dirty-matrix-RUN_ID. Map each official artifact id/digest/size and original ZIP to its slot/run/attempt; custody is distinct from job success. Original aggregate invokes validate_build, all150 validate_shard calls, then combine; it writes matrix.json and returns nonzero for missing/failed/incompatible inputs.",
+      "source": ".github/workflows/p8-scale-wide-dirty.yml:204-250; scripts/p8_scale_matrix.py:773-846,888-993",
+      "boundary": "If an original artifact exists but local receipt is missing, recover that original rather than rerunning its measurement. Preserve failures; missing, duplicate, wrong-profile, wrong-source/build or incomplete raw remains rejected. No manually edited success summary substitutes the original predicates."
+    },
+    {
+      "step": 6,
+      "action": "Close006 only after actual full accepted evidence and applicable old-function regressions, then apply the existing dependent template in dependency order.",
+      "details": "Actual matrix must passedtrue/statuscomplete_measurement_coverage, all150slots, all50groups xN30=1500samples, fullphase timings, continuous stage history, exact15tableparity and genuine fanout incomplete→closed evidence. Keep fixed source/profile and immutable raw/custody/aggregate pointers. Existing regression evidence retains its exact source and any newly changed source uses its actual normal engineering results. Reuse pending template for006→007→008→009→010→011→012→013→016; preserve other dependencies, definitions/protected maps and each already-accepted component's original source.",
+      "source": "scripts/p8_scale_matrix.py:507-557,562-770,888-993; existing applyfalse blob0fee0f4d...",
+      "boundary": "The aggregate itself does not update task statuses or grant full release certification. No task is changed by this preparation."
+    }
+  ],
+  "invariants": {
+    "work_profile": "scale_wide_dirty_v1",
+    "default_profile_retained_separately": {
+      "name": "scale_capacity_v1",
+      "label": "p8-scale-run",
+      "main_dirty_budget": 200
+    },
+    "wide_main_dirty_budget": 4096,
+    "resume_limit": 1024,
+    "fanout_dirty_budget": 8,
+    "fanout_resume_limit": 128,
+    "scales": [
+      1000,
+      5000,
+      10000,
+      50000,
+      100000
+    ],
+    "repetitions": 30,
+    "shards_per_scale": 30,
+    "seed": 12648430,
+    "stages": [
+      "cold",
+      "no_op",
+      "body",
+      "api",
+      "config",
+      "batch_1",
+      "batch_10",
+      "batch_100",
+      "batch_1000"
+    ],
+    "fanouts": [
+      1,
+      4,
+      16,
+      64,
+      128
+    ],
+    "fanout_owner_scale": 1000,
+    "other_scales_skip_fanout": true,
+    "population_explanation": "45scale/stagegroups*30 + 5fanoutgroups*30 =1500. Each non1000slot has9measurements; each1000slot has14.",
+    "native_deadline_ms": 18000000,
+    "native_max_output_bytes": 536870912,
+    "original_driver_tail_seconds": 120,
+    "job_timeout_minutes": 350,
+    "oracle_physical_profile": "scale_capacity_v1",
+    "sorting_cache_kib": 2048,
+    "max_rows_per_table": 5000000,
+    "max_canonical_bytes": 17179869184,
+    "max_scratch_bytes": 8589934592,
+    "max_row_bytes": 1048576,
+    "statistics": "Original capacity mode keeps host/CPU/kernel environment strata. N30 is global coverage; per-stratum counts remain explicit; no pooled latency/stabletail/causal speedup claim is created.",
+    "source_references": "scripts/p8_scale_matrix.py:26-63,344-364,888-976"
+  },
+  "commands_not_executed": {
+    "cohort_build": "python3 scripts/p8_scale_matrix.py build --root \"$GITHUB_WORKSPACE\" --output \"$BUILD\" --target-directory \"$FRESH_RELEASE_TARGET\"",
+    "one_cohort_slot": "python3 scripts/p8_scale_matrix.py run --root \"$GITHUB_WORKSPACE\" --build \"$BUILD\" --scale \"$SCALE\" --shard-index \"$SHARD\" --shard-count 30 --repetitions 30 --capacity-profile scale_wide_dirty_v1 --output \"$FRESH_SLOT_OUTPUT\"",
+    "final_original_cli": "python3 scripts/p8_scale_matrix.py aggregate --build \"$BUILD\" --inputs \"$SHARDS\"/p8-scale-wide-dirty-shard-*-\"$RUN_ID\" --output \"$FRESH_MATRIX_OUTPUT\" --repetitions 30 --shard-count 30 --capacity-profile scale_wide_dirty_v1",
+    "conditions": "Run replay from the exact cohort source checkout with the original preserved executable; original workflow chmods binary0755. BUILD and input directories are restored original build/shard bytes, output is fresh. Shell glob must expand to this run's150 shard directories; original aggregate rejects missing/duplicates. The workflow's direct matrix.aggregate call is the same original implementation as this CLI."
+  },
+  "diagnostic_to_full_cohort_decision": {
+    "sufficient_useful_positive_evidence": "At exact proposed G, actual independent100k rep0 completes the original full stage sequence within unchanged native bounds, with original driver/native terminal success, sealed full raw/report/stderr and successful original build/shard predicates. This demonstrates feasibility for that exact100k observation; it is enough engineering evidence to choose the existing full workflow, not proof all150 will succeed.",
+    "custody_boundary": "A whole final original bundle can establish complete measurement evidence even if some periodic uploads failed; do not require all20prefix uploads as a new gate. Conversely, prefix-only progress or wrapper0 cannot establish completion. Review capture_faults separately from native outcome.",
+    "negative_or_unknown": "Timeout, failure or only partial/unknown tail informs an explicit cause/fix decision; it does not supply a replacement full-cohort sample or a done claim. If fixing source, freeze the new exact source/review and start its new independent cohort. No automatic infinite series of prerequisite diagnostic reruns is imposed.",
+    "not_an_original_hard_gate": "The separate diagnostic is an engineering decision aid, not a newly added original P8-006 protocol gate. The existing wide workflow itself already gates145 on its own five successful rep0 slots.",
+    "no_transfer": "Even if diagnostic and cohort use identical G, they retain different run/build provenance. Diagnostic rep0 stays independent and is never inserted into oldG8/GW4 or new150cohort. Old failures remain failed."
+  },
+  "operation_scope": {
+    "read_only_source_review": true,
+    "new_tests": 0,
+    "new_studies": 0,
+    "refs_modified": false,
+    "task_states_modified": false,
+    "done": 164,
+    "remaining": 28
+  }
+}

@@ -1,0 +1,4441 @@
+{
+  "schema": "independent-original-batch1-100k-whole-acceptance-v1",
+  "reviewer": "/root/pr_triage",
+  "created_at": "2026-10-10T06:45:34.967645+00:00",
+  "source": "f97c5068d056969705e8387ba1f37d83847f5bee",
+  "run_id": 38026411200,
+  "attempt": 1,
+  "result": "accepted_scoped_one_registered_api_100k_cell",
+  "new_cells": 1,
+  "new_records": 2,
+  "roles": [
+    "setup",
+    "api mutation"
+  ],
+  "cumulative": {
+    "cells": 42,
+    "expected_cells": 45,
+    "records": 79,
+    "expected_records": 85,
+    "setup": 37,
+    "mutation": 37,
+    "fanout": 5,
+    "cold_curve_selected_setup": 5,
+    "cold_curve_selected_scales": [
+      1000,
+      5000,
+      10000,
+      50000,
+      100000
+    ]
+  },
+  "remaining": {
+    "cells": 3,
+    "records": 6,
+    "population": "body/config/batch_100 at100k"
+  },
+  "cold_subset_boundary": "The no_op setup from the separately accepted prior cell supplies the fifth cold point. This api setup remains retained but does not replace or add a sixth cold point. All original failed continuous studies remain failed/incomplete and are never pooled.",
+  "artifact": {
+    "id": 11661749557,
+    "node_id": "MDg6QXJ0aWZhY3QxMTY2MTc0OTU1Nw==",
+    "name": "p8-task-shard-api-100000-38026411200-1",
+    "size_in_bytes": 4755437,
+    "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11661749557",
+    "archive_download_url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11661749557/zip",
+    "expired": false,
+    "digest": "sha256:c92b9a69224dbabd496e37fb069768f133584401d790b4e9e47df3e3f83b6edd",
+    "created_at": "2026-10-10T06:37:51Z",
+    "updated_at": "2026-10-10T06:37:51Z",
+    "expires_at": "2027-01-08T05:07:02Z",
+    "workflow_run": {
+      "id": 38026411200,
+      "repository_id": 1249213794,
+      "head_repository_id": 1249213794,
+      "head_branch": "task/p8-task-profile-and-borrowed-cursor-bfcc-20261010",
+      "head_sha": "f97c5068d056969705e8387ba1f37d83847f5bee"
+    }
+  },
+  "whole_zip_identity_from_original_receiver": {
+    "bytes": 4755437,
+    "sha256": "c92b9a69224dbabd496e37fb069768f133584401d790b4e9e47df3e3f83b6edd",
+    "git_blob": "72c468961051856d7857b2713e9a5d81314cd42e"
+  },
+  "producer": {
+    "id": 114139257203,
+    "run_id": 38026411200,
+    "workflow_name": "P8 complete descriptive task profile measurements",
+    "head_branch": "task/p8-task-profile-and-borrowed-cursor-bfcc-20261010",
+    "run_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/38026411200",
+    "run_attempt": 1,
+    "node_id": "CR_kwDOSnV9Ys8AAAAakzrZcw",
+    "head_sha": "f97c5068d056969705e8387ba1f37d83847f5bee",
+    "url": "https://api.github.com/repos/jyqj/codecortex/actions/jobs/114139257203",
+    "html_url": "https://github.com/jyqj/codecortex/actions/runs/38026411200/job/114139257203",
+    "status": "completed",
+    "conclusion": "success",
+    "created_at": "2026-10-10T05:13:59Z",
+    "started_at": "2026-10-10T05:14:59Z",
+    "completed_at": "2026-10-10T06:37:55Z",
+    "name": "measure (api-100000, api, 100000)",
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1,
+        "started_at": "2026-10-10T05:15:00Z",
+        "completed_at": "2026-10-10T05:15:01Z"
+      },
+      {
+        "name": "Run actions/checkout@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2,
+        "started_at": "2026-10-10T05:15:01Z",
+        "completed_at": "2026-10-10T05:15:03Z"
+      },
+      {
+        "name": "Run dtolnay/rust-toolchain@stable",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3,
+        "started_at": "2026-10-10T05:15:03Z",
+        "completed_at": "2026-10-10T05:15:12Z"
+      },
+      {
+        "name": "Run actions/download-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 4,
+        "started_at": "2026-10-10T05:15:12Z",
+        "completed_at": "2026-10-10T05:15:15Z"
+      },
+      {
+        "name": "Prepare original registered capacity on the disposable hosted VM",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 5,
+        "started_at": "2026-10-10T05:15:15Z",
+        "completed_at": "2026-10-10T05:15:15Z"
+      },
+      {
+        "name": "Preserve original capacity observations",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 6,
+        "started_at": "2026-10-10T05:15:15Z",
+        "completed_at": "2026-10-10T05:15:16Z"
+      },
+      {
+        "name": "Launch one exact fresh task cell with setup and parity inside its native deadline",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 7,
+        "started_at": "2026-10-10T05:15:16Z",
+        "completed_at": "2026-10-10T05:15:16Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 1 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 8,
+        "started_at": "2026-10-10T05:15:16Z",
+        "completed_at": "2026-10-10T05:30:16Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 9,
+        "started_at": "2026-10-10T05:30:16Z",
+        "completed_at": "2026-10-10T05:30:19Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 2 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 10,
+        "started_at": "2026-10-10T05:30:19Z",
+        "completed_at": "2026-10-10T05:45:16Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 11,
+        "started_at": "2026-10-10T05:45:16Z",
+        "completed_at": "2026-10-10T05:45:18Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 3 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 12,
+        "started_at": "2026-10-10T05:45:18Z",
+        "completed_at": "2026-10-10T06:00:16Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 13,
+        "started_at": "2026-10-10T06:00:16Z",
+        "completed_at": "2026-10-10T06:00:18Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 4 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 14,
+        "started_at": "2026-10-10T06:00:18Z",
+        "completed_at": "2026-10-10T06:15:17Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 15,
+        "started_at": "2026-10-10T06:15:17Z",
+        "completed_at": "2026-10-10T06:15:19Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 5 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 16,
+        "started_at": "2026-10-10T06:15:19Z",
+        "completed_at": "2026-10-10T06:30:16Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 17,
+        "started_at": "2026-10-10T06:30:16Z",
+        "completed_at": "2026-10-10T06:30:18Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 6 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 18,
+        "started_at": "2026-10-10T06:30:18Z",
+        "completed_at": "2026-10-10T06:37:24Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 19,
+        "started_at": "2026-10-10T06:37:24Z",
+        "completed_at": "2026-10-10T06:37:26Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 7 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 20,
+        "started_at": "2026-10-10T06:37:26Z",
+        "completed_at": "2026-10-10T06:37:26Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 21,
+        "started_at": "2026-10-10T06:37:26Z",
+        "completed_at": "2026-10-10T06:37:27Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 8 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 22,
+        "started_at": "2026-10-10T06:37:27Z",
+        "completed_at": "2026-10-10T06:37:27Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 23,
+        "started_at": "2026-10-10T06:37:27Z",
+        "completed_at": "2026-10-10T06:37:29Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 9 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 24,
+        "started_at": "2026-10-10T06:37:29Z",
+        "completed_at": "2026-10-10T06:37:29Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 25,
+        "started_at": "2026-10-10T06:37:29Z",
+        "completed_at": "2026-10-10T06:37:31Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 10 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 26,
+        "started_at": "2026-10-10T06:37:31Z",
+        "completed_at": "2026-10-10T06:37:31Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 27,
+        "started_at": "2026-10-10T06:37:31Z",
+        "completed_at": "2026-10-10T06:37:32Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 11 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 28,
+        "started_at": "2026-10-10T06:37:32Z",
+        "completed_at": "2026-10-10T06:37:32Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 29,
+        "started_at": "2026-10-10T06:37:32Z",
+        "completed_at": "2026-10-10T06:37:34Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 12 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 30,
+        "started_at": "2026-10-10T06:37:34Z",
+        "completed_at": "2026-10-10T06:37:34Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 31,
+        "started_at": "2026-10-10T06:37:34Z",
+        "completed_at": "2026-10-10T06:37:35Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 13 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 32,
+        "started_at": "2026-10-10T06:37:35Z",
+        "completed_at": "2026-10-10T06:37:35Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 33,
+        "started_at": "2026-10-10T06:37:35Z",
+        "completed_at": "2026-10-10T06:37:37Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 14 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 34,
+        "started_at": "2026-10-10T06:37:37Z",
+        "completed_at": "2026-10-10T06:37:37Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 35,
+        "started_at": "2026-10-10T06:37:37Z",
+        "completed_at": "2026-10-10T06:37:38Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 15 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 36,
+        "started_at": "2026-10-10T06:37:38Z",
+        "completed_at": "2026-10-10T06:37:38Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 37,
+        "started_at": "2026-10-10T06:37:38Z",
+        "completed_at": "2026-10-10T06:37:40Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 16 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 38,
+        "started_at": "2026-10-10T06:37:40Z",
+        "completed_at": "2026-10-10T06:37:40Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 39,
+        "started_at": "2026-10-10T06:37:40Z",
+        "completed_at": "2026-10-10T06:37:41Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 17 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 40,
+        "started_at": "2026-10-10T06:37:41Z",
+        "completed_at": "2026-10-10T06:37:41Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 41,
+        "started_at": "2026-10-10T06:37:41Z",
+        "completed_at": "2026-10-10T06:37:43Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 18 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 42,
+        "started_at": "2026-10-10T06:37:43Z",
+        "completed_at": "2026-10-10T06:37:43Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 43,
+        "started_at": "2026-10-10T06:37:43Z",
+        "completed_at": "2026-10-10T06:37:45Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 19 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 44,
+        "started_at": "2026-10-10T06:37:45Z",
+        "completed_at": "2026-10-10T06:37:45Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 45,
+        "started_at": "2026-10-10T06:37:45Z",
+        "completed_at": "2026-10-10T06:37:46Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 20 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 46,
+        "started_at": "2026-10-10T06:37:46Z",
+        "completed_at": "2026-10-10T06:37:46Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 47,
+        "started_at": "2026-10-10T06:37:46Z",
+        "completed_at": "2026-10-10T06:37:48Z"
+      },
+      {
+        "name": "Preserve final or interrupted task diagnostic boundary",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 48,
+        "started_at": "2026-10-10T06:37:48Z",
+        "completed_at": "2026-10-10T06:37:48Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 49,
+        "started_at": "2026-10-10T06:37:48Z",
+        "completed_at": "2026-10-10T06:37:49Z"
+      },
+      {
+        "name": "Preserve the complete task shard separately from diagnostic prefixes",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 50,
+        "started_at": "2026-10-10T06:37:49Z",
+        "completed_at": "2026-10-10T06:37:52Z"
+      },
+      {
+        "name": "Return actual task driver and native outcome",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 51,
+        "started_at": "2026-10-10T06:37:52Z",
+        "completed_at": "2026-10-10T06:37:52Z"
+      },
+      {
+        "name": "Post Run actions/checkout@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 102,
+        "started_at": "2026-10-10T06:37:52Z",
+        "completed_at": "2026-10-10T06:37:52Z"
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 103,
+        "started_at": "2026-10-10T06:37:52Z",
+        "completed_at": "2026-10-10T06:37:52Z"
+      }
+    ],
+    "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/114139257203",
+    "labels": [
+      "ubuntu-24.04"
+    ],
+    "runner_id": 1000007322,
+    "runner_name": "GitHub Actions 1000007322",
+    "runner_group_id": 0,
+    "runner_group_name": "GitHub Actions"
+  },
+  "official_pagination_limit": "Individual exact-name artifact query; not a full population enumeration. Original input retains the actual lookup metadata.",
+  "original_validator_execution": {
+    "argv": [
+      "python3",
+      "-B",
+      "/workspace/scratch/bfccb8494ba0/round46-api-100k-original-intake/validate-one-original-shard.py",
+      "/workspace/scratch/bfccb8494ba0/round46-api-100k-original-intake/api-100000-0/input.json"
+    ],
+    "cwd": "/workspace/scratch/bfccb8494ba0",
+    "started_at_utc": "2026-10-10T06:43:19.218610+00:00",
+    "completed_at_utc": "2026-10-10T06:43:20.274794+00:00",
+    "wall_seconds": 1.0562015469986363,
+    "exit_code": 0,
+    "child_invocations": 1,
+    "retry_count": 0,
+    "original_validate_shard_calls": 1,
+    "validate_build_calls": 0,
+    "measurement_or_compile_calls": 0,
+    "custody_faults": [],
+    "stdout": {
+      "bytes": 135007,
+      "sha256": "18969efc8ef351d8e3e7e338969a7aab61ac5e1f2512648061e00b4303f841d4"
+    },
+    "stderr": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "successful_return_matches_captured_stdout": true,
+    "native_validator_outcome_distinct_from_custody": true
+  },
+  "original_hash_utility_calls": 2,
+  "validate_build_reexecuted": false,
+  "stdio_two_copies_return_receipt_equal": true,
+  "source_build_and_shard_before_after_equal": true,
+  "registry_sha256": "b0a22aefd5964c1287f5496abbd5b2b22ae8a4c485714cb826fee8a4477acd78",
+  "task_build_receipt_sha256": "5b3f02a114fd68355916a4d94ec3b2c65a5895371e2bbdd97d24077598e50aab",
+  "binary_blake3": "96e4c329cafb9f0a61928cdc3c64e003782547d3489e66cfa614fdbab2eb884d",
+  "binary_sha256": "7c5a98dceeca5e9f3ba1101b81be5338e5815df0eaa09253fe55c124b8b89fcf",
+  "observer": {
+    "inputs": {
+      ".github/workflows/p8-task-profile.yml": "747d85f5905fd8b81b62283af18f696843fa4e6b29849e4972acdeee998266d9",
+      "docs/roadmap/code-index-v2/P8-TASK-PROFILE-DESCRIPTIVE.md": "95d2739ecb8e6b78aff44399c4160a4fe38ce453ac9f51085cd23a4edf794c9b",
+      "docs/roadmap/code-index-v2/p8-profile-task-descriptive-v1.json": "e1e724201b6dbf98fbca378df613b3ccb5b877e58125dbc578238167d062dba6",
+      "scripts/p7_build_identity.py": "5003305105464936edf8f444fc0b93cd14a5d5f074dc650f16de2259e86f1cc5",
+      "scripts/p8_runner_capacity.py": "2e37954df30b153ad82b49a5841a977451288c1730d03bfd2d0d7a2ace412939",
+      "scripts/p8_scale_diagnostic_capture.py": "d8080720506a6d89294a26878710db228e9d763b48bcfe69c1e9fdb717260caf",
+      "scripts/p8_scale_matrix.py": "b2c195d35034544b11caf436da631404b177699e7fa7a50dd46338864b8184de",
+      "scripts/p8_task_profile_capture.py": "31c5e63eba46b7c2c73593941ec358c64cd0a3feeed82d49b1403b4c0c8c6662",
+      "scripts/p8_task_profile_matrix.py": "8a3b7bad9448f56263bad49da1df7def16bfddaacaa1769abe97e710c73e776c",
+      "scripts/tests/test_p8_task_profile_capture.py": "cb0dddb4fc3b3e46de86e89bbaad470893819139dfc833ec74fb6e60fbc58c86",
+      "scripts/tests/test_p8_task_profile_matrix.py": "2841885f08d176a366dfc7a0e5e155e3e7e0bee8690d38b467fc600e401ca3e8"
+    },
+    "manifest_sha256": "b9b318b52309ae2db8e3b182c23b0d8887416cb63efe21ae0cbfe51c0d764c09",
+    "source_commit": "f97c5068d056969705e8387ba1f37d83847f5bee"
+  },
+  "plan": {
+    "batch_sizes": [
+      1,
+      10,
+      100,
+      1000
+    ],
+    "capacity_profile": "scale_capacity_v1",
+    "deadline_ms": 18000000,
+    "dirty_budget": 200,
+    "fanouts": [
+      1,
+      4,
+      16,
+      64,
+      128
+    ],
+    "files": [
+      100000
+    ],
+    "max_output_bytes": 536870912,
+    "max_resume_builds": 1024,
+    "profile": "release",
+    "profile_study": {
+      "fanout": null,
+      "mutation_profile": "api",
+      "run_attempt": 1,
+      "run_id": "38026411200"
+    },
+    "repetitions": 1,
+    "schema_version": 1,
+    "seed": 12648430,
+    "shard": {
+      "count": 1,
+      "index": 0
+    },
+    "skip_fanout": true,
+    "stage_scope": "profile_task_descriptive_v1"
+  },
+  "native_report": {
+    "deadline_scope": "entire child lifetime and stderr drain, including generation, indexing, parity and evidence; parent polling interval 10ms",
+    "executed_repetition_range": {
+      "end": 1,
+      "start": 0
+    },
+    "exit_code": 0,
+    "fixture_cleanup": {
+      "elapsed_ms": 0,
+      "error": null
+    },
+    "full_100k_certification": "not_run",
+    "max_output_bytes": 536870912,
+    "plan_digest": "ab0667b3e9e652203d5b57c22a08ec99ff7c8c20355295d840833fee13b75601",
+    "profile": "release",
+    "profile_temporary_environment": {
+      "parent_root": "/home/runner/work/_temp/p8-task-cell-api-100000/shard",
+      "worker_root": "/home/runner/work/_temp/p8-task-cell-api-100000/shard/.tmpYjAFNv"
+    },
+    "raw_digest": "4c116f037ba486a8980c87f2f61a3fb44ebf4ddf77f207519b57c7a834fc238d",
+    "registered_repetitions": 1,
+    "release_certification": "not_run",
+    "release_prerequisites": "P7-020/P8-001/P8-004 and source/binary release lock are separate gates",
+    "schema_version": 1,
+    "shard_only": true,
+    "status": "measurement_complete",
+    "stderr_complete": true,
+    "summary": {
+      "executed_repetition_range": {
+        "end": 1,
+        "start": 0
+      },
+      "full_100k_certification": "not_run",
+      "groups": [
+        {
+          "failed_or_not_compared": 0,
+          "first_build_incomplete_samples": 0,
+          "group": "scale-100000/api",
+          "incremental_engine_elapsed_ms_sum_across_resumes": {
+            "max": 1259137,
+            "mean": 1259137.0,
+            "min": 1259137,
+            "n": 1
+          },
+          "outer_incremental_us_including_evidence": {
+            "max": 1267942397,
+            "mean": 1267942397.0,
+            "min": 1267942397,
+            "n": 1
+          },
+          "passed": 1,
+          "samples": 1,
+          "whole_fanout_fixture_replay_us": {
+            "max": null,
+            "mean": null,
+            "min": null,
+            "n": 0
+          }
+        },
+        {
+          "failed_or_not_compared": 0,
+          "first_build_incomplete_samples": 0,
+          "group": "scale-100000/cold",
+          "incremental_engine_elapsed_ms_sum_across_resumes": {
+            "max": null,
+            "mean": null,
+            "min": null,
+            "n": 0
+          },
+          "outer_incremental_us_including_evidence": {
+            "max": null,
+            "mean": null,
+            "min": null,
+            "n": 0
+          },
+          "passed": 1,
+          "samples": 1,
+          "whole_fanout_fixture_replay_us": {
+            "max": null,
+            "mean": null,
+            "min": null,
+            "n": 0
+          }
+        }
+      ],
+      "not_selected_scales": [
+        1000,
+        5000,
+        10000,
+        50000
+      ],
+      "oracle_row_limit_unchanged": 100000,
+      "passed": true,
+      "prerequisite_gates": "not_evaluated",
+      "raw_bytes": 14500255,
+      "registered_repetitions": 1,
+      "release_certification": "not_run",
+      "sample_count": 2,
+      "schema_version": 1,
+      "shard_only": true,
+      "stable_tail_latency": "not_established",
+      "stage_scope": "profile_task_descriptive_v1"
+    },
+    "wall_ms": 4925307,
+    "worker_binary_digest_after": "96e4c329cafb9f0a61928cdc3c64e003782547d3489e66cfa614fdbab2eb884d",
+    "worker_binary_digest_before": "96e4c329cafb9f0a61928cdc3c64e003782547d3489e66cfa614fdbab2eb884d",
+    "worker_binary_unchanged": true,
+    "worker_exit_code": 0,
+    "worker_pid": 2440
+  },
+  "engine": {
+    "arch": "x86_64",
+    "binary_digest": "96e4c329cafb9f0a61928cdc3c64e003782547d3489e66cfa614fdbab2eb884d",
+    "binary_source_binding": "recorded build receipt required; path/HEAD alone do not prove binding",
+    "cargo_lock_digest": "80eec6d3576cbaea45eda03729087f233cdd945f87aecb98e3b5e8f8755cd476",
+    "cpu_parallelism": 4,
+    "dirty_observed": "?? scripts/__pycache__/p7_build_identity.cpython-312.pyc\n?? scripts/__pycache__/p8_scale_diagnostic_capture.cpython-312.pyc\n?? scripts/__pycache__/p8_scale_matrix.cpython-312.pyc",
+    "engine_head_observed": "f97c5068d056969705e8387ba1f37d83847f5bee",
+    "eval_debug_assertions": false,
+    "eval_version": "1.0.0",
+    "hardware": null,
+    "os": "linux",
+    "rustc": "rustc 1.95.0 (59807616e 2026-04-14)",
+    "rustflags": "",
+    "sdkroot": null,
+    "source_files_digest": "6902077f32c11c48f8ab322369c6844dad8173bba21ed66c8476fab7bbed6058",
+    "tracked_diff_digest": "af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262"
+  },
+  "environment": {
+    "cpu_count": 4,
+    "cpu_model": "AMD EPYC 7763 64-Core Processor",
+    "host": "runnervmmprz5",
+    "machine": "x86_64",
+    "release": "6.17.0-1022-azure",
+    "rustflags": "",
+    "system": "Linux"
+  },
+  "profile_environment": {
+    "runtime_environment": {
+      "CARGO_ENCODED_RUSTFLAGS": null,
+      "RUSTFLAGS": "",
+      "TEMP": "/home/runner/work/_temp/p8-task-cell-api-100000/shard/.tmpYjAFNv",
+      "TMP": "/home/runner/work/_temp/p8-task-cell-api-100000/shard/.tmpYjAFNv",
+      "TMPDIR": "/home/runner/work/_temp/p8-task-cell-api-100000/shard/.tmpYjAFNv"
+    },
+    "scope": "observed inputs; no cache, capacity or engine-setting override",
+    "seed_cache_max_symbols": {
+      "effective": 500000,
+      "parsed_usize": null,
+      "raw": null,
+      "read_status": "absent"
+    }
+  },
+  "measurement_environment": {
+    "CARGO_ENCODED_RUSTFLAGS": null,
+    "CODECORTEX_SEED_CACHE_MAX_SYMBOLS": null,
+    "RUSTFLAGS": "",
+    "TEMP": "/home/runner/work/_temp/p8-task-cell-api-100000/shard",
+    "TMP": "/home/runner/work/_temp/p8-task-cell-api-100000/shard",
+    "TMPDIR": "/home/runner/work/_temp/p8-task-cell-api-100000/shard"
+  },
+  "resource_snapshots": {
+    "scale-100000/repetition-0/cold_incremental": {
+      "process_snapshot": {
+        "cpu_system_ns": 58090000000,
+        "cpu_system_raw": 5809,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 333710000000,
+        "cpu_user_raw": 33371,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 8369897472,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 15,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/cold_full_control": {
+      "process_snapshot": {
+        "cpu_system_ns": 106970000000,
+        "cpu_system_raw": 10697,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 702610000000,
+        "cpu_user_raw": 70261,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 8099549184,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 15,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-0": {
+      "process_snapshot": {
+        "cpu_system_ns": 223770000000,
+        "cpu_system_raw": 22377,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 951540000000,
+        "cpu_user_raw": 95154,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 8151793664,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 15,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-1": {
+      "process_snapshot": {
+        "cpu_system_ns": 225230000000,
+        "cpu_system_raw": 22523,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 956740000000,
+        "cpu_user_raw": 95674,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 7252267008,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-2": {
+      "process_snapshot": {
+        "cpu_system_ns": 226460000000,
+        "cpu_system_raw": 22646,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 961720000000,
+        "cpu_user_raw": 96172,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5756350464,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-3": {
+      "process_snapshot": {
+        "cpu_system_ns": 227610000000,
+        "cpu_system_raw": 22761,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 966890000000,
+        "cpu_user_raw": 96689,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5759770624,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-4": {
+      "process_snapshot": {
+        "cpu_system_ns": 228760000000,
+        "cpu_system_raw": 22876,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 971900000000,
+        "cpu_user_raw": 97190,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5772894208,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-5": {
+      "process_snapshot": {
+        "cpu_system_ns": 229950000000,
+        "cpu_system_raw": 22995,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 976980000000,
+        "cpu_user_raw": 97698,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5774630912,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-6": {
+      "process_snapshot": {
+        "cpu_system_ns": 231030000000,
+        "cpu_system_raw": 23103,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 981950000000,
+        "cpu_user_raw": 98195,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5775822848,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-7": {
+      "process_snapshot": {
+        "cpu_system_ns": 232900000000,
+        "cpu_system_raw": 23290,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 992840000000,
+        "cpu_user_raw": 99284,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5776900096,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 15,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-8": {
+      "process_snapshot": {
+        "cpu_system_ns": 234070000000,
+        "cpu_system_raw": 23407,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 998020000000,
+        "cpu_user_raw": 99802,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5777498112,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-9": {
+      "process_snapshot": {
+        "cpu_system_ns": 235170000000,
+        "cpu_system_raw": 23517,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1003000000000,
+        "cpu_user_raw": 100300,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5780701184,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-10": {
+      "process_snapshot": {
+        "cpu_system_ns": 236310000000,
+        "cpu_system_raw": 23631,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1007990000000,
+        "cpu_user_raw": 100799,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5780873216,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-11": {
+      "process_snapshot": {
+        "cpu_system_ns": 237480000000,
+        "cpu_system_raw": 23748,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1012810000000,
+        "cpu_user_raw": 101281,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5781315584,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-12": {
+      "process_snapshot": {
+        "cpu_system_ns": 238640000000,
+        "cpu_system_raw": 23864,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1017860000000,
+        "cpu_user_raw": 101786,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5781995520,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-13": {
+      "process_snapshot": {
+        "cpu_system_ns": 239790000000,
+        "cpu_system_raw": 23979,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1022780000000,
+        "cpu_user_raw": 102278,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5782110208,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-14": {
+      "process_snapshot": {
+        "cpu_system_ns": 240920000000,
+        "cpu_system_raw": 24092,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1027960000000,
+        "cpu_user_raw": 102796,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5782736896,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-15": {
+      "process_snapshot": {
+        "cpu_system_ns": 242040000000,
+        "cpu_system_raw": 24204,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1032960000000,
+        "cpu_user_raw": 103296,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5783183360,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-16": {
+      "process_snapshot": {
+        "cpu_system_ns": 243220000000,
+        "cpu_system_raw": 24322,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1038230000000,
+        "cpu_user_raw": 103823,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5783490560,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-17": {
+      "process_snapshot": {
+        "cpu_system_ns": 244430000000,
+        "cpu_system_raw": 24443,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1043230000000,
+        "cpu_user_raw": 104323,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5783818240,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-18": {
+      "process_snapshot": {
+        "cpu_system_ns": 245580000000,
+        "cpu_system_raw": 24558,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1048540000000,
+        "cpu_user_raw": 104854,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5784215552,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-19": {
+      "process_snapshot": {
+        "cpu_system_ns": 247490000000,
+        "cpu_system_raw": 24749,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1059810000000,
+        "cpu_user_raw": 105981,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5784510464,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 15,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-20": {
+      "process_snapshot": {
+        "cpu_system_ns": 248760000000,
+        "cpu_system_raw": 24876,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1065010000000,
+        "cpu_user_raw": 106501,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5915254784,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-21": {
+      "process_snapshot": {
+        "cpu_system_ns": 249920000000,
+        "cpu_system_raw": 24992,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1070230000000,
+        "cpu_user_raw": 107023,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5915529216,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-22": {
+      "process_snapshot": {
+        "cpu_system_ns": 251120000000,
+        "cpu_system_raw": 25112,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1075150000000,
+        "cpu_user_raw": 107515,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5916049408,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-23": {
+      "process_snapshot": {
+        "cpu_system_ns": 252290000000,
+        "cpu_system_raw": 25229,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1080370000000,
+        "cpu_user_raw": 108037,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5916348416,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-24": {
+      "process_snapshot": {
+        "cpu_system_ns": 253470000000,
+        "cpu_system_raw": 25347,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1085330000000,
+        "cpu_user_raw": 108533,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5916356608,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-25": {
+      "process_snapshot": {
+        "cpu_system_ns": 254640000000,
+        "cpu_system_raw": 25464,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1090530000000,
+        "cpu_user_raw": 109053,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5916360704,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-26": {
+      "process_snapshot": {
+        "cpu_system_ns": 255790000000,
+        "cpu_system_raw": 25579,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1095660000000,
+        "cpu_user_raw": 109566,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5916774400,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-27": {
+      "process_snapshot": {
+        "cpu_system_ns": 257700000000,
+        "cpu_system_raw": 25770,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1107080000000,
+        "cpu_user_raw": 110708,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5917007872,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 15,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-28": {
+      "process_snapshot": {
+        "cpu_system_ns": 258920000000,
+        "cpu_system_raw": 25892,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1112300000000,
+        "cpu_user_raw": 111230,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5923934208,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-29": {
+      "process_snapshot": {
+        "cpu_system_ns": 260060000000,
+        "cpu_system_raw": 26006,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1117340000000,
+        "cpu_user_raw": 111734,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5924249600,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-30": {
+      "process_snapshot": {
+        "cpu_system_ns": 261220000000,
+        "cpu_system_raw": 26122,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1122480000000,
+        "cpu_user_raw": 112248,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5924241408,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-31": {
+      "process_snapshot": {
+        "cpu_system_ns": 262420000000,
+        "cpu_system_raw": 26242,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1127600000000,
+        "cpu_user_raw": 112760,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5924507648,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-32": {
+      "process_snapshot": {
+        "cpu_system_ns": 263570000000,
+        "cpu_system_raw": 26357,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1132860000000,
+        "cpu_user_raw": 113286,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5924696064,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-33": {
+      "process_snapshot": {
+        "cpu_system_ns": 264750000000,
+        "cpu_system_raw": 26475,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1137840000000,
+        "cpu_user_raw": 113784,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5924970496,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-34": {
+      "process_snapshot": {
+        "cpu_system_ns": 265930000000,
+        "cpu_system_raw": 26593,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1143090000000,
+        "cpu_user_raw": 114309,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5925228544,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-35": {
+      "process_snapshot": {
+        "cpu_system_ns": 267810000000,
+        "cpu_system_raw": 26781,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1154190000000,
+        "cpu_user_raw": 115419,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5925576704,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 15,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-36": {
+      "process_snapshot": {
+        "cpu_system_ns": 269000000000,
+        "cpu_system_raw": 26900,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1159320000000,
+        "cpu_user_raw": 115932,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5927268352,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-37": {
+      "process_snapshot": {
+        "cpu_system_ns": 270160000000,
+        "cpu_system_raw": 27016,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1164440000000,
+        "cpu_user_raw": 116444,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5927456768,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-38": {
+      "process_snapshot": {
+        "cpu_system_ns": 271340000000,
+        "cpu_system_raw": 27134,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1169190000000,
+        "cpu_user_raw": 116919,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5927628800,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-39": {
+      "process_snapshot": {
+        "cpu_system_ns": 272480000000,
+        "cpu_system_raw": 27248,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1174330000000,
+        "cpu_user_raw": 117433,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5927751680,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-40": {
+      "process_snapshot": {
+        "cpu_system_ns": 273620000000,
+        "cpu_system_raw": 27362,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1179510000000,
+        "cpu_user_raw": 117951,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5928083456,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-41": {
+      "process_snapshot": {
+        "cpu_system_ns": 274770000000,
+        "cpu_system_raw": 27477,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1185170000000,
+        "cpu_user_raw": 118517,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5928296448,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-42": {
+      "process_snapshot": {
+        "cpu_system_ns": 275980000000,
+        "cpu_system_raw": 27598,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1190400000000,
+        "cpu_user_raw": 119040,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5928509440,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-43": {
+      "process_snapshot": {
+        "cpu_system_ns": 277900000000,
+        "cpu_system_raw": 27790,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1202740000000,
+        "cpu_user_raw": 120274,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5928665088,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 15,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-44": {
+      "process_snapshot": {
+        "cpu_system_ns": 279080000000,
+        "cpu_system_raw": 27908,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1208280000000,
+        "cpu_user_raw": 120828,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5931085824,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-45": {
+      "process_snapshot": {
+        "cpu_system_ns": 280230000000,
+        "cpu_system_raw": 28023,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1213640000000,
+        "cpu_user_raw": 121364,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5931233280,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-46": {
+      "process_snapshot": {
+        "cpu_system_ns": 281380000000,
+        "cpu_system_raw": 28138,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1219110000000,
+        "cpu_user_raw": 121911,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5931393024,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-47": {
+      "process_snapshot": {
+        "cpu_system_ns": 282550000000,
+        "cpu_system_raw": 28255,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1224350000000,
+        "cpu_user_raw": 122435,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5931548672,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-48": {
+      "process_snapshot": {
+        "cpu_system_ns": 283650000000,
+        "cpu_system_raw": 28365,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1229930000000,
+        "cpu_user_raw": 122993,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5931888640,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-49": {
+      "process_snapshot": {
+        "cpu_system_ns": 284820000000,
+        "cpu_system_raw": 28482,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1235320000000,
+        "cpu_user_raw": 123532,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5932019712,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-50": {
+      "process_snapshot": {
+        "cpu_system_ns": 286000000000,
+        "cpu_system_raw": 28600,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1240790000000,
+        "cpu_user_raw": 124079,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5932314624,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-51": {
+      "process_snapshot": {
+        "cpu_system_ns": 287920000000,
+        "cpu_system_raw": 28792,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1252810000000,
+        "cpu_user_raw": 125281,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5932531712,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 15,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-52": {
+      "process_snapshot": {
+        "cpu_system_ns": 289110000000,
+        "cpu_system_raw": 28911,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1258230000000,
+        "cpu_user_raw": 125823,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5932552192,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-53": {
+      "process_snapshot": {
+        "cpu_system_ns": 290220000000,
+        "cpu_system_raw": 29022,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1263820000000,
+        "cpu_user_raw": 126382,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5932572672,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-54": {
+      "process_snapshot": {
+        "cpu_system_ns": 291320000000,
+        "cpu_system_raw": 29132,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1269290000000,
+        "cpu_user_raw": 126929,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5932765184,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-55": {
+      "process_snapshot": {
+        "cpu_system_ns": 293210000000,
+        "cpu_system_raw": 29321,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1281890000000,
+        "cpu_user_raw": 128189,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5933006848,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 15,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-56": {
+      "process_snapshot": {
+        "cpu_system_ns": 294380000000,
+        "cpu_system_raw": 29438,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1287540000000,
+        "cpu_user_raw": 128754,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5933322240,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-57": {
+      "process_snapshot": {
+        "cpu_system_ns": 295520000000,
+        "cpu_system_raw": 29552,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1292940000000,
+        "cpu_user_raw": 129294,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5933649920,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-58": {
+      "process_snapshot": {
+        "cpu_system_ns": 296650000000,
+        "cpu_system_raw": 29665,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1298540000000,
+        "cpu_user_raw": 129854,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5933903872,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-59": {
+      "process_snapshot": {
+        "cpu_system_ns": 297780000000,
+        "cpu_system_raw": 29778,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1303900000000,
+        "cpu_user_raw": 130390,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5933895680,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-60": {
+      "process_snapshot": {
+        "cpu_system_ns": 298910000000,
+        "cpu_system_raw": 29891,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1309560000000,
+        "cpu_user_raw": 130956,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5934157824,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-61": {
+      "process_snapshot": {
+        "cpu_system_ns": 300020000000,
+        "cpu_system_raw": 30002,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1314980000000,
+        "cpu_user_raw": 131498,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5934432256,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-62": {
+      "process_snapshot": {
+        "cpu_system_ns": 301950000000,
+        "cpu_system_raw": 30195,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1327630000000,
+        "cpu_user_raw": 132763,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5934702592,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 15,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-63": {
+      "process_snapshot": {
+        "cpu_system_ns": 303150000000,
+        "cpu_system_raw": 30315,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1333280000000,
+        "cpu_user_raw": 133328,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5934866432,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-64": {
+      "process_snapshot": {
+        "cpu_system_ns": 304280000000,
+        "cpu_system_raw": 30428,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1338820000000,
+        "cpu_user_raw": 133882,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5935034368,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-65": {
+      "process_snapshot": {
+        "cpu_system_ns": 305430000000,
+        "cpu_system_raw": 30543,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1344380000000,
+        "cpu_user_raw": 134438,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5935267840,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-66": {
+      "process_snapshot": {
+        "cpu_system_ns": 306580000000,
+        "cpu_system_raw": 30658,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1349750000000,
+        "cpu_user_raw": 134975,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5935538176,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-67": {
+      "process_snapshot": {
+        "cpu_system_ns": 307710000000,
+        "cpu_system_raw": 30771,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1355300000000,
+        "cpu_user_raw": 135530,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5935669248,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-68": {
+      "process_snapshot": {
+        "cpu_system_ns": 308870000000,
+        "cpu_system_raw": 30887,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1360650000000,
+        "cpu_user_raw": 136065,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5935886336,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-69": {
+      "process_snapshot": {
+        "cpu_system_ns": 310800000000,
+        "cpu_system_raw": 31080,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1373080000000,
+        "cpu_user_raw": 137308,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5936156672,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 15,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-70": {
+      "process_snapshot": {
+        "cpu_system_ns": 312060000000,
+        "cpu_system_raw": 31206,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1378580000000,
+        "cpu_user_raw": 137858,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5947277312,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-71": {
+      "process_snapshot": {
+        "cpu_system_ns": 313240000000,
+        "cpu_system_raw": 31324,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1383860000000,
+        "cpu_user_raw": 138386,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5947432960,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-72": {
+      "process_snapshot": {
+        "cpu_system_ns": 314440000000,
+        "cpu_system_raw": 31444,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1389360000000,
+        "cpu_user_raw": 138936,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5947678720,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-73": {
+      "process_snapshot": {
+        "cpu_system_ns": 315580000000,
+        "cpu_system_raw": 31558,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1394750000000,
+        "cpu_user_raw": 139475,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5947940864,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-74": {
+      "process_snapshot": {
+        "cpu_system_ns": 316740000000,
+        "cpu_system_raw": 31674,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1400320000000,
+        "cpu_user_raw": 140032,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5948125184,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-75": {
+      "process_snapshot": {
+        "cpu_system_ns": 317950000000,
+        "cpu_system_raw": 31795,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1405630000000,
+        "cpu_user_raw": 140563,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5948280832,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-76": {
+      "process_snapshot": {
+        "cpu_system_ns": 319880000000,
+        "cpu_system_raw": 31988,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1417980000000,
+        "cpu_user_raw": 141798,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5948592128,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 15,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-77": {
+      "process_snapshot": {
+        "cpu_system_ns": 321050000000,
+        "cpu_system_raw": 32105,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1423550000000,
+        "cpu_user_raw": 142355,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5949616128,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-78": {
+      "process_snapshot": {
+        "cpu_system_ns": 322150000000,
+        "cpu_system_raw": 32215,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1428900000000,
+        "cpu_user_raw": 142890,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5949829120,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-79": {
+      "process_snapshot": {
+        "cpu_system_ns": 323270000000,
+        "cpu_system_raw": 32327,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1434430000000,
+        "cpu_user_raw": 143443,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5949820928,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-80": {
+      "process_snapshot": {
+        "cpu_system_ns": 324460000000,
+        "cpu_system_raw": 32446,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1439800000000,
+        "cpu_user_raw": 143980,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5950169088,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-81": {
+      "process_snapshot": {
+        "cpu_system_ns": 325600000000,
+        "cpu_system_raw": 32560,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1445340000000,
+        "cpu_user_raw": 144534,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5950160896,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-82": {
+      "process_snapshot": {
+        "cpu_system_ns": 326740000000,
+        "cpu_system_raw": 32674,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1450680000000,
+        "cpu_user_raw": 145068,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5950468096,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-83": {
+      "process_snapshot": {
+        "cpu_system_ns": 328710000000,
+        "cpu_system_raw": 32871,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1462840000000,
+        "cpu_user_raw": 146284,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5950787584,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 15,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-84": {
+      "process_snapshot": {
+        "cpu_system_ns": 329900000000,
+        "cpu_system_raw": 32990,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1468410000000,
+        "cpu_user_raw": 146841,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5950943232,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-85": {
+      "process_snapshot": {
+        "cpu_system_ns": 331050000000,
+        "cpu_system_raw": 33105,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1473720000000,
+        "cpu_user_raw": 147372,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5951090688,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-86": {
+      "process_snapshot": {
+        "cpu_system_ns": 332240000000,
+        "cpu_system_raw": 33224,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1479300000000,
+        "cpu_user_raw": 147930,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5951082496,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-87": {
+      "process_snapshot": {
+        "cpu_system_ns": 333440000000,
+        "cpu_system_raw": 33344,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1484490000000,
+        "cpu_user_raw": 148449,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5951225856,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-88": {
+      "process_snapshot": {
+        "cpu_system_ns": 334580000000,
+        "cpu_system_raw": 33458,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1489970000000,
+        "cpu_user_raw": 148997,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5951242240,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-89": {
+      "process_snapshot": {
+        "cpu_system_ns": 335750000000,
+        "cpu_system_raw": 33575,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1495150000000,
+        "cpu_user_raw": 149515,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5951488000,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-90": {
+      "process_snapshot": {
+        "cpu_system_ns": 337720000000,
+        "cpu_system_raw": 33772,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1506720000000,
+        "cpu_user_raw": 150672,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5951696896,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 15,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-91": {
+      "process_snapshot": {
+        "cpu_system_ns": 338860000000,
+        "cpu_system_raw": 33886,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1512170000000,
+        "cpu_user_raw": 151217,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5951844352,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-92": {
+      "process_snapshot": {
+        "cpu_system_ns": 340010000000,
+        "cpu_system_raw": 34001,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1517370000000,
+        "cpu_user_raw": 151737,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5952299008,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-93": {
+      "process_snapshot": {
+        "cpu_system_ns": 341220000000,
+        "cpu_system_raw": 34122,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1522650000000,
+        "cpu_user_raw": 152265,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5952417792,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-94": {
+      "process_snapshot": {
+        "cpu_system_ns": 342400000000,
+        "cpu_system_raw": 34240,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1527780000000,
+        "cpu_user_raw": 152778,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5952409600,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-95": {
+      "process_snapshot": {
+        "cpu_system_ns": 343560000000,
+        "cpu_system_raw": 34356,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1533160000000,
+        "cpu_user_raw": 153316,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5953024000,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-96": {
+      "process_snapshot": {
+        "cpu_system_ns": 344720000000,
+        "cpu_system_raw": 34472,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1538270000000,
+        "cpu_user_raw": 153827,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5953191936,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-97": {
+      "process_snapshot": {
+        "cpu_system_ns": 346660000000,
+        "cpu_system_raw": 34666,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1550220000000,
+        "cpu_user_raw": 155022,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5953363968,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 15,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-98": {
+      "process_snapshot": {
+        "cpu_system_ns": 347780000000,
+        "cpu_system_raw": 34778,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1555760000000,
+        "cpu_user_raw": 155576,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5953949696,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-99": {
+      "process_snapshot": {
+        "cpu_system_ns": 349030000000,
+        "cpu_system_raw": 34903,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1560880000000,
+        "cpu_user_raw": 156088,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5953994752,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-100": {
+      "process_snapshot": {
+        "cpu_system_ns": 350180000000,
+        "cpu_system_raw": 35018,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1566180000000,
+        "cpu_user_raw": 156618,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5954260992,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-101": {
+      "process_snapshot": {
+        "cpu_system_ns": 351340000000,
+        "cpu_system_raw": 35134,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1571370000000,
+        "cpu_user_raw": 157137,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5954424832,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-102": {
+      "process_snapshot": {
+        "cpu_system_ns": 352520000000,
+        "cpu_system_raw": 35252,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1576860000000,
+        "cpu_user_raw": 157686,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5954617344,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-103": {
+      "process_snapshot": {
+        "cpu_system_ns": 353670000000,
+        "cpu_system_raw": 35367,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1582020000000,
+        "cpu_user_raw": 158202,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5954760704,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-104": {
+      "process_snapshot": {
+        "cpu_system_ns": 355570000000,
+        "cpu_system_raw": 35557,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1593800000000,
+        "cpu_user_raw": 159380,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5955108864,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 15,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-105": {
+      "process_snapshot": {
+        "cpu_system_ns": 356780000000,
+        "cpu_system_raw": 35678,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1599140000000,
+        "cpu_user_raw": 159914,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5955600384,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-106": {
+      "process_snapshot": {
+        "cpu_system_ns": 357960000000,
+        "cpu_system_raw": 35796,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1604070000000,
+        "cpu_user_raw": 160407,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5955817472,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-107": {
+      "process_snapshot": {
+        "cpu_system_ns": 359170000000,
+        "cpu_system_raw": 35917,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1609230000000,
+        "cpu_user_raw": 160923,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5955805184,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-108": {
+      "process_snapshot": {
+        "cpu_system_ns": 360400000000,
+        "cpu_system_raw": 36040,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1614190000000,
+        "cpu_user_raw": 161419,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5955846144,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-109": {
+      "process_snapshot": {
+        "cpu_system_ns": 361580000000,
+        "cpu_system_raw": 36158,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1619770000000,
+        "cpu_user_raw": 161977,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5956124672,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-110": {
+      "process_snapshot": {
+        "cpu_system_ns": 362770000000,
+        "cpu_system_raw": 36277,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1624910000000,
+        "cpu_user_raw": 162491,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5956284416,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-111": {
+      "process_snapshot": {
+        "cpu_system_ns": 364700000000,
+        "cpu_system_raw": 36470,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1637400000000,
+        "cpu_user_raw": 163740,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5956452352,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 15,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-112": {
+      "process_snapshot": {
+        "cpu_system_ns": 365910000000,
+        "cpu_system_raw": 36591,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1643110000000,
+        "cpu_user_raw": 164311,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5956505600,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-113": {
+      "process_snapshot": {
+        "cpu_system_ns": 367090000000,
+        "cpu_system_raw": 36709,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1648310000000,
+        "cpu_user_raw": 164831,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5956542464,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-114": {
+      "process_snapshot": {
+        "cpu_system_ns": 368280000000,
+        "cpu_system_raw": 36828,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1653880000000,
+        "cpu_user_raw": 165388,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5956956160,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-115": {
+      "process_snapshot": {
+        "cpu_system_ns": 369450000000,
+        "cpu_system_raw": 36945,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1659140000000,
+        "cpu_user_raw": 165914,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5957345280,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-116": {
+      "process_snapshot": {
+        "cpu_system_ns": 370690000000,
+        "cpu_system_raw": 37069,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1664570000000,
+        "cpu_user_raw": 166457,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5957599232,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-117": {
+      "process_snapshot": {
+        "cpu_system_ns": 371880000000,
+        "cpu_system_raw": 37188,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1669640000000,
+        "cpu_user_raw": 166964,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5957591040,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-118": {
+      "process_snapshot": {
+        "cpu_system_ns": 373080000000,
+        "cpu_system_raw": 37308,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1675060000000,
+        "cpu_user_raw": 167506,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5958029312,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-119": {
+      "process_snapshot": {
+        "cpu_system_ns": 375000000000,
+        "cpu_system_raw": 37500,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1685840000000,
+        "cpu_user_raw": 168584,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5958213632,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 15,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-120": {
+      "process_snapshot": {
+        "cpu_system_ns": 376230000000,
+        "cpu_system_raw": 37623,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1690900000000,
+        "cpu_user_raw": 169090,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5960667136,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-121": {
+      "process_snapshot": {
+        "cpu_system_ns": 377370000000,
+        "cpu_system_raw": 37737,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1696290000000,
+        "cpu_user_raw": 169629,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5960699904,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-122": {
+      "process_snapshot": {
+        "cpu_system_ns": 378580000000,
+        "cpu_system_raw": 37858,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1701150000000,
+        "cpu_user_raw": 170115,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5960876032,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-123": {
+      "process_snapshot": {
+        "cpu_system_ns": 379740000000,
+        "cpu_system_raw": 37974,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1706310000000,
+        "cpu_user_raw": 170631,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5961015296,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-124": {
+      "process_snapshot": {
+        "cpu_system_ns": 381020000000,
+        "cpu_system_raw": 38102,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1711240000000,
+        "cpu_user_raw": 171124,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5961216000,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-125": {
+      "process_snapshot": {
+        "cpu_system_ns": 382250000000,
+        "cpu_system_raw": 38225,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1716520000000,
+        "cpu_user_raw": 171652,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5961347072,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-126": {
+      "process_snapshot": {
+        "cpu_system_ns": 384200000000,
+        "cpu_system_raw": 38420,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1727650000000,
+        "cpu_user_raw": 172765,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5961498624,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 15,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-127": {
+      "process_snapshot": {
+        "cpu_system_ns": 385470000000,
+        "cpu_system_raw": 38547,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1732780000000,
+        "cpu_user_raw": 173278,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5966909440,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-128": {
+      "process_snapshot": {
+        "cpu_system_ns": 386570000000,
+        "cpu_system_raw": 38657,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1738360000000,
+        "cpu_user_raw": 173836,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5967089664,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-129": {
+      "process_snapshot": {
+        "cpu_system_ns": 387730000000,
+        "cpu_system_raw": 38773,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1743460000000,
+        "cpu_user_raw": 174346,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5967237120,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-130": {
+      "process_snapshot": {
+        "cpu_system_ns": 388930000000,
+        "cpu_system_raw": 38893,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1748710000000,
+        "cpu_user_raw": 174871,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5968420864,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-131": {
+      "process_snapshot": {
+        "cpu_system_ns": 390090000000,
+        "cpu_system_raw": 39009,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1753390000000,
+        "cpu_user_raw": 175339,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5968572416,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-132": {
+      "process_snapshot": {
+        "cpu_system_ns": 391250000000,
+        "cpu_system_raw": 39125,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1758560000000,
+        "cpu_user_raw": 175856,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5968867328,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-133": {
+      "process_snapshot": {
+        "cpu_system_ns": 393170000000,
+        "cpu_system_raw": 39317,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1768890000000,
+        "cpu_user_raw": 176889,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5969018880,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 15,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-134": {
+      "process_snapshot": {
+        "cpu_system_ns": 394350000000,
+        "cpu_system_raw": 39435,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1773750000000,
+        "cpu_user_raw": 177375,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5969002496,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-135": {
+      "process_snapshot": {
+        "cpu_system_ns": 395490000000,
+        "cpu_system_raw": 39549,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1778970000000,
+        "cpu_user_raw": 177897,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5969186816,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-136": {
+      "process_snapshot": {
+        "cpu_system_ns": 396630000000,
+        "cpu_system_raw": 39663,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1783980000000,
+        "cpu_user_raw": 178398,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5969326080,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-137": {
+      "process_snapshot": {
+        "cpu_system_ns": 397810000000,
+        "cpu_system_raw": 39781,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1789160000000,
+        "cpu_user_raw": 178916,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5969321984,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-138": {
+      "process_snapshot": {
+        "cpu_system_ns": 398980000000,
+        "cpu_system_raw": 39898,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1794030000000,
+        "cpu_user_raw": 179403,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5969326080,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-139": {
+      "process_snapshot": {
+        "cpu_system_ns": 400190000000,
+        "cpu_system_raw": 40019,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1799160000000,
+        "cpu_user_raw": 179916,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5969334272,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-140": {
+      "process_snapshot": {
+        "cpu_system_ns": 402110000000,
+        "cpu_system_raw": 40211,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1809420000000,
+        "cpu_user_raw": 180942,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5969412096,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 15,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-141": {
+      "process_snapshot": {
+        "cpu_system_ns": 403290000000,
+        "cpu_system_raw": 40329,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1814350000000,
+        "cpu_user_raw": 181435,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5971148800,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-142": {
+      "process_snapshot": {
+        "cpu_system_ns": 404430000000,
+        "cpu_system_raw": 40443,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1819500000000,
+        "cpu_user_raw": 181950,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5971271680,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-143": {
+      "process_snapshot": {
+        "cpu_system_ns": 405590000000,
+        "cpu_system_raw": 40559,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1824300000000,
+        "cpu_user_raw": 182430,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5971312640,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-144": {
+      "process_snapshot": {
+        "cpu_system_ns": 406760000000,
+        "cpu_system_raw": 40676,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1829510000000,
+        "cpu_user_raw": 182951,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5971267584,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-145": {
+      "process_snapshot": {
+        "cpu_system_ns": 407950000000,
+        "cpu_system_raw": 40795,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1834310000000,
+        "cpu_user_raw": 183431,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5971484672,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-146": {
+      "process_snapshot": {
+        "cpu_system_ns": 409120000000,
+        "cpu_system_raw": 40912,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1839390000000,
+        "cpu_user_raw": 183939,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5971574784,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-147": {
+      "process_snapshot": {
+        "cpu_system_ns": 411050000000,
+        "cpu_system_raw": 41105,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1849580000000,
+        "cpu_user_raw": 184958,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5971922944,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 15,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-148": {
+      "process_snapshot": {
+        "cpu_system_ns": 412260000000,
+        "cpu_system_raw": 41226,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1854410000000,
+        "cpu_user_raw": 185441,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5976907776,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-149": {
+      "process_snapshot": {
+        "cpu_system_ns": 413450000000,
+        "cpu_system_raw": 41345,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1859530000000,
+        "cpu_user_raw": 185953,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5977268224,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-150": {
+      "process_snapshot": {
+        "cpu_system_ns": 414590000000,
+        "cpu_system_raw": 41459,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1864310000000,
+        "cpu_user_raw": 186431,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5977264128,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-151": {
+      "process_snapshot": {
+        "cpu_system_ns": 415770000000,
+        "cpu_system_raw": 41577,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1869400000000,
+        "cpu_user_raw": 186940,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5977419776,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-152": {
+      "process_snapshot": {
+        "cpu_system_ns": 416900000000,
+        "cpu_system_raw": 41690,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1874260000000,
+        "cpu_user_raw": 187426,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5977370624,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-153": {
+      "process_snapshot": {
+        "cpu_system_ns": 418030000000,
+        "cpu_system_raw": 41803,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1879470000000,
+        "cpu_user_raw": 187947,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5977554944,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-154": {
+      "process_snapshot": {
+        "cpu_system_ns": 419900000000,
+        "cpu_system_raw": 41990,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1889820000000,
+        "cpu_user_raw": 188982,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5979521024,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 15,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-155": {
+      "process_snapshot": {
+        "cpu_system_ns": 421060000000,
+        "cpu_system_raw": 42106,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1894710000000,
+        "cpu_user_raw": 189471,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5980016640,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-156": {
+      "process_snapshot": {
+        "cpu_system_ns": 422190000000,
+        "cpu_system_raw": 42219,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1900050000000,
+        "cpu_user_raw": 190005,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5980737536,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-157": {
+      "process_snapshot": {
+        "cpu_system_ns": 423340000000,
+        "cpu_system_raw": 42334,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1904970000000,
+        "cpu_user_raw": 190497,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5980880896,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-158": {
+      "process_snapshot": {
+        "cpu_system_ns": 424460000000,
+        "cpu_system_raw": 42446,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1910200000000,
+        "cpu_user_raw": 191020,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5981032448,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-159": {
+      "process_snapshot": {
+        "cpu_system_ns": 425660000000,
+        "cpu_system_raw": 42566,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1915050000000,
+        "cpu_user_raw": 191505,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5981102080,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-160": {
+      "process_snapshot": {
+        "cpu_system_ns": 426780000000,
+        "cpu_system_raw": 42678,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1920290000000,
+        "cpu_user_raw": 192029,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5981224960,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-161": {
+      "process_snapshot": {
+        "cpu_system_ns": 428720000000,
+        "cpu_system_raw": 42872,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1930900000000,
+        "cpu_user_raw": 193090,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5981224960,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 15,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-162": {
+      "process_snapshot": {
+        "cpu_system_ns": 429890000000,
+        "cpu_system_raw": 42989,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1935780000000,
+        "cpu_user_raw": 193578,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5982281728,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-163": {
+      "process_snapshot": {
+        "cpu_system_ns": 431060000000,
+        "cpu_system_raw": 43106,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1940920000000,
+        "cpu_user_raw": 194092,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5982441472,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-164": {
+      "process_snapshot": {
+        "cpu_system_ns": 432240000000,
+        "cpu_system_raw": 43224,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1945860000000,
+        "cpu_user_raw": 194586,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5982720000,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-165": {
+      "process_snapshot": {
+        "cpu_system_ns": 433480000000,
+        "cpu_system_raw": 43348,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1951070000000,
+        "cpu_user_raw": 195107,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5982699520,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-166": {
+      "process_snapshot": {
+        "cpu_system_ns": 434650000000,
+        "cpu_system_raw": 43465,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1956010000000,
+        "cpu_user_raw": 195601,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5982670848,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-167": {
+      "process_snapshot": {
+        "cpu_system_ns": 435810000000,
+        "cpu_system_raw": 43581,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1961310000000,
+        "cpu_user_raw": 196131,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5982863360,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-168": {
+      "process_snapshot": {
+        "cpu_system_ns": 437790000000,
+        "cpu_system_raw": 43779,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1973270000000,
+        "cpu_user_raw": 197327,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5982900224,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 15,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-169": {
+      "process_snapshot": {
+        "cpu_system_ns": 438940000000,
+        "cpu_system_raw": 43894,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1978520000000,
+        "cpu_user_raw": 197852,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5982892032,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/incremental-170": {
+      "process_snapshot": {
+        "cpu_system_ns": 439840000000,
+        "cpu_system_raw": 43984,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 1983790000000,
+        "cpu_user_raw": 198379,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 5982920704,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/api/full_control": {
+      "process_snapshot": {
+        "cpu_system_ns": 499660000000,
+        "cpu_system_raw": 49966,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 2332530000000,
+        "cpu_user_raw": 233253,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2440,
+        "resident_bytes": 9152991232,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 15,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    }
+  },
+  "measurements": [
+    {
+      "group": "scale-100000/cold",
+      "sample": "scale-100000/repetition-0",
+      "engine_ms": 460102,
+      "index_wall_us": 460238887,
+      "full_control_ms": 563557,
+      "parity_wall_us": 897860292,
+      "counts": {
+        "chunks": 636136,
+        "edges": {
+          "call_edges": 490200,
+          "semantic_edges": 598136,
+          "test_edges": 0
+        },
+        "files": 100000,
+        "index_db_with_wal_shm_bytes": 6883210752,
+        "symbols": 556137,
+        "tables": {
+          "call_edges": 490200,
+          "chunks": 636136,
+          "dispatch_sites": 0,
+          "document_manifest": 636136,
+          "files": 100000,
+          "imports": 66047,
+          "public_surfaces": 100000,
+          "resolution_dependencies": 1918691,
+          "resolution_frontier": 0,
+          "resolution_manifests": 100000,
+          "routes": 8000,
+          "semantic_edges": 598136,
+          "symbol_refs": 1444510,
+          "symbols": 556137,
+          "test_edges": 0
+        },
+        "vectors": {
+          "count": null,
+          "reason": "semantic explicitly disabled; no provider installed",
+          "state": "disabled"
+        }
+      },
+      "build_timing": {
+        "prepare_us": 426245476,
+        "commit_write_us": 15945443,
+        "postprocess_compute_us": 5155586,
+        "postprocess_apply_us": 8214134,
+        "between_stages_us": 4551953,
+        "total_us": 460112594,
+        "prepare_snapshot_us": 1714853,
+        "full_staging_us": 379195695
+      },
+      "full_control_build_timing": {
+        "prepare_us": 517960280,
+        "commit_write_us": 25860858,
+        "postprocess_compute_us": 4840954,
+        "postprocess_apply_us": 8960927,
+        "between_stages_us": 5946569,
+        "total_us": 563569590,
+        "prepare_snapshot_us": 1715277,
+        "full_staging_us": 461504007
+      },
+      "phases": {
+        "analysis_ms": 449,
+        "parse_ms": 26553,
+        "postprocess_ms": 12908,
+        "resolve_ms": 14908,
+        "scan_diff_ms": 3863,
+        "write_ms": 15930
+      }
+    },
+    {
+      "group": "scale-100000/api",
+      "sample": "scale-100000/repetition-0",
+      "engine_ms": 1259137,
+      "index_wall_us": 1267520496,
+      "outer_incremental_wall_us": 1267942397,
+      "full_control_ms": 558806,
+      "parity_wall_us": 1142648437,
+      "builds": 171,
+      "build_timing": {
+        "prepare_us": 544742868,
+        "commit_write_us": 510939144,
+        "postprocess_compute_us": 101428801,
+        "postprocess_apply_us": 101272344,
+        "between_stages_us": 2561835,
+        "total_us": 1260945516,
+        "prepare_snapshot_us": 36979,
+        "full_staging_us": null
+      },
+      "full_control_build_timing": {
+        "prepare_us": 520036627,
+        "commit_write_us": 13917360,
+        "postprocess_compute_us": 5443247,
+        "postprocess_apply_us": 7466477,
+        "between_stages_us": 11955000,
+        "total_us": 558818714,
+        "prepare_snapshot_us": 2810226,
+        "full_staging_us": 429415526
+      },
+      "phases": {
+        "scan_diff_ms": 132643,
+        "parse_ms": 21935,
+        "resolve_ms": 389868,
+        "write_ms": 194135,
+        "postprocess_ms": 193591,
+        "analysis_ms": 7193
+      }
+    }
+  ],
+  "phase_count_mapping": {
+    "complete174_builds_and_two15table_parities": "original-timing-phase-and-parity-selection.json",
+    "full_builds": [
+      {
+        "line": 4,
+        "label": "scale-100000/repetition-0/cold_incremental",
+        "full": true,
+        "start_us": 10438775,
+        "end_us": 470677662,
+        "wall_us": 460238887,
+        "report_fields": {
+          "build_timing": {
+            "between_stages_us": 4551953,
+            "commit_write_us": 15945443,
+            "full_staging_us": 379195695,
+            "postprocess_apply_us": 8214134,
+            "postprocess_compute_us": 5155586,
+            "prepare_snapshot_us": 1714853,
+            "prepare_us": 426245476,
+            "schema_version": 1,
+            "total_us": 460112594
+          },
+          "chunks_total": 636136,
+          "dirty_plan": {
+            "dependency_sql": {
+              "fullscan_steps": 0,
+              "rows": 0,
+              "sorts": 0,
+              "statements": 0,
+              "vm_steps": 0
+            },
+            "file_budget": 0,
+            "parsed_files": 100000,
+            "reasons": [],
+            "rebased": false,
+            "resumed": false,
+            "selected_dependents": 0
+          },
+          "document_changes": {
+            "files_projected": 100000,
+            "removed": 0,
+            "render_failed": 0,
+            "reusable_inputs": 0,
+            "unchanged": 0,
+            "upserted": 636136
+          },
+          "elapsed_ms": 460102,
+          "files_added": 100000,
+          "files_parsed": 100000,
+          "files_removed": 0,
+          "files_scanned": 100000,
+          "files_skipped": 0,
+          "files_updated": 0,
+          "parse_errors": [],
+          "phase_timing": {
+            "analysis_ms": 449,
+            "parse_ms": 26553,
+            "postprocess_ms": 12908,
+            "resolve_ms": 14908,
+            "scan_diff_ms": 3863,
+            "write_ms": 15930
+          },
+          "resolution_freshness": {
+            "basis_epoch": null,
+            "complete": true,
+            "completed_files": 0,
+            "index_epoch": 6,
+            "reason": null,
+            "retry": null,
+            "root_count": 0,
+            "scope": "observed_resolution_invalidations",
+            "status": "ready"
+          },
+          "symbols_total": 556137,
+          "used_parallel_parse": true
+        },
+        "project_model_list_values_summarized": {
+          "catalog_files": 100000,
+          "changed_configs": {
+            "array_count": 32001,
+            "canonical_sha256": "7a5ac8dd10c046c41d8681c82fa88d39a3a3239c92c47e4ba9641dac16dfe872"
+          },
+          "config_inputs": 1,
+          "config_parse_cache_hits": 0,
+          "config_reads": 1,
+          "config_root_probes": 73504,
+          "config_roots": 1,
+          "diagnostics": {
+            "array_count": 0,
+            "canonical_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "go_fact_cache_hits": 0,
+          "go_source_reads": 0,
+          "input_digest": "27edb7c3c8af5534b45cdc32c92eab7ee767bf5676b5e09cddb198b5c29730d8",
+          "inventory_source": "shared_walk",
+          "modes": {
+            "array_count": 1,
+            "canonical_sha256": "a83e5b296b23df2a437d761a9ce3fb30a53e9e0ef52d335d7852805fd1c1c39f"
+          },
+          "rust_fact_cache_hits": 0,
+          "rust_source_reads": 0,
+          "version": 3
+        }
+      },
+      {
+        "line": 6,
+        "label": "scale-100000/repetition-0/cold_full_control",
+        "full": true,
+        "start_us": 470681207,
+        "end_us": 1034407344,
+        "wall_us": 563726137,
+        "report_fields": {
+          "build_timing": {
+            "between_stages_us": 5946569,
+            "commit_write_us": 25860858,
+            "full_staging_us": 461504007,
+            "postprocess_apply_us": 8960927,
+            "postprocess_compute_us": 4840954,
+            "prepare_snapshot_us": 1715277,
+            "prepare_us": 517960280,
+            "schema_version": 1,
+            "total_us": 563569590
+          },
+          "chunks_total": 636136,
+          "dirty_plan": {
+            "dependency_sql": {
+              "fullscan_steps": 0,
+              "rows": 0,
+              "sorts": 0,
+              "statements": 0,
+              "vm_steps": 0
+            },
+            "file_budget": 0,
+            "parsed_files": 100000,
+            "reasons": [],
+            "rebased": false,
+            "resumed": false,
+            "selected_dependents": 0
+          },
+          "document_changes": {
+            "files_projected": 100000,
+            "removed": 0,
+            "render_failed": 0,
+            "reusable_inputs": 0,
+            "unchanged": 0,
+            "upserted": 636136
+          },
+          "elapsed_ms": 563557,
+          "files_added": 100000,
+          "files_parsed": 100000,
+          "files_removed": 0,
+          "files_scanned": 100000,
+          "files_skipped": 0,
+          "files_updated": 0,
+          "parse_errors": [],
+          "phase_timing": {
+            "analysis_ms": 415,
+            "parse_ms": 26352,
+            "postprocess_ms": 13374,
+            "resolve_ms": 16390,
+            "scan_diff_ms": 11988,
+            "write_ms": 25845
+          },
+          "resolution_freshness": {
+            "basis_epoch": null,
+            "complete": true,
+            "completed_files": 0,
+            "index_epoch": 6,
+            "reason": null,
+            "retry": null,
+            "root_count": 0,
+            "scope": "observed_resolution_invalidations",
+            "status": "ready"
+          },
+          "symbols_total": 556137,
+          "used_parallel_parse": true
+        },
+        "project_model_list_values_summarized": {
+          "catalog_files": 100000,
+          "changed_configs": {
+            "array_count": 32001,
+            "canonical_sha256": "7a5ac8dd10c046c41d8681c82fa88d39a3a3239c92c47e4ba9641dac16dfe872"
+          },
+          "config_inputs": 1,
+          "config_parse_cache_hits": 0,
+          "config_reads": 1,
+          "config_root_probes": 73504,
+          "config_roots": 1,
+          "diagnostics": {
+            "array_count": 0,
+            "canonical_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "go_fact_cache_hits": 0,
+          "go_source_reads": 0,
+          "input_digest": "27edb7c3c8af5534b45cdc32c92eab7ee767bf5676b5e09cddb198b5c29730d8",
+          "inventory_source": "shared_walk",
+          "modes": {
+            "array_count": 1,
+            "canonical_sha256": "a83e5b296b23df2a437d761a9ce3fb30a53e9e0ef52d335d7852805fd1c1c39f"
+          },
+          "rust_fact_cache_hits": 0,
+          "rust_source_reads": 0,
+          "version": 3
+        }
+      },
+      {
+        "line": 352,
+        "label": "scale-100000/repetition-0/api/full_control",
+        "full": true,
+        "start_us": 3200215213,
+        "end_us": 3759191654,
+        "wall_us": 558976441,
+        "report_fields": {
+          "build_timing": {
+            "between_stages_us": 11955000,
+            "commit_write_us": 13917360,
+            "full_staging_us": 429415526,
+            "postprocess_apply_us": 7466477,
+            "postprocess_compute_us": 5443247,
+            "prepare_snapshot_us": 2810226,
+            "prepare_us": 520036627,
+            "schema_version": 1,
+            "total_us": 558818714
+          },
+          "chunks_total": 636136,
+          "dirty_plan": {
+            "dependency_sql": {
+              "fullscan_steps": 0,
+              "rows": 0,
+              "sorts": 0,
+              "statements": 0,
+              "vm_steps": 0
+            },
+            "file_budget": 0,
+            "parsed_files": 100000,
+            "reasons": [],
+            "rebased": false,
+            "resumed": false,
+            "selected_dependents": 0
+          },
+          "document_changes": {
+            "files_projected": 100000,
+            "removed": 1,
+            "render_failed": 0,
+            "reusable_inputs": 636130,
+            "unchanged": 636128,
+            "upserted": 8
+          },
+          "elapsed_ms": 558806,
+          "files_added": 100000,
+          "files_parsed": 100000,
+          "files_removed": 0,
+          "files_scanned": 100000,
+          "files_skipped": 0,
+          "files_updated": 0,
+          "parse_errors": [],
+          "phase_timing": {
+            "analysis_ms": 812,
+            "parse_ms": 57463,
+            "postprocess_ms": 12083,
+            "resolve_ms": 18220,
+            "scan_diff_ms": 12116,
+            "write_ms": 13911
+          },
+          "resolution_freshness": {
+            "basis_epoch": null,
+            "complete": true,
+            "completed_files": 0,
+            "index_epoch": 12,
+            "reason": null,
+            "retry": null,
+            "root_count": 0,
+            "scope": "observed_resolution_invalidations",
+            "status": "ready"
+          },
+          "symbols_total": 556137,
+          "used_parallel_parse": true
+        },
+        "project_model_list_values_summarized": {
+          "catalog_files": 100000,
+          "changed_configs": {
+            "array_count": 32001,
+            "canonical_sha256": "7a5ac8dd10c046c41d8681c82fa88d39a3a3239c92c47e4ba9641dac16dfe872"
+          },
+          "config_inputs": 1,
+          "config_parse_cache_hits": 0,
+          "config_reads": 1,
+          "config_root_probes": 73504,
+          "config_roots": 1,
+          "diagnostics": {
+            "array_count": 0,
+            "canonical_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "go_fact_cache_hits": 0,
+          "go_source_reads": 0,
+          "input_digest": "27edb7c3c8af5534b45cdc32c92eab7ee767bf5676b5e09cddb198b5c29730d8",
+          "inventory_source": "shared_walk",
+          "modes": {
+            "array_count": 1,
+            "canonical_sha256": "a83e5b296b23df2a437d761a9ce3fb30a53e9e0ef52d335d7852805fd1c1c39f"
+          },
+          "rust_fact_cache_hits": 0,
+          "rust_source_reads": 0,
+          "version": 3
+        }
+      }
+    ],
+    "incremental_closure": {
+      "incremental_builds": 171,
+      "incomplete_builds": 170,
+      "resumed_true_builds": 170,
+      "first": {
+        "line": 10,
+        "label": "scale-100000/repetition-0/api/incremental-0",
+        "full": false,
+        "start_us": 1932272816,
+        "end_us": 1953918186,
+        "wall_us": 21645370,
+        "report_fields": {
+          "build_timing": {
+            "between_stages_us": 14935,
+            "commit_write_us": 5228698,
+            "full_staging_us": null,
+            "postprocess_apply_us": 4906927,
+            "postprocess_compute_us": 4571734,
+            "prepare_snapshot_us": 796,
+            "prepare_us": 6816569,
+            "schema_version": 1,
+            "total_us": 21538866
+          },
+          "chunks_total": 8,
+          "dirty_plan": {
+            "dependency_sql": {
+              "fullscan_steps": 0,
+              "rows": 402,
+              "sorts": 4,
+              "statements": 9,
+              "vm_steps": 9830
+            },
+            "file_budget": 200,
+            "parsed_files": 1,
+            "reasons": [
+              "body",
+              "public_surface",
+              "candidate_set"
+            ],
+            "rebased": false,
+            "resumed": false,
+            "selected_dependents": 200
+          },
+          "dirty_propagation": "budget_exceeded",
+          "document_changes": {
+            "files_projected": 1,
+            "removed": 1,
+            "render_failed": 0,
+            "reusable_inputs": 2,
+            "unchanged": 0,
+            "upserted": 8
+          },
+          "elapsed_ms": 21487,
+          "files_added": 0,
+          "files_parsed": 1,
+          "files_removed": 0,
+          "files_scanned": 100000,
+          "files_skipped": 99999,
+          "files_updated": 1,
+          "parse_errors": [],
+          "phase_timing": {
+            "analysis_ms": 432,
+            "parse_ms": 92,
+            "postprocess_ms": 8994,
+            "resolve_ms": 3296,
+            "scan_diff_ms": 3426,
+            "write_ms": 3338
+          },
+          "resolution_freshness": {
+            "basis_epoch": 6,
+            "complete": false,
+            "completed_files": 201,
+            "index_epoch": 11,
+            "reason": "budget_exceeded",
+            "retry": "run incremental index to resume bounded work, or request full index",
+            "root_count": 1,
+            "scope": "observed_resolution_invalidations",
+            "status": "incomplete"
+          },
+          "symbols_total": 908,
+          "used_parallel_parse": false
+        },
+        "project_model_list_values_summarized": {
+          "catalog_files": 100000,
+          "changed_configs": {
+            "array_count": 0,
+            "canonical_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "config_inputs": 1,
+          "config_parse_cache_hits": 1,
+          "config_reads": 1,
+          "config_root_probes": 73504,
+          "config_roots": 1,
+          "diagnostics": {
+            "array_count": 0,
+            "canonical_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "go_fact_cache_hits": 0,
+          "go_source_reads": 0,
+          "input_digest": "27edb7c3c8af5534b45cdc32c92eab7ee767bf5676b5e09cddb198b5c29730d8",
+          "inventory_source": "shared_walk",
+          "modes": {
+            "array_count": 1,
+            "canonical_sha256": "a83e5b296b23df2a437d761a9ce3fb30a53e9e0ef52d335d7852805fd1c1c39f"
+          },
+          "rust_fact_cache_hits": 32000,
+          "rust_source_reads": 0,
+          "version": 3
+        }
+      },
+      "last": {
+        "line": 350,
+        "label": "scale-100000/repetition-0/api/incremental-170",
+        "full": false,
+        "start_us": 3194760353,
+        "end_us": 3200211917,
+        "wall_us": 5451564,
+        "report_fields": {
+          "build_timing": {
+            "between_stages_us": 10583,
+            "commit_write_us": 2154348,
+            "full_staging_us": null,
+            "postprocess_apply_us": 10478,
+            "postprocess_compute_us": 37324,
+            "prepare_snapshot_us": 35,
+            "prepare_us": 3211169,
+            "schema_version": 1,
+            "total_us": 5423904
+          },
+          "chunks_total": 0,
+          "dirty_plan": {
+            "dependency_sql": {
+              "fullscan_steps": 0,
+              "rows": 34200,
+              "sorts": 69,
+              "statements": 72,
+              "vm_steps": 862950
+            },
+            "file_budget": 200,
+            "parsed_files": 0,
+            "reasons": [
+              "body",
+              "public_surface",
+              "candidate_set",
+              "resumed"
+            ],
+            "rebased": false,
+            "resumed": true,
+            "selected_dependents": 25
+          },
+          "dirty_propagation": "normal",
+          "document_changes": {
+            "files_projected": 0,
+            "removed": 0,
+            "render_failed": 0,
+            "reusable_inputs": 0,
+            "unchanged": 0,
+            "upserted": 0
+          },
+          "elapsed_ms": 5413,
+          "files_added": 0,
+          "files_parsed": 0,
+          "files_removed": 0,
+          "files_scanned": 100000,
+          "files_skipped": 100000,
+          "files_updated": 0,
+          "parse_errors": [],
+          "phase_timing": {
+            "analysis_ms": 37,
+            "parse_ms": 82,
+            "postprocess_ms": 0,
+            "resolve_ms": 2365,
+            "scan_diff_ms": 763,
+            "write_ms": 158
+          },
+          "resolution_freshness": {
+            "basis_epoch": null,
+            "complete": true,
+            "completed_files": 0,
+            "index_epoch": 227,
+            "reason": null,
+            "retry": null,
+            "root_count": 0,
+            "scope": "observed_resolution_invalidations",
+            "status": "ready"
+          },
+          "symbols_total": 110,
+          "used_parallel_parse": false
+        },
+        "project_model_list_values_summarized": {
+          "catalog_files": 100000,
+          "changed_configs": {
+            "array_count": 0,
+            "canonical_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "config_inputs": 1,
+          "config_parse_cache_hits": 1,
+          "config_reads": 1,
+          "config_root_probes": 73504,
+          "config_roots": 1,
+          "diagnostics": {
+            "array_count": 0,
+            "canonical_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "go_fact_cache_hits": 0,
+          "go_source_reads": 0,
+          "input_digest": "27edb7c3c8af5534b45cdc32c92eab7ee767bf5676b5e09cddb198b5c29730d8",
+          "inventory_source": "shared_walk",
+          "modes": {
+            "array_count": 1,
+            "canonical_sha256": "a83e5b296b23df2a437d761a9ce3fb30a53e9e0ef52d335d7852805fd1c1c39f"
+          },
+          "rust_fact_cache_hits": 32000,
+          "rust_source_reads": 0,
+          "version": 3
+        }
+      },
+      "dependent_selection_visits": 34025,
+      "dependent_visit_boundary": "Sum of selection visits across builds, not independently deduplicated unique dependency files.",
+      "aggregate_engine_ms": 1259137,
+      "aggregate_index_wall_us": 1267520496,
+      "outer_incremental_wall_us": 1267942397,
+      "aggregate_build_timing": {
+        "prepare_us": 544742868,
+        "commit_write_us": 510939144,
+        "postprocess_compute_us": 101428801,
+        "postprocess_apply_us": 101272344,
+        "between_stages_us": 2561835,
+        "total_us": 1260945516,
+        "prepare_snapshot_us": 36979,
+        "full_staging_us": null
+      },
+      "aggregate_legacy_phases": {
+        "scan_diff_ms": 132643,
+        "parse_ms": 21935,
+        "resolve_ms": 389868,
+        "write_ms": 194135,
+        "postprocess_ms": 193591,
+        "analysis_ms": 7193
+      },
+      "aggregation_verified_against_all171_original_builds": true
+    }
+  },
+  "raw_event_counts": {
+    "run_started": 1,
+    "input": 1,
+    "build_started": 174,
+    "build_finished": 174,
+    "cold_parity": 1,
+    "mutation": 1,
+    "stage_finished": 1
+  },
+  "raw_identity": {
+    "bytes": 14500255,
+    "sha256": "fa2491fa9e240cf7980e929463c8e3107eb9fec772bc0630de4be1939c70fa08",
+    "original_report_blake3": "4c116f037ba486a8980c87f2f61a3fb44ebf4ddf77f207519b57c7a834fc238d"
+  },
+  "typed_parity": {
+    "observations": 2,
+    "tables_each": 15,
+    "equal_table_observations": 30,
+    "initial_raw_line": 7,
+    "final_raw_line": 353,
+    "different_rows": 0,
+    "reported_no_op_unchanged_flag": true,
+    "initial_and_final_full_control_complete": true,
+    "api_builds": 171,
+    "first_build_incomplete": true,
+    "initial_and_final_capacity_profile": "scale_capacity_v1",
+    "canonical_bytes_initial_final": [
+      10302684584,
+      10302683366
+    ],
+    "scratch_peak_bytes_initial_final": [
+      5984387072,
+      5984133120
+    ]
+  },
+  "limits": [
+    "N1, one environment and fixed source/build. No stable tail, confidence interval, all100k/full-study or release claim.",
+    "Raw reports retain semantic vectors disabled/countnull, untracked Python caches, PID-only resource snapshots, observed seed-cache max500000 and hardware identity; no fabricated peak or clean host.",
+    "Timing scopes differ: engine elapsed_ms, detailed total_us, enclosing wall_us, parity_wall_us and native child wall_ms. Nested full_staging/prepare_snapshot are not added again.",
+    "Whole payload and producer completion are proven for this slot; concurrent artifact enumeration is not a final complete population index.",
+    "Original aggregate has not been executed or accepted by this peer; no task status updated."
+  ],
+  "peer_execution": {
+    "read_only_original_returns_and_new_raw": true,
+    "CRC_ZIP_ELF_original_validator_or_product_calls": 0,
+    "old_raw_or_ZIP_reads": 0,
+    "Actions_downloads": 0
+  },
+  "task_credit": 0,
+  "reader_attempt_history": {
+    "attempt01": "Pure independent new-slot receipt/raw reader; no original validator, ELF, CRC, ZIP or product operation."
+  }
+}

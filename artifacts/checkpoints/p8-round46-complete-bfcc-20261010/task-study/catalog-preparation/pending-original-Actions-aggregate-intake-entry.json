@@ -1,0 +1,117 @@
+{
+  "schema": "original-Actions-aggregate-pending-intake-entry-v1",
+  "recorded_at_utc": "2026-10-10T06:58:53.360904+00:00",
+  "source": "f97c5068d056969705e8387ba1f37d83847f5bee",
+  "source_tree": "39a053ae49b486764751a570d164e7cd41d7ff29",
+  "run_id": 38026411200,
+  "attempt": 1,
+  "current_accepted_cells": 43,
+  "current_accepted_records": 81,
+  "missing_slots": [
+    [
+      "batch_100",
+      100000,
+      0
+    ],
+    [
+      "body",
+      100000,
+      0
+    ]
+  ],
+  "expected_artifact_name": "p8-task-matrix-38026411200-1",
+  "expected_member": "task-matrix.json",
+  "aggregate_job_id": null,
+  "artifact_id": null,
+  "artifact_digest": null,
+  "whole_original_ZIP_path": null,
+  "original_full_job_log_path": null,
+  "original_aggregate_result": null,
+  "source_driver": {
+    "path": "/workspace/scratch/bfccb8494ba0/round42-new45-build-original-intake/source-exact-G2/scripts/p8_task_profile_matrix.py",
+    "bytes": 29712,
+    "sha256": "8a3b7bad9448f56263bad49da1df7def16bfddaacaa1769abe97e710c73e776c",
+    "git_blob": "c858fcb4edea1f91b421367b67bf722f0c2fef3a"
+  },
+  "source_line_ranges": {
+    "validate_build": [
+      157,
+      172
+    ],
+    "validate_shard": [
+      270,
+      316
+    ],
+    "combine": [
+      330,
+      404
+    ],
+    "aggregate": [
+      407,
+      444
+    ],
+    "CLI": [
+      447,
+      481
+    ]
+  },
+  "workflow": {
+    "path": ".github/workflows/p8-task-profile.yml",
+    "lines": [
+      633,
+      678
+    ],
+    "needs": [
+      "build",
+      "measure"
+    ],
+    "job_if": "always() && needs.build.result == 'success'",
+    "timeout_minutes": 30,
+    "build_artifact": "p8-task-build-38026411200-1",
+    "shard_pattern": "p8-task-shard-*-38026411200-1",
+    "progress_inputs_excluded": true,
+    "original_call": "matrix.aggregate(root / 'p8-task-build', inputs, root / 'p8-task-matrix')",
+    "exit": "0 if passed is True, otherwise 1; preserve actual failure/no artifact if missing."
+  },
+  "original_contract": {
+    "aggregate_accepts_cached_returns": false,
+    "combine_accepts_returns_but_is_not_aggregate": true,
+    "original_success_path": {
+      "validate_build_calls": 1,
+      "validate_shard_calls": 45,
+      "native_hash_file_calls": 91,
+      "hash_call_derivation": "1 build + 2 per shard; utility mode only, no new measurement."
+    },
+    "hash_observability": "91 is the exact successful original source path, not a claim of 91 separately emitted Actions trace records. Preserve original log/matrix; if individual child argv/stdio were not emitted, record that granularity unavailable rather than invent it. Our local accepted build/shard hash traces are separate executions and are not producer traces.",
+    "failure_path": "Keep every supplied input_results/error and missing_slots. Failure may perform fewer actual hashes. Do not infer complete calls from job existence.",
+    "population": {
+      "cells": 45,
+      "setup_pairs": 40,
+      "mutation_samples": 40,
+      "fanout_samples": 5,
+      "records": 85,
+      "cold_curve_from_no_op": 5,
+      "cold_curve_is_subset_of_setup": true
+    },
+    "record_identity": "(registered slot, role), because sample strings repeat across profiles.",
+    "original_predicates": "All45 exact unique slots/plans, single source/binary/driver/build/run/attempt, full native EOF/closure/15-table parity, pristine input equality per scale, actual over-budget fanout. These are existing producer predicates, not added gates."
+  },
+  "intake_when_root_supplies_originals": {
+    "transport": "New original matrix ZIP only once; bind official artifact/run/source/attempt and preserve original whole bytes/log. No Actions download by receiver.",
+    "receipt_join": "Join original matrix input_results/cells/evidence receipt_sha256 by slot to the accepted catalog; producer paths and local materialized paths differ and must not be conflated.",
+    "values": "Read original 45 cells/85 records and environments; preserve values unchanged. Five no_op cold points are a subset, never 90 records; no host pooling, tail estimates, invented timings or resynthesized native facts.",
+    "status": "Inspect actual passed/status/input_errors/missing_slots/validated_input_count/accepted_cell_count, identity and producer exit. No predeclared success.",
+    "no_repeated_local_aggregate": "Prefer original Actions aggregate and full original log. Do not call aggregate/combine/validate_build/validate_shard again locally without a later concrete failure/missing-evidence decision."
+  },
+  "preparation_execution": {
+    "original_validator_calls": 0,
+    "aggregate_calls": 0,
+    "combine_calls": 0,
+    "native_hash_calls": 0,
+    "ZIP_CRC_reads": 0,
+    "measurements": 0,
+    "downloads": 0,
+    "task_credit": 0,
+    "refs_changed": false
+  }
+}

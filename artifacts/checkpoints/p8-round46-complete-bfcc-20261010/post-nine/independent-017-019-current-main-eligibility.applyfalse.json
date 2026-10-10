@@ -1,0 +1,548 @@
+{
+  "schema": "bounded-post-nine-main-applicability-followup-v1",
+  "recorded_at_utc": "2026-10-10T06:36:42.216388+00:00",
+  "reviewer": "/root/todo_audit",
+  "append_only": true,
+  "apply_now": false,
+  "task_state_modified": false,
+  "task_credit": 0,
+  "decision": "accepted_own_scope_conditionally_ready_after_original_dependency_closeout",
+  "current_source": {
+    "main": "0da9a2800d2b3112d584a8bad4f79785e01162a9",
+    "same_tree_G2": "f97c5068d056969705e8387ba1f37d83847f5bee",
+    "tree": "39a053ae49b486764751a570d164e7cd41d7ff29",
+    "main_bridge": {
+      "path": "/workspace/scratch/bfccb8494ba0/round44-nine-application-main-bridge/actual-main-minimal-input-bridge.applyfalse.json",
+      "bytes": 9126,
+      "sha256": "c3b08860348b3e52f546ada0bfeffe8d15f6db1e0f83464a00ce65e65f2f58aa",
+      "git_blob": "08aa3635f4a6572fef3bbf2bd82cba1ad527d80c"
+    },
+    "tasks_git": "adb44ee70a4c129bfb443d4ecf678fb934c8ea6b"
+  },
+  "original_requirements": {
+    "P8-017": {
+      "id": "P8-017",
+      "title": "删除临时兼容和重复模块",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-016"
+      ],
+      "scope": [
+        "crates/cc-index/",
+        "crates/cc-search/",
+        "crates/cc-eval/"
+      ],
+      "steps": [
+        "清临时旧branch/重复评分器/多份schema来源",
+        "保留必要外部wire兼容"
+      ],
+      "acceptance": [
+        "运行路径只有一个事实与算法所有者，删除有回归证据",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V18",
+        "V21"
+      ],
+      "conditional": null,
+      "conditional_dependencies": [],
+      "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。"
+    },
+    "P8-018": {
+      "id": "P8-018",
+      "title": "文档事实与安装契约同步",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-017"
+      ],
+      "scope": [
+        "docs/ARCHITECTURE.md",
+        "docs/BENCHMARK.md",
+        "docs/MCP_TOOLS.md",
+        "docs/CONFIGURATION.md"
+      ],
+      "steps": [
+        "从schema/capabilities生成可核查事实",
+        "更新安装/故障/默认离线说明"
+      ],
+      "acceptance": [
+        "文档表数/schema/工具数不再漂移，设计与已实现标识分开",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V18",
+        "V21"
+      ],
+      "conditional": null,
+      "conditional_dependencies": [],
+      "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。"
+    },
+    "P8-019": {
+      "id": "P8-019",
+      "title": "发布工件与完整报告归档",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-018"
+      ],
+      "scope": [
+        ".github/workflows/ci.yml",
+        "artifacts/benchmarks/",
+        "docs/benchmarks/"
+      ],
+      "steps": [
+        "归档精确binary/checksum/manifest/raw/gates",
+        "latest只指向run"
+      ],
+      "acceptance": [
+        "报告可重算，历史原始run不被下一轮覆盖",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V01",
+        "V04",
+        "V21"
+      ],
+      "conditional": null,
+      "conditional_dependencies": [],
+      "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。"
+    }
+  },
+  "original_validation_clauses": {
+    "source": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+    "git_blob": "fcbcf9e9280d41a4e8e138543d2bd217137a2c5e",
+    "V01": {
+      "line": 23,
+      "text": "SHA、dirty/binary digest、toolchain/SDK，现有测试/stdio、ignored 明列、全新 target 冷构建"
+    },
+    "V04": {
+      "line": 26,
+      "text": "MCP 握手/错误/取消、HTTP 失败、readiness、timeout、退出码、raw→metrics/report 可重算"
+    },
+    "V18": {
+      "line": 40,
+      "text": "14工具不丢失，旧 mode不变，新参数贯穿schema/sanitize/dispatch/status，默认无网络无key可用"
+    },
+    "V21": {
+      "line": 43,
+      "text": "新旧 schema 降级重建，cache不误读，默认/semantic 两包，SDK/MSRV，文档事实漂移检测"
+    },
+    "G8_distinct": {
+      "line": 58,
+      "text": "V01/V18–V21 全量 release profile，holdout及100k、原始报告和回滚演练；blocker=0",
+      "claimed_passed": false
+    }
+  },
+  "historical_published_records": [
+    {
+      "commit": "62e3fcb16462e224edf2dd4dbe3ae3a054ddd521",
+      "path": "artifacts/checkpoints/p8-round35-complete-bfcc-20261010/post-nine-closeout-preparation/P8-017-019-publication-bridge.applyfalse.json",
+      "git_blob": "7108a17fab7a7589652896ef654e0383d8cbef30"
+    },
+    {
+      "commit": "5f6814a0c0ce5c11f692d8c09023694754d89ea3",
+      "path": "artifacts/checkpoints/p8-round39-complete-bfcc-20261010/post-nine/post-nine-baseline-addendum.applyfalse.json",
+      "git_blob": "aa289172d782c0fae0a6872005452ad99b30f7c4"
+    },
+    {
+      "git_blob": "e863b8b3fe42a5fe3797fac251f48f158362087d",
+      "description": "Full original claim-to-evidence map, including named V18/V21 controls; later than the narrower 0e5 ownership review."
+    }
+  ],
+  "source_applicability": {
+    "official_b9_to_G2": {
+      "path": "/workspace/scratch/bfccb8494ba0/round43-final-nine-application/official-b9-to-G2-file-identity.json",
+      "bytes": 10012,
+      "sha256": "95135104a08825de3d6902784733243830ffc5560a3ee4cedc45eee6e1ab81ed",
+      "git_blob": "c8ec8aad984ef58a1c62774d0d6a009065961bfe"
+    },
+    "changed_product_paths": [
+      "crates/cc-eval/src/benchmark/mutation_case.rs",
+      "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+      "crates/cc-eval/src/benchmark/p8_scale.rs",
+      "crates/cc-eval/src/bin/p8-scale.rs",
+      "crates/cc-eval/tests/p8_scale.rs"
+    ],
+    "interpretation": "The net source additions/changes are fresh-profile benchmark planning/execution, a shared explicit validator hook, capture, and borrowed sorted oracle cursor. They do not change the retained installer, wire-tool/schema, lane ownership, DB schema/DDL, archive/replay ownership or the three published PR198 documents. The changed oracle/mutation code is not assumed unchanged: its existing combination/source review and actual G2 CI are retained, without claiming unfinished study results.",
+    "accepted_changed_source_reviews": [
+      "8adf965b33663cb72c138d3db69dce58142df0a7",
+      "da856258714effb3addab7f5c61c0e49d27a7895",
+      "f9965c6df16bcf1665655f2d951db99d0258e5d3"
+    ],
+    "exact_relevant_metadata": {
+      "path": "/workspace/scratch/bfccb8494ba0/round45-post-nine-scope-followup/current-G2-exact-relevant-tree.json",
+      "bytes": 2970,
+      "sha256": "524c23b93b6e952f3a2fbfac324ae5dbd8b3011a84086cc387c641b4d0979952",
+      "git_blob": "e0b66dcae8fa142df99c6e0b47c1f834179dfcfa"
+    },
+    "historical_platform_identity": "275e8799d4947d297329073eaa3ca675d3fd0777 / run37890757129; previous277f2490fad3fa30f2812b5547bad033867c9ea5; publicationcd92ce4b931e770994770ba3dba6fd0a47a505ea. Original eight-platform and downgrade/cache/package evidence keeps that source; not relabelled as G2 release certification."
+  },
+  "current_executed_regressions": {
+    "run_id": 38025451919,
+    "job_id": 114135224079,
+    "head": "f97c5068d056969705e8387ba1f37d83847f5bee",
+    "checkout": "9c4f29f5b290bfcd60375bc1c1c7a194b5099eae",
+    "checkout_tree": "39a053ae49b486764751a570d164e7cd41d7ff29",
+    "log": {
+      "path": "/workspace/scratch/bfccb8494ba0/round42-new45-study/114135224079-original-main.log",
+      "bytes": 1098463,
+      "sha256": "19dd6cb83ed8e7a9bfb93d9b3ba8b05465a6bffabf69824c381e5c2dfd042354",
+      "git_blob": "b42f2f685f4f2caaaa0497db6706399d9f89d998"
+    },
+    "original_independent_terminal_review_git": "a1c7594462f7d33ea7ebcb8998a46d0e3163086a",
+    "reused_named_controls": {
+      "V18-tool-params": [
+        {
+          "name": "all_fourteen_parameter_types_deny_unknown_and_keep_default_requests",
+          "ok_lines": [
+            1566,
+            7689
+          ]
+        },
+        {
+          "name": "advertised_schema_keeps_fourteen_tools_and_optional_strategy_defaults",
+          "ok_lines": [
+            4730
+          ]
+        },
+        {
+          "name": "search_modes_optional_nulls_and_utf8_sanitize_are_stable",
+          "ok_lines": [
+            1565,
+            7688
+          ]
+        },
+        {
+          "name": "p1c_fourteen_tools_valid_unknown_schema_and_modes",
+          "ok_lines": [
+            8515
+          ]
+        }
+      ],
+      "V18-propagation": [
+        {
+          "name": "handle_status_all_includes_capabilities_and_schema",
+          "ok_lines": [
+            4002
+          ]
+        },
+        {
+          "name": "stdio_status_capabilities_and_schema",
+          "ok_lines": [
+            4505
+          ]
+        },
+        {
+          "name": "explore_params_sanitize_clamps_new_optionals",
+          "ok_lines": [
+            4099
+          ]
+        },
+        {
+          "name": "policy_parameters_are_optional_strict_and_documented",
+          "ok_lines": [
+            1973,
+            8096,
+            9633
+          ]
+        },
+        {
+          "name": "real_stdio_policy_override_and_capability_state",
+          "ok_lines": [
+            9677
+          ]
+        },
+        {
+          "name": "real_mcp_preserves_tool_schema_and_exposes_offline_query_policy",
+          "ok_lines": [
+            9516
+          ]
+        }
+      ],
+      "V18-offline": [
+        {
+          "name": "real_stdio_default_disabled_semantic_contract",
+          "ok_lines": [
+            8425,
+            9771
+          ]
+        }
+      ],
+      "V21-schema-cache": [
+        {
+          "name": "fresh_index_really_initializes_current_schema",
+          "ok_lines": [
+            966
+          ]
+        },
+        {
+          "name": "nonadjacent_versions_still_require_rebuild",
+          "ok_lines": [
+            967
+          ]
+        },
+        {
+          "name": "committed_v21_upgrade_invalidates_legacy_rows_and_incarnation",
+          "ok_lines": [
+            968
+          ]
+        },
+        {
+          "name": "committed_v24_requires_rebuild_and_invalidates_legacy_rows",
+          "ok_lines": [
+            969
+          ]
+        },
+        {
+          "name": "v21_file_database_requires_reindex",
+          "ok_lines": [
+            1174
+          ]
+        },
+        {
+          "name": "different_spaces_never_cross_hit",
+          "ok_lines": [
+            5155
+          ]
+        },
+        {
+          "name": "namespaces_are_isolated",
+          "ok_lines": [
+            5161
+          ]
+        },
+        {
+          "name": "spec_change_routes_to_a_new_object",
+          "ok_lines": [
+            5169
+          ]
+        },
+        {
+          "name": "meta_tampering_is_detected_as_corrupt",
+          "ok_lines": [
+            5165
+          ]
+        }
+      ],
+      "installation-preservation": [
+        {
+          "name": "reinstall_updates_command_and_keeps_user_options_and_comments",
+          "ok_lines": [
+            4165
+          ]
+        },
+        {
+          "name": "install_does_not_silently_replace_existing_url_transport",
+          "ok_lines": [
+            4153
+          ]
+        },
+        {
+          "name": "malformed_or_wrong_typed_config_is_rejected_without_writing",
+          "ok_lines": [
+            4160
+          ]
+        },
+        {
+          "name": "uninstall_without_server_preserves_original_bytes",
+          "ok_lines": [
+            4162
+          ]
+        }
+      ],
+      "V04-replay-errors": [
+        {
+          "name": "raw_replay_reconstructs_identical_metrics",
+          "ok_lines": [
+            1432,
+            7554
+          ]
+        },
+        {
+          "name": "raw_replay_reconstructs_costs_without_inventing_missing_measurements",
+          "ok_lines": [
+            1429,
+            7558
+          ]
+        },
+        {
+          "name": "raw_and_normalized_drift_are_rejected",
+          "ok_lines": [
+            1435,
+            7547
+          ]
+        },
+        {
+          "name": "cancelled_run_is_never_green",
+          "ok_lines": [
+            1428,
+            7550
+          ]
+        },
+        {
+          "name": "readiness_failure_keeps_missing_measurements_in_gate",
+          "ok_lines": [
+            1431,
+            7555
+          ]
+        },
+        {
+          "name": "timeout_is_distinct_from_empty_results",
+          "ok_lines": [
+            7465
+          ]
+        },
+        {
+          "name": "errors_do_not_log_credentials_or_response_body",
+          "ok_lines": [
+            7450
+          ]
+        }
+      ]
+    },
+    "archive_controls": {
+      "count": 42,
+      "first_line": 5600,
+      "last_line": 5641,
+      "all_explicit_ok": true
+    },
+    "declared_facts": {
+      "line": 5857,
+      "status": "passed",
+      "errors": [],
+      "runtime_certified": false,
+      "scope": "declared_documentation_facts_only",
+      "schema": 25,
+      "base_tables": 30,
+      "fts_tables": 5,
+      "mcp_tools": 14
+    },
+    "boundary": "These are actual existing log observations, not new executions. Repeated default/HTTP observations are not summed as unique tests. Ignored/filtered experiments and prepare-only mechanism variants remain unexecuted in their original records. Whole release G8 is not inferred."
+  },
+  "task_decisions": [
+    {
+      "task": "P8-017",
+      "own_scope": "accepted_scoped",
+      "basis": [
+        "Single statistics/lane catalogue/DDL owners and necessary compatibility roles remain as documented.",
+        "Historical removal of18 duplicate tests/helper and preservation of17 retained tests has original regression evidence; this is not reconstructed from a green aggregate.",
+        "Current exact named V18 tool/parameter/sanitize/dispatch/status/stdio/offline controls and V21 schema/cache controls pass; original platform/package rollback evidence retains its old source."
+      ],
+      "missing_own_scope_action_identified": null,
+      "remaining_original_dependency": [
+        "P8-016"
+      ],
+      "future_dependency_receipt": null,
+      "formal_task_decision": null
+    },
+    {
+      "task": "P8-018",
+      "own_scope": "accepted_scoped",
+      "basis": [
+        "PR198 exact three document blobs remain in currentmain, including15 oracle tables without changing14 MCPtools.",
+        "Current actual p8_facts --check reports passed/errors=[] with declared_documentation_facts_only/runtime_certified=false; actual installer preservation/rejection and stdio-offline controls pass.",
+        "Original contribution-script execution gap is filled by Wde14 fixedb9 run38020782259; the three historical DRIFT lines are retained and interpreted below."
+      ],
+      "missing_own_scope_action_identified": null,
+      "remaining_original_dependency": [
+        "P8-017"
+      ],
+      "future_dependency_receipt": null,
+      "formal_task_decision": null
+    },
+    {
+      "task": "P8-019",
+      "own_scope": "accepted_scoped",
+      "basis": [
+        "Exact archive/replay implementation/test blobs match original reviewed versions; current actual42 archive controls and3 named raw replay controls pass.",
+        "Archive integrity binds binary/checksum/manifest/raw/gates, rejects partial/drift/no-clobber conditions, and promotes latest only under its run conditions.",
+        "Published PR198 instructions preserve originals and replay each actual single-run child in an independent writable copy, with numerical and integrity checks distinguished."
+      ],
+      "missing_own_scope_action_identified": null,
+      "remaining_original_dependency": [
+        "P8-018"
+      ],
+      "future_dependency_receipt": null,
+      "formal_task_decision": null
+    }
+  ],
+  "baseline_drift_interpretation": {
+    "original_review_git": "565e1c18e24a382c43f18f8bf9ecef8873d4b4d0",
+    "independent_peer_git": "c1a9c241793a4c29e411249a5ea0af6dbca56462",
+    "append_record_git": "ea9e3a2ecd7404026d433a850ff67b80ed6c23f4",
+    "workflow": "de14e6c7e80524efb0e43bec74bb48f518cfbc67",
+    "fixed_source": "b9b089bb4eae072affe9326681d4980eae15fd84",
+    "run_id": 38020782259,
+    "attempt": 1,
+    "job_id": 114121097102,
+    "command": "./scripts/update-doc-baselines.sh",
+    "actual_exit": 0,
+    "wall_seconds": 464.152196577,
+    "actual_drift": [
+      {
+        "field": "cc-db passed",
+        "historical": 142,
+        "actual": 206
+      },
+      {
+        "field": "footer passed sum",
+        "historical": 1258,
+        "actual": 2815
+      },
+      {
+        "field": "footer ignored sum",
+        "historical": 15,
+        "actual": 76
+      }
+    ],
+    "zero_exit_is_no_drift": false,
+    "original_script_git": "e33fa140e9a6e5461f77cb66e633ec4ba38d2700",
+    "current_TEST_PLAN_git": "c86e4628c8fb3d94385a2fe5c5ecbef8f4b1dc2c",
+    "interpretation": "The TEST_PLAN header/table explicitly preserve a historical baseline rather than asserting current test totals. These three differences are real historical comparisons, not a current contradictory table/schema/tool declaration. Do not overwrite the historical table with partial/default command sums.2815/76 are footer execution sums, not unique/all-features/release counts; the ignored count is not executed tests. The cc-eval multi-line output and absence of the internally captured full cargo stdout remain in the original report.",
+    "current_false_document_fact_found": false,
+    "baseline_on_G2_claimed": false,
+    "new_no_DRIFT_gate_added": false,
+    "historical_ENOSPC_erased": false
+  },
+  "archive_boundaries": {
+    "scope_review_git": "383b475fed125e507bf1add78c1b7d287ceb029e",
+    "history_path_review_git": "53dff581e314264188b1cab4f9d9bb2f83da5c17",
+    "verify_archive_zero": "Integrity/custody success only, not numerical metric equality or overall release pass.",
+    "replay": "Uses recorded input in an independent copy of each run, writes derived outputs; suite parent is not a single-run --run directory. No external adapter/provider workload is inferred.",
+    "latest": "Pointer only to selected run under original conditions; not a global release channel and not a filesystem WORM claim.",
+    "not_required_here": "No new all-150/100k/live/heldout or combined E2E gate added for this archive implementation task. Existing failed/open studies and P8-020/G8 blockers remain."
+  },
+  "application_conditions": {
+    "current": "No task status changes. Nine-task minimum plan remains unchanged.",
+    "allowed_future_order": [
+      "original006and007–013and016 actualacceptance",
+      "P8-017 after016",
+      "P8-018 after017",
+      "P8-019 after018"
+    ],
+    "required_future_facts": [
+      "Actual original dependency closeout/evidence must exist.",
+      "Root records the final per-task acceptance against these original scopes; no field is filled from preparation alone.",
+      "Any new contrary evidence is considered, not overwritten by this readiness assessment."
+    ],
+    "conditional_counts_after_nine_then_three": {
+      "done": 176,
+      "remaining": 16,
+      "session_completed": 13
+    },
+    "current_counts": {
+      "done": 164,
+      "remaining": 28,
+      "session_completed": 1
+    },
+    "full45_and_aggregate_pending_not_inferred": true,
+    "P8_020_or_G8_pass_claimed": false
+  },
+  "operations": {
+    "network_reads": "Exact existing small Git JSON/text objects and narrow published directory indexes only; no Actions artifact/log downloads.",
+    "local_reads": "Existing task/source metadata/log excerpts and retained reports.",
+    "new_product_or_test_or_baseline_execution": false,
+    "new_validator_or_CRC": false,
+    "task_or_ref_or_PR_mutation": false,
+    "old_records_modified": false
+  }
+}

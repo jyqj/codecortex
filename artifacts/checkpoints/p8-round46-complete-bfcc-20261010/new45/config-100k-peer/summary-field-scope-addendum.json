@@ -1,0 +1,306 @@
+{
+  "schema": "config-summary-first-incomplete-scope-clarification-v1",
+  "reviewer": "/root/pr_triage",
+  "time": "2026-10-10T06:58:15.649622+00:00",
+  "source": "f97c5068d056969705e8387ba1f37d83847f5bee",
+  "source_proof": {
+    "crates/cc-eval/src/benchmark/p8_scale.rs": {
+      "bytes": 56294,
+      "sha256": "ac2042f0e6a227cb5d53394e4ae09c6ecedf98ade7d2119dcaf4b1344be57743",
+      "git_blob": "edc56c0ab9c0b3c35f319cdfc2be23ce13bdc220",
+      "actual_git_ls_tree": "100644 blob edc56c0ab9c0b3c35f319cdfc2be23ce13bdc220\tcrates/cc-eval/src/benchmark/p8_scale.rs\n",
+      "excerpts": [
+        {
+          "start": 964,
+          "end": 968,
+          "text": "    let parity_wall_us = parity_started.elapsed().as_micros();\n    let initial_fact = config_fact(a.path(), &config_files[2], &config_files[0])?;\n    raw.emit(json!({\"event\":\"cold_parity\",\"sample\":prefix,\"parity\":initial,\"parity_wall_us\":parity_wall_us,\"independent_config_fact\":initial_fact}))?;\n    let mut summaries = vec![\n        json!({\"sample\":prefix,\"stage\":\"cold\",\"passed\":initial[\"equal\"]==true&&initial_fact[\"passed\"]==true&&has_no_parse_error(&first)&&has_no_parse_error(&full),\"parity_status\":initial[\"status\"]}),"
+        },
+        {
+          "start": 1104,
+          "end": 1108,
+          "text": "        raw.emit(json!({\"event\":\"stage_finished\",\"label\":label,\"incremental_wall_us\":incremental_wall_us,\n            \"incremental_builds\":reports.len(),\"complete\":complete,\"full_complete\":full_complete,\"parity\":comparison,\"parity_wall_us\":parity_wall_us,\"passed\":passed,\"independent_config_fact\":fact,\"no_op_unchanged\":no_op_unchanged,\n            \"phase_count_definition\":\"raw IndexReport files_*, dirty_plan, document_changes and project_model are preserved for every actual build\"}))?;\n        summaries.push(json!({\"sample\":prefix,\"stage\":stage,\"passed\":passed,\"parity_status\":comparison[\"status\"],\"incremental_builds\":reports.len(),\"incremental_wall_us\":incremental_wall_us,\n            \"incremental_engine_elapsed_ms\":summed_elapsed_ms(&reports)}));"
+        },
+        {
+          "start": 1221,
+          "end": 1245,
+          "text": "            let passed = result[\"passed\"] == true;\n            let first_incomplete = result\n                .pointer(\"/checkpoints/0/reports/0/resolution_freshness/complete\")\n                == Some(&json!(false));\n            let replay_wall_us = started.elapsed().as_micros();\n            let reports: Vec<_> = result[\"checkpoints\"]\n                .as_array()\n                .into_iter()\n                .flatten()\n                .filter_map(|checkpoint| checkpoint[\"reports\"].as_array())\n                .flatten()\n                .collect();\n            let elapsed_ms = summed_elapsed_ms(reports.iter().copied());\n            let builds = reports.len();\n            raw.emit(json!({\"event\":\"fanout_finished\",\"fanout\":fanout,\"fixture_files\":case.initial.len(),\"repetition\":repetition,\n                \"wall_us\":replay_wall_us,\"incremental_engine_elapsed_ms\":elapsed_ms,\"incremental_builds\":builds,\n                \"result\":result,\"passed\":passed,\"first_build_incomplete\":first_incomplete,\n                \"measurement_scope\":if plan.profile_study.is_some() {\n                    \"whole fixture replay includes fresh setup and initial/final parity; incremental and full-control timings are retained original reports\"\n                } else {\n                    \"whole fixture replay wall time; incremental phase counts/timings are the original reports; full rebuild timing is unavailable\"\n                }}))?;\n            summaries.push(json!({\"stage\":\"fanout\",\"fanout\":fanout,\"repetition\":repetition,\"passed\":passed,\"first_build_incomplete\":first_incomplete,\n                \"fanout_replay_wall_us\":replay_wall_us,\"incremental_engine_elapsed_ms\":elapsed_ms,\"incremental_builds\":builds}));\n        }"
+        },
+        {
+          "start": 1264,
+          "end": 1273,
+          "text": "        groups.entry(key).or_default().push(sample);\n    }\n    let groups:Vec<_>=groups.into_iter().map(|(name,samples)|{\n        json!({\"group\":name,\"samples\":samples.len(),\"passed\":samples.iter().filter(|s|s[\"passed\"]==true).count(),\n            \"failed_or_not_compared\":samples.iter().filter(|s|s[\"passed\"]!=true).count(),\n            \"outer_incremental_us_including_evidence\":distribution(&samples,\"incremental_wall_us\"),\n            \"incremental_engine_elapsed_ms_sum_across_resumes\":distribution(&samples,\"incremental_engine_elapsed_ms\"),\n            \"whole_fanout_fixture_replay_us\":distribution(&samples,\"fanout_replay_wall_us\"),\n            \"first_build_incomplete_samples\":samples.iter().filter(|s|s[\"first_build_incomplete\"]==true).count()})\n    }).collect();"
+        }
+      ]
+    },
+    "scripts/p8_task_profile_matrix.py": {
+      "bytes": 29712,
+      "sha256": "8a3b7bad9448f56263bad49da1df7def16bfddaacaa1769abe97e710c73e776c",
+      "git_blob": "c858fcb4edea1f91b421367b67bf722f0c2fef3a",
+      "actual_git_ls_tree": "100644 blob c858fcb4edea1f91b421367b67bf722f0c2fef3a\tscripts/p8_task_profile_matrix.py\n",
+      "excerpts": [
+        {
+          "start": 382,
+          "end": 386,
+          "text": "    require(seen == expected and len(identities) == 1, \"missing task slots or mixed source/binary/driver/build/run/attempt\")\n    require(len(cells) == 45 and len(setup) == len(mutations) == 40 and len(fanouts) == len(cold_curve) == 5,\n            \"task record coverage differs\")\n    require(any(item[\"sample\"].get(\"first_build_incomplete\") is True for item in fanouts),\n            \"no actual over-budget closure observed\")"
+        }
+      ]
+    }
+  },
+  "observed_original_group": {
+    "failed_or_not_compared": 0,
+    "first_build_incomplete_samples": 0,
+    "group": "scale-100000/config",
+    "incremental_engine_elapsed_ms_sum_across_resumes": {
+      "max": 1915250,
+      "mean": 1915250.0,
+      "min": 1915250,
+      "n": 1
+    },
+    "outer_incremental_us_including_evidence": {
+      "max": 1928611563,
+      "mean": 1928611563.0,
+      "min": 1928611563,
+      "n": 1
+    },
+    "passed": 1,
+    "samples": 1,
+    "whole_fanout_fixture_replay_us": {
+      "max": null,
+      "mean": null,
+      "min": null,
+      "n": 0
+    }
+  },
+  "raw_first": {
+    "line": 10,
+    "label": "scale-100000/repetition-0/config/incremental-0",
+    "full": false,
+    "start_us": 1984964071,
+    "end_us": 2004727323,
+    "wall_us": 19763252,
+    "report_fields": {
+      "build_timing": {
+        "between_stages_us": 12676,
+        "commit_write_us": 6250642,
+        "full_staging_us": null,
+        "postprocess_apply_us": 3898711,
+        "postprocess_compute_us": 3839252,
+        "prepare_snapshot_us": 196,
+        "prepare_us": 5472440,
+        "schema_version": 1,
+        "total_us": 19473724
+      },
+      "chunks_total": 0,
+      "dirty_plan": {
+        "dependency_sql": {
+          "fullscan_steps": 0,
+          "rows": 567,
+          "sorts": 5,
+          "statements": 7,
+          "vm_steps": 620818
+        },
+        "file_budget": 200,
+        "parsed_files": 0,
+        "reasons": [
+          "configuration"
+        ],
+        "rebased": false,
+        "resumed": false,
+        "selected_dependents": 200
+      },
+      "dirty_propagation": "budget_exceeded",
+      "document_changes": {
+        "files_projected": 0,
+        "removed": 0,
+        "render_failed": 0,
+        "reusable_inputs": 0,
+        "unchanged": 0,
+        "upserted": 0
+      },
+      "elapsed_ms": 19465,
+      "files_added": 0,
+      "files_parsed": 0,
+      "files_removed": 0,
+      "files_scanned": 100000,
+      "files_skipped": 100000,
+      "files_updated": 0,
+      "parse_errors": [],
+      "phase_timing": {
+        "analysis_ms": 66,
+        "parse_ms": 114,
+        "postprocess_ms": 7663,
+        "resolve_ms": 3205,
+        "scan_diff_ms": 2151,
+        "write_ms": 4536
+      },
+      "resolution_freshness": {
+        "basis_epoch": 6,
+        "complete": false,
+        "completed_files": 200,
+        "index_epoch": 9,
+        "reason": "budget_exceeded",
+        "retry": "run incremental index to resume bounded work, or request full index",
+        "root_count": 1,
+        "scope": "observed_resolution_invalidations",
+        "status": "incomplete"
+      },
+      "symbols_total": 1247,
+      "used_parallel_parse": false
+    },
+    "project_model_list_values_summarized": {
+      "catalog_files": 100000,
+      "changed_configs": {
+        "array_count": 1,
+        "canonical_sha256": "dbe8e8b9bc71ae4a09fdee11553f8ff0752bf2adbd2498aaa95a7d9a3cf1f40e"
+      },
+      "config_inputs": 1,
+      "config_parse_cache_hits": 0,
+      "config_reads": 1,
+      "config_root_probes": 73504,
+      "config_roots": 1,
+      "diagnostics": {
+        "array_count": 0,
+        "canonical_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "go_fact_cache_hits": 0,
+      "go_source_reads": 0,
+      "input_digest": "0a95075b2f9529086ec745a9dca05baaf5473d43177197f4ccb6510901f1f2ee",
+      "inventory_source": "shared_walk",
+      "modes": {
+        "array_count": 1,
+        "canonical_sha256": "a83e5b296b23df2a437d761a9ce3fb30a53e9e0ef52d335d7852805fd1c1c39f"
+      },
+      "rust_fact_cache_hits": 32000,
+      "rust_source_reads": 0,
+      "version": 3
+    }
+  },
+  "raw_final": {
+    "line": 668,
+    "label": "scale-100000/repetition-0/config/incremental-329",
+    "full": false,
+    "start_us": 3907569648,
+    "end_us": 3913572463,
+    "wall_us": 6002815,
+    "report_fields": {
+      "build_timing": {
+        "between_stages_us": 13495,
+        "commit_write_us": 2600467,
+        "full_staging_us": null,
+        "postprocess_apply_us": 8555,
+        "postprocess_compute_us": 32172,
+        "prepare_snapshot_us": 158,
+        "prepare_us": 3318398,
+        "schema_version": 1,
+        "total_us": 5973090
+      },
+      "chunks_total": 0,
+      "dirty_plan": {
+        "dependency_sql": {
+          "fullscan_steps": 0,
+          "rows": 258130,
+          "sorts": 1030,
+          "statements": 1030,
+          "vm_steps": 11270518
+        },
+        "file_budget": 200,
+        "parsed_files": 0,
+        "reasons": [
+          "configuration",
+          "resumed"
+        ],
+        "rebased": false,
+        "resumed": true,
+        "selected_dependents": 198
+      },
+      "dirty_propagation": "normal",
+      "document_changes": {
+        "files_projected": 0,
+        "removed": 0,
+        "render_failed": 0,
+        "reusable_inputs": 0,
+        "unchanged": 0,
+        "upserted": 0
+      },
+      "elapsed_ms": 5964,
+      "files_added": 0,
+      "files_parsed": 0,
+      "files_removed": 0,
+      "files_scanned": 100000,
+      "files_skipped": 100000,
+      "files_updated": 0,
+      "parse_errors": [],
+      "phase_timing": {
+        "analysis_ms": 31,
+        "parse_ms": 562,
+        "postprocess_ms": 0,
+        "resolve_ms": 2050,
+        "scan_diff_ms": 705,
+        "write_ms": 1050
+      },
+      "resolution_freshness": {
+        "basis_epoch": null,
+        "complete": true,
+        "completed_files": 0,
+        "index_epoch": 338,
+        "reason": null,
+        "retry": null,
+        "root_count": 0,
+        "scope": "observed_resolution_invalidations",
+        "status": "ready"
+      },
+      "symbols_total": 1230,
+      "used_parallel_parse": false
+    },
+    "project_model_list_values_summarized": {
+      "catalog_files": 100000,
+      "changed_configs": {
+        "array_count": 0,
+        "canonical_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "config_inputs": 1,
+      "config_parse_cache_hits": 1,
+      "config_reads": 1,
+      "config_root_probes": 73504,
+      "config_roots": 1,
+      "diagnostics": {
+        "array_count": 0,
+        "canonical_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "go_fact_cache_hits": 0,
+      "go_source_reads": 0,
+      "input_digest": "0a95075b2f9529086ec745a9dca05baaf5473d43177197f4ccb6510901f1f2ee",
+      "inventory_source": "shared_walk",
+      "modes": {
+        "array_count": 1,
+        "canonical_sha256": "a83e5b296b23df2a437d761a9ce3fb30a53e9e0ef52d335d7852805fd1c1c39f"
+      },
+      "rust_fact_cache_hits": 32000,
+      "rust_source_reads": 0,
+      "version": 3
+    }
+  },
+  "config_facts": [
+    {
+      "actual_targets": [
+        "m_0000/ts_00000.ts"
+      ],
+      "consumer": "m_0000/ts_00002.ts",
+      "expected_target": "m_0000/ts_00000.ts",
+      "passed": true
+    },
+    {
+      "actual_targets": [
+        "m_0000/ts_00001.ts"
+      ],
+      "consumer": "m_0000/ts_00002.ts",
+      "expected_target": "m_0000/ts_00001.ts",
+      "passed": true
+    }
+  ],
+  "finding": "The config mutation group really contains first_build_incomplete_samples=0. Native scale_sample summaries omit first_build_incomplete for all ordinary mutation samples. Only fanout samples emit that boolean; shared grouping counts only literal true and therefore yields0 for absent ordinary fields. Do not interpret this0 as an observed complete first config build. This is a field-applicability/coverage limitation, not a contradictory original boolean.",
+  "direct_closure_basis": "Raw config build L10 is incomplete/budget_exceeded,329 incomplete builds and329 resumed-true builds precede final ready atL668. All330 raw builds and detailed timing sums already independently checked. Final typed15table parity and expected config target both pass.",
+  "driver_boundary": "Original task driver requires actual over-budget observation from the five fanout records. It does not use ordinary config summary0 as a closure predicate. Preserve original summary bytes; final006 analysis must use raw per-build statuses and explicit applicability.",
+  "prior_language_correction": "Earlier quick message called this a conflict. Narrowed after reading source: counter is emitted uniformly but its input flag is populated only for fanout. Original accepted peer report already preserves0 separately from raw first-incomplete; it is not rewritten.",
+  "operations": "Only two exact source files plus already produced JSON excerpts; no old/new raw reread, function/ELF/CRC/benchmark or task mutation."
+}

@@ -1,0 +1,312 @@
+{
+  "schema": "P8-017-018-019-current-main-independent-conditional-scope-review-v1",
+  "reviewer": "/root/pr_triage",
+  "created_at": "2026-10-10T06:37:56.065034+00:00",
+  "result": "accepted_existing_own_scope_conditional_on_original_dependency_chain",
+  "apply_now": false,
+  "task_credit": 0,
+  "source": {
+    "current_product_G2": "f97c5068d056969705e8387ba1f37d83847f5bee",
+    "actual_merged_main": "0da9a2800d2b3112d584a8bad4f79785e01162a9",
+    "whole_tree": "39a053ae49b486764751a570d164e7cd41d7ff29",
+    "main_bridge": "round44-nine-application-main-bridge/actual-main-minimal-input-bridge.applyfalse.json; actual Git08aa3635f4a6572fef3bbf2bd82cba1ad527d80c",
+    "merged_at": "2026-10-10T06:05:09Z"
+  },
+  "original_definitions": [
+    {
+      "id": "P8-017",
+      "title": "删除临时兼容和重复模块",
+      "scope": [
+        "crates/cc-index/",
+        "crates/cc-search/",
+        "crates/cc-eval/"
+      ],
+      "depends_on": [
+        "P8-016"
+      ],
+      "steps": [
+        "清临时旧branch/重复评分器/多份schema来源",
+        "保留必要外部wire兼容"
+      ],
+      "deliverables": [
+        "删除临时兼容和重复模块的实现/配置或规格变更",
+        "artifacts/benchmarks/<run-id>/ 中对应 V18, V21 验证证据（实施时生成）"
+      ],
+      "acceptance": [
+        "运行路径只有一个事实与算法所有者，删除有回归证据",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V18",
+        "V21"
+      ],
+      "conditional": null,
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P8-018",
+      "title": "文档事实与安装契约同步",
+      "scope": [
+        "docs/ARCHITECTURE.md",
+        "docs/BENCHMARK.md",
+        "docs/MCP_TOOLS.md",
+        "docs/CONFIGURATION.md"
+      ],
+      "depends_on": [
+        "P8-017"
+      ],
+      "steps": [
+        "从schema/capabilities生成可核查事实",
+        "更新安装/故障/默认离线说明"
+      ],
+      "deliverables": [
+        "文档事实与安装契约同步的实现/配置或规格变更",
+        "artifacts/benchmarks/<run-id>/ 中对应 V18, V21 验证证据（实施时生成）"
+      ],
+      "acceptance": [
+        "文档表数/schema/工具数不再漂移，设计与已实现标识分开",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V18",
+        "V21"
+      ],
+      "conditional": null,
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P8-019",
+      "title": "发布工件与完整报告归档",
+      "scope": [
+        ".github/workflows/ci.yml",
+        "artifacts/benchmarks/",
+        "docs/benchmarks/"
+      ],
+      "depends_on": [
+        "P8-018"
+      ],
+      "steps": [
+        "归档精确binary/checksum/manifest/raw/gates",
+        "latest只指向run"
+      ],
+      "deliverables": [
+        "发布工件与完整报告归档的实现/配置或规格变更",
+        "artifacts/benchmarks/<run-id>/ 中对应 V01, V04, V21 验证证据（实施时生成）"
+      ],
+      "acceptance": [
+        "报告可重算，历史原始run不被下一轮覆盖",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V01",
+        "V04",
+        "V21"
+      ],
+      "conditional": null,
+      "conditional_dependencies": []
+    }
+  ],
+  "owner_source_bridge": {
+    "method": "Reviewer executed bounded GIT_NO_LAZY_FETCH=1 git ls-tree HEAD -- exactly the 11 paths in the prior independent ownership review, in existing source-exact-G2. Exit0; all output OIDs compared equal. This is metadata observation, not a new source/algorithm execution.",
+    "observed_matching_rows": [
+      {
+        "path": "crates/cc-search/src/lanes.rs",
+        "git_blob": "f760ca52ec32547215092a5c700d4cb977a9669d"
+      },
+      {
+        "path": "crates/cc-search/src/query_policy.rs",
+        "git_blob": "79873db31d8d93a86f1537b930038f2437b99594"
+      },
+      {
+        "path": "crates/cc-eval/src/benchmark/statistics.rs",
+        "git_blob": "415fbdc0a254729e4b7fa5f2fe040b3019d90aa9"
+      },
+      {
+        "path": "crates/cc-db/src/index_migrate.rs",
+        "git_blob": "55ce1194ab0e890ad43793077cf1238ab150da5d"
+      },
+      {
+        "path": "crates/cc-db/src/direct_writer.rs",
+        "git_blob": "603e8060ad36c0a46242184e74d4e56805e1d8d9"
+      },
+      {
+        "path": "scripts/p8_runtime.py",
+        "git_blob": "d8b24c6c1d21d6c80118b4f9ca49f17ff809a401"
+      },
+      {
+        "path": "crates/cc-eval/src/report.rs",
+        "git_blob": "efe65553afc0fb64a90eb24bf9188641fe210edb"
+      },
+      {
+        "path": "crates/cc-eval/src/benchmark/normalizer.rs",
+        "git_blob": "a178128fdcd40c69e8f737a929b6048d175de8f3"
+      },
+      {
+        "path": "crates/cc-index/src/resolver/helpers.rs",
+        "git_blob": "417e940d4682cc41c9adbeb2fb14b24d1d1fa8e2"
+      },
+      {
+        "path": "crates/cc-index/src/resolver/catalog.rs",
+        "git_blob": "69ca350784614fcc3df3b93eac981023d18eaea0"
+      },
+      {
+        "path": "crates/cc-eval/src/benchmark/metrics.rs",
+        "git_blob": "fa0104a8ed385b7db87b3237ea27231c5745f32e"
+      }
+    ],
+    "old_source": "51138c236cf2ed47858e2306f9c7bfd3600aaef9",
+    "new_source": "f97c5068d056969705e8387ba1f37d83847f5bee"
+  },
+  "findings": [
+    {
+      "task": "P8-017",
+      "own_scope": "satisfied_by_existing_exact_implementation_and_regressions",
+      "requirements": "Single live facts/algorithm owner; justified duplicate removal; preserve external wire compatibility.",
+      "evidence": {
+        "owner_findings": [
+          {
+            "area": "statistics",
+            "anchors": [
+              "statistics.rs:15,42,56,254",
+              "report.rs:1,32,58",
+              "p8_runtime.py:819-852"
+            ],
+            "finding": "One nearest_rank owner; Python copies checked Rust legacy_ns results. Units and null/zero semantics intentionally differ."
+          },
+          {
+            "area": "lane_catalogue",
+            "anchors": [
+              "lanes.rs:46-58",
+              "query_policy.rs:60-81"
+            ],
+            "finding": "Shared borrowed registry feeds execution and policy. Roles, order, optional semantic suffix and fingerprint stay explicit. Historical identified duplicate catalogue has been resolved."
+          },
+          {
+            "area": "DDL",
+            "anchors": [
+              "index_migrate.rs:46-107",
+              "direct_writer.rs:159-179"
+            ],
+            "finding": "Current physical index text comes from canonical full SQL; OnceLock caches immutable SQL only; missing/duplicate selected definitions fail; nonzero old versions return mismatch."
+          },
+          {
+            "area": "scoring_and_compatibility",
+            "anchors": [
+              "metrics.rs:20-38,162-185",
+              "normalizer.rs:174-203,248-256",
+              "helpers.rs:361+",
+              "catalog.rs:745+"
+            ],
+            "finding": "Compatibility/native have distinct public contracts and shared numeric helpers; historical packing readers keep partial truth. Legacy resolver helpers are cfg(test) independent references, not live fallback candidates."
+          }
+        ],
+        "deletion": {
+          "original_engine_review": {
+            "path": "/workspace/scratch/bfccb8494ba0/round29-P8-017-scope-review/engine-deletion-review.original",
+            "bytes": 6536,
+            "sha256": "b6930409d8b5b6dfdabf92804125e44dae58b7a7a6979eff8d5d848368145147",
+            "git_blob": "2c5ce8d7246ef314c76c9bb1d1675df2438a33b4"
+          },
+          "original_owner_inventory": {
+            "path": "/workspace/scratch/bfccb8494ba0/round29-P8-017-scope-review/original-owner-inventory.original",
+            "bytes": 25546,
+            "sha256": "c6ca4f36f2cc9b6780f0ce77e0b733242ce16f29c1e367d44fb79521a809b8ba",
+            "git_blob": "6df7be63a4f7660f23e01a84fcf7e3c22ae67038"
+          },
+          "original_product": "b069c73a0d76736e1dfb3eb64e79cad6980b773f",
+          "duplicate_test_bodies_removed": 18,
+          "retained_other_tests": 17,
+          "original_review_was_static": true,
+          "later_execution_receipts_keep_original_identity": true,
+          "original_lane_product": "fa6562ad70c6a6f2a7a1e65594df23f807e62f18",
+          "lane_control_scope": "303 library+1 anchor; four variants prepare-only compiledfalse"
+        },
+        "current_source_11_OIDs_equal": true,
+        "current_V18_V21_named_log_records": "current-original-log-line-crosscheck.json"
+      },
+      "limits": [
+        "18 duplicate engine tests removed and17 other tests retained are original source review facts, with later original regressions kept at their own source identities.",
+        "The four lane mechanism snapshots remain prepare-only/compiledfalse; they are not counted as executed controls.",
+        "Test-only legacy resolver and historical schemas plus compatibility/native public contracts are intentional; no unsupported requirement to delete these is imposed."
+      ],
+      "remaining_condition": "P8-016 must first receive its original formal acceptance; no new concrete self-implementation gap identified."
+    },
+    {
+      "task": "P8-018",
+      "own_scope": "satisfied_by_published_document_facts_fix_current_controls_and_original_baseline_execution",
+      "evidence": {
+        "published_docs": {
+          "docs/BENCHMARK.md": "39513e0fa62eeab815e0c503594846d48b75c8e6",
+          "docs/roadmap/code-index-v2/P8-OWNERSHIP.md": "487fef20517cac0b1ebab12a6ff10669ac476bba",
+          "docs/roadmap/code-index-v2/P8-RELEASE-EVIDENCE.md": "a42b65ef36c155cfefd7894a06faf9338db4fb63"
+        },
+        "current_facts_line": 5857,
+        "current_facts_status": "passed/errors[]/runtime_certifiedfalse",
+        "current_install_offline_and_tool_controls": "current-original-log-line-crosscheck.json",
+        "baseline_source": {
+          "product_source": "b9b089bb4eae072affe9326681d4980eae15fd84",
+          "product_tree": "6461938788665701cfa4fa095a064a3a404ec492",
+          "workflow_source": "de14e6c7e80524efb0e43bec74bb48f518cfbc67",
+          "workflow_git_blob": "1745c95f54ca9865acbf2d2954ff0dbe8398ee35",
+          "run_id": 38020782259,
+          "attempt": 1,
+          "job_id": 114121097102,
+          "event": "push",
+          "artifact_id": 11658346818
+        },
+        "baseline_exit": 0,
+        "baseline_wall_seconds": 464.15219657700004,
+        "three_drifts": [
+          "DRIFT: cc-db tests changed: doc=142 actual=206",
+          "DRIFT: passed count changed: doc=1258 actual=2815",
+          "DRIFT: ignored count changed: doc=15 actual=76"
+        ],
+        "historical_TEST_PLAN_git": "c86e4628c8fb3d94385a2fe5c5ecbef8f4b1dc2c"
+      },
+      "interpretation": "PR198 fifteen-table correction is actually merged and exact in G2. Current schema25/30base+5FTS/14tools/default-offline declaration passed. Original b9 baseline command really executed; three DRIFT lines compare explicitly historical c86 figures, not a false current-count assertion. 2815/76 are footer sums, not unique methods/all-features. Do not relabel b9 baseline as G2 execution or rewrite its history.",
+      "remaining_condition": "After017 closes, no additional own-scope gap identified. No new no-DRIFT or script-rerun gate."
+    },
+    {
+      "task": "P8-019",
+      "own_scope": "satisfied_by_unchanged_archive_replay_implementation_published_spec_and_current_regressions",
+      "evidence": {
+        "archive_source_git": "79c8ab476d1c9fb17a190a1c280f82c614a5dc1a",
+        "archive_tests_git": "855d03942af118ebdbfef2506a437e9a2b313ec7",
+        "replay_source_git": "8d633bd75772e2ef4cfead559688a6fea4ca6644",
+        "current_archive_tests": 42,
+        "current_named_native_replay": [
+          "raw_replay_reconstructs_identical_metrics",
+          "raw_replay_reconstructs_costs_without_inventing_missing_measurements",
+          "raw_and_normalized_drift_are_rejected"
+        ],
+        "published_replay_directory_clarification": "a42b65ef36c155cfefd7894a06faf9338db4fb63"
+      },
+      "implementation_boundary": [
+        "Exact supplied binary/config/source snapshot/checksums/evidence gate bytes and no-clobber archive are covered; caller build declarations alone do not prove binary provenance.",
+        "latest is only a run/archive/candidate pointer and advances only for explicit passed_local plus actual corpus lock; failure/native baseline/metadata-only cannot promote, original run stays unchanged.",
+        "Archive verify checks integrity, not numerical replay. Original native replay separately checks raw/normalized and regenerates reports on a writable independent copy, actual run child not suite parent.",
+        "Current42 archive controls and native replay/error methods are genuine G2 log records; no new combined end-to-end run is invented or required without original contractual basis."
+      ],
+      "remaining_condition": "After018 closes, no concrete own-scope gap identified; this is archival-function acceptance, not global G8 release approval."
+    }
+  ],
+  "validation_scope": {
+    "V01": "Existing original fixed source/binary/toolchain/fresh-target platform receipts plus current default/HTTP/stdio/ignored-aware regression are kept at actual source identity; no new current release or all150 prerequisite.",
+    "V04": "Current raw replay, missing measurements, cancelled/timeout/error controls; not just archive verification exit0.",
+    "V18": "Current14-tool/mode/schema/sanitize/dispatch/status/real-stdio/default offline controls verified line by line.",
+    "V21": "Accepted original8 platform/rollback cells and25→24→25/backup remain original275e/277f/dev, complemented by current schema/cache/MSRV facts; no repackaged current-source release certification."
+  },
+  "exact_conditional_sequence": [
+    "Wait for P8-016 actual original acceptance, not merely a draft or study prefix.",
+    "Then evaluate017→018→019 with these own-scope facts and retain every old not_run/failure record.",
+    "Root controls any final status/doc PR; this report changes nothing."
+  ],
+  "new_operations": {
+    "tests": 0,
+    "product_or_replay_or_facts_commands": 0,
+    "Actions_downloads": 0,
+    "ZIP_or_CRC_or_ELF": 0,
+    "refs_or_task_mutations": 0
+  },
+  "input_manifest": "read-input-identities.json"
+}

@@ -1,0 +1,1194 @@
+{
+  "schema": "p8_006_bounded_regression_applicability_v1",
+  "created_at_utc": "2026-10-10T03:35:59.369367+00:00",
+  "reviewer": "/root/todo_audit",
+  "status": "accepted_scoped_existing_regression_evidence_applicable",
+  "apply_now": false,
+  "decision": {
+    "V07_minimum_scenarios": "原 06-VALIDATION:29 的各类 V07 场景已有同树工程控制实际通过，相关 public MCP ignored 方法又在同日志后段按显式 --ignored 实跑通过。",
+    "additional_regression_execution_required_by_this_review": false,
+    "new_source_or_regression_blocker_found": false,
+    "task_done": false,
+    "remaining": "100k rep0 真实终态与原 validate_shard 接受仍 pending；取得后补五尺度完整 45 主阶段 + 5 fanout 的描述性原事实、最终独立收尾 receipt 和持久 locator。已有四片/回归不重跑。",
+    "limits": "仅补足已有六项 closeout 输入中的第 4 项 V07/旧回归适用性；其余要求沿 f95a908…/9263e672… 原文，不新增测试、统一 N30/150 task gate 或发布通过。"
+  },
+  "source_identity": {
+    "fixed_main": "b9b089bb4eae072affe9326681d4980eae15fd84",
+    "fixed_G": "9cc6bf49f6dd81e4069a8004eed49addba0ab79b",
+    "whole_tree": "6461938788665701cfa4fa095a064a3a404ec492",
+    "main_job": {
+      "id": 114095050041,
+      "run_id": 38012386309,
+      "name": "check",
+      "head_sha": "9cc6bf49f6dd81e4069a8004eed49addba0ab79b",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-10T01:14:20Z",
+      "completed_at": "2026-10-10T01:42:19Z"
+    },
+    "closeout_job": {
+      "id": 114095050109,
+      "run_id": 38012386295,
+      "name": "closeout",
+      "head_sha": "9cc6bf49f6dd81e4069a8004eed49addba0ab79b",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-10T01:15:42Z",
+      "completed_at": "2026-10-10T01:25:42Z"
+    },
+    "actual_checkouts": {
+      "main": {
+        "line": 190,
+        "actual": "1e14b7ad8d097da0000e18597da0316143de919c",
+        "tree": "6461938788665701cfa4fa095a064a3a404ec492",
+        "ordered_parents": [
+          "09d4454fa45455dc5a8bfdfec67e31bb7ed162c7",
+          "9cc6bf49f6dd81e4069a8004eed49addba0ab79b"
+        ],
+        "whole_tree_equals_G": true
+      },
+      "closeout": {
+        "line": 186,
+        "actual": "9cc6bf49f6dd81e4069a8004eed49addba0ab79b"
+      },
+      "later_API_testmerge": "08810679606d49cb1c7c9058f8da9ef5c5be8492 is a separate later API object, not this main job checkout."
+    },
+    "main_bridge": {
+      "path": "/workspace/scratch/bfccb8494ba0/round36-006-and-dependency-scope-review/official-fixed-main-commit.json",
+      "actual_commit": "b9b089bb4eae072affe9326681d4980eae15fd84",
+      "actual_tree": "6461938788665701cfa4fa095a064a3a404ec492",
+      "parents": [
+        "30a6dff579c88593c1762db244eacbe6ee95cef9",
+        "9cc6bf49f6dd81e4069a8004eed49addba0ab79b"
+      ]
+    },
+    "claim": "main 工作实际 checkout 仍称 1e14b7…；以完整 tree 等同桥应用到 G9cc/b9，绝不重标字面执行来源。closeout 直接 checkout G9cc。"
+  },
+  "original_task": {
+    "id": "P8-006",
+    "status": "in_progress",
+    "depends_on": [
+      "P7-020",
+      "P8-001",
+      "P8-005"
+    ],
+    "steps": [
+      "测no-op/body/API/config/batch和超预算闭包",
+      "输出各phase计数"
+    ],
+    "deliverables": [
+      "增量规模与fanout曲线的实现/配置或规格变更",
+      "artifacts/benchmarks/<run-id>/ 中对应 V07, V20 验证证据（实施时生成）"
+    ],
+    "acceptance": [
+      "时间可归因且闭包完成后full parity，未完成有显式status",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validations": [
+      "V07",
+      "V20"
+    ],
+    "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。"
+  },
+  "original_clause_refs": {
+    "tasks_lines": [
+      12145,
+      12178
+    ],
+    "V07": {
+      "line": 29,
+      "text": "| V07 | dirty oracle | 增删改/重导出链环/大 fanout/负向查找、新同名、warm/cold cache 多轮固定点与 full parity | L2/L3 |"
+    },
+    "V20_line": 42,
+    "release_G8_line": 58,
+    "previous_scope_review": "f95a908ae40172deacb8f25f6b0df594a6d20a8a",
+    "scope_is_unchanged": "描述性各 host N=1 条件收尾与原注册 N30/150/1500 研究分栏；后者未齐不能 passed。"
+  },
+  "original_byte_inventory": [
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round34-PR200-original-CI-logs/114095050041-original.log",
+      "bytes": 1092716,
+      "sha256": "126fece0b24539d0be667aed96b0482a832ebd1d2baf8615708eab328950cdfd",
+      "git_blob": "14e542a2ffcabb8ea307ecc8b5964dcbc755c1aa",
+      "already_published_blob": true
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round34-PR200-original-CI-logs/114095050109-original.log",
+      "bytes": 1906903,
+      "sha256": "aeeac4aa35ae00268f133a5072579dead09097147fd7a8b6d0c06018078a95a5",
+      "git_blob": "4adb4f15c10b668dc47e3da3068850e5161c77d9",
+      "already_published_blob": true
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round34-PR200-original-CI-independent-review/independent-terminal-log-review.json",
+      "bytes": 38770,
+      "sha256": "688747a8f78765eaadc9792f622717cd9c95409802fc89d0c3e13c834f5fe572",
+      "git_blob": "78ac902a240ddc2eccc7099aa5cd35dd26247ddf",
+      "already_published_blob": true
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round37-P8-006-second-scope-review/second-independent-task-study-boundary-review.json",
+      "bytes": 12581,
+      "sha256": "cef68e2e605d43ef2a5e4f336ddfb2f2ff25a30e924dda8cc3ae020e1c9e40da",
+      "git_blob": "f95a908ae40172deacb8f25f6b0df594a6d20a8a",
+      "already_published_blob": true
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round36-006-and-dependency-scope-review/official-fixed-main-commit.json",
+      "bytes": 6472,
+      "sha256": "58827f654b2709c51c82d6b1d398388b76fe1b8a45d94d09f402ac7842a4832a",
+      "git_blob": "62ad9a54dc40fd5b1dfc4748a6935d651f4161c0",
+      "already_published_blob": false
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round36-006-and-dependency-scope-review/fixed-main-source/docs/roadmap/code-index-v2/tasks.json",
+      "bytes": 879341,
+      "sha256": "e0a612bb4d42f63be01c17e77ff627db3581200275fbfa9e60679399e90877c6",
+      "git_blob": "adb44ee70a4c129bfb443d4ecf678fb934c8ea6b",
+      "already_published_blob": false
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round36-006-and-dependency-scope-review/fixed-main-source/docs/roadmap/code-index-v2/06-VALIDATION.md",
+      "bytes": 10172,
+      "sha256": "64a9fde995077f8349edc76ee501825feca6717c6c60ab7c03cc535142016aad",
+      "git_blob": "fcbcf9e9280d41a4e8e138543d2bd217137a2c5e",
+      "already_published_blob": false
+    }
+  ],
+  "claim_to_actual_named_controls": [
+    {
+      "id": "V07-mutations",
+      "original_scope": "增删改；no-op/body/API 的旧行为",
+      "status": "existing_actual_pass_applicable",
+      "log": "main",
+      "controls": [
+        {
+          "method": "body_only_changes_keep_surface_and_do_not_promote_callers",
+          "records": [
+            {
+              "line": 1619,
+              "outcome": "ok",
+              "detail": ""
+            },
+            {
+              "line": 7717,
+              "outcome": "ok",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "method": "direct_writer_surface_storage_delete_and_reopen",
+          "records": [
+            {
+              "line": 1620,
+              "outcome": "ok",
+              "detail": ""
+            },
+            {
+              "line": 7718,
+              "outcome": "ok",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "method": "event_scoped_missing_file_and_candidate_changes_match_full_rebuild",
+          "records": [
+            {
+              "line": 1638,
+              "outcome": "ok",
+              "detail": ""
+            },
+            {
+              "line": 7736,
+              "outcome": "ok",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "method": "deleting_a_pending_root_revokes_every_consumers_old_target",
+          "records": [
+            {
+              "line": 1656,
+              "outcome": "ok",
+              "detail": ""
+            },
+            {
+              "line": 7754,
+              "outcome": "ok",
+              "detail": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "V07-chain-cycle",
+      "original_scope": "重导出链、环及多轮收敛",
+      "status": "existing_actual_pass_applicable",
+      "log": "main",
+      "controls": [
+        {
+          "method": "rust_workspace_pub_use_signature_change_converges",
+          "records": [
+            {
+              "line": 1624,
+              "outcome": "ok",
+              "detail": ""
+            },
+            {
+              "line": 7722,
+              "outcome": "ok",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "method": "python_and_rust_forward_cycles_match_full_after_signature_changes",
+          "records": [
+            {
+              "line": 1665,
+              "outcome": "ok",
+              "detail": ""
+            },
+            {
+              "line": 7763,
+              "outcome": "ok",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "method": "reexport_cycle_and_deep_chain_converge_across_bounded_rounds",
+          "records": [
+            {
+              "line": 1666,
+              "outcome": "ok",
+              "detail": ""
+            },
+            {
+              "line": 7764,
+              "outcome": "ok",
+              "detail": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "V07-fanout",
+      "original_scope": "大 fanout、明确未完状态、债务跨轮/重开恢复",
+      "status": "existing_actual_pass_applicable",
+      "log": "main",
+      "controls": [
+        {
+          "method": "dependency_fanout_over_budget_is_partial_not_normal",
+          "records": [
+            {
+              "line": 1636,
+              "outcome": "ok",
+              "detail": ""
+            },
+            {
+              "line": 7734,
+              "outcome": "ok",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "method": "budget_remainder_survives_reopen_and_an_empty_event_scope",
+          "records": [
+            {
+              "line": 1655,
+              "outcome": "ok",
+              "detail": ""
+            },
+            {
+              "line": 7753,
+              "outcome": "ok",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "method": "budget_remainder_is_resumed_by_unchanged_incremental_builds",
+          "records": [
+            {
+              "line": 1658,
+              "outcome": "ok",
+              "detail": ""
+            },
+            {
+              "line": 7756,
+              "outcome": "ok",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "method": "fanout_larger_than_a_lookup_window_is_not_truncated_out_of_debt",
+          "records": [
+            {
+              "line": 1663,
+              "outcome": "ok",
+              "detail": ""
+            },
+            {
+              "line": 7761,
+              "outcome": "ok",
+              "detail": ""
+            }
+          ]
+        }
+      ],
+      "boundary": "这些是原回归控制；规模研究中五个 fanout 的实际 first-incomplete/resume/closure 仍引用原 1k shard，不能从这些控制推断 100k 结果。"
+    },
+    {
+      "id": "V07-negative-new-name",
+      "original_scope": "负向查找、新同名/歧义转换及路径优先级",
+      "status": "existing_actual_pass_applicable",
+      "log": "main",
+      "controls": [
+        {
+          "method": "global_unique_becomes_ambiguous_then_unique_again",
+          "records": [
+            {
+              "line": 1641,
+              "outcome": "ok",
+              "detail": ""
+            },
+            {
+              "line": 7739,
+              "outcome": "ok",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "method": "missing_name_then_provider_appears_refreshes_unchanged_consumer",
+          "records": [
+            {
+              "line": 1643,
+              "outcome": "ok",
+              "detail": ""
+            },
+            {
+              "line": 7741,
+              "outcome": "ok",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "method": "negative_path_and_precedence_changes_refresh_import_routes",
+          "records": [
+            {
+              "line": 1645,
+              "outcome": "ok",
+              "detail": ""
+            },
+            {
+              "line": 7743,
+              "outcome": "ok",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "method": "go_package_files_and_same_name_other_packages_are_isolated",
+          "records": [
+            {
+              "line": 1644,
+              "outcome": "ok",
+              "detail": ""
+            },
+            {
+              "line": 7742,
+              "outcome": "ok",
+              "detail": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "V07-warm-cold-full",
+      "original_scope": "warm/cold cache 多轮固定点与 full parity",
+      "status": "existing_actual_pass_applicable",
+      "log": "main",
+      "controls": [
+        {
+          "method": "repeated_warm_catalog_mutations_match_cold_rebuild",
+          "records": [
+            {
+              "line": 1646,
+              "outcome": "ok",
+              "detail": ""
+            },
+            {
+              "line": 7745,
+              "outcome": "ok",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "method": "late_provider_change_rebases_without_losing_old_consumers",
+          "records": [
+            {
+              "line": 1662,
+              "outcome": "ok",
+              "detail": ""
+            },
+            {
+              "line": 7760,
+              "outcome": "ok",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "method": "pending_changes_rebase_and_shrinker_cannot_certify_incomplete",
+          "records": [
+            {
+              "line": 1682,
+              "outcome": "ok",
+              "detail": ""
+            },
+            {
+              "line": 7780,
+              "outcome": "ok",
+              "detail": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "006-config-route",
+      "original_scope": "config-only 与 API 路由旧行为",
+      "status": "existing_actual_pass_applicable",
+      "log": "main",
+      "controls": [
+        {
+          "method": "p3a_configuration_only_change_retargets_unchanged_consumers_and_survives_reopen",
+          "records": [
+            {
+              "line": 1706,
+              "outcome": "ok",
+              "detail": ""
+            },
+            {
+              "line": 7804,
+              "outcome": "ok",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "method": "local_go_replace_resolves_members_across_files_and_retargets_on_config_only",
+          "records": [
+            {
+              "line": 1752,
+              "outcome": "ok",
+              "detail": ""
+            },
+            {
+              "line": 7850,
+              "outcome": "ok",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "method": "api_edit_keeps_route_manifest_equal_to_full_and_preserves_route_nodes",
+          "records": [
+            {
+              "line": 2162,
+              "outcome": "ok",
+              "detail": ""
+            },
+            {
+              "line": 8260,
+              "outcome": "ok",
+              "detail": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "006-oracle-compatibility",
+      "original_scope": "完整对账、重复/Value/尾行与原资源错误不变",
+      "status": "existing_actual_pass_applicable",
+      "log": "main",
+      "controls": [
+        {
+          "method": "agrees_with_legacy_for_all_types_duplicates_and_physical_columns",
+          "records": [
+            {
+              "line": 1401,
+              "outcome": "ok",
+              "detail": ""
+            },
+            {
+              "line": 7499,
+              "outcome": "ok",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "method": "every_existing_table_remains_part_of_the_comparison",
+          "records": [
+            {
+              "line": 1402,
+              "outcome": "ok",
+              "detail": ""
+            },
+            {
+              "line": 7500,
+              "outcome": "ok",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "method": "equal_inputs_must_both_fit_the_original_scratch_limit",
+          "records": [
+            {
+              "line": 1400,
+              "outcome": "ok",
+              "detail": ""
+            },
+            {
+              "line": 7498,
+              "outcome": "ok",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "method": "second_input_budgets_and_first_error_remain_enforced",
+          "records": [
+            {
+              "line": 1406,
+              "outcome": "ok",
+              "detail": ""
+            },
+            {
+              "line": 7504,
+              "outcome": "ok",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "method": "row_byte_and_disk_budgets_fail_instead_of_certifying_a_prefix",
+          "records": [
+            {
+              "line": 1408,
+              "outcome": "ok",
+              "detail": ""
+            },
+            {
+              "line": 7506,
+              "outcome": "ok",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "method": "compares_more_than_the_legacy_row_budget_and_detects_the_last_row_change",
+          "records": [
+            {
+              "line": 1410,
+              "outcome": "ok",
+              "detail": ""
+            },
+            {
+              "line": 7508,
+              "outcome": "ok",
+              "detail": ""
+            }
+          ]
+        }
+      ],
+      "boundary": "原 benchmark_oracle_streaming 目标每配置 13 passed；不把旧 witness 源的结果移植到本源。四个借用序列化 correctness 方法与默认/eval-http 来源已由原 78ac902… 报告核实，此处直接引用，不重审算法。"
+    },
+    {
+      "id": "006-scale-protocol",
+      "original_scope": "真实阶段计时、独立 fanout 真值、15 表、旧/新 profile 分离",
+      "status": "existing_actual_pass_applicable",
+      "log": "main",
+      "controls": [
+        {
+          "method": "complete_stage_timing_accounts_for_real_split_handoffs_and_full_staging",
+          "records": [
+            {
+              "line": 2170,
+              "outcome": "ok",
+              "detail": ""
+            },
+            {
+              "line": 8268,
+              "outcome": "ok",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "method": "failed_independent_fanout_truth_remains_a_failure",
+          "records": [
+            {
+              "line": 2171,
+              "outcome": "ok",
+              "detail": ""
+            },
+            {
+              "line": 8269,
+              "outcome": "ok",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "method": "bounded_python_forwarding_resume_keeps_all_targets_and_fifteen_table_parity",
+          "records": [
+            {
+              "line": 2176,
+              "outcome": "ok",
+              "detail": ""
+            },
+            {
+              "line": 8274,
+              "outcome": "ok",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "method": "named_wide_dirty_profile_is_distinct_and_preserves_legacy_budgets",
+          "records": [
+            {
+              "line": 2174,
+              "outcome": "ok",
+              "detail": ""
+            },
+            {
+              "line": 8272,
+              "outcome": "ok",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "method": "wide_dirty_cli_rejects_cross_profile_budgets_before_starting_work",
+          "records": [
+            {
+              "line": 2181,
+              "outcome": "ok",
+              "detail": ""
+            },
+            {
+              "line": 8279,
+              "outcome": "ok",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "method": "actual_shard_keeps_global_ids_and_changes_exact_batch_including_yaml_and_routes",
+          "records": [
+            {
+              "line": 2183,
+              "outcome": "ok",
+              "detail": ""
+            },
+            {
+              "line": 8281,
+              "outcome": "ok",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "method": "real_scale_smoke_preserves_builds_counts_mutations_and_full_parity",
+          "records": [
+            {
+              "line": 2184,
+              "outcome": "ok",
+              "detail": ""
+            },
+            {
+              "line": 8282,
+              "outcome": "ok",
+              "detail": ""
+            }
+          ]
+        }
+      ],
+      "boundary": "工程 fixture/smoke 不代替五个真实 rep0，不得记为新的研究样本或 N30/性能通过。"
+    }
+  ],
+  "selected_target_footers": [
+    {
+      "target_line": 1615,
+      "target": "tests/p2a_incremental.rs (target/debug/deps/p2a_incremental-1844dcc4c4bae933)",
+      "footer_line": 1630,
+      "footer": "ok. 10 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 3.21s",
+      "configuration": "default"
+    },
+    {
+      "target_line": 1632,
+      "target": "tests/p2b_incremental.rs (target/debug/deps/p2b_incremental-081c773897bfea38)",
+      "footer_line": 1650,
+      "footer": "ok. 13 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 3.65s",
+      "configuration": "default"
+    },
+    {
+      "target_line": 1652,
+      "target": "tests/p2c_reconcile.rs (target/debug/deps/p2c_reconcile-351513c30c4422bf)",
+      "footer_line": 1668,
+      "footer": "ok. 11 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 2.38s",
+      "configuration": "default"
+    },
+    {
+      "target_line": 1677,
+      "target": "tests/p2d_mutations.rs (target/debug/deps/p2d_mutations-9cb6834ae2bcd09f)",
+      "footer_line": 1690,
+      "footer": "ok. 8 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 25.61s",
+      "configuration": "default"
+    },
+    {
+      "target_line": 1395,
+      "target": "tests/benchmark_oracle_streaming.rs (target/debug/deps/benchmark_oracle_streaming-f20d6f3208aacf65)",
+      "footer_line": 1412,
+      "footer": "ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.71s",
+      "configuration": "default"
+    },
+    {
+      "target_line": 2166,
+      "target": "tests/p8_scale.rs (target/debug/deps/p8_scale-0351677387d88cdd)",
+      "footer_line": 2186,
+      "footer": "ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 28.32s",
+      "configuration": "default"
+    },
+    {
+      "target_line": 7713,
+      "target": "tests/p2a_incremental.rs (target/debug/deps/p2a_incremental-9e9f14d7633a2c8d)",
+      "footer_line": 7728,
+      "footer": "ok. 10 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 2.83s",
+      "configuration": "eval-http"
+    },
+    {
+      "target_line": 7730,
+      "target": "tests/p2b_incremental.rs (target/debug/deps/p2b_incremental-a879d631d8e91139)",
+      "footer_line": 7748,
+      "footer": "ok. 13 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 3.98s",
+      "configuration": "eval-http"
+    },
+    {
+      "target_line": 7750,
+      "target": "tests/p2c_reconcile.rs (target/debug/deps/p2c_reconcile-861e651699c25527)",
+      "footer_line": 7766,
+      "footer": "ok. 11 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 2.68s",
+      "configuration": "eval-http"
+    },
+    {
+      "target_line": 7493,
+      "target": "tests/benchmark_oracle_streaming.rs (target/debug/deps/benchmark_oracle_streaming-2c755cff94d4b278)",
+      "footer_line": 7510,
+      "footer": "ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.68s",
+      "configuration": "eval-http"
+    },
+    {
+      "target_line": 8264,
+      "target": "tests/p8_scale.rs (target/debug/deps/p8_scale-8a388298034780c9)",
+      "footer_line": 8284,
+      "footer": "ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 27.66s",
+      "configuration": "eval-http"
+    }
+  ],
+  "ignored_then_explicitly_executed_public_controls": {
+    "producer_receipt_line": 8368,
+    "producer_receipt_text": "2026-10-10T01:39:51.4330344Z {\"binary\": \"/home/runner/work/_temp/p7-017-default/codecortex\", \"receipt\": \"/home/runner/work/_temp/p7-017-default/build-receipt.json\", \"package_kind\": \"default\", \"features\": [], \"sha256\": \"a159bcdd12f460f868cdce9627eeb093266bb8f3bd41149a4651390a3853299f\", \"source_commit\": \"1e14b7ad8d097da0000e18597da0316143de919c\", \"source_inputs\": 1096, \"profile\": \"dev\"}",
+    "commands": [
+      {
+        "line": 8614,
+        "text": "2026-10-10T01:40:13.2648581Z CODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\"
+      },
+      {
+        "line": 8615,
+        "text": "2026-10-10T01:40:13.2649103Z   cargo test -p cc-eval --test p2a_incremental --locked -- --ignored"
+      },
+      {
+        "line": 8655,
+        "text": "2026-10-10T01:40:13.7207758Z CODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\"
+      },
+      {
+        "line": 8656,
+        "text": "2026-10-10T01:40:13.7208704Z   cargo test -p cc-eval --test p2b_incremental --locked -- --ignored"
+      },
+      {
+        "line": 8702,
+        "text": "2026-10-10T01:40:14.1973112Z CODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\"
+      },
+      {
+        "line": 8703,
+        "text": "2026-10-10T01:40:14.1973629Z   cargo test -p cc-eval --test p2c_reconcile --locked -- --ignored"
+      },
+      {
+        "line": 8764,
+        "text": "2026-10-10T01:40:14.8127339Z CODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\"
+      },
+      {
+        "line": 8765,
+        "text": "2026-10-10T01:40:14.8127948Z CODECORTEX_BENCH_OBSERVATIONS=\"$RUNNER_TEMP/p2d-observations\" \\"
+      },
+      {
+        "line": 8766,
+        "text": "2026-10-10T01:40:14.8128450Z   cargo test -p cc-eval --test p2d_mutations --locked -- --ignored"
+      },
+      {
+        "line": 8852,
+        "text": "2026-10-10T01:40:15.5605343Z CODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\"
+      },
+      {
+        "line": 8853,
+        "text": "2026-10-10T01:40:15.5605873Z CODECORTEX_BENCH_OBSERVATIONS=\"$RUNNER_TEMP/p3a-observations\" \\"
+      },
+      {
+        "line": 8854,
+        "text": "2026-10-10T01:40:15.5606403Z   cargo test -p cc-eval --test p3a_project_model --locked -- --ignored"
+      },
+      {
+        "line": 8915,
+        "text": "2026-10-10T01:40:16.0380179Z CODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\"
+      },
+      {
+        "line": 8916,
+        "text": "2026-10-10T01:40:16.0380690Z CODECORTEX_BENCH_OBSERVATIONS=\"$RUNNER_TEMP/p3b-observations\" \\"
+      },
+      {
+        "line": 8917,
+        "text": "2026-10-10T01:40:16.0381180Z   cargo test -p cc-eval --test p3b_modules --locked -- --ignored"
+      },
+      {
+        "line": 8978,
+        "text": "2026-10-10T01:40:16.5078520Z CODECORTEX_BENCH_BINARY=\"$RUNNER_TEMP/p7-017-default/codecortex\" \\"
+      },
+      {
+        "line": 8979,
+        "text": "2026-10-10T01:40:16.5079035Z CODECORTEX_BENCH_OBSERVATIONS=\"$RUNNER_TEMP/p3c-observations\" \\"
+      },
+      {
+        "line": 8980,
+        "text": "2026-10-10T01:40:16.5079543Z   cargo test -p cc-eval --test p3c_modules --locked -- --ignored"
+      }
+    ],
+    "methods": [
+      {
+        "method": "p2a_public_mcp_reports_coverage_and_refreshes_provider",
+        "records": [
+          {
+            "line": 1621,
+            "outcome": "ignored",
+            "detail": "requires explicit CODECORTEX_BENCH_BINARY; real MCP process"
+          },
+          {
+            "line": 7719,
+            "outcome": "ignored",
+            "detail": "requires explicit CODECORTEX_BENCH_BINARY; real MCP process"
+          },
+          {
+            "line": 8650,
+            "outcome": "ok",
+            "detail": ""
+          }
+        ]
+      },
+      {
+        "method": "p2b_public_mcp_retracts_ambiguous_edges_and_updates_go_package",
+        "records": [
+          {
+            "line": 1642,
+            "outcome": "ignored",
+            "detail": "requires explicit CODECORTEX_BENCH_BINARY; real MCP process"
+          },
+          {
+            "line": 7740,
+            "outcome": "ignored",
+            "detail": "requires explicit CODECORTEX_BENCH_BINARY; real MCP process"
+          },
+          {
+            "line": 8697,
+            "outcome": "ok",
+            "detail": ""
+          }
+        ]
+      },
+      {
+        "method": "p2c_public_mcp_reports_debt_resumes_and_survives_restart",
+        "records": [
+          {
+            "line": 1659,
+            "outcome": "ignored",
+            "detail": "requires explicit CODECORTEX_BENCH_BINARY; actual MCP subprocess"
+          },
+          {
+            "line": 7757,
+            "outcome": "ignored",
+            "detail": "requires explicit CODECORTEX_BENCH_BINARY; actual MCP subprocess"
+          },
+          {
+            "line": 8759,
+            "outcome": "ok",
+            "detail": ""
+          }
+        ]
+      },
+      {
+        "method": "p2d_public_mcp_multilanguage_rename_truth_and_no_fake_jsts_calls",
+        "records": [
+          {
+            "line": 1680,
+            "outcome": "ignored",
+            "detail": "requires explicit product binary; actual public MCP process"
+          },
+          {
+            "line": 7778,
+            "outcome": "ignored",
+            "detail": "requires explicit product binary; actual public MCP process"
+          },
+          {
+            "line": 8847,
+            "outcome": "ok",
+            "detail": ""
+          }
+        ]
+      },
+      {
+        "method": "p3a_real_mcp_configuration_only_retarget_and_restart",
+        "records": [
+          {
+            "line": 1709,
+            "outcome": "ignored",
+            "detail": "requires explicit CODECORTEX_BENCH_BINARY; real MCP subprocess"
+          },
+          {
+            "line": 7807,
+            "outcome": "ignored",
+            "detail": "requires explicit CODECORTEX_BENCH_BINARY; real MCP subprocess"
+          },
+          {
+            "line": 8910,
+            "outcome": "ok",
+            "detail": ""
+          }
+        ]
+      },
+      {
+        "method": "real_mcp_package_configuration_retarget_resumes_after_restart",
+        "records": [
+          {
+            "line": 1729,
+            "outcome": "ignored",
+            "detail": "requires explicit CODECORTEX_BENCH_BINARY; actual stdio subprocess"
+          },
+          {
+            "line": 7827,
+            "outcome": "ignored",
+            "detail": "requires explicit CODECORTEX_BENCH_BINARY; actual stdio subprocess"
+          },
+          {
+            "line": 8973,
+            "outcome": "ok",
+            "detail": ""
+          }
+        ]
+      },
+      {
+        "method": "p3c_real_mcp_go_work_only_change_resumes_across_restart",
+        "records": [
+          {
+            "line": 1750,
+            "outcome": "ignored",
+            "detail": "requires explicit CODECORTEX_BENCH_BINARY; actual stdio subprocess"
+          },
+          {
+            "line": 7848,
+            "outcome": "ignored",
+            "detail": "requires explicit CODECORTEX_BENCH_BINARY; actual stdio subprocess"
+          },
+          {
+            "line": 9036,
+            "outcome": "ok",
+            "detail": ""
+          }
+        ]
+      }
+    ],
+    "scope": "这七方法在 ordinary default/eval-http targets 的 ignored 记录原样保留，后续显式 default product MCP 各 1 passed。日志中的生产者 receipt 是原执行证据；本审未重新获取 ELF/源快照或运行 MCP。"
+  },
+  "related_closeout": {
+    "source": "9cc6bf49f6dd81e4069a8004eed49addba0ab79b",
+    "original_review": "78ac902a240ddc2eccc7099aa5cd35dd26247ddf",
+    "V18_configurations": [
+      {
+        "configuration": "default",
+        "target_line": 2024,
+        "footer": {
+          "line": 2294,
+          "status": "ok",
+          "passed": 8,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0,
+          "seconds": "1.24"
+        }
+      },
+      {
+        "configuration": "semantic",
+        "target_line": 2318,
+        "footer": {
+          "line": 2618,
+          "status": "ok",
+          "passed": 9,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0,
+          "seconds": "1.38"
+        }
+      },
+      {
+        "configuration": "semantic-http",
+        "target_line": 3513,
+        "footer": {
+          "line": 3917,
+          "status": "ok",
+          "passed": 12,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0,
+          "seconds": "1.63"
+        }
+      }
+    ],
+    "repaired_control": {
+      "line": 3674,
+      "name": "loopback::ready_publication_status_keeps_request_policy_and_per_query_coverage_distinct",
+      "outcome": "ok",
+      "detail": ""
+    },
+    "prior_failure_log_blob": "3efadf710a054e2beda886cdd29938639145e94b",
+    "boundary": "修后原 8/9/12 V18 targets 的实际成功补相关兼容回归，不能代替 V07；旧 f675 pending>0 失败不抹除。未下载或重放 closeout ZIP。"
+  },
+  "not_credited": {
+    "still_ignored_cost_controls": [
+      {
+        "method": "tests::bench_incremental_dirty_closure",
+        "records": [
+          {
+            "line": 1268,
+            "outcome": "ignored",
+            "detail": "measures dirty-closure incremental rebuild latency; run explicitly"
+          },
+          {
+            "line": 7361,
+            "outcome": "ignored",
+            "detail": "measures dirty-closure incremental rebuild latency; run explicitly"
+          }
+        ]
+      },
+      {
+        "method": "p2d_release_incremental_growth_and_bounded_resume",
+        "records": [
+          {
+            "line": 1673,
+            "outcome": "ignored",
+            "detail": "release mechanism cost; explicit execution required"
+          },
+          {
+            "line": 7771,
+            "outcome": "ignored",
+            "detail": "release mechanism cost; explicit execution required"
+          }
+        ]
+      },
+      {
+        "method": "p3c_release_go_config_change_scales_with_consumers_not_unrelated_files",
+        "records": [
+          {
+            "line": 1742,
+            "outcome": "ignored",
+            "detail": "explicit release Go config discovery and frontier cost"
+          },
+          {
+            "line": 7840,
+            "outcome": "ignored",
+            "detail": "explicit release Go config discovery and frontier cost"
+          }
+        ]
+      },
+      {
+        "method": "benchmark::oracle::projection_tests::borrowed_serialization_equal_lifetime_release_cost_probe",
+        "records": [
+          {
+            "line": 1228,
+            "outcome": "ignored",
+            "detail": "explicit finite release cost observation; no timing acceptance threshold"
+          },
+          {
+            "line": 7321,
+            "outcome": "ignored",
+            "detail": "explicit finite release cost observation; no timing acceptance threshold"
+          }
+        ]
+      }
+    ],
+    "zero_pass_filtered_invocations": "原日志 6821–7233 等 filtered-only footers 不计新增通过；同名不同 crate 或两配置执行不累加为唯一测试总数。",
+    "no_performance_pass": "本映射不提供成本 probe、新 100k 测量、稳定尾部、统计 CI、whole release/G8 或任务完成信用。",
+    "retained_negative_evidence": "旧 Gc8/C3ff/G8 失败、旧 witness 兼容边界和 Gbcc3 workflow jobs0 失败沿既有归档保持；当前工程 pass 不改写它们。"
+  },
+  "current_working_count": {
+    "run_id": 38013753078,
+    "attempt": 1,
+    "source": "9cc6bf49f6dd81e4069a8004eed49addba0ab79b",
+    "profile": "scale_wide_dirty_v1",
+    "accepted_shards": 4,
+    "accepted_observations": 41,
+    "registered_shards": 150,
+    "registered_observations": 1500,
+    "pending_100k_rep0_receipt": null,
+    "final_006_receipt": null,
+    "task_done_count": 164,
+    "remaining_tasks": 28,
+    "session_completed": 1,
+    "observation_boundary": "沿 root 本任务委派时态与已封四片；本审未新 poll，不声称研究最新实时终态。"
+  },
+  "ready_to_reference": {
+    "prior_fourth_shard_review": "f24820113d77c649c778f68943a8c36a20531588",
+    "prior_fourth_progress": "371bd3bb09e602d6f61b29fb87fc43684f6c71fb",
+    "future_nine_applyfalse": "9263e672782ea2f26c8d2f075756d01574368634",
+    "use": "未来证据/implementation_notes 可引用本报告补第 4 项原输入；当前不执行状态更新，不能自动应用旧字段中的 future null。"
+  },
+  "operations": {
+    "read_retained_text_only": true,
+    "new_network_reads": 0,
+    "Actions_downloads": 0,
+    "ZIP_or_CRC_reads": 0,
+    "product_or_test_runs": 0,
+    "original_validator_runs": 0,
+    "source_scans": 0,
+    "task_mutations": 0,
+    "ref_mutations": 0,
+    "extractor_success_is_not_product_exit": "本脚本只冻结既有原文本行及出处；执行退出不计为 Rust/规模验证退出。"
+  }
+}

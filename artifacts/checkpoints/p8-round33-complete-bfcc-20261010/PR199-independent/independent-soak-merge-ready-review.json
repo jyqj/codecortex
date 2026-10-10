@@ -1,0 +1,410 @@
+{
+  "schema": "PR199-final-soak-independent-log-review-v1",
+  "reviewer": "/root/pr_triage",
+  "created_at": "2026-10-10T01:29:20.361849+00:00",
+  "verdict": "engineering_merge_ready_for_verified_current_head",
+  "source": "4786c1457b47c5baf4c09d32b96048795e863111",
+  "tree": "6518a5b317683a24ded3a69b027da6a04b8c996c",
+  "run": 38008269646,
+  "attempt": 1,
+  "job": 114082032045,
+  "official_snapshot_clock": {
+    "current_time": "2026-10-10 01:26:07 UTC"
+  },
+  "official_PR": {
+    "head": "4786c1457b47c5baf4c09d32b96048795e863111",
+    "base": "09d4454fa45455dc5a8bfdfec67e31bb7ed162c7",
+    "mergeable": true,
+    "mergeable_state": "clean",
+    "merged": false
+  },
+  "checks": {
+    "total": 28,
+    "success": 26,
+    "conditional_skips": [
+      {
+        "name": "admission_and_controls",
+        "id": 114082021205
+      },
+      {
+        "name": "mixed",
+        "id": 114082021106
+      }
+    ],
+    "all_terminal": true
+  },
+  "original_job_steps": [
+    {
+      "name": "Set up job",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 1,
+      "started_at": "2026-10-10T00:18:55Z",
+      "completed_at": "2026-10-10T00:18:56Z"
+    },
+    {
+      "name": "Run actions/checkout@v4",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 2,
+      "started_at": "2026-10-10T00:18:56Z",
+      "completed_at": "2026-10-10T00:19:31Z"
+    },
+    {
+      "name": "Run dtolnay/rust-toolchain@1.95.0",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 3,
+      "started_at": "2026-10-10T00:19:31Z",
+      "completed_at": "2026-10-10T00:19:41Z"
+    },
+    {
+      "name": "Fetch locked dependencies before measurement",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 4,
+      "started_at": "2026-10-10T00:19:41Z",
+      "completed_at": "2026-10-10T00:19:44Z"
+    },
+    {
+      "name": "Runtime receipt and retained-evidence negative controls",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 5,
+      "started_at": "2026-10-10T00:19:44Z",
+      "completed_at": "2026-10-10T00:20:03Z"
+    },
+    {
+      "name": "Build an exact release product and complete oracle",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 6,
+      "started_at": "2026-10-10T00:20:03Z",
+      "completed_at": "2026-10-10T00:24:40Z"
+    },
+    {
+      "name": "One-hour actual stdio session with Git switches and catalog churn",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 7,
+      "started_at": "2026-10-10T00:24:40Z",
+      "completed_at": "2026-10-10T01:24:45Z"
+    },
+    {
+      "name": "Verify every retained runtime and build artifact",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 8,
+      "started_at": "2026-10-10T01:24:45Z",
+      "completed_at": "2026-10-10T01:24:46Z"
+    },
+    {
+      "name": "Preserve every execution including failures",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 9,
+      "started_at": "2026-10-10T01:24:46Z",
+      "completed_at": "2026-10-10T01:24:54Z"
+    },
+    {
+      "name": "Post Run actions/checkout@v4",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 18,
+      "started_at": "2026-10-10T01:24:54Z",
+      "completed_at": "2026-10-10T01:24:54Z"
+    },
+    {
+      "name": "Complete job",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 19,
+      "started_at": "2026-10-10T01:24:54Z",
+      "completed_at": "2026-10-10T01:24:54Z"
+    }
+  ],
+  "original_inputs": {
+    "114082032045-original-soak.log": {
+      "path": "/workspace/scratch/bfccb8494ba0/round33-PR199-soak-original-intake/114082032045-original-soak.log",
+      "bytes": 288913,
+      "sha256": "b2a00921f4b01132c1ee66dc4787e4a189a43159eccbe9dfcb75610602ff6eca",
+      "git_blob": "a142585c7e86b84dd393aa97f576795ffe76c9ab"
+    },
+    "round33-PR199-and-diagnostic-0125-official-snapshot.json": {
+      "path": "/workspace/scratch/bfccb8494ba0/round33-PR199-and-diagnostic-0125-official-snapshot.json",
+      "bytes": 329519,
+      "sha256": "c3717a7d125e6a7997db06f19b05c5ff8485b7ec675c696cadf81c589ca02d1f",
+      "git_blob": "48b83ac414e5528eb17107659c7a0b7fe47bf3ba"
+    },
+    "independent-source-review.canonical.json": {
+      "path": "/workspace/scratch/bfccb8494ba0/round30-PR190-main-integration-P2-peer/independent-source-review.canonical.json",
+      "bytes": 547555,
+      "sha256": "27d0c6ef30508d553b89464fa3d84371839b45fc0ef166b0ae946ef2f180d533",
+      "git_blob": "2c007a66bf32a80c0b7eeec6c166cf5400aae5ae"
+    }
+  },
+  "checkout": {
+    "direct_actual_head": "4786c1457b47c5baf4c09d32b96048795e863111",
+    "raw_line": 190,
+    "not_test_merge": true
+  },
+  "controls": {
+    "unique_named_tests": 77,
+    "elapsed_seconds": 18.526,
+    "status": "OK",
+    "method_groups": {
+      "test_p8_runtime": 32,
+      "test_p8_runtime_cache": 15,
+      "test_p8_runtime_evidence": 15,
+      "test_p8_runtime_finalization": 7,
+      "test_p8_runtime_lock_observation": 8
+    },
+    "scope": "Runtime/cache/build/seal/finalization/lock-observation negative fixture controls; not another product workload or DB-lock timing study."
+  },
+  "workload": {
+    "status": "passed_observation",
+    "exit_code": 0,
+    "profile": "soak",
+    "offered": 3601,
+    "outcomes": {
+      "success": 3601
+    },
+    "observed_work_ns": 3600051817843,
+    "actual_concurrency": {
+      "read": 0,
+      "build": 0,
+      "maximum": 1,
+      "read_build_overlap": false
+    },
+    "real_branch_switches": 200,
+    "observed_catalog_compactions": 25,
+    "rss": {
+      "status": "observed",
+      "observed": 3594,
+      "warmed_median_bytes": 111685632,
+      "tail_median_bytes": 142487552,
+      "allowed_bytes": 173161472,
+      "sampled_peak_bytes": 147210240,
+      "passed": true,
+      "rule": "existing_soak_warmed_plus_25_percent_plus_32MiB"
+    },
+    "resource_time_coverage": {
+      "passed": true,
+      "observed_samples": 3594,
+      "first_ns": 707610867,
+      "last_ns": 3600532185144,
+      "work_start_ns": 707731117,
+      "work_end_ns": 3600759551127,
+      "maximum_gap_ns": 1044096240,
+      "allowed_maximum_gap_ns": 5000000000,
+      "method": "monotonic sample starts including work start and end gaps"
+    },
+    "failures": [],
+    "parity_exit_code": 0,
+    "parity_sha256": "900db346e05cc3d41a4af411ec0243b5b1f4f515bc0019ff831ab6756d4a7894",
+    "owned_cleanup": {
+      "unfinished_work": 0,
+      "sampler_stopped": true,
+      "product_stopped": true,
+      "comparison_product_stopped": true,
+      "product_construction_pending": false,
+      "comparison_product_construction_pending": false
+    },
+    "artifact_seal_status": "sealed",
+    "raw_sha256": "6f3d2f58ca5d2f453a6aba51ecbdb4c9ddeb54f4dfb739ad0995d132f9dd73b8",
+    "plan_sha256": "72c0951dee843d0985d5d778979fd3ada6b23b8ccbdeacbc69ae8d66dada446e",
+    "elapsed_ns": 3603464519585,
+    "task_complete": false,
+    "release_approval": false
+  },
+  "cache": {
+    "protocol": "symbol_plus_local_hybrid_cache_v1",
+    "passed": true,
+    "expected_offered_reads": 2400,
+    "recorded_offered_reads": 2400,
+    "validated_reads": 2400,
+    "observed": {
+      "miss": 1000,
+      "invalidations": 999,
+      "hit": 1400
+    },
+    "request_counts": {
+      "before_status": {
+        "success": 2400
+      },
+      "symbol": {
+        "success": 2400
+      },
+      "hybrid": {
+        "success": 2400
+      },
+      "after_status": {
+        "success": 2400
+      }
+    },
+    "status_request_counts": {
+      "success": 4800
+    },
+    "expected_requests_per_role": 2400,
+    "errors": [],
+    "time_quarters": [
+      {
+        "reads": 600,
+        "hits": 350,
+        "misses": 250,
+        "invalidations": 249,
+        "mutations": {
+          "bounded_symbol_churn": 50,
+          "add": 50,
+          "rename": 50,
+          "delete": 50,
+          "real_git_branch_switch": 50,
+          "restore_api": 50
+        }
+      },
+      {
+        "reads": 600,
+        "hits": 350,
+        "misses": 250,
+        "invalidations": 250,
+        "mutations": {
+          "bounded_symbol_churn": 50,
+          "add": 50,
+          "rename": 50,
+          "delete": 50,
+          "real_git_branch_switch": 50,
+          "restore_api": 50
+        }
+      },
+      {
+        "reads": 600,
+        "hits": 350,
+        "misses": 250,
+        "invalidations": 250,
+        "mutations": {
+          "bounded_symbol_churn": 51,
+          "add": 50,
+          "rename": 50,
+          "delete": 50,
+          "real_git_branch_switch": 50,
+          "restore_api": 50
+        }
+      },
+      {
+        "reads": 600,
+        "hits": 350,
+        "misses": 250,
+        "invalidations": 250,
+        "mutations": {
+          "add": 50,
+          "rename": 50,
+          "delete": 50,
+          "real_git_branch_switch": 50,
+          "restore_api": 50,
+          "bounded_symbol_churn": 50
+        }
+      }
+    ],
+    "preceding_mutation_coverage": {
+      "bounded_symbol_churn": 400,
+      "add": 400,
+      "rename": 400,
+      "delete": 400,
+      "real_git_branch_switch": 400,
+      "restore_api": 400
+    },
+    "quarter_time_basis": "actual hybrid RPC completion and actual mutation operation completion; never offered time",
+    "quarter_mutation_scope": "successful completed builds; every failure remains in original outcomes/statistics",
+    "temporal_cache_coverage": true,
+    "denominator": "one offered compound read; symbol+hybrid+two status RPCs and all their time/failures included; no extra latency samples",
+    "comparison_scope": "not directly comparable to the previous symbol-only read protocol",
+    "isolation": "soak read/build share original write admission lock; wait remains measured; mixed unchanged"
+  },
+  "source_and_producer": {
+    "canonical_product_inputs_equal": 1096,
+    "source_manifest_sha256": "1d28aac121a9a74b01ba1e841af13a64ac26d59a8b92c08bd8e5439a71a7a72c",
+    "observer_inputs_equal": 10,
+    "build_exit_code": 0,
+    "artifacts": [
+      {
+        "name": "codecortex",
+        "binary_sha256": "50010f31016c347dc10b841cdeeeade8c242e7daf8e981435baf5e7ef2063334",
+        "binary_bytes": 27190776,
+        "compiler_fresh_field": false,
+        "profile": {
+          "opt_level": "3",
+          "debuginfo": 0,
+          "debug_assertions": false,
+          "overflow_checks": false,
+          "test": false
+        }
+      },
+      {
+        "name": "p8-oracle",
+        "binary_sha256": "f8929baba3411d954b0ccccf1fe33cf2388798099f44beda747cb5801e997180",
+        "binary_bytes": 2979704,
+        "compiler_fresh_field": false,
+        "profile": {
+          "opt_level": "3",
+          "debuginfo": 0,
+          "debug_assertions": false,
+          "overflow_checks": false,
+          "test": false
+        }
+      },
+      {
+        "name": "p8-runtime-statistics",
+        "binary_sha256": "30f6d5d59aa8af6ad3e958b603ec5c7fa07ddc2f3c23778e5e148052a16b9d61",
+        "binary_bytes": 979264,
+        "compiler_fresh_field": false,
+        "profile": {
+          "opt_level": "3",
+          "debuginfo": 0,
+          "debug_assertions": false,
+          "overflow_checks": false,
+          "test": false
+        }
+      }
+    ],
+    "build_receipt_sha256": "23b2f4741d0c5ca371c99405c2336551e5ba4d66d22be0f7ffa7defd91111e4e",
+    "build_seal_sha256": "96823f61b9e081e2d6125273156792c91238a3a59f3f81192280b13ed5087d43",
+    "verification_scope": "original Cargo target, copied artifacts and committed observer available in this job"
+  },
+  "original_verify": {
+    "line": 2437,
+    "output": {
+      "status": "sealed_artifacts_verified",
+      "files": 2111,
+      "observation_status": "passed_observation",
+      "observation_exit_code": 0
+    }
+  },
+  "original_upload": {
+    "artifact_id": 11655721056,
+    "name": "p8-soak-4786c1457b47c5baf4c09d32b96048795e863111",
+    "bytes": 51072495,
+    "sha256": "32734e2cf385dcc65e57317ca9988b1e8284f7d0565879efa467d01cfc066305",
+    "success_line": 2475,
+    "status": "producer_successfully_finalized"
+  },
+  "accepted_previous_evidence": {
+    "main_original": "37a142e0338f21104f06931b731a9f3e21daf6ba",
+    "main_review": "aa198e0b08685de49d81745be023ddfd0d7ae35b",
+    "closeout_original": "e9c4003615f8af33330bfb149f829096a27b6703",
+    "closeout_review": "952d9b6f96b6fb10d1441398d29a874a6d43e0e5"
+  },
+  "limits": [
+    "This is source-bound original job-log and official-state verification, not a local artifact/raw/ELF replay. The ZIP was not downloaded.",
+    "Configured C4 does not imply achieved concurrency4: report maximum1 and read_build_overlapfalse are retained; the original soak contract permits its shared admission lock.",
+    "77 negative controls are not extra workload samples. No scale, performance, release or original TODO completion is granted.",
+    "Prior f675 V18 closeout failure remains immutable; new G success does not erase or re-label it.",
+    "The existing current-head engineering gates are satisfied at this official snapshot; root owns the actual merge and final source/ref freshness."
+  ],
+  "exploratory_reader_note": "An earlier read-only key listing attempted nonexistent build_identity and raised KeyError; the actual report field is final_build_verification. No product/validator was executed or changed; this final reader checks the actual field.",
+  "actions": {
+    "download_or_API_poll": false,
+    "product_or_validator_rerun": false,
+    "ref_or_PR_mutation": false,
+    "task_credit": 0
+  }
+}

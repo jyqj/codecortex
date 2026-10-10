@@ -1,0 +1,1740 @@
+{
+  "schema": "P8-006-original-wide-cohort-actual-run-binding-v1",
+  "apply_now": false,
+  "registration_observed_at": "2026-10-10 01:38:29 UTC",
+  "reviewer": "/root/todo_audit",
+  "basis": {
+    "original_checklist": {
+      "path": "round32-P8-006-full-cohort-execution-preparation/execution-checklist.applyfalse.json",
+      "bytes": 12329,
+      "sha256": "8d1a75af3282e69d816d5cbad57d214dfe0713c3efa1381d67b3bb372ab0e2b1",
+      "git_blob": "367994a8fed36aff5e22561b7abebea099807b0c"
+    },
+    "original_checklist_actual_git": "367994a8fed36aff5e22561b7abebea099807b0c",
+    "scope": "Concise bound derivative. Original checklist, pending task template and earlier null identities remain byte-unchanged."
+  },
+  "source": {
+    "G": "9cc6bf49f6dd81e4069a8004eed49addba0ab79b",
+    "P": "aa8c86b168290e6133040072613aae8240d5b1f6",
+    "PR": 200,
+    "R": "5c53bb909efef3fb842b5fbc39a45dec4054ba40",
+    "branch": "task/p8-100k-diagnostic-capture-bfcc-20261010",
+    "canonical_git": "fc5cc74177c8112157d81ec6a8e359e7cdf69f0b",
+    "tree": "6461938788665701cfa4fa095a064a3a404ec492"
+  },
+  "actual_run": {
+    "id": 38013753078,
+    "run_attempt": 1,
+    "event": "pull_request",
+    "head_sha": "9cc6bf49f6dd81e4069a8004eed49addba0ab79b",
+    "head_branch": "task/p8-100k-diagnostic-capture-bfcc-20261010",
+    "workflow_id": 379917208,
+    "path": ".github/workflows/p8-scale-wide-dirty.yml",
+    "name": "P8 wide dirty complete scale measurements",
+    "html_url": "https://github.com/jyqj/codecortex/actions/runs/38013753078",
+    "created_at": "2026-10-10T01:35:19Z",
+    "run_started_at": "2026-10-10T01:35:19Z",
+    "status": "in_progress",
+    "conclusion": null
+  },
+  "actual_label_request": {
+    "label": "p8-scale-wide-dirty-run",
+    "started": "2026-10-10 01:35:16 UTC",
+    "completed": "2026-10-10 01:35:18 UTC",
+    "owner": "Root",
+    "new_request_by_this_review": false
+  },
+  "source_inputs": [
+    {
+      "path": ".github/workflows/p8-scale-wide-dirty.yml",
+      "git_blob": "7fa4723860df70178ce6ed58cd305acaa7c76069",
+      "sha256": "6a85b4d0a3e93c2ec77f49b7804d1320510cdaa457673c701846a70c21f830a9",
+      "bytes": 9544
+    },
+    {
+      "path": ".github/workflows/p8-scale.yml",
+      "git_blob": "74f1b64ed447ef24da584f1c1f8d090d2fa1e03e",
+      "sha256": "4258476dd37d8af223aaa7ad45d7c97d7298be1ba4ec5ffd9af9949785ed8f3d",
+      "bytes": 8621
+    },
+    {
+      "path": "scripts/p8_scale_matrix.py",
+      "git_blob": "86f6dd904a4a981302b45675f013319e5d442d0f",
+      "sha256": "ea1b4a60854b8bbbfc057760ef055861a3279440b3df7f9c39dd1e32505b1a43",
+      "bytes": 66810
+    }
+  ],
+  "fresh_build": {
+    "job_id": 114099388607,
+    "started_at": "2026-10-10T01:35:21Z",
+    "status": "in_progress",
+    "conclusion": null,
+    "protocol_control_step": {
+      "name": "Check formatting and both native scale protocol profiles",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 4,
+      "started_at": "2026-10-10T01:35:35Z",
+      "completed_at": "2026-10-10T01:37:09Z"
+    },
+    "release_compile_step": {
+      "name": "Compile and bind one immutable release executable",
+      "status": "in_progress",
+      "conclusion": null,
+      "number": 5,
+      "started_at": "2026-10-10T01:37:09Z",
+      "completed_at": null
+    },
+    "artifact_name": "p8-scale-wide-dirty-build-38013753078",
+    "artifact_id": null,
+    "build_receipt_sha256": null,
+    "binary_sha256": null,
+    "binary_bytes": null,
+    "actual_build_acceptance_receipt": null,
+    "boundary": "Protocol step success is the official observation, not fresh build completion or a local validator result. Do not substitute diagnostic/old-study build."
+  },
+  "invariants": {
+    "work_profile": "scale_wide_dirty_v1",
+    "default_profile_retained_separately": {
+      "name": "scale_capacity_v1",
+      "label": "p8-scale-run",
+      "main_dirty_budget": 200
+    },
+    "wide_main_dirty_budget": 4096,
+    "resume_limit": 1024,
+    "fanout_dirty_budget": 8,
+    "fanout_resume_limit": 128,
+    "scales": [
+      1000,
+      5000,
+      10000,
+      50000,
+      100000
+    ],
+    "repetitions": 30,
+    "shards_per_scale": 30,
+    "seed": 12648430,
+    "stages": [
+      "cold",
+      "no_op",
+      "body",
+      "api",
+      "config",
+      "batch_1",
+      "batch_10",
+      "batch_100",
+      "batch_1000"
+    ],
+    "fanouts": [
+      1,
+      4,
+      16,
+      64,
+      128
+    ],
+    "fanout_owner_scale": 1000,
+    "other_scales_skip_fanout": true,
+    "population_explanation": "45scale/stagegroups*30 + 5fanoutgroups*30 =1500. Each non1000slot has9measurements; each1000slot has14.",
+    "native_deadline_ms": 18000000,
+    "native_max_output_bytes": 536870912,
+    "original_driver_tail_seconds": 120,
+    "job_timeout_minutes": 350,
+    "oracle_physical_profile": "scale_capacity_v1",
+    "sorting_cache_kib": 2048,
+    "max_rows_per_table": 5000000,
+    "max_canonical_bytes": 17179869184,
+    "max_scratch_bytes": 8589934592,
+    "max_row_bytes": 1048576,
+    "statistics": "Original capacity mode keeps host/CPU/kernel environment strata. N30 is global coverage; per-stratum counts remain explicit; no pooled latency/stabletail/causal speedup claim is created.",
+    "source_references": "scripts/p8_scale_matrix.py:26-63,344-364,888-976"
+  },
+  "original_queue": {
+    "preflight_slots": 5,
+    "preflight_max_parallel": 5,
+    "remaining_slots": 145,
+    "remaining_max_parallel": 10,
+    "fail_fast": false,
+    "remaining_needs": [
+      "build",
+      "preflight"
+    ],
+    "success_condition": "All five original cohort rep0 jobs must succeed before the remaining 145 become eligible.",
+    "failed_or_missing": "Preserve failures and missing slots; original aggregate rejects incomplete or incompatible coverage. No automatic new attempts or sample replacement."
+  },
+  "artifact_name_templates": {
+    "build": "p8-scale-wide-dirty-build-38013753078",
+    "measurement": "p8-scale-wide-dirty-shard-{scale}-{shard_index}-38013753078",
+    "capacity": "p8-scale-wide-dirty-capacity-{scale}-{shard_index}-38013753078",
+    "aggregate": "p8-scale-wide-dirty-matrix-38013753078"
+  },
+  "expected_slots": [
+    {
+      "scale": 1000,
+      "shard_index": 0,
+      "job_phase": "preflight",
+      "expected_measurements": 14,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 1000,
+      "shard_index": 1,
+      "job_phase": "measure",
+      "expected_measurements": 14,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 1000,
+      "shard_index": 2,
+      "job_phase": "measure",
+      "expected_measurements": 14,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 1000,
+      "shard_index": 3,
+      "job_phase": "measure",
+      "expected_measurements": 14,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 1000,
+      "shard_index": 4,
+      "job_phase": "measure",
+      "expected_measurements": 14,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 1000,
+      "shard_index": 5,
+      "job_phase": "measure",
+      "expected_measurements": 14,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 1000,
+      "shard_index": 6,
+      "job_phase": "measure",
+      "expected_measurements": 14,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 1000,
+      "shard_index": 7,
+      "job_phase": "measure",
+      "expected_measurements": 14,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 1000,
+      "shard_index": 8,
+      "job_phase": "measure",
+      "expected_measurements": 14,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 1000,
+      "shard_index": 9,
+      "job_phase": "measure",
+      "expected_measurements": 14,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 1000,
+      "shard_index": 10,
+      "job_phase": "measure",
+      "expected_measurements": 14,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 1000,
+      "shard_index": 11,
+      "job_phase": "measure",
+      "expected_measurements": 14,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 1000,
+      "shard_index": 12,
+      "job_phase": "measure",
+      "expected_measurements": 14,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 1000,
+      "shard_index": 13,
+      "job_phase": "measure",
+      "expected_measurements": 14,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 1000,
+      "shard_index": 14,
+      "job_phase": "measure",
+      "expected_measurements": 14,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 1000,
+      "shard_index": 15,
+      "job_phase": "measure",
+      "expected_measurements": 14,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 1000,
+      "shard_index": 16,
+      "job_phase": "measure",
+      "expected_measurements": 14,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 1000,
+      "shard_index": 17,
+      "job_phase": "measure",
+      "expected_measurements": 14,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 1000,
+      "shard_index": 18,
+      "job_phase": "measure",
+      "expected_measurements": 14,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 1000,
+      "shard_index": 19,
+      "job_phase": "measure",
+      "expected_measurements": 14,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 1000,
+      "shard_index": 20,
+      "job_phase": "measure",
+      "expected_measurements": 14,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 1000,
+      "shard_index": 21,
+      "job_phase": "measure",
+      "expected_measurements": 14,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 1000,
+      "shard_index": 22,
+      "job_phase": "measure",
+      "expected_measurements": 14,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 1000,
+      "shard_index": 23,
+      "job_phase": "measure",
+      "expected_measurements": 14,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 1000,
+      "shard_index": 24,
+      "job_phase": "measure",
+      "expected_measurements": 14,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 1000,
+      "shard_index": 25,
+      "job_phase": "measure",
+      "expected_measurements": 14,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 1000,
+      "shard_index": 26,
+      "job_phase": "measure",
+      "expected_measurements": 14,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 1000,
+      "shard_index": 27,
+      "job_phase": "measure",
+      "expected_measurements": 14,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 1000,
+      "shard_index": 28,
+      "job_phase": "measure",
+      "expected_measurements": 14,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 1000,
+      "shard_index": 29,
+      "job_phase": "measure",
+      "expected_measurements": 14,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 5000,
+      "shard_index": 0,
+      "job_phase": "preflight",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 5000,
+      "shard_index": 1,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 5000,
+      "shard_index": 2,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 5000,
+      "shard_index": 3,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 5000,
+      "shard_index": 4,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 5000,
+      "shard_index": 5,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 5000,
+      "shard_index": 6,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 5000,
+      "shard_index": 7,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 5000,
+      "shard_index": 8,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 5000,
+      "shard_index": 9,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 5000,
+      "shard_index": 10,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 5000,
+      "shard_index": 11,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 5000,
+      "shard_index": 12,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 5000,
+      "shard_index": 13,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 5000,
+      "shard_index": 14,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 5000,
+      "shard_index": 15,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 5000,
+      "shard_index": 16,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 5000,
+      "shard_index": 17,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 5000,
+      "shard_index": 18,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 5000,
+      "shard_index": 19,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 5000,
+      "shard_index": 20,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 5000,
+      "shard_index": 21,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 5000,
+      "shard_index": 22,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 5000,
+      "shard_index": 23,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 5000,
+      "shard_index": 24,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 5000,
+      "shard_index": 25,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 5000,
+      "shard_index": 26,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 5000,
+      "shard_index": 27,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 5000,
+      "shard_index": 28,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 5000,
+      "shard_index": 29,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 10000,
+      "shard_index": 0,
+      "job_phase": "preflight",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 10000,
+      "shard_index": 1,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 10000,
+      "shard_index": 2,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 10000,
+      "shard_index": 3,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 10000,
+      "shard_index": 4,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 10000,
+      "shard_index": 5,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 10000,
+      "shard_index": 6,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 10000,
+      "shard_index": 7,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 10000,
+      "shard_index": 8,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 10000,
+      "shard_index": 9,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 10000,
+      "shard_index": 10,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 10000,
+      "shard_index": 11,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 10000,
+      "shard_index": 12,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 10000,
+      "shard_index": 13,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 10000,
+      "shard_index": 14,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 10000,
+      "shard_index": 15,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 10000,
+      "shard_index": 16,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 10000,
+      "shard_index": 17,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 10000,
+      "shard_index": 18,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 10000,
+      "shard_index": 19,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 10000,
+      "shard_index": 20,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 10000,
+      "shard_index": 21,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 10000,
+      "shard_index": 22,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 10000,
+      "shard_index": 23,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 10000,
+      "shard_index": 24,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 10000,
+      "shard_index": 25,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 10000,
+      "shard_index": 26,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 10000,
+      "shard_index": 27,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 10000,
+      "shard_index": 28,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 10000,
+      "shard_index": 29,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 50000,
+      "shard_index": 0,
+      "job_phase": "preflight",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 50000,
+      "shard_index": 1,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 50000,
+      "shard_index": 2,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 50000,
+      "shard_index": 3,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 50000,
+      "shard_index": 4,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 50000,
+      "shard_index": 5,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 50000,
+      "shard_index": 6,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 50000,
+      "shard_index": 7,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 50000,
+      "shard_index": 8,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 50000,
+      "shard_index": 9,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 50000,
+      "shard_index": 10,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 50000,
+      "shard_index": 11,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 50000,
+      "shard_index": 12,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 50000,
+      "shard_index": 13,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 50000,
+      "shard_index": 14,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 50000,
+      "shard_index": 15,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 50000,
+      "shard_index": 16,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 50000,
+      "shard_index": 17,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 50000,
+      "shard_index": 18,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 50000,
+      "shard_index": 19,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 50000,
+      "shard_index": 20,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 50000,
+      "shard_index": 21,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 50000,
+      "shard_index": 22,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 50000,
+      "shard_index": 23,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 50000,
+      "shard_index": 24,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 50000,
+      "shard_index": 25,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 50000,
+      "shard_index": 26,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 50000,
+      "shard_index": 27,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 50000,
+      "shard_index": 28,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 50000,
+      "shard_index": 29,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 100000,
+      "shard_index": 0,
+      "job_phase": "preflight",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 100000,
+      "shard_index": 1,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 100000,
+      "shard_index": 2,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 100000,
+      "shard_index": 3,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 100000,
+      "shard_index": 4,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 100000,
+      "shard_index": 5,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 100000,
+      "shard_index": 6,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 100000,
+      "shard_index": 7,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 100000,
+      "shard_index": 8,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 100000,
+      "shard_index": 9,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 100000,
+      "shard_index": 10,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 100000,
+      "shard_index": 11,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 100000,
+      "shard_index": 12,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 100000,
+      "shard_index": 13,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 100000,
+      "shard_index": 14,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 100000,
+      "shard_index": 15,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 100000,
+      "shard_index": 16,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 100000,
+      "shard_index": 17,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 100000,
+      "shard_index": 18,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 100000,
+      "shard_index": 19,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 100000,
+      "shard_index": 20,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 100000,
+      "shard_index": 21,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 100000,
+      "shard_index": 22,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 100000,
+      "shard_index": 23,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 100000,
+      "shard_index": 24,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 100000,
+      "shard_index": 25,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 100000,
+      "shard_index": 26,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 100000,
+      "shard_index": 27,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 100000,
+      "shard_index": 28,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    },
+    {
+      "scale": 100000,
+      "shard_index": 29,
+      "job_phase": "measure",
+      "expected_measurements": 9,
+      "actual_job_id": null,
+      "measurement_artifact_id": null,
+      "capacity_artifact_id": null,
+      "actual_acceptance_receipt": null
+    }
+  ],
+  "current_evidence": {
+    "accepted_shards": 0,
+    "accepted_measurements": 0,
+    "received_shard_artifacts": 0,
+    "build": "pending",
+    "aggregate": "not_run",
+    "full_population_acceptance": null,
+    "final_custody_commit": null,
+    "note": "Counts refer only to this new cohort at the frozen snapshot; no later completion is inferred."
+  },
+  "separate_diagnostic": {
+    "run_id": 38012409915,
+    "run_attempt": 1,
+    "source": "9cc6bf49f6dd81e4069a8004eed49addba0ab79b",
+    "status_at_snapshot": "diagnose in_progress; independent build success",
+    "cohort_samples": 0,
+    "boundary": "Separate fresh build/run provenance. It neither replaces cohort 100k rep0 nor supplies any slot/sample."
+  },
+  "same_label_event_other_workflows": {
+    "source": "Root message; not independently refetched in this review",
+    "skipped_runs": [
+      38013753085,
+      38013753002,
+      38013753036
+    ],
+    "previous_diagnostic_not_cancelled": true
+  },
+  "unchanged_execution_and_closeout": {
+    "original_commands": {
+      "cohort_build": "python3 scripts/p8_scale_matrix.py build --root \"$GITHUB_WORKSPACE\" --output \"$BUILD\" --target-directory \"$FRESH_RELEASE_TARGET\"",
+      "one_cohort_slot": "python3 scripts/p8_scale_matrix.py run --root \"$GITHUB_WORKSPACE\" --build \"$BUILD\" --scale \"$SCALE\" --shard-index \"$SHARD\" --shard-count 30 --repetitions 30 --capacity-profile scale_wide_dirty_v1 --output \"$FRESH_SLOT_OUTPUT\"",
+      "final_original_cli": "python3 scripts/p8_scale_matrix.py aggregate --build \"$BUILD\" --inputs \"$SHARDS\"/p8-scale-wide-dirty-shard-*-\"$RUN_ID\" --output \"$FRESH_MATRIX_OUTPUT\" --repetitions 30 --shard-count 30 --capacity-profile scale_wide_dirty_v1",
+      "conditions": "Run replay from the exact cohort source checkout with the original preserved executable; original workflow chmods binary0755. BUILD and input directories are restored original build/shard bytes, output is fresh. Shell glob must expand to this run's150 shard directories; original aggregate rejects missing/duplicates. The workflow's direct matrix.aggregate call is the same original implementation as this CLI."
+    },
+    "applyfalse_nine_task_checklist": {
+      "path": "round32-dependent-closeout-recovery/future-nine-task-application.applyfalse.json",
+      "bytes": 23712,
+      "sha256": "59225491756c5d0c9263798eabfe3cf4ef7e5e73d8a20532f93586e2db945603",
+      "git_blob": "cda11e87c03780f92d5587097f2f8195986579ee"
+    },
+    "checklist_actual_git": "cda11e87c03780f92d5587097f2f8195986579ee",
+    "actual_future_006_receipt": null,
+    "done": 164,
+    "remaining": 28,
+    "session_new_done": 1
+  },
+  "operations": {
+    "new_API_reads": 0,
+    "artifact_downloads": 0,
+    "validators_executed": 0,
+    "tests_executed": 0,
+    "new_workflow_runs_created_by_reviewer": 0,
+    "task_or_ref_mutations": false
+  },
+  "registration_originals": [
+    {
+      "path": "round33-full-wide-cohort-single-label-request-originals.json",
+      "bytes": 193745,
+      "sha256": "e07dce50e20e067bad771533305873f5dd82c9361ed6701d6ed28615e9c637e1",
+      "git_blob": "61821204872ba4333da79c2e0e43e24d18608439"
+    },
+    {
+      "path": "round33-new-full-cohort-and-diagnostic-original-registration.json",
+      "bytes": 58668,
+      "sha256": "db499e17851ba1c9e93fd680179093ad1ff1942056549c259ea78db3a82f44d3",
+      "git_blob": "189ad3abbbfa923fd7b11c51c817852b2ad96181"
+    }
+  ]
+}

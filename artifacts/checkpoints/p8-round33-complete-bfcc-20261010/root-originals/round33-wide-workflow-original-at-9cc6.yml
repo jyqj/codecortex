@@ -1,0 +1,221 @@
+name: P8 wide dirty complete scale measurements
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [labeled]
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: never
+  CARGO_INCREMENTAL: "0"
+  CARGO_BUILD_JOBS: "2"
+  RUSTFLAGS: ""
+
+jobs:
+  build:
+    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'p8-scale-wide-dirty-run'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/artifacts/
+            /artifacts/checkpoints/capability-snapshot-optimization-20261003/current-status-under-test.rs
+            /artifacts/checkpoints/capability-snapshot-optimization-20261003/v2-status-checks.rs
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.95.0
+          components: rustfmt
+      - name: Check formatting and both native scale protocol profiles
+        env:
+          CARGO_TARGET_DIR: ${{ runner.temp }}/p8-scale-wide-dirty-protocol-cargo
+        run: |
+          cargo fmt --all -- --check
+          cargo test --locked -p cc-eval --test p8_scale
+      - name: Compile and bind one immutable release executable
+        run: |
+          python3 scripts/p8_scale_matrix.py build \
+            --root "$GITHUB_WORKSPACE" --output "$RUNNER_TEMP/p8-scale-wide-dirty-build" \
+            --target-directory "$RUNNER_TEMP/p8-scale-wide-dirty-cargo"
+      - name: Preserve original build, binary and source receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-scale-wide-dirty-build-${{ github.run_id }}
+          path: ${{ runner.temp }}/p8-scale-wide-dirty-build
+          if-no-files-found: error
+
+  # These are this profile's rep-0 measurements, retained once in its own
+  # artifact namespace. All five must pass before the other 145 slices run.
+  preflight:
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      max-parallel: 5
+      matrix:
+        scale: [100000, 50000, 10000, 5000, 1000]
+        shard: [0]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/artifacts/
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.95.0
+      - uses: actions/download-artifact@v4
+        with:
+          name: p8-scale-wide-dirty-build-${{ github.run_id }}
+          path: ${{ runner.temp }}/p8-scale-wide-dirty-build
+      - name: Observe and prepare the registered capacity on this disposable hosted VM
+        env:
+          SCALE: ${{ matrix.scale }}
+          SHARD: ${{ matrix.shard }}
+          P8_EXPECTED_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}
+          P8_CAPACITY_PREPARE_ALLOWED: ${{ github.repository == 'jyqj/codecortex' && runner.environment == 'github-hosted' && runner.os == 'Linux' }}
+        run: |
+          python3 scripts/p8_runner_capacity.py --scale "$SCALE" \
+            --output "$RUNNER_TEMP/p8-scale-wide-dirty-capacity-$SCALE-$SHARD" --prepare-ephemeral
+      - name: Preserve capacity observations and any unsuccessful preparation
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-scale-wide-dirty-capacity-${{ matrix.scale }}-${{ matrix.shard }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/p8-scale-wide-dirty-capacity-${{ matrix.scale }}-${{ matrix.shard }}
+          if-no-files-found: error
+      - name: Execute all phases for this registered single-repetition capacity slice
+        env:
+          SCALE: ${{ matrix.scale }}
+          SHARD: ${{ matrix.shard }}
+        run: |
+          chmod +x "$RUNNER_TEMP/p8-scale-wide-dirty-build/p8-scale"
+          python3 scripts/p8_scale_matrix.py run --root "$GITHUB_WORKSPACE" \
+            --build "$RUNNER_TEMP/p8-scale-wide-dirty-build" \
+            --scale "$SCALE" --shard-index "$SHARD" --shard-count 30 --repetitions 30 \
+            --capacity-profile scale_wide_dirty_v1 \
+            --output "$RUNNER_TEMP/p8-scale-wide-dirty-shard-$SCALE-$SHARD"
+      - name: Preserve original shard including unsuccessful measurements
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-scale-wide-dirty-shard-${{ matrix.scale }}-${{ matrix.shard }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/p8-scale-wide-dirty-shard-${{ matrix.scale }}-${{ matrix.shard }}
+          if-no-files-found: error
+
+  measure:
+    needs: [build, preflight]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        scale: [100000, 50000, 10000, 5000, 1000]
+        shard: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/artifacts/
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.95.0
+      - uses: actions/download-artifact@v4
+        with:
+          name: p8-scale-wide-dirty-build-${{ github.run_id }}
+          path: ${{ runner.temp }}/p8-scale-wide-dirty-build
+      - name: Observe and prepare the registered capacity on this disposable hosted VM
+        env:
+          SCALE: ${{ matrix.scale }}
+          SHARD: ${{ matrix.shard }}
+          P8_EXPECTED_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}
+          P8_CAPACITY_PREPARE_ALLOWED: ${{ github.repository == 'jyqj/codecortex' && runner.environment == 'github-hosted' && runner.os == 'Linux' }}
+        run: |
+          python3 scripts/p8_runner_capacity.py --scale "$SCALE" \
+            --output "$RUNNER_TEMP/p8-scale-wide-dirty-capacity-$SCALE-$SHARD" --prepare-ephemeral
+      - name: Preserve capacity observations and any unsuccessful preparation
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-scale-wide-dirty-capacity-${{ matrix.scale }}-${{ matrix.shard }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/p8-scale-wide-dirty-capacity-${{ matrix.scale }}-${{ matrix.shard }}
+          if-no-files-found: error
+      - name: Execute all phases for this registered single-repetition capacity slice
+        env:
+          SCALE: ${{ matrix.scale }}
+          SHARD: ${{ matrix.shard }}
+        run: |
+          chmod +x "$RUNNER_TEMP/p8-scale-wide-dirty-build/p8-scale"
+          python3 scripts/p8_scale_matrix.py run --root "$GITHUB_WORKSPACE" \
+            --build "$RUNNER_TEMP/p8-scale-wide-dirty-build" \
+            --scale "$SCALE" --shard-index "$SHARD" --shard-count 30 --repetitions 30 \
+            --capacity-profile scale_wide_dirty_v1 \
+            --output "$RUNNER_TEMP/p8-scale-wide-dirty-shard-$SCALE-$SHARD"
+      - name: Preserve original shard including unsuccessful measurements
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-scale-wide-dirty-shard-${{ matrix.scale }}-${{ matrix.shard }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/p8-scale-wide-dirty-shard-${{ matrix.scale }}-${{ matrix.shard }}
+          if-no-files-found: error
+
+  aggregate:
+    if: always() && needs.build.result == 'success'
+    needs: [build, preflight, measure]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/artifacts/
+      - uses: actions/download-artifact@v4
+        with:
+          name: p8-scale-wide-dirty-build-${{ github.run_id }}
+          path: ${{ runner.temp }}/p8-scale-wide-dirty-build
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: p8-scale-wide-dirty-shard-*-${{ github.run_id }}
+          path: ${{ runner.temp }}/p8-scale-wide-dirty-shards
+      - name: Replay every raw record and reject missing or incompatible cells
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import os, pathlib, sys
+          sys.path.insert(0, 'scripts')
+          import p8_scale_matrix as matrix
+          root = pathlib.Path(os.environ['RUNNER_TEMP'])
+          binary = root / 'p8-scale-wide-dirty-build/p8-scale'
+          if binary.exists():
+              binary.chmod(0o755)
+          inputs = sorted((root / 'p8-scale-wide-dirty-shards').glob('p8-scale-wide-dirty-shard-*'))
+          result = matrix.aggregate(root / 'p8-scale-wide-dirty-build', inputs, root / 'p8-scale-wide-dirty-matrix',
+                                    repetitions=30, shard_count=30, capacity_profile=matrix.WIDE_DIRTY_PROFILE)
+          print({key: result.get(key) for key in ('status', 'error', 'sample_count')})
+          sys.exit(0 if result.get('passed') is True else 1)
+          PY
+      - name: Preserve raw-only matrix review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-scale-wide-dirty-matrix-${{ github.run_id }}
+          path: ${{ runner.temp }}/p8-scale-wide-dirty-matrix
+          if-no-files-found: error

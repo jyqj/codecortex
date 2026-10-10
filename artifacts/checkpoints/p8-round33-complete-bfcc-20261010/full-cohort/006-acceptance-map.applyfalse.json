@@ -1,0 +1,105 @@
+{
+  "schema": "P8-006-actual-cohort-future-evidence-map-v1",
+  "apply_now": false,
+  "run_id": 38013753078,
+  "run_attempt": 1,
+  "source": "9cc6bf49f6dd81e4069a8004eed49addba0ab79b",
+  "profile": "scale_wide_dirty_v1",
+  "observed_at": "2026-10-10 01:38:29 UTC",
+  "task_original_steps": [
+    "测no-op/body/API/config/batch和超预算闭包",
+    "输出各phase计数"
+  ],
+  "task_original_acceptance": [
+    "时间可归因且闭包完成后full parity，未完成有显式status",
+    "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+  ],
+  "expected_artifacts_url": "https://github.com/jyqj/codecortex/actions/runs/38013753078",
+  "actual_future_006_acceptance_receipt": null,
+  "claims": [
+    {
+      "claim": "固定 source/build 与注册完整 150 槽 / 1500 样本",
+      "expected_evidence": "p8-scale-wide-dirty-build-38013753078/build.json, preserved binary/source/producer; each shard.json/build_receipt_sha256; matrix.json/evidence, registered_repetitions, shard_count_per_scale, sample_count, groups",
+      "original_predicate": "p8_scale_matrix.validate_build, validate_shard, aggregate/combine",
+      "current": "build compiling; no actual binary/build receipt, shard acceptance or aggregate yet"
+    },
+    {
+      "claim": "no-op/body/API/config/batch 与各 phase 时间、计数可归因",
+      "expected_evidence": "Each measurement artifact: native/raw.jsonl original build reports and stage events; native/worker-summary.json and report.json; aggregate matrix.json/groups phase/elapsed fields.",
+      "original_predicate": "inspect_raw checks complete original build/stage order and phase reports",
+      "current": "pending"
+    },
+    {
+      "claim": "完成闭包后完整 15 表 parity；未完成显式 status",
+      "expected_evidence": "Same raw history: original complete/status, settle and control/parity records with all 15 tables; native report termination and original shard validation.",
+      "original_predicate": "check_parity and inspect_raw; incomplete closure cannot certify full parity",
+      "current": "pending"
+    },
+    {
+      "claim": "原 fanout 预算不足 → 完成闭包",
+      "expected_evidence": "Only this cohort scale1000 shards: fanout1/4/16/64/128 with original8/128 budgets, first_build_incomplete and subsequent closure; matrix groups/first_build_incomplete_samples.",
+      "original_predicate": "aggregate requires actual over-budget closure observation; no substitute claim from configured budget alone",
+      "current": "pending"
+    },
+    {
+      "claim": "相关旧功能回归及来源兼容边界",
+      "expected_evidence": "This build protocol step official terminal log/receipt; applicable actual-source normal engineering/regression records and existing predecessor evidence, retaining exact source identity. Raw full-scale evidence remains separate.",
+      "original_predicate": "Existing task regression requirement; no new all-workflows prerequisite introduced",
+      "current": "protocol step official success; fresh build/complete study still pending; final closeout must cite actual records, not this registration"
+    },
+    {
+      "claim": "真正验收与 durable custody 后才应用 006 及下游",
+      "expected_evidence": "Original aggregate matrix.json passed=true/status=complete_measurement_coverage, all150 slot custody/immutable locators, original predicate outputs and actual independent acceptance receipt.",
+      "original_predicate": "Original acceptance/template, not a new validator",
+      "current": "actual receipt and final custody locator null"
+    }
+  ],
+  "retain_statistical_and_resource_limits": "All original environment strata and slow/failure observations remain. Global N30 does not imply per-stratum N30, pooled tails, causal speedup or whole-process-tree peaks. Matrix release_certification remains not_run; default200 claims are not supplied by wide4096.",
+  "future_application": {
+    "reuse_actual_git": "cda11e87c03780f92d5587097f2f8195986579ee",
+    "original_package_git": "0fee0f4d7e40dbe483644f4663ec45b9c75a4e76",
+    "order": [
+      "P8-006",
+      "P8-007",
+      "P8-008",
+      "P8-009",
+      "P8-010",
+      "P8-011",
+      "P8-012",
+      "P8-013",
+      "P8-016"
+    ],
+    "count_waves": [
+      {
+        "done_after": 165,
+        "remaining_after": 27,
+        "tasks": [
+          "P8-006"
+        ]
+      },
+      {
+        "done_after": 172,
+        "remaining_after": 20,
+        "tasks": [
+          "P8-007",
+          "P8-008",
+          "P8-009",
+          "P8-010",
+          "P8-011",
+          "P8-012",
+          "P8-013"
+        ]
+      },
+      {
+        "done_after": 173,
+        "remaining_after": 19,
+        "tasks": [
+          "P8-016"
+        ]
+      }
+    ],
+    "instructions": "After actual complete accepted evidence: fresh task/dependency/source check, fill the existing nonnull 006 receipt and immutable locators, retain protected definitions/subgates and old components, root applies status/evidence/implementation_notes and original navigation; run original code_index_plan.py --write then original check. This file does not apply any change.",
+    "additional_new_gates": false
+  },
+  "independent_diagnostic_cohort_samples": 0
+}

@@ -1,0 +1,357 @@
+{
+  "counts_unchanged": {
+    "cumulative_new_completed": 1,
+    "done": 164,
+    "remaining": 28
+  },
+  "decision": "allowed_to_start_existing_full_wide_cohort_now_at_fixed_PR200_G9cc6_without_waiting_for_separate_diagnostic",
+  "declared_scope": "Independent full-cohort candidate for existing P8-006 declared wide configuration. Originaltask requires no blanket default200-only gate; this study cannot certify default200 or repair old measured-source identities.",
+  "existing_original_workflows": [
+    {
+      "build_if": "github.event_name == 'workflow_dispatch' || github.event.label.name == 'p8-scale-wide-dirty-run'",
+      "bytes": 9544,
+      "git_blob": "7fa4723860df70178ce6ed58cd305acaa7c76069",
+      "jobs": {
+        "aggregate": {
+          "if": "always() && needs.build.result == 'success'",
+          "needs": [
+            "build",
+            "preflight",
+            "measure"
+          ],
+          "strategy": null,
+          "timeout_minutes": "30"
+        },
+        "build": {
+          "if": "github.event_name == 'workflow_dispatch' || github.event.label.name == 'p8-scale-wide-dirty-run'",
+          "needs": null,
+          "strategy": null,
+          "timeout_minutes": "45"
+        },
+        "measure": {
+          "if": null,
+          "needs": [
+            "build",
+            "preflight"
+          ],
+          "strategy": {
+            "fail-fast": "false",
+            "matrix": {
+              "scale": [
+                "100000",
+                "50000",
+                "10000",
+                "5000",
+                "1000"
+              ],
+              "shard": [
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10",
+                "11",
+                "12",
+                "13",
+                "14",
+                "15",
+                "16",
+                "17",
+                "18",
+                "19",
+                "20",
+                "21",
+                "22",
+                "23",
+                "24",
+                "25",
+                "26",
+                "27",
+                "28",
+                "29"
+              ]
+            },
+            "max-parallel": "10"
+          },
+          "timeout_minutes": "350"
+        },
+        "preflight": {
+          "if": null,
+          "needs": "build",
+          "strategy": {
+            "fail-fast": "false",
+            "matrix": {
+              "scale": [
+                "100000",
+                "50000",
+                "10000",
+                "5000",
+                "1000"
+              ],
+              "shard": [
+                "0"
+              ]
+            },
+            "max-parallel": "5"
+          },
+          "timeout_minutes": "350"
+        }
+      },
+      "path": "/workspace/scratch/bfccb8494ba0/round32-capture-context-admission/guard-view/.github/workflows/p8-scale-wide-dirty.yml",
+      "repository_path": ".github/workflows/p8-scale-wide-dirty.yml",
+      "sha256": "6a85b4d0a3e93c2ec77f49b7804d1320510cdaa457673c701846a70c21f830a9",
+      "trigger": {
+        "pull_request": {
+          "types": [
+            "labeled"
+          ]
+        },
+        "workflow_dispatch": ""
+      },
+      "workflow_or_job_concurrency": null
+    },
+    {
+      "build_if": "github.event_name == 'workflow_dispatch' || github.event.label.name == 'p8-scale-run'",
+      "bytes": 8621,
+      "git_blob": "74f1b64ed447ef24da584f1c1f8d090d2fa1e03e",
+      "jobs": {
+        "aggregate": {
+          "if": "always() && needs.build.result == 'success'",
+          "needs": [
+            "build",
+            "preflight",
+            "measure"
+          ],
+          "strategy": null,
+          "timeout_minutes": "30"
+        },
+        "build": {
+          "if": "github.event_name == 'workflow_dispatch' || github.event.label.name == 'p8-scale-run'",
+          "needs": null,
+          "strategy": null,
+          "timeout_minutes": "45"
+        },
+        "measure": {
+          "if": null,
+          "needs": [
+            "build",
+            "preflight"
+          ],
+          "strategy": {
+            "fail-fast": "false",
+            "matrix": {
+              "scale": [
+                "100000",
+                "50000",
+                "10000",
+                "5000",
+                "1000"
+              ],
+              "shard": [
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10",
+                "11",
+                "12",
+                "13",
+                "14",
+                "15",
+                "16",
+                "17",
+                "18",
+                "19",
+                "20",
+                "21",
+                "22",
+                "23",
+                "24",
+                "25",
+                "26",
+                "27",
+                "28",
+                "29"
+              ]
+            },
+            "max-parallel": "10"
+          },
+          "timeout_minutes": "350"
+        },
+        "preflight": {
+          "if": null,
+          "needs": "build",
+          "strategy": {
+            "fail-fast": "false",
+            "matrix": {
+              "scale": [
+                "100000",
+                "50000",
+                "10000",
+                "5000",
+                "1000"
+              ],
+              "shard": [
+                "0"
+              ]
+            },
+            "max-parallel": "5"
+          },
+          "timeout_minutes": "350"
+        }
+      },
+      "path": "/workspace/scratch/bfccb8494ba0/round32-capture-context-admission/guard-view/.github/workflows/p8-scale.yml",
+      "repository_path": ".github/workflows/p8-scale.yml",
+      "sha256": "4258476dd37d8af223aaa7ad45d7c97d7298be1ba4ec5ffd9af9949785ed8f3d",
+      "trigger": {
+        "pull_request": {
+          "types": [
+            "labeled"
+          ]
+        },
+        "workflow_dispatch": ""
+      },
+      "workflow_or_job_concurrency": null
+    },
+    {
+      "build_if": "github.event_name == 'workflow_dispatch' || github.event.label.name == 'p8-scale-100k-diagnostic-run'",
+      "bytes": 23664,
+      "git_blob": "56f8901136e48e06788aefef2413e6e83d4ce106",
+      "jobs": {
+        "build": {
+          "if": "github.event_name == 'workflow_dispatch' || github.event.label.name == 'p8-scale-100k-diagnostic-run'",
+          "needs": null,
+          "strategy": null,
+          "timeout_minutes": "45"
+        },
+        "diagnose": {
+          "if": null,
+          "needs": "build",
+          "strategy": null,
+          "timeout_minutes": "350"
+        }
+      },
+      "path": "/workspace/scratch/bfccb8494ba0/round32-capture-context-admission/guard-view/.github/workflows/p8-scale-100k-diagnostic.yml",
+      "repository_path": ".github/workflows/p8-scale-100k-diagnostic.yml",
+      "sha256": "4333fe7a904df1fc00cde611469c76e714c3fb41944a4269f37c88a8d290d994",
+      "trigger": {
+        "pull_request": {
+          "types": [
+            "labeled"
+          ]
+        },
+        "workflow_dispatch": ""
+      },
+      "workflow_or_job_concurrency": null
+    }
+  ],
+  "latest_main_update_from_root": {
+    "main": "30a6dff579c88593c1762db244eacbe6ee95cef9",
+    "merged_PR": 199,
+    "merged_at_utc": "2026-10-10T01:28:31Z",
+    "provenance": "Root fresh official observation supplied this turn; no duplicate GET/product review by this reviewer. PR190 closed separately and not used as launch source.",
+    "same_tree_as": "4786c1457b47c5baf4c09d32b96048795e863111",
+    "tree": "6518a5b317683a24ded3a69b027da6a04b8c996c"
+  },
+  "merge_requirement": {
+    "basis": "The original workflow explicitly admits the pull_request labeled event at PR head; no workflow need/condition depends on independent diagnostic or merged status. Original accepted task/protocol checklist does not add either requirement. Original build fmt and p8_scale protocol controls and the five successful rep0 gate remain intact.",
+    "must_merge_PR200_first": false,
+    "must_wait_for_all_ordinary_CI_green_first": false,
+    "must_wait_for_independent_diagnostic_success_first": false
+  },
+  "new_attempt": null,
+  "new_run_id": null,
+  "new_samples": 0,
+  "parallelism_and_cancellation": {
+    "comparison": "Each build condition tests the current event label name for exact equality, not whether other labels are attached. A wide label event does not rerun the diagnostic/default workload.",
+    "default_label": "p8-scale-run",
+    "diagnostic_label": "p8-scale-100k-diagnostic-run",
+    "local_resources": "Separate GitHub-hosted jobs use their own job directories and fresh full-workflow build target. No shared native PID/target directory between the running diagnostic and new cohort. Actual account/global scheduling availability is not measured here.",
+    "maximum_measurement_jobs_for_these_two_runs": {
+      "diagnostic_plus_measure": 11,
+      "diagnostic_plus_preflight": 6,
+      "scope": "Upper simultaneous native job counts for these two only; old studies/other CI may add account demand. Native phases need not overlap for entire job duration."
+    },
+    "wide_label": "p8-scale-wide-dirty-run",
+    "workflow_level_cancel": "None of these three original workflows declares concurrency or cancel-in-progress. No workflow-defined mutual cancellation between old/current/new runs. Explicit cancellation or broader platform policy is not inferred absent this YAML."
+  },
+  "precise_root_only_launch_sequence": [
+    "Fresh-read PR200 head before mutation and confirm still exact9cc6; retain actual event/head/base metadata. This is ordinary source/lease custody, not a new task acceptance gate.",
+    "Ensure this intended new full cohort has not already been started. Add only p8-scale-wide-dirty-run once; if that exact label is already present, root coordinates its removal/re-addition once. Leave the diagnostic and old-study source/ref/history unchanged. No workflow_dispatch tool is invented.",
+    "Retain the new actual run ID, attempt and pull_request event; separately retain actual checkout/source tree/build receipt/binary/driver hashes. Workflow steps explicitly use github.event.pull_request.head.sha || github.sha, not future latest main.",
+    "Let the original fresh build and 5 rep0 slots execute, maxparallel5. All five success unlock the remaining5x29=145 slots, maxparallel10. fail-fast remainsfalse; no manual substitution or preflight bypass.",
+    "Let original aggregate require exactly150 accepted slots/1500 samples in this one fixed source/build/profile/run. Missing, failed or incompatible slots retain non-pass and original artifacts. Retain separate diagnostic, G8 and GW4 IDs/results, including all prior failures."
+  ],
+  "prior_diagnostic_not_hard_gate": "The separate diagnostic is an engineering decision aid, not a newly added original P8-006 protocol gate. The existing wide workflow itself already gates145 on its own five successful rep0 slots.",
+  "prior_execution_checklist": {
+    "bytes": 12329,
+    "git_blob": "367994a8fed36aff5e22561b7abebea099807b0c",
+    "path": "/workspace/scratch/bfccb8494ba0/round32-P8-006-full-cohort-execution-preparation/execution-checklist.applyfalse.json",
+    "sha256": "8d1a75af3282e69d816d5cbad57d214dfe0713c3efa1381d67b3bb372ab0e2b1"
+  },
+  "read_only_boundary": "Read exact three original workflows, prior checklist, canonical hash bindings and retained PR registration. No new protocol or product edits, ref/label mutation, workflow invocation, test, artifact download or study started.",
+  "real_risks": [
+    {
+      "detail": "Full cohort retains up to150x5=750 native worker-hours, plus original build/setup/upload/aggregate overhead. It duplicates an independent100k rep0 observation by design; diagnostic cannot replace cohortrep0. Job timeout envelopes are350min each, i.e.875 runner-hours for150 jobs before45min build/30min aggregate; these are mathematical ceilings, not measured usage/billing or increased native budgets.",
+      "risk": "Extra resource commitment while 100k completion is still unknown"
+    },
+    {
+      "detail": "No current diagnostic success is claimed. If any full-cohort rep0 fails, the original needs dependency blocks all145 remaining slots. Starting now may spend the five preflight jobs to reach that negative outcome. Waiting for the diagnostic could save that cost, but is a discretionary scheduling tradeoff rather than an original acceptance gate.",
+      "risk": "The same-source100k workload may still exceed its unchanged5h bound"
+    },
+    {
+      "detail": "Additional jobs can queue behind account-wide capacity and other workflows. This can reduce calendar-time benefit; exact quota/placement is unknown. Separate jobs avoid deliberate same-VM benchmark contention, but no physical host isolation or cross-run causal speed comparison is claimed.",
+      "risk": "Hosted-runner quota and shared infrastructure variability"
+    },
+    {
+      "detail": "Main/PR commits after the label event cannot relabel the original source. Any later fix is separate source evidence; retain the launched cohort and its actual outcome. Do not replace its slow/failed slots with diagnostic or other-cohort samples.",
+      "risk": "Future source changes cannot be folded into this already registered run"
+    }
+  ],
+  "recorded_at_utc": "2026-10-10T01:35:16.813508+00:00",
+  "reviewer": "/root/todo_audit",
+  "schema": "bounded_parallel_full_cohort_launch_decision_v1",
+  "source": {
+    "G": "9cc6bf49f6dd81e4069a8004eed49addba0ab79b",
+    "P": "aa8c86b168290e6133040072613aae8240d5b1f6",
+    "PR": 200,
+    "R": "5c53bb909efef3fb842b5fbc39a45dec4054ba40",
+    "branch": "task/p8-100k-diagnostic-capture-bfcc-20261010",
+    "canonical_git": "fc5cc74177c8112157d81ec6a8e359e7cdf69f0b",
+    "tree": "6461938788665701cfa4fa095a064a3a404ec492"
+  },
+  "source_applicability": "PR200 G9cc6 descends from G4786, now exact tree of actual main30a6, and only adds the reviewed diagnostic validation/identity artifacts and context fix. The original wide workflow and original product/native driver remain fixed and already independently bound. No new source combination or P/R/G is necessary to launch the existing workflow at G9cc6.",
+  "task_credit": 0,
+  "triggered": false,
+  "unchanged_parameters": {
+    "all_original_stages_and_15_table_parity": true,
+    "high_fanout_dirty_budget": 8,
+    "high_fanout_resume_limit": 128,
+    "main_dirty_budget": 4096,
+    "native_deadline_ms": 18000000,
+    "native_max_output_bytes": 536870912,
+    "physical_oracle_profile": "scale_capacity_v1",
+    "profile": "scale_wide_dirty_v1",
+    "repetitions_per_scale": 30,
+    "resume_limit": 1024,
+    "scales": [
+      100000,
+      50000,
+      10000,
+      5000,
+      1000
+    ],
+    "seed": 12648430,
+    "shard_count": 30
+  }
+}

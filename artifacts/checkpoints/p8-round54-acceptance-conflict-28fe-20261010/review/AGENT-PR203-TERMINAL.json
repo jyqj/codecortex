@@ -1,0 +1,233 @@
+{
+  "schema": "r54-pr203-terminal-independent-review-v1",
+  "reviewed_at_utc": "2026-10-10T09:02:41.862Z",
+  "repository": "jyqj/codecortex",
+  "pull_request": {
+    "number": 203,
+    "url": "https://github.com/jyqj/codecortex/pull/203",
+    "state": "open",
+    "draft": true,
+    "title": "ci(p8): keep task-profile artifacts below aggregate cap",
+    "head_ref": "fix/p8-task-artifact-cap-20261010",
+    "head_sha": "797e9e60516e9bb8cc3c35f14a6ec7dc0092aa4f",
+    "head_tree": "2d5758b637c588fe07fcfcde99991f5468f89076",
+    "head_parent": "0da9a2800d2b3112d584a8bad4f79785e01162a9",
+    "api_base_sha": "0da9a2800d2b3112d584a8bad4f79785e01162a9",
+    "fresh_main_sha": "c2b726538cacfdf6ae9f01977a7b93da48d2e2b2",
+    "fresh_main_change_after_pr_base": "PR #202 task-ledger/progress merge; no overlap with this workflow file",
+    "mergeable": true,
+    "mergeable_state": "unstable"
+  },
+  "exact_diff": {
+    "changed_files": 1,
+    "additions": 2,
+    "deletions": 10,
+    "path": ".github/workflows/p8-task-profile.yml",
+    "git_blob_sha": "2ad2b5e36cbb7e9f368f1116e449d6d082f87744",
+    "sha256": "2dfcab748378de13e2bc5ffef3a35bb08ff4448921496c1119d8b4c4e552c344",
+    "operations": [
+      "delete checkpoint-19 upload-artifact step",
+      "retain freeze_19 using upload_18 artifact ID and digest",
+      "remove all PREVIOUS_ARTIFACT_ID/PREVIOUS_ARTIFACT_DIGEST inputs from finish",
+      "retain final boundary upload and complete shard upload unchanged"
+    ]
+  },
+  "custody_review": {
+    "verdict": "semantically_safe_narrow_change",
+    "reasoning": [
+      "freeze_19 invokes snapshot(index=19) with upload_18 identity, so acknowledge() marks only checkpoint 18's manifest chunks acknowledged",
+      "checkpoint 19 still captures its local byte interval; without upload_19 it remains unacknowledged",
+      "finish invokes snapshot(index=20) with empty previous identity, so it does not falsely acknowledge checkpoint 19 and includes checkpoint-19 plus final pending chunks in the final boundary",
+      "complete task shard upload remains separate and unchanged",
+      "a runner loss after local freeze_19 but before final upload leaves remote custody at checkpoint 18; the tail remains unknown rather than falsely retained"
+    ],
+    "expected_complete_artifacts": 992,
+    "count_derivation": "1 build + 45 capacity + (19 periodic checkpoints + 1 final boundary)*45 + 45 complete shards + 1 matrix",
+    "scope_limit": "workflow transport only; no prior failed study is repaired and no original TODO receives completion credit"
+  },
+  "same_head_checks": {
+    "queried_head_sha": "797e9e60516e9bb8cc3c35f14a6ec7dc0092aa4f",
+    "terminal": true,
+    "total": 21,
+    "conclusions": {
+      "success": 18,
+      "failure": 1,
+      "skipped": 2
+    },
+    "failing_check": {
+      "check_run_id": 114164870834,
+      "name": "check",
+      "workflow_run_id": 38035469451,
+      "workflow": "CI",
+      "status": "completed",
+      "conclusion": "failure",
+      "started_at": "2026-10-10T07:49:50Z",
+      "completed_at": "2026-10-10T08:23:38Z",
+      "failed_step_number": 8,
+      "failed_step": "Default regression within authorized scope",
+      "command_outcome": "cargo test exited 101",
+      "exact_failure": "cc-eval tests::benchmark_fixture: tool 'context' warm p95 = 1.72s exceeded limit 500ms",
+      "test_summary": "70 passed; 1 failed; 7 ignored",
+      "downstream_steps": "skipped after the failure"
+    },
+    "checks": [
+      [
+        "all eight platform cells",
+        "success"
+      ],
+      [
+        "cold linux / 1.95 / semantic",
+        "success"
+      ],
+      [
+        "cold linux / stable / semantic",
+        "success"
+      ],
+      [
+        "lifecycle",
+        "success"
+      ],
+      [
+        "cold linux / 1.95 / default",
+        "success"
+      ],
+      [
+        "cold macos / stable / default",
+        "success"
+      ],
+      [
+        "cold macos / 1.95 / default",
+        "success"
+      ],
+      [
+        "offline (semantic)",
+        "success"
+      ],
+      [
+        "cold macos / stable / semantic",
+        "success"
+      ],
+      [
+        "check",
+        "failure"
+      ],
+      [
+        "cold linux / stable / default",
+        "success"
+      ],
+      [
+        "cold macos / 1.95 / semantic",
+        "success"
+      ],
+      [
+        "msrv",
+        "success"
+      ],
+      [
+        "offline (default)",
+        "success"
+      ],
+      [
+        "closeout",
+        "success"
+      ],
+      [
+        "actual recovery and rollback matrix",
+        "success"
+      ],
+      [
+        "mechanism",
+        "success"
+      ],
+      [
+        "security",
+        "success"
+      ],
+      [
+        "engineering",
+        "success"
+      ],
+      [
+        "mixed",
+        "skipped"
+      ],
+      [
+        "admission_and_controls",
+        "skipped"
+      ]
+    ]
+  },
+  "same_head_workflows": {
+    "total": 6,
+    "terminal": true,
+    "runs": [
+      {
+        "id": 38035469451,
+        "name": "CI",
+        "event": "pull_request",
+        "conclusion": "failure"
+      },
+      {
+        "id": 38035469489,
+        "name": "P7 engineering regressions",
+        "event": "pull_request",
+        "conclusion": "success"
+      },
+      {
+        "id": 38035469433,
+        "name": "P8 lifecycle and resource observations",
+        "event": "pull_request",
+        "conclusion": "success"
+      },
+      {
+        "id": 38035469443,
+        "name": "P7 closeout evidence",
+        "event": "pull_request",
+        "conclusion": "success"
+      },
+      {
+        "id": 38035469487,
+        "name": "P8 platform cold builds",
+        "event": "pull_request",
+        "conclusion": "success"
+      },
+      {
+        "id": 38035454776,
+        "name": "P8 opt-in DB acquisition observations",
+        "event": "create",
+        "conclusion": "skipped"
+      }
+    ]
+  },
+  "unresolved_source_guard": {
+    "status": "not_executed_due_to_earlier_default_regression_failure",
+    "guard": "scripts/verify_reviewed_source_v15.py",
+    "registry": "scripts/reviewed-source-registry-v15.json",
+    "registry_validation_input_sha256": "747d85f5905fd8b81b62283af18f696843fa4e6b29849e4972acdeee998266d9",
+    "actual_head_workflow_sha256": "2dfcab748378de13e2bc5ffef3a35bb08ff4448921496c1119d8b4c4e552c344",
+    "consequence": "verify_validation_inputs compares current bytes to PRODUCT-reviewed bytes and would reject this workflow unless the approval/registry chain is legitimately advanced; it cannot be presumed green from skipped downstream CI"
+  },
+  "decision": {
+    "merge_now": false,
+    "verdict": "DO_NOT_MERGE",
+    "blocking_reasons": [
+      "one required same-head CI check is completed/failure",
+      "PR remains Draft",
+      "v15 validation-input approval binding for the changed workflow is stale and its check did not run",
+      "current main advanced after the tested PR base, so the recorded checks do not establish current-main integration"
+    ],
+    "required_before_reconsideration": [
+      "resolve or obtain a genuine passing terminal CI result without weakening the benchmark gate",
+      "advance the reviewed validation-input binding through the repository's normal independent-review chain",
+      "test the exact resulting head against fresh main and re-read all required checks",
+      "mark ready only after those blockers are closed"
+    ]
+  },
+  "prohibited_actions_respected": [
+    "no ref write",
+    "no merge",
+    "no rerun",
+    "no cancel",
+    "no PR mutation"
+  ]
+}

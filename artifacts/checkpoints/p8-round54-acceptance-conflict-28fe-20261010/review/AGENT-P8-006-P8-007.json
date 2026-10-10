@@ -1,0 +1,350 @@
+{
+  "schema": "codecortex.p8_006_p8_007_round54_independent_review.v1",
+  "recorded_at_utc": "2026-10-10T09:02:13Z",
+  "repository": "jyqj/codecortex",
+  "mode": "read_only",
+  "prohibitions_observed": {
+    "workflow_dispatch": false,
+    "rerun": false,
+    "cancel": false,
+    "merge": false,
+    "pooled_sources_or_profiles": false,
+    "relabelled_populations": false,
+    "backfilled_results": false
+  },
+  "fresh_main": {
+    "sha": "c2b726538cacfdf6ae9f01977a7b93da48d2e2b2",
+    "tree": "60962afd17a6edde5318cb24056c249c9e7fb5f8",
+    "merged_pr": 202,
+    "merged_at_utc": "2026-10-10T08:09:44Z",
+    "tasks_blob": "fd6976578422df9837f1e6070c58a827f504a87d",
+    "ledger_claim": {
+      "total": 192,
+      "done": 176,
+      "in_progress": 3,
+      "todo": 12,
+      "blocked": 1,
+      "remaining": 16
+    },
+    "material_change": "PR202 changed only five roadmap/progress files and set twelve P8 task records, including P8-006 and P8-007, to done."
+  },
+  "governing_acceptance_contract": {
+    "source": "current automation handoff and preserved original benchmark contract",
+    "p8_006_required_population": {
+      "profile": "original complete scale N30",
+      "capacities": [
+        1000,
+        5000,
+        10000,
+        50000,
+        100000
+      ],
+      "repetitions_per_capacity": 30,
+      "required_measurement_shards": 150,
+      "required_composite_observations": 1500,
+      "seed": 12648430,
+      "table_count": 15,
+      "aggregate_must_succeed": true
+    },
+    "identity_rule": "Different source commits, workload profiles, retry populations, and N values remain separate; they may not be pooled or relabelled.",
+    "p8_007_dependency": "P8-007 has a hard depends_on edge to P8-006."
+  },
+  "p8_006_original_n30_runs_fresh": [
+    {
+      "run": 37896198208,
+      "source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+      "profile": "scale_capacity_v1",
+      "status": "completed",
+      "conclusion": "failure",
+      "artifact_count": 12,
+      "successful_measurement_shards": 4,
+      "expected_measurement_shards": 150,
+      "failure": "100000 preflight failed; aggregate failed; measure skipped",
+      "matrix_artifact": {
+        "id": 11616736761,
+        "digest": "sha256:e9bddc19668e8466cd55c31d9d297e3b1ac0fb00ded2b2f0d9615795d8b8cc1e"
+      }
+    },
+    {
+      "run": 37902429727,
+      "source": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "profile": "scale_capacity_v1",
+      "status": "completed",
+      "conclusion": "failure",
+      "artifact_count": 12,
+      "successful_measurement_shards": 4,
+      "expected_measurement_shards": 150,
+      "failure": "100000 preflight failed; aggregate failed; measure skipped",
+      "matrix_artifact": {
+        "id": 11619200069,
+        "digest": "sha256:2914d0b238c9ba2614532affd28bfe11132d7d0ce45b3f3b75d391f4132e9363"
+      }
+    },
+    {
+      "run": 37910924354,
+      "source": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "profile": "scale_capacity_v1",
+      "status": "completed",
+      "conclusion": "failure",
+      "artifact_count": 12,
+      "successful_measurement_shards": 4,
+      "expected_measurement_shards": 150,
+      "failure": "100000 preflight failed; aggregate failed; measure skipped",
+      "matrix_artifact": {
+        "id": 11626127365,
+        "digest": "sha256:cb0d43a48f20e8629723a501b5764706288b594edf6bcd58cbce03bf99ac90f5"
+      }
+    },
+    {
+      "run": 37962416564,
+      "source": "4fe927488d5cb7f26bd27c7624745fb1b6ca202b",
+      "profile": "scale_capacity_v1",
+      "status": "completed",
+      "conclusion": "failure",
+      "artifact_count": 12,
+      "successful_measurement_shards": 4,
+      "expected_measurement_shards": 150,
+      "failure": "100000 preflight failed; aggregate failed; measure skipped",
+      "matrix_artifact": {
+        "id": 11647916837,
+        "digest": "sha256:c53a9aec823f9d4448f56c117a017e467ed9092647182be281681291de16d9c6"
+      }
+    },
+    {
+      "run": 37982220020,
+      "source": "008f1ec0ae16b9b6aff9f20d033b17b2219168f8",
+      "profile": "scale_wide_dirty_v1",
+      "status": "completed",
+      "conclusion": "failure",
+      "artifact_count": 11,
+      "successful_measurement_shards": 4,
+      "expected_measurement_shards": 150,
+      "failure": "100000 preflight failed without complete shard; aggregate failed; measure skipped",
+      "matrix_artifact": {
+        "id": 11651413055,
+        "digest": "sha256:1a442892700c45cebaaa4108fa04c5d84a533f34b8686530861672abb565a4e4"
+      }
+    },
+    {
+      "run": 38013753078,
+      "source": "9cc6bf49f6dd81e4069a8004eed49addba0ab79b",
+      "profile": "scale_wide_dirty_v1",
+      "status": "completed",
+      "conclusion": "failure",
+      "artifact_count": 11,
+      "successful_measurement_shards": 4,
+      "expected_measurement_shards": 150,
+      "failure": "100000 preflight failed without complete shard; aggregate failed; measure skipped",
+      "matrix_artifact": {
+        "id": 11658738280,
+        "digest": "sha256:716be1cef60ff03736583ca7bca4dd75be435c44fc6936aa801df6cf57a4f32b"
+      }
+    }
+  ],
+  "p8_006_related_non_n30_runs": {
+    "diagnostic_100k": {
+      "run": 38012409915,
+      "source": "9cc6bf49f6dd81e4069a8004eed49addba0ab79b",
+      "profile": "independent_100k_diagnostic",
+      "status": "completed",
+      "conclusion": "failure",
+      "artifact_count": 15,
+      "last_boundary": "checkpoint 12",
+      "missing": "terminal shard/native EOF/exit/measurement_complete",
+      "acceptance_effect": "none"
+    },
+    "task_profile_n1": {
+      "run": 38026411200,
+      "source": "f97c5068d056969705e8387ba1f37d83847f5bee",
+      "profile": "profile_task_descriptive_v1",
+      "status": "completed",
+      "conclusion": "failure",
+      "artifact_count": 1037,
+      "jobs": {
+        "total": 47,
+        "success": 46,
+        "failure": 1
+      },
+      "registered_population": {
+        "n": 1,
+        "cells": 45,
+        "records": 85,
+        "setup": 40,
+        "mutation": 40,
+        "fanout": 5
+      },
+      "actions_aggregate": {
+        "outcome": "failure",
+        "accepted_cells": 42,
+        "missing_cells": [
+          "batch_100@100000",
+          "body@100000",
+          "config@100000"
+        ]
+      },
+      "matrix_artifact": {
+        "id": 11662173135,
+        "digest": "sha256:846446d1267f876f0b03ac514cfe78c14748a53b38043bbf357e77689cc01a42"
+      },
+      "acceptance_effect": "Descriptive N=1 evidence only. It cannot substitute for the explicitly required N30/150-shard/1500-observation original population."
+    }
+  },
+  "p8_006_ledger_conflict": {
+    "current_task_status": "done",
+    "pr202_basis": {
+      "source": "f97c5068d056969705e8387ba1f37d83847f5bee",
+      "run": 38026411200,
+      "profile": "profile_task_descriptive_v1",
+      "admitted_scope": "N=1, 45 cells, 85 records; old 150/1500 and release-level D4/V20/G8 remain open",
+      "actions_aggregate": "failed on 42 inputs",
+      "later_recovery": "unchanged original aggregator executed separately against 45 inputs and reported exit 0"
+    },
+    "independent_judgment": "The current done marker conflicts with the governing explicit N30 acceptance requirement. The later 45-input recovery can repair completeness for that N=1 profile, but cannot transform its population into N30 or satisfy 150/1500.",
+    "original_todo_credit_eligible": false
+  },
+  "p8_007_runs_fresh": {
+    "mixed_backfill_soak": {
+      "run": 37890757030,
+      "source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+      "status": "completed",
+      "conclusion": "success",
+      "artifact_count": 6,
+      "mixed": [
+        {
+          "c": 1,
+          "artifact": 11598875346,
+          "digest": "sha256:702548d29259a1cefbb444704ea0770df6d6489b4b15323d63633fb4b54904ef"
+        },
+        {
+          "c": 4,
+          "artifact": 11598690899,
+          "digest": "sha256:91266b26a0ca44d88c86947028c5c288b2afb024f2eec0e5c471f199e6545a7c"
+        },
+        {
+          "c": 8,
+          "artifact": 11598815621,
+          "digest": "sha256:f6673ea6d3cba6047d8db028fcad8ef7724927f09425d35bbda5bfc0464f3cdb"
+        },
+        {
+          "c": 16,
+          "artifact": 11598543621,
+          "digest": "sha256:dd27a0afbdc5382c616c56bc42fc78ebd085b15454bcd7f12bcfdebdcb320ec3"
+        }
+      ],
+      "backfill": {
+        "artifact": 11597519732,
+        "digest": "sha256:2c16ee9e6e3ca7bb28844473b478b5bbe1b1f2596805713696f40cee854b7359"
+      },
+      "soak": {
+        "artifact": 11600492680,
+        "digest": "sha256:d99ee2d1e69e0b6787c42a95d9e0277f0adcf0a72add01a7d2b995a427d2f8e7"
+      },
+      "evidence_scope": "valid original mixed/backfill/soak component evidence; source identity preserved"
+    },
+    "db_acquisition_observer": {
+      "run": 37930392164,
+      "source": "4d18dcdb34b5d7a277566b57801cc882d8b1eb61",
+      "status": "completed",
+      "conclusion": "success",
+      "artifact_count": 5,
+      "controls": {
+        "artifact": 11617781499,
+        "digest": "sha256:576426d079c75ea82d4790e8f56e8bc6876fd0ab7fceb2ff167653c0acb2f82b"
+      },
+      "mixed": [
+        {
+          "c": 1,
+          "artifact": 11623110311,
+          "digest": "sha256:6fa82bbe05ee1a35212cae00e0e861ad97d74f026dfd21a895b93020cbb895ac"
+        },
+        {
+          "c": 4,
+          "artifact": 11620977433,
+          "digest": "sha256:67eba33ee740e923a303b6ec8c19018d6d40fd5b25f8ab7514ef56f1490e9cfc"
+        },
+        {
+          "c": 8,
+          "artifact": 11621010611,
+          "digest": "sha256:d12b7f72eee15a47691f3168342671f4d7426b76200e9ca3288fd844f33f0236"
+        },
+        {
+          "c": 16,
+          "artifact": 11623006495,
+          "digest": "sha256:3486cb9bfff9787be59db59ae7612d8b20b56846cb9858caf4709de5ade2586e"
+        }
+      ],
+      "evidence_scope": "actual four-concurrency acquisition-observation component; separate source from G275, not pooled"
+    },
+    "new_terminal_or_artifact_since_prior_review": false
+  },
+  "p8_007_ledger_conflict": {
+    "current_task_status": "done",
+    "own_component_evidence": "The mixed/backfill/soak and DB-acquisition runs remain valid within their recorded scopes and unchanged identities.",
+    "hard_dependency": "P8-006",
+    "independent_judgment": "Because P8-006 is not eligible for original TODO credit under the explicit N30 contract, P8-007 cannot receive original TODO completion credit yet even if its own component evidence is accepted.",
+    "original_todo_credit_eligible": false
+  },
+  "pr203": {
+    "number": 203,
+    "state": "open",
+    "draft": true,
+    "head": "797e9e60516e9bb8cc3c35f14a6ec7dc0092aa4f",
+    "recorded_base": "0da9a2800d2b3112d584a8bad4f79785e01162a9",
+    "current_main_compare": {
+      "status": "diverged",
+      "ahead_by": 1,
+      "behind_by": 2,
+      "merge_base": "0da9a2800d2b3112d584a8bad4f79785e01162a9"
+    },
+    "diff": {
+      "files": 1,
+      "path": ".github/workflows/p8-task-profile.yml",
+      "additions": 2,
+      "deletions": 10
+    },
+    "behavior": "Removes redundant remote checkpoint-19 upload; checkpoint-19 pending chunks are carried by the final boundary. Expected complete task-profile artifact count falls from 1037 to 992, below the observed GitHub 1000-artifact listing cap.",
+    "does_not_change": [
+      "raw data",
+      "shard rules",
+      "matrix rules",
+      "timeouts",
+      "cells",
+      "capacities",
+      "sampling",
+      "N value",
+      "original scale workflow",
+      "original TODO state"
+    ],
+    "ci": {
+      "run": 38035469451,
+      "conclusion": "failure",
+      "security": "success",
+      "msrv": "success",
+      "check": "failure",
+      "failed_step": "Default regression within authorized scope",
+      "concrete_failure": "tests::benchmark_fixture: tool context warm p95 1.72s > 500ms; 70 passed, 1 failed, 7 ignored",
+      "other_observed_pr_workflows": "engineering/platform/closeout/lifecycle succeeded"
+    },
+    "independent_judgment": "Infrastructure-only. Even if rebased, CI-clean, and merged, PR203 creates zero original TODO credit. It may prevent a future N=1 task-profile aggregate from missing shards, but it does not create or validate the original N30 population and cannot close P8-006 or unlock P8-007."
+  },
+  "no_new_qualifying_research": {
+    "recent_actions_scan": "No newer qualifying N30 scale run appeared in the latest 100 repository workflow runs after run 38013753078. Main/PR push CI and skipped create-event observer jobs are not research measurements.",
+    "result": true
+  },
+  "next_legal_critical_path": [
+    "Treat PR202's P8-006/P8-007 done markers as disputed against the explicit acceptance contract; do not count them toward the automation's original-TODO target. Preserve PR202 and all evidence as history.",
+    "If the ledger is corrected, change only progress/evidence/implementation-note fields through the normal reviewed path, preserving every task definition, dependency, old failure, and source identity.",
+    "PR203 may be considered only as an infrastructure fix after fresh-base integration and its concrete CI failure is resolved or independently shown unrelated under normal rules. Its merge must carry zero original TODO credit.",
+    "Do not dispatch, rerun, cancel, pool, or relabel in this review. The next qualifying P8-006 evidence must be one original N30 cohort with 150/150 measurement shards, 1500 composite observations, successful 100k, and successful aggregate under one fixed source/binary/profile.",
+    "Only after valid P8-006 completion may P8-007 receive dependency-complete credit; reuse its already successful mixed/backfill/lock components only within their exact source and scope after independent artifact acceptance."
+  ],
+  "final_decision": {
+    "new_original_todo_credit": [
+      "none"
+    ],
+    "p8_006": "not_eligible_under_explicit_N30_contract",
+    "p8_007": "not_eligible_due_open_hard_dependency_P8_006",
+    "pr203_credit": "zero_infrastructure_only",
+    "mutations_performed": "none"
+  }
+}

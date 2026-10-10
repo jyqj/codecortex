@@ -1,0 +1,495 @@
+{
+  "schema_version": 1,
+  "reviewer": "pr_triage",
+  "formal_round": 42,
+  "recorded_at_utc": "2026-10-10T05:20:01.976896+00:00",
+  "conclusion": "accepted_scoped_original_build_tuple_and_release_plan_gate; zero accepted measurement cells",
+  "source": "f97c5068d056969705e8387ba1f37d83847f5bee",
+  "source_tree": "39a053ae49b486764751a570d164e7cd41d7ff29",
+  "run_id": 38026411200,
+  "attempt": 1,
+  "artifact_id": 11659139900,
+  "review_method": "Read-only receipt/original small JSON and stdio comparison. No ZIP open/CRC, ELF bytes read, validator import/call, product or measurement execution by this reviewer.",
+  "original_validator": {
+    "argv": [
+      "python3",
+      "-B",
+      "/workspace/scratch/bfccb8494ba0/round42-new45-build-original-intake/validate-original-build-once.py"
+    ],
+    "cwd": "/workspace/scratch/bfccb8494ba0",
+    "started_at_utc": "2026-10-10T05:18:35.350071+00:00",
+    "completed_at_utc": "2026-10-10T05:18:36.035668+00:00",
+    "wall_seconds": 0.6856019109982299,
+    "exit_code": 0,
+    "original_validate_build_calls_requested": 1,
+    "source": "f97c5068d056969705e8387ba1f37d83847f5bee",
+    "run": 38026411200,
+    "attempt": 1,
+    "boundary": "Original ELF --hash-file utility only, no compile/measurement/shard validation.",
+    "stdout": {
+      "bytes": 8079,
+      "sha256": "3a02b3b54cf728c3f4d9f132e4e93fd0a31fd0c4708f5d6dd8e0ac11e8aa82f9"
+    },
+    "stderr": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "receiver_owner": "execution_recon",
+  "sole_call_wrapper_reviewed": {
+    "path": "/workspace/scratch/bfccb8494ba0/round42-new45-build-original-intake/validate-original-build-once.py",
+    "bytes": 2592,
+    "sha256": "78e3c3834fd871b27851a02d80afadaaad51b2fd0c506c9b426766926c73ffb9",
+    "git_blob": "eaa1bb8baad99f7d645001e6f1b071841b77c3a4"
+  },
+  "original_log_peer": {
+    "actual_git_blob": "1d00bf6c097258ac3553fc86cadbd38a6838e20d",
+    "scope": "Direct G2 checkout; producer job success; actual release control1passed21filtered; pure45plans; uploadidentity"
+  },
+  "transport_receipt": {
+    "path": "/workspace/scratch/bfccb8494ba0/round42-new45-build-original-intake/transport-original.json",
+    "bytes": 4455,
+    "sha256": "d5a85c0a7752880428bba7fd8ff7fee95e683f4a5b64d9725a13fdf0ef65e0a4",
+    "git_blob": "02906d788086493d26e54f5e57f3504a6492d952"
+  },
+  "whole_zip_identity_reused": {
+    "path": "/workspace/scratch/bfccb8494ba0/round42-new45-original-artifacts/p8-task-build-38026411200-1-original.zip",
+    "bytes": 9250795,
+    "sha256": "65ae643b212d826533aa74a55c69e875ea964751966c5487434adbdfb57ac3b9",
+    "git_blob": "e6d7f14613b3b5c4ce24459252a985b165f707b8"
+  },
+  "validated_tuple": {
+    "source_manifest_sha256": "74acbd13df5c68c5fd070e7380623b3c5ec78e6ee24e8f41a0af3914a53af850",
+    "registration_sha256": "b0a22aefd5964c1287f5496abbd5b2b22ae8a4c485714cb826fee8a4477acd78",
+    "binary_bytes": 28344792,
+    "binary_sha256": "7c5a98dceeca5e9f3ba1101b81be5338e5815df0eaa09253fe55c124b8b89fcf",
+    "binary_blake3": "96e4c329cafb9f0a61928cdc3c64e003782547d3489e66cfa614fdbab2eb884d",
+    "native_build_receipt_sha256": "d7ef3ecb14a474a53b255f23b8dbfe54aa1eabf1493f4b3b318ed166b29d9d1b",
+    "observer_manifest_sha256": "b9b318b52309ae2db8e3b182c23b0d8887416cb63efe21ae0cbfe51c0d764c09"
+  },
+  "producer": {
+    "executable": "/home/runner/work/_temp/p8-task-cargo/release/p8-scale",
+    "features": [
+      "default"
+    ],
+    "filenames": [
+      "/home/runner/work/_temp/p8-task-cargo/release/p8-scale"
+    ],
+    "fresh": false,
+    "manifest_path": "/home/runner/work/codecortex/codecortex/crates/cc-eval/Cargo.toml",
+    "package_id": "path+file:///home/runner/work/codecortex/codecortex/crates/cc-eval#1.0.0",
+    "profile": {
+      "debug_assertions": false,
+      "debuginfo": 0,
+      "opt_level": "3",
+      "overflow_checks": false,
+      "test": false
+    },
+    "reason": "compiler-artifact",
+    "target": {
+      "crate_types": [
+        "bin"
+      ],
+      "doc": true,
+      "doctest": false,
+      "edition": "2021",
+      "kind": [
+        "bin"
+      ],
+      "name": "p8-scale",
+      "src_path": "/home/runner/work/codecortex/codecortex/crates/cc-eval/src/bin/p8-scale.rs",
+      "test": true
+    }
+  },
+  "build_command": [
+    "cargo",
+    "build",
+    "--release",
+    "--locked",
+    "-p",
+    "cc-eval",
+    "--bin",
+    "p8-scale",
+    "--message-format=json",
+    "--target-dir",
+    "/home/runner/work/_temp/p8-task-cargo"
+  ],
+  "source_preservation": {
+    "original_product_inputs": 1096,
+    "observer_inputs": 11,
+    "receiver_selected_inputs": 1107,
+    "build_files": 8,
+    "original_before_after_equal": true,
+    "receiver_before_after_equal": true,
+    "head_tree_index_unchanged": true,
+    "observer_only_docs_not_added_to_canonical_validation_domain": true
+  },
+  "registered_population": {
+    "cells": 45,
+    "records": 85,
+    "repetitions": 1,
+    "mutation_profiles": [
+      "api",
+      "batch_1",
+      "batch_10",
+      "batch_100",
+      "batch_1000",
+      "body",
+      "config",
+      "no_op"
+    ],
+    "mutation_cells": 40,
+    "fanout_cells": 5,
+    "keys": [
+      [
+        "api",
+        1000,
+        null
+      ],
+      [
+        "api",
+        5000,
+        null
+      ],
+      [
+        "api",
+        10000,
+        null
+      ],
+      [
+        "api",
+        50000,
+        null
+      ],
+      [
+        "api",
+        100000,
+        null
+      ],
+      [
+        "batch_1",
+        1000,
+        null
+      ],
+      [
+        "batch_1",
+        5000,
+        null
+      ],
+      [
+        "batch_1",
+        10000,
+        null
+      ],
+      [
+        "batch_1",
+        50000,
+        null
+      ],
+      [
+        "batch_1",
+        100000,
+        null
+      ],
+      [
+        "batch_10",
+        1000,
+        null
+      ],
+      [
+        "batch_10",
+        5000,
+        null
+      ],
+      [
+        "batch_10",
+        10000,
+        null
+      ],
+      [
+        "batch_10",
+        50000,
+        null
+      ],
+      [
+        "batch_10",
+        100000,
+        null
+      ],
+      [
+        "batch_100",
+        1000,
+        null
+      ],
+      [
+        "batch_100",
+        5000,
+        null
+      ],
+      [
+        "batch_100",
+        10000,
+        null
+      ],
+      [
+        "batch_100",
+        50000,
+        null
+      ],
+      [
+        "batch_100",
+        100000,
+        null
+      ],
+      [
+        "batch_1000",
+        1000,
+        null
+      ],
+      [
+        "batch_1000",
+        5000,
+        null
+      ],
+      [
+        "batch_1000",
+        10000,
+        null
+      ],
+      [
+        "batch_1000",
+        50000,
+        null
+      ],
+      [
+        "batch_1000",
+        100000,
+        null
+      ],
+      [
+        "body",
+        1000,
+        null
+      ],
+      [
+        "body",
+        5000,
+        null
+      ],
+      [
+        "body",
+        10000,
+        null
+      ],
+      [
+        "body",
+        50000,
+        null
+      ],
+      [
+        "body",
+        100000,
+        null
+      ],
+      [
+        "config",
+        1000,
+        null
+      ],
+      [
+        "config",
+        5000,
+        null
+      ],
+      [
+        "config",
+        10000,
+        null
+      ],
+      [
+        "config",
+        50000,
+        null
+      ],
+      [
+        "config",
+        100000,
+        null
+      ],
+      [
+        "fanout",
+        1000,
+        1
+      ],
+      [
+        "fanout",
+        1000,
+        4
+      ],
+      [
+        "fanout",
+        1000,
+        16
+      ],
+      [
+        "fanout",
+        1000,
+        64
+      ],
+      [
+        "fanout",
+        1000,
+        128
+      ],
+      [
+        "no_op",
+        1000,
+        null
+      ],
+      [
+        "no_op",
+        5000,
+        null
+      ],
+      [
+        "no_op",
+        10000,
+        null
+      ],
+      [
+        "no_op",
+        50000,
+        null
+      ],
+      [
+        "no_op",
+        100000,
+        null
+      ]
+    ],
+    "cold_curve_selection": "no_op setup only: five scales; included in forty setup records",
+    "statistics": "not_computed_N1_descriptive",
+    "release_certification": "not_run"
+  },
+  "limits": {
+    "native_ms": 18000000,
+    "max_output_bytes": 536870912,
+    "dirty_budget": 200,
+    "max_resume_builds": 1024,
+    "fanout_dirty_resume": [
+      8,
+      128
+    ]
+  },
+  "native_hash_original_call": {
+    "argv": [
+      "/workspace/scratch/bfccb8494ba0/round42-new45-build-original-intake/original-build/native-build/p8-scale",
+      "--hash-file",
+      "/workspace/scratch/bfccb8494ba0/round42-new45-build-original-intake/original-build/native-build/p8-scale"
+    ],
+    "start": "2026-10-10T05:18:35.937719+00:00",
+    "end": "2026-10-10T05:18:35.947859+00:00",
+    "returncode": 0,
+    "stdout": {
+      "file": "native-hash-stdout.original",
+      "bytes": 65,
+      "sha256": "9e7e864a8ec7d683df6f48720167f337fb2de1e5ee4f3854b47ed33346ecf09e"
+    },
+    "stderr": {
+      "file": "native-hash-stderr.original",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "accepted_cells": 0,
+  "accepted_measurement_records": 0,
+  "task_credit_delta": 0,
+  "frozen_prior_pending_log_review_not_rewritten": true,
+  "next_boundary": "Reuse this original accepted tuple for later original task shard receipts under the frozen contract; no revalidation of build or prefix-as-measurement acceptance. All45 whole shards, all85 records and eventual original aggregate required before task-study conclusion.",
+  "inputs": [
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round42-new45-build-original-intake/original-validator-execution.json",
+      "bytes": 839,
+      "sha256": "7450d398c8bd9627c42414646b6795267e57f4885e74dcc04e1d2bad069a59bb",
+      "git_blob": "4ba26e2eb14d11a854f05e2c5ba7189783cd4d7a"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round42-new45-build-original-intake/original-validator.stdout",
+      "bytes": 8079,
+      "sha256": "3a02b3b54cf728c3f4d9f132e4e93fd0a31fd0c4708f5d6dd8e0ac11e8aa82f9",
+      "git_blob": "34be5ab5db62e80e75fac330e122511437d28d2a"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round42-new45-build-original-intake/original-validator.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round42-new45-build-original-intake/validate-original-build-once.py",
+      "bytes": 2592,
+      "sha256": "78e3c3834fd871b27851a02d80afadaaad51b2fd0c506c9b426766926c73ffb9",
+      "git_blob": "eaa1bb8baad99f7d645001e6f1b071841b77c3a4"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round42-new45-build-original-intake/transport-original.json",
+      "bytes": 4455,
+      "sha256": "d5a85c0a7752880428bba7fd8ff7fee95e683f4a5b64d9725a13fdf0ef65e0a4",
+      "git_blob": "02906d788086493d26e54f5e57f3504a6492d952"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round42-new45-build-original-intake/validation-attempt01/original-validate-build-return.json",
+      "bytes": 8079,
+      "sha256": "3a02b3b54cf728c3f4d9f132e4e93fd0a31fd0c4708f5d6dd8e0ac11e8aa82f9",
+      "git_blob": "34be5ab5db62e80e75fac330e122511437d28d2a"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round42-new45-build-original-intake/validation-attempt01/native-hash-subprocess-original.json",
+      "bytes": 736,
+      "sha256": "13665d950e115c6db8fd150ee28997f19bd5f67ea8e53d25c4d6b8e95e7063ff",
+      "git_blob": "4e58051b7ca1ccdedcfec9d2ad85e02106875bad"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round42-new45-build-original-intake/validation-attempt01/native-hash-stdout.original",
+      "bytes": 65,
+      "sha256": "9e7e864a8ec7d683df6f48720167f337fb2de1e5ee4f3854b47ed33346ecf09e",
+      "git_blob": "7f16f2e631a4bf81f49b0a32a617e56265a6b1cb"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round42-new45-build-original-intake/validation-attempt01/native-hash-stderr.original",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round42-new45-build-original-intake/validation-attempt01/inputs-before.json",
+      "bytes": 225433,
+      "sha256": "c948de87efefb396f1e53cb39e69b2b528c7873cfc54e798677bd2eec2768b2e",
+      "git_blob": "8539b9a8d631ceedec28c85a1f2718e588709511"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round42-new45-build-original-intake/validation-attempt01/inputs-after.json",
+      "bytes": 225433,
+      "sha256": "c948de87efefb396f1e53cb39e69b2b528c7873cfc54e798677bd2eec2768b2e",
+      "git_blob": "8539b9a8d631ceedec28c85a1f2718e588709511"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round42-new45-build-original-intake/original-build/task-registry.json",
+      "bytes": 38240,
+      "sha256": "b0a22aefd5964c1287f5496abbd5b2b22ae8a4c485714cb826fee8a4477acd78",
+      "git_blob": "56bf924eed5326a3eb8603d569b7ecbf6345e260"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round42-new45-build-original-intake/original-build/native-build/source-before.json",
+      "bytes": 147264,
+      "sha256": "e178bc831de873816fb146b3dff0850f00a3fb582fc5435ca4978108e1454527",
+      "git_blob": "227615dfeae14796522d290afeeadbb5d5de6a9d"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round42-new45-build-original-intake/original-build/native-build/source-after.json",
+      "bytes": 147264,
+      "sha256": "e178bc831de873816fb146b3dff0850f00a3fb582fc5435ca4978108e1454527",
+      "git_blob": "227615dfeae14796522d290afeeadbb5d5de6a9d"
+    }
+  ]
+}

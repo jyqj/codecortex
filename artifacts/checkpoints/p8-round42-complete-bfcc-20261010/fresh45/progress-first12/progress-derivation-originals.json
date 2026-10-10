@@ -1,0 +1,80 @@
+{
+  "schema": "bounded-first12-progress-derivation-originals-v1",
+  "originals": [
+    {
+      "local_path": "/workspace/scratch/bfccb8494ba0/round42-new45-task-progress/derive-first12-progress-only.py",
+      "bytes": 9933,
+      "sha256": "d1eb1c928a950b2f624690b222377dd01b99e9cb6ee8b99f7d6faa96072b8013",
+      "git_blob": "c1a8480c35f9ed357582d3d734977ce01a7a5a48",
+      "mode": "100644",
+      "relative_path": "derive-first12-progress-only.py",
+      "content": "#!/usr/bin/env python3\n\"\"\"Read accepted original return files; derive inventory progress, never acceptance.\"\"\"\nimport collections\nimport datetime\nimport hashlib\nimport json\nfrom pathlib import Path\n\nROOT = Path('/workspace/scratch/bfccb8494ba0')\nHERE = ROOT / 'round42-new45-task-progress'\nBUILD = ROOT / 'round42-new45-build-original-intake'\nINTAKE = ROOT / 'R42-first12-intake'\n\n\ndef original(path):\n    data = path.read_bytes()\n    meta = dict(path=str(path.relative_to(ROOT)), bytes=len(data),\n                sha256=hashlib.sha256(data).hexdigest(),\n                git_blob=hashlib.sha1(b'blob ' + str(len(data)).encode() + b'\\0' + data).hexdigest())\n    return json.loads(data), meta\n\n\ndef slot(plan):\n    selected = plan['profile_study']\n    return (selected['mutation_profile'], selected['fanout'] if selected['mutation_profile'] == 'fanout'\n            else plan['files'][0], plan['shard']['index'])\n\n\ndef main():\n    template, template_ref = original(HERE / 'recovered-template/original-result-report.template.json')\n    registry, registry_ref = original(BUILD / 'original-build/task-registry.json')\n    build, build_ref = original(BUILD / 'original-build/task-build.json')\n    build_review, build_review_ref = original(BUILD / 'original-build-intake-review.json')\n    terminal, terminal_ref = original(INTAKE / 'terminal.json')\n    _, receiver_review_ref = original(INTAKE / 'first12-original-intake-review.json')\n    plans = {slot(plan): plan for plan in registry['plans']}\n    assert len(plans) == len(registry['plans']) == registry['cell_count']\n    assert terminal['source'] == registry['source_commit'] == template['known_source_preparation_identity']['source']\n    assert str(terminal['run_id']) == registry['study']['run_id']\n    assert terminal['attempt'] == registry['study']['run_attempt']\n    # These checks associate existing receipts with their files; they do not\n    # rerun or replace any original protocol predicate.\n    accepted = {}\n    retained = []\n    records = collections.Counter()\n    cold = {}\n    return_refs = []\n    for row in sorted(terminal['records'], key=lambda value: value['slot']):\n        key = tuple(row['slot'])\n        if row['validator_exit'] != 0:\n            retained.append(dict(slot=list(key), validator_exit=row['validator_exit'],\n                                 receipt_directory=row['receipt_directory'], outcome='original_failure_retained'))\n            continue\n        result, ref = original(Path(row['receipt_directory']) / 'original-validate-shard-return.json')\n        assert ref['sha256'] == row['return']['sha256'] and ref['bytes'] == row['return']['bytes']\n        assert result['plan'] == plans[key] and key not in accepted\n        assert result['study'] == registry['study']\n        assert result['registration_sha256'] == registry_ref['sha256']\n        assert result['build_receipt_sha256'] == build_ref['sha256']\n        count = len(result['measurements'])\n        assert count == row['measurement_records']\n        roles = ['fanout'] if key[0] == 'fanout' else ['setup', 'mutation']\n        assert count == len(roles)\n        records.update(roles)\n        entry = dict(slot=list(key), original_validator_exit=row['validator_exit'],\n                     original_validator_calls=row['original_validate_shard_calls'],\n                     original_execution={field: row['execution'][field] for field in\n                                         ['started_at_utc', 'completed_at_utc', 'exit_code']},\n                     original_return=ref,\n                     artifact_id=row['artifact']['id'], artifact_name=row['artifact']['name'],\n                     original_receipt_sha256=result['receipt_sha256'],\n                     record_count=count, record_roles=roles,\n                     sample_groups=[m['group'] for m in result['measurements']],\n                     environment=result['environment'], engine_cpu_parallelism=result['engine'].get('cpu_parallelism'),\n                     full_environment_fields_in_return=['environment', 'profile_environment', 'measurement_environment'],\n                     aggregate_environment_id=None)\n        accepted[key] = entry\n        return_refs.append(ref)\n        if key[0] == 'no_op':\n            cold[key[1]] = dict(slot=list(key), record_role='setup', n=1,\n                                original_return=ref, json_pointer='/measurements/0',\n                                sample=result['measurements'][0], environment=result['environment'],\n                                boundary='Subset of accepted setup records, not another accepted record; N1 only.')\n\n    accepted_count = len(accepted)\n    record_count = sum(records.values())\n    assert accepted_count == terminal['accepted_cells']\n    assert record_count == terminal['accepted_records']\n    missing = sorted(set(plans) - set(accepted))\n    expected_roles = collections.Counter()\n    for key in plans:\n        expected_roles.update(['fanout'] if key[0] == 'fanout' else ['setup', 'mutation'])\n    grouped_missing = collections.defaultdict(list)\n    for profile, amount, index in missing:\n        grouped_missing[profile].append([amount, index])\n    coverage = []\n    for amount in template['expected_protocol_only']['source_files_requested']:\n        coverage.append(cold.get(amount, dict(slot=['no_op', amount, 0], record_role='setup',\n                                             status='pending_original_acceptance', sample=None, n=None)))\n    report = dict(\n        schema='append-only-new45-original-first12-progress-v1',\n        recorded_at_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),\n        apply_now=False, status='partial_original_acceptance_not_full_task_decision',\n        source=registry['source_commit'], study=registry['study'],\n        template_original=template_ref,\n        template_durable_locator='d42d2577858cee3c6eb0af02abfbd450b77cda33:artifacts/checkpoints/p8-round41-complete-bfcc-20261010/fresh45-application/original-result-report.template.json',\n        original_registry=registry_ref, original_task_build=build_ref,\n        original_build_acceptance=build_review_ref, original_build_tuple=build_review['original_build_tuple'],\n        binary=dict(sha256=registry['binary_sha256'], blake3=registry['binary_blake3']),\n        original_receiver_terminal=terminal_ref,\n        actual_receiver_review=dict(**receiver_review_ref, actual_git_blob='ec7263820a97b6022e06dbb105f3b9592671d97b',\n                                    original_support_git='6bee9e49b0468f70414f500d3faaaf2c7d0c9df3'),\n        progress=dict(accepted_cells=accepted_count, registered_cells=len(plans),\n                      accepted_records=record_count, registered_records=registry['record_count'],\n                      accepted_roles=dict(records), expected_roles=dict(expected_roles),\n                      missing_cells=len(missing), missing_records=registry['record_count']-record_count,\n                      pending_roles={role: n-records[role] for role, n in expected_roles.items()},\n                      original_failures_in_this_received_batch=terminal['failed_cells'],\n                      all_study_failure_count=None),\n        accepted_cells=list(accepted.values()), missing_slots=[list(key) for key in missing],\n        missing_by_profile=dict(grouped_missing), original_failures=retained,\n        cold_curve_from_no_op_coverage=coverage,\n        cold_covered_scales=sorted(cold), cold_pending_scales=[v for v in template['expected_protocol_only']['source_files_requested'] if v not in cold],\n        cold_is_setup_subset=True, record_identity=['source','run','attempt','slot','record_role'],\n        original_aggregate=None, original_aggregate_executed_here=False,\n        native_and_custody_scope='Acceptance is inherited only from original successful per-slot receipts. This is inventory projection, not combine, validation, a new gate, or whole-study success.',\n        remaining_006_inputs=[\n            'All remaining registered slots with complete original returns/custody; this report does not infer their current remote job states.',\n            'The preselected50k and100k no_op cold setups and all required mutation/fanout results, including actual incomplete-to-complete fanout coverage.',\n            'Actual complete original45-cell/85-record aggregate and independent final acceptance, not a partial substitute.',\n            'Final descriptive attribution/environment report using preserved原timings/workcounts, relevant current-source CI and regression applicability, and formal P8-006 task decision.'\n        ],\n        interpretation='N1 descriptive observations only; original integers/units/null retained. No pooled statistics, speedup, stable tails, peak-resource or release/G8 claim.',\n        future_application=dict(existing_application_blob='b4af966dd0c82e48f10d26ca314b4c5a65bc7868',formal_006_decision=None,\n                                nine_updates_applied=False, definitions_dependencies_old_evidence_changed=False),\n        task_counts=dict(total=192,done=164,remaining=28,session_new_done=1,new_credit_from_this_report=0),\n        execution_boundary=dict(original_source_modules_imported=False,original_validator_calls=0,\n                                combine_calls=0,CRC_calls=0,ELF_calls=0,downloads=0,task_generator_calls=0),\n        source_return_references='See each accepted_cells.original_return; complete original outputs remain in receiver support, not recopied here.')\n    output = HERE / 'first12-progress.append-only.json'\n    with output.open('x', encoding='utf-8') as file:\n        json.dump(report, file, ensure_ascii=False, indent=2)\n        file.write('\\n')\n    print(json.dumps(dict(output=str(output), progress=report['progress'],\n                          cold_covered_scales=report['cold_covered_scales'],\n                          cold_pending_scales=report['cold_pending_scales'],apply_now=False), ensure_ascii=False))\n\n\nif __name__ == '__main__':\n    main()\n"
+    },
+    {
+      "local_path": "/workspace/scratch/bfccb8494ba0/round42-new45-task-progress/derivation-attempt01/execution.json",
+      "bytes": 755,
+      "sha256": "859344813df9e2305805fc38ea0f1ce5497aafd23e75a9bea92730a32c90c394",
+      "git_blob": "e036a7bb6ae2b10fdc44514b215f93aec92e9aad",
+      "mode": "100644",
+      "relative_path": "derivation-attempt01/execution.json",
+      "content": "{\n  \"argv\": [\n    \"python3\",\n    \"-B\",\n    \"/workspace/scratch/bfccb8494ba0/round42-new45-task-progress/derive-first12-progress-only.py\"\n  ],\n  \"cwd\": \"/workspace/scratch/bfccb8494ba0\",\n  \"started_at_utc\": \"2026-10-10T05:26:00.158554+00:00\",\n  \"completed_at_utc\": \"2026-10-10T05:26:00.187654+00:00\",\n  \"wall_seconds\": 0.02909642300073756,\n  \"exit_code\": 0,\n  \"scope\": \"Read original JSON receipts/registry, calculate only set difference and descriptive coverage; no original module import or validator/combine/CRC/ELF\",\n  \"stdout\": {\n    \"bytes\": 618,\n    \"sha256\": \"4dce23ed048b5fefd19b46e6067db1b93b293778d3cc9e02e5cda8d6b4a33e04\"\n  },\n  \"stderr\": {\n    \"bytes\": 0,\n    \"sha256\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\"\n  }\n}\n"
+    },
+    {
+      "local_path": "/workspace/scratch/bfccb8494ba0/round42-new45-task-progress/derivation-attempt01/stdout",
+      "bytes": 618,
+      "sha256": "4dce23ed048b5fefd19b46e6067db1b93b293778d3cc9e02e5cda8d6b4a33e04",
+      "git_blob": "a7ac385552db2c3cb61d341f6e71322b0d09fa00",
+      "mode": "100644",
+      "relative_path": "derivation-attempt01/stdout",
+      "content": "{\"output\": \"/workspace/scratch/bfccb8494ba0/round42-new45-task-progress/first12-progress.append-only.json\", \"progress\": {\"accepted_cells\": 12, \"registered_cells\": 45, \"accepted_records\": 24, \"registered_records\": 85, \"accepted_roles\": {\"setup\": 12, \"mutation\": 12}, \"expected_roles\": {\"setup\": 40, \"mutation\": 40, \"fanout\": 5}, \"missing_cells\": 33, \"missing_records\": 61, \"pending_roles\": {\"setup\": 28, \"mutation\": 28, \"fanout\": 5}, \"original_failures_in_this_received_batch\": 0, \"all_study_failure_count\": null}, \"cold_covered_scales\": [1000, 5000, 10000], \"cold_pending_scales\": [50000, 100000], \"apply_now\": false}\n"
+    },
+    {
+      "local_path": "/workspace/scratch/bfccb8494ba0/round42-new45-task-progress/derivation-attempt01/stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "mode": "100644",
+      "relative_path": "derivation-attempt01/stderr",
+      "content": ""
+    }
+  ],
+  "report": {
+    "local_path": "/workspace/scratch/bfccb8494ba0/round42-new45-task-progress/first12-progress.append-only.json",
+    "bytes": 36144,
+    "sha256": "3ac4b1e1d4e53e899ef498590d86e5b31808f84e6969d3fc0ee8a2b617f1a2dd",
+    "git_blob": "6786979516ac8e0c7bb9164298291a08b188e7b9",
+    "mode": "100644"
+  },
+  "restored_template": {
+    "local_path": "/workspace/scratch/bfccb8494ba0/round42-new45-task-progress/recovered-template/original-result-report.template.json",
+    "bytes": 11625,
+    "sha256": "43da865548920d3458e027e423dbe8bd2019758ba4a4fe9324f0740bebba7c35",
+    "git_blob": "5710768cbe217c7de9fd997c4ebaf99abc27391a",
+    "mode": "100644",
+    "immutable_commit": "d42d2577858cee3c6eb0af02abfbd450b77cda33",
+    "repository_path": "artifacts/checkpoints/p8-round41-complete-bfcc-20261010/fresh45-application/original-result-report.template.json",
+    "original_nulls_preserved": true
+  },
+  "original_registry": {
+    "path": "round42-new45-build-original-intake/original-build/task-registry.json",
+    "bytes": 38240,
+    "sha256": "b0a22aefd5964c1287f5496abbd5b2b22ae8a4c485714cb826fee8a4477acd78",
+    "git_blob": "56bf924eed5326a3eb8603d569b7ecbf6345e260"
+  },
+  "original_terminal": {
+    "path": "R42-first12-intake/terminal.json",
+    "bytes": 34687,
+    "sha256": "e57a7abc57389f61fa06b31489028e3768d208a7f450fbb25e589f359467b524",
+    "git_blob": "16c0fc4caa8f64bbbcd66dad479c2043c83a978c"
+  },
+  "receiver_review": {
+    "path": "R42-first12-intake/first12-original-intake-review.json",
+    "bytes": 37032,
+    "sha256": "a8f6891d34af18755c5143cf6e6d1ed9e234493df9e531d8701c5e141dd1b1e0",
+    "git_blob": "ec7263820a97b6022e06dbb105f3b9592671d97b",
+    "actual_git_blob": "ec7263820a97b6022e06dbb105f3b9592671d97b",
+    "original_support_git": "6bee9e49b0468f70414f500d3faaaf2c7d0c9df3"
+  },
+  "data_scope": "No original ZIP/raw/ELF copied; complete data in receiver support. This artifact only preserves actual reporting script/stdio/exit and source locators. No product or validation execution.",
+  "pending_publication_commit": null
+}

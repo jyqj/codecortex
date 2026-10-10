@@ -1,0 +1,603 @@
+{
+  "schema": "codecortex.round51.pr-ledger-independent-review.v1",
+  "generated_at": "2026-10-10T05:57:02.405Z",
+  "repository": "jyqj/codecortex",
+  "read_only_review_scope": [
+    "main",
+    "docs/roadmap/code-index-v2/tasks.json",
+    "issue#158 coordination",
+    "all open pull requests",
+    "exact-head workflow summaries"
+  ],
+  "main": {
+    "sha": "b9b089bb4eae072affe9326681d4980eae15fd84",
+    "tree": "6461938788665701cfa4fa095a064a3a404ec492",
+    "source": "fresh recent-commit search and PR201 exact base"
+  },
+  "ledger": {
+    "path": "docs/roadmap/code-index-v2/tasks.json",
+    "blob_sha": "adb44ee70a4c129bfb443d4ecf678fb934c8ea6b",
+    "declared_task_count": 192,
+    "parsed_task_count": 192,
+    "counts": {
+      "done": 164,
+      "blocked": 1,
+      "in_progress": 15,
+      "todo": 12
+    },
+    "remaining": 28,
+    "baseline_done": 163,
+    "cumulative_new_done": 1,
+    "cumulative_new_done_ids": [
+      "P8-005"
+    ],
+    "newly_completed_since_round50": [],
+    "unfinished": [
+      {
+        "id": "P7-018",
+        "status": "blocked",
+        "depends_on": [
+          "P7-017"
+        ],
+        "title": "受授权的真实provider小集认证"
+      },
+      {
+        "id": "P8-006",
+        "status": "in_progress",
+        "depends_on": [
+          "P7-020",
+          "P8-001",
+          "P8-005"
+        ],
+        "title": "增量规模与fanout曲线"
+      },
+      {
+        "id": "P8-007",
+        "status": "in_progress",
+        "depends_on": [
+          "P8-006"
+        ],
+        "title": "多并发与混合负载"
+      },
+      {
+        "id": "P8-008",
+        "status": "in_progress",
+        "depends_on": [
+          "P8-007"
+        ],
+        "title": "冷建/重开/热查分层"
+      },
+      {
+        "id": "P8-009",
+        "status": "in_progress",
+        "depends_on": [
+          "P8-008"
+        ],
+        "title": "内存/磁盘/费用总账"
+      },
+      {
+        "id": "P8-010",
+        "status": "in_progress",
+        "depends_on": [
+          "P8-009"
+        ],
+        "title": "长时soak与连续修改"
+      },
+      {
+        "id": "P8-011",
+        "status": "in_progress",
+        "depends_on": [
+          "P7-020",
+          "P8-007",
+          "P8-010"
+        ],
+        "title": "端到端故障与恢复认证"
+      },
+      {
+        "id": "P8-012",
+        "status": "in_progress",
+        "depends_on": [
+          "P8-011"
+        ],
+        "title": "MSRV与平台冷构建矩阵"
+      },
+      {
+        "id": "P8-013",
+        "status": "in_progress",
+        "depends_on": [
+          "P8-012"
+        ],
+        "title": "指标/门槛与失败退出最终认证"
+      },
+      {
+        "id": "P8-014",
+        "status": "in_progress",
+        "depends_on": [
+          "P8-013"
+        ],
+        "title": "可选LLM评审旁证流程"
+      },
+      {
+        "id": "P8-015",
+        "status": "in_progress",
+        "depends_on": [
+          "P8-013",
+          "P7-018"
+        ],
+        "title": "真实语义效果发布认证"
+      },
+      {
+        "id": "P8-016",
+        "status": "in_progress",
+        "depends_on": [
+          "P7-020",
+          "P8-012",
+          "P8-013"
+        ],
+        "title": "数据库/配置/包回滚演练"
+      },
+      {
+        "id": "P8-017",
+        "status": "in_progress",
+        "depends_on": [
+          "P8-016"
+        ],
+        "title": "删除临时兼容和重复模块"
+      },
+      {
+        "id": "P8-018",
+        "status": "in_progress",
+        "depends_on": [
+          "P8-017"
+        ],
+        "title": "文档事实与安装契约同步"
+      },
+      {
+        "id": "P8-019",
+        "status": "in_progress",
+        "depends_on": [
+          "P8-018"
+        ],
+        "title": "发布工件与完整报告归档"
+      },
+      {
+        "id": "P8-020",
+        "status": "in_progress",
+        "depends_on": [
+          "P8-001",
+          "P8-002",
+          "P8-003",
+          "P8-004",
+          "P8-005",
+          "P8-006",
+          "P8-007",
+          "P8-008",
+          "P8-009",
+          "P8-010",
+          "P8-011",
+          "P8-012",
+          "P8-013",
+          "P8-016",
+          "P8-017",
+          "P8-018",
+          "P8-019"
+        ],
+        "title": "P8发布评审与遗留关闭"
+      },
+      {
+        "id": "P9-001",
+        "status": "todo",
+        "depends_on": [
+          "P8-020"
+        ],
+        "title": "ANN收益与选型决策"
+      },
+      {
+        "id": "P9-002",
+        "status": "todo",
+        "depends_on": [
+          "P9-001"
+        ],
+        "title": "ANN适配与过滤更新闭环"
+      },
+      {
+        "id": "P9-003",
+        "status": "todo",
+        "depends_on": [
+          "P9-002"
+        ],
+        "title": "ANN量化和规模认证"
+      },
+      {
+        "id": "P9-004",
+        "status": "todo",
+        "depends_on": [
+          "P9-003"
+        ],
+        "title": "ANN决策收口"
+      },
+      {
+        "id": "P9-005",
+        "status": "todo",
+        "depends_on": [
+          "P8-020"
+        ],
+        "title": "LSP按需生命周期"
+      },
+      {
+        "id": "P9-006",
+        "status": "todo",
+        "depends_on": [
+          "P9-005"
+        ],
+        "title": "LSP源码快照和冲突表达"
+      },
+      {
+        "id": "P9-007",
+        "status": "todo",
+        "depends_on": [
+          "P9-006"
+        ],
+        "title": "LSP精度/内存收益认证"
+      },
+      {
+        "id": "P9-008",
+        "status": "todo",
+        "depends_on": [
+          "P9-007"
+        ],
+        "title": "LSP工具面和安装边界收口"
+      },
+      {
+        "id": "P9-009",
+        "status": "todo",
+        "depends_on": [
+          "P8-020"
+        ],
+        "title": "可选rerank端口与降级"
+      },
+      {
+        "id": "P9-010",
+        "status": "todo",
+        "depends_on": [
+          "P9-009"
+        ],
+        "title": "rerank盲测与费用消融"
+      },
+      {
+        "id": "P9-011",
+        "status": "todo",
+        "depends_on": [
+          "P9-010"
+        ],
+        "title": "按需查询分解收益决策"
+      },
+      {
+        "id": "P9-012",
+        "status": "todo",
+        "depends_on": [
+          "P9-001",
+          "P9-002",
+          "P9-003",
+          "P9-004",
+          "P9-005",
+          "P9-006",
+          "P9-007",
+          "P9-008",
+          "P9-009",
+          "P9-010",
+          "P9-011"
+        ],
+        "title": "P9可选增强逐项结项"
+      }
+    ]
+  },
+  "issue158": {
+    "fetched_comment_count": 55,
+    "latest_comment_id": 6093947458,
+    "latest_comment_url": "https://github.com/jyqj/codecortex/issues/158#issuecomment-6093947458",
+    "latest_comment_claims": {
+      "round": 50,
+      "ledger": "192/164/15/12/1",
+      "remaining": 28,
+      "new_original_todos": 0,
+      "cumulative": "P8-005 only (1/10)"
+    },
+    "freshness_note": "No later Issue #158 coordination comment was returned; PR201 body/workflows contain later activity and are recorded separately."
+  },
+  "open_prs": {
+    "count": 9,
+    "numbers": [
+      201,
+      192,
+      191,
+      188,
+      137,
+      127,
+      65,
+      4,
+      3
+    ],
+    "rows": [
+      {
+        "number": 201,
+        "title": "feat(eval): register complete task profiles and borrow sorted rows",
+        "state": "open",
+        "draft": true,
+        "merged": false,
+        "mergeable": true,
+        "base": "main",
+        "base_sha": "b9b089bb4eae072affe9326681d4980eae15fd84",
+        "head": "task/p8-task-profile-and-borrowed-cursor-bfcc-20261010",
+        "head_sha": "f97c5068d056969705e8387ba1f37d83847f5bee",
+        "updated_at": "2026-10-10T05:08:35Z",
+        "ahead_by": 6,
+        "behind_by": 0,
+        "compare_status": "ahead",
+        "workflow_run_counts": {
+          "completed:skipped": 5,
+          "queued:null": 1,
+          "completed:success": 6,
+          "in_progress:null": 1
+        },
+        "decision": "HOLD_DO_NOT_MERGE: exact-head ordinary runtime soak is still in_progress; task-profile study is nonterminal and whole 45-cell population is not accepted."
+      },
+      {
+        "number": 192,
+        "title": "test(eval): add isolated fresh-profile incrementality study",
+        "state": "open",
+        "draft": true,
+        "merged": false,
+        "mergeable": true,
+        "base": "base/p8-cold-10ec-a217-20261009",
+        "base_sha": "10ec828beb94200ec679302c45115760ebd55ee9",
+        "head": "task/p8-profile-isolated-a217-20261009",
+        "head_sha": "e7f8e913861f32e6745bcd56794601133b621c34",
+        "updated_at": "2026-10-10T05:02:05Z",
+        "ahead_by": 6,
+        "behind_by": 54,
+        "compare_status": "diverged",
+        "workflow_run_counts": {
+          "completed:success": 7
+        },
+        "decision": "KEEP_OPEN: product/research source intent is integrated in PR201, but PR201 is not yet validated/merged and PR192 retains historical artifact/guard identities; only consider superseded close after verified PR201 merge and adoption reconciliation."
+      },
+      {
+        "number": 191,
+        "title": "perf(db): evaluate retained chunk insert statements during rebuild",
+        "state": "open",
+        "draft": true,
+        "merged": false,
+        "mergeable": true,
+        "base": "base/p8-M7F-a217-20261009",
+        "base_sha": "fffd950d5b34b0180f308db1428a57d5bf358bf1",
+        "head": "task/p8-rebuild-chunk-a217-20261009",
+        "head_sha": "1ebb6208f2f5f8fe8a5bf237c00a3d963f44bb08",
+        "updated_at": "2026-10-10T00:31:03Z",
+        "ahead_by": 9,
+        "behind_by": 60,
+        "compare_status": "diverged",
+        "workflow_run_counts": {
+          "completed:skipped": 2,
+          "completed:success": 8
+        },
+        "decision": "HOLD: exact-head workflows and equal-lifetime study ran, but accepted 80-pair observation contains regressions (17 slower pairs; single_plain retained-first 10/10 slower), so default adoption is not established."
+      },
+      {
+        "number": 188,
+        "title": "perf(db): apply dependency exclusions before the SQL frontier limit",
+        "state": "open",
+        "draft": true,
+        "merged": false,
+        "mergeable": true,
+        "base": "task/p8-final-main-integration-bfcc-20261009",
+        "base_sha": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+        "head": "task/p8-dependency-exclusion-bfcc-20261009",
+        "head_sha": "cc177ddc9e6b8180b8d847539787672e7b689a1a",
+        "updated_at": "2026-10-09T19:15:56Z",
+        "ahead_by": 7,
+        "behind_by": 75,
+        "compare_status": "diverged",
+        "workflow_run_counts": {
+          "completed:success": 7
+        },
+        "decision": "HOLD: exact-head workflows passed but dense/sparse/multi-batch counterevidence and stale integration base remain unresolved."
+      },
+      {
+        "number": 137,
+        "title": "diagnostics: Requests native zero field census and qname contract evidence",
+        "state": "open",
+        "draft": true,
+        "merged": false,
+        "mergeable": true,
+        "base": "dev-paired-requests-20261004",
+        "base_sha": "5f4e7d1643802078d3c1253eec7b5670bd487d6a",
+        "head": "diagnostics/requests-native-zero-20261004",
+        "head_sha": "bc4e5602e10841258fb5583138419335bc9098dd",
+        "updated_at": "2026-10-10T05:02:06Z",
+        "ahead_by": 3,
+        "behind_by": 414,
+        "compare_status": "diverged",
+        "workflow_run_counts": {
+          "completed:failure": 1
+        },
+        "decision": "KEEP_OPEN/HOLD: current head CI failed and the Requests qname-contract diagnostic intent remains unadopted."
+      },
+      {
+        "number": 127,
+        "title": "feat(db): opt-in bounded semantic publication group",
+        "state": "open",
+        "draft": true,
+        "merged": false,
+        "mergeable": true,
+        "base": "candidate/integrate-startup-gate-parallel-retry-20261003",
+        "base_sha": "513a98c9a94b15ec77153df41af26fa3c8c0b5e8",
+        "head": "codex/bounded-db-publication",
+        "head_sha": "222da64761971a3b546458aa16e2c2c9ea46cea7",
+        "updated_at": "2026-10-08T17:29:52Z",
+        "ahead_by": 4,
+        "behind_by": 450,
+        "compare_status": "diverged",
+        "workflow_run_counts": {
+          "completed:success": 1
+        },
+        "decision": "KEEP_OPEN/HOLD: old opt-in bounded semantic publication intent is not shown adopted on current main; historical CI success does not authorize direct merge."
+      },
+      {
+        "number": 65,
+        "title": "Preregister V19 evaluation and block unverified holdout custody",
+        "state": "open",
+        "draft": true,
+        "merged": false,
+        "mergeable": true,
+        "base": "audit/v19-public-corpus-readiness",
+        "base_sha": "bc8e22bd6b4f85774e7b84a3e6a30da8dc4a3b29",
+        "head": "audit/v19-global-protocol",
+        "head_sha": "3babaa5aa0b11971e20b65625992a9b0dd7b8968",
+        "updated_at": "2026-10-09T06:08:17Z",
+        "ahead_by": 7,
+        "behind_by": 523,
+        "compare_status": "diverged",
+        "workflow_run_counts": {
+          "completed:success": 1
+        },
+        "decision": "KEEP_OPEN/HOLD: protocol/custody work remains blocked from a verified clean holdout and must not be merged or closed as completed."
+      },
+      {
+        "number": 4,
+        "title": "fix: AST-backed code facts, dependency-correct incremental indexing and evidence benchmark v3",
+        "state": "open",
+        "draft": true,
+        "merged": false,
+        "mergeable": true,
+        "base": "opt/code-index-benchmark-v2-20260906",
+        "base_sha": "9619641903f0b9f397007ebbe85893ce8f6b5f97",
+        "head": "fix/nonembedding-facts-verified-20260906",
+        "head_sha": "0466d490a169eb25d2c9070c65aae36060f2220b",
+        "updated_at": "2026-10-09T05:38:00Z",
+        "ahead_by": 15,
+        "behind_by": 621,
+        "compare_status": "diverged",
+        "workflow_run_counts": {
+          "completed:success": 2
+        },
+        "decision": "KEEP_OPEN/HOLD: old stacked branch has current-main divergence and documented unadopted/evolved paths; historical success does not authorize direct merge."
+      },
+      {
+        "number": 3,
+        "title": "refactor: harden non-embedding code indexing and add replayable quality benchmarks",
+        "state": "open",
+        "draft": true,
+        "merged": false,
+        "mergeable": false,
+        "base": "main",
+        "base_sha": "4514630dcd26481cf6dbc2aff38824ed71ef06da",
+        "head": "opt/code-index-benchmark-v2-20260906",
+        "head_sha": "9619641903f0b9f397007ebbe85893ce8f6b5f97",
+        "updated_at": "2026-10-09T05:37:59Z",
+        "ahead_by": 12,
+        "behind_by": 621,
+        "compare_status": "diverged",
+        "workflow_run_counts": {
+          "completed:failure": 1,
+          "completed:success": 1
+        },
+        "decision": "KEEP_OPEN/HOLD: mergeable=false, historical CI failure, large divergence, and unadopted/evolved intent."
+      }
+    ],
+    "safe_merge_now": [],
+    "safe_close_now": [],
+    "conditional_future_close": [
+      {
+        "number": 192,
+        "condition": "Only after PR201 passes all exact-head engineering gates, is merged normally without head/base movement, and its adoption relation is re-read; preserve PR192 historical artifacts/guards."
+      }
+    ]
+  },
+  "pr201_live": {
+    "head": "f97c5068d056969705e8387ba1f37d83847f5bee",
+    "ordinary_workflows": {
+      "success": 6,
+      "in_progress": 1,
+      "details": "runtime observations run 38025451807: 5 jobs success and one-hour soak job 114135223703 still in_progress"
+    },
+    "descriptive_study": {
+      "run_id": 38026411200,
+      "run_api_status": "queued in commit workflow list while job API shows active jobs",
+      "first_page_job_count": 30,
+      "first_page_counts": {
+        "completed:success": 24,
+        "in_progress:null": 6
+      },
+      "build_job": "114138076763 completed/success; compile/bind and exact 45-plan validation steps both success",
+      "completed_measurement_jobs": 23,
+      "in_progress_measurement_jobs": [
+        {
+          "id": 114139257075,
+          "name": "measure (no_op-100000, no_op, 100000)",
+          "current_steps": [
+            "Freeze original byte prefix at absolute interval 3 of 20"
+          ]
+        },
+        {
+          "id": 114139257139,
+          "name": "measure (config-100000, config, 100000)",
+          "current_steps": [
+            "Freeze original byte prefix at absolute interval 3 of 20"
+          ]
+        },
+        {
+          "id": 114139257162,
+          "name": "measure (body-100000, body, 100000)",
+          "current_steps": [
+            "Freeze original byte prefix at absolute interval 3 of 20"
+          ]
+        },
+        {
+          "id": 114139257203,
+          "name": "measure (api-100000, api, 100000)",
+          "current_steps": [
+            "Freeze original byte prefix at absolute interval 3 of 20"
+          ]
+        },
+        {
+          "id": 114139257982,
+          "name": "measure (batch_1-100000, batch_1, 100000)",
+          "current_steps": [
+            "Freeze original byte prefix at absolute interval 3 of 20"
+          ]
+        },
+        {
+          "id": 114139258135,
+          "name": "measure (batch_10-100000, batch_10, 100000)",
+          "current_steps": [
+            "Freeze original byte prefix at absolute interval 2 of 20"
+          ]
+        }
+      ],
+      "limits": "First-page job API only; not evidence that omitted planned jobs completed. Whole 45-cell/85-record population, aggregate and acceptance are nonterminal."
+    },
+    "decision": "HOLD_DO_NOT_MERGE; source admission and partial successful cells earn zero original-TODO credit."
+  },
+  "original_todo_assessment": {
+    "other_collaborator_qualified_completions": [],
+    "rationale": [
+      "Current main and tasks blob are unchanged from Round50.",
+      "Parsed authority remains 164 done; therefore no new original task has been accepted on main.",
+      "PR bodies, CI success, research cells, merges, fixes, documents and subgates are not original-task completion credit.",
+      "P8-006 remains in_progress; the dependency-open downstream tasks cannot be promoted."
+    ],
+    "round51_new_original_todos": 0,
+    "cumulative_new_original_todos": 1,
+    "remaining_original_todos": 28
+  },
+  "prohibitions_observed": [
+    "No PR merge",
+    "No PR close",
+    "No branch/ref mutation",
+    "No workflow dispatch/rerun/cancel",
+    "No task mutation",
+    "No source/profile pooling or relabeling"
+  ],
+  "conclusion": "No safe immediate merge or close candidate. Keep all nine open PRs in Draft/HOLD; monitor PR201 exact-head soak and the already-started descriptive study without counting partial progress."
+}

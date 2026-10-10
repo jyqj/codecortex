@@ -1,0 +1,137 @@
+{
+  "schema": "codecortex.p8.diagnostic_terminal_independent_review.v1",
+  "generated_at": "2026-10-10T05:56:09.260Z",
+  "repository": "jyqj/codecortex",
+  "workflow_run": {
+    "id": 38012409915,
+    "html_url": "https://github.com/jyqj/codecortex/actions/runs/38012409915",
+    "attempt": 1,
+    "status": "completed",
+    "conclusion": "failure",
+    "created_at": "2026-10-10T01:14:39Z",
+    "run_started_at": "2026-10-10T01:14:39Z",
+    "updated_at": "2026-10-10T05:38:22Z",
+    "head_sha": "9cc6bf49f6dd81e4069a8004eed49addba0ab79b",
+    "head_tree": "6461938788665701cfa4fa095a064a3a404ec492",
+    "workflow_path": ".github/workflows/p8-scale-100k-diagnostic.yml"
+  },
+  "jobs": [
+    {
+      "id": 114095124901,
+      "name": "build",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 114096992369,
+      "name": "diagnose",
+      "status": "completed",
+      "conclusion": "failure",
+      "started_at": "2026-10-10T01:23:35Z",
+      "completed_at": "2026-10-10T05:38:22Z",
+      "step_api_terminal_inconsistency": {
+        "fact": "job/check-run is completed/failure while step summaries retain interval-14 as in_progress and all later steps pending",
+        "interval_14_step_number": 35,
+        "final_boundary_step_number": 49,
+        "final_upload_step_number": 50,
+        "verdict_step_number": 51,
+        "post_checkout_step_number": 102
+      }
+    }
+  ],
+  "workflow_contract": {
+    "diagnose_timeout_minutes": 350,
+    "checkpoint_count": 20,
+    "final_boundary_step": "Preserve final or interrupted diagnostic boundary",
+    "final_artifact_name": "p8-100k-diagnostic-original-38012409915-1",
+    "verdict_step": "Return the actual driver/native outcome, never prefix availability"
+  },
+  "artifacts": {
+    "total": 15,
+    "checkpoint_indices_present": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "newest_checkpoint": {
+      "index": 12,
+      "id": 11659516858,
+      "name": "p8-100k-diagnostic-progress-38012409915-1-12",
+      "size_in_bytes": 56668,
+      "created_at": "2026-10-10T04:38:54Z",
+      "github_digest": "sha256:7d2a97db93e81b47cea57a5fedf74dfe05fc0d88803f176e45f4b5c58f54f8a3",
+      "prior_round_independent_verification": {
+        "sha256_match": true,
+        "zip_crc_pass": true,
+        "raw_contiguous_prefix": [
+          0,
+          16145239
+        ]
+      }
+    },
+    "missing_checkpoint_indices": [
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ],
+    "terminal_original_artifact_present": false,
+    "artifacts_created_after_checkpoint_12": [],
+    "terminal_shard_present": false,
+    "observer_after_present": false,
+    "supervisor_terminal_present": false,
+    "driver_exit_present": false,
+    "native_eof_present": false,
+    "measurement_complete_present": false
+  },
+  "log_reception": {
+    "attempted": true,
+    "result": "GitHub artifact-backed log endpoint returned BlobNotFound",
+    "exact_failure_cause_available": false
+  },
+  "new_terminal_facts": {
+    "run_terminal": true,
+    "run_conclusion": "failure",
+    "diagnose_terminal": true,
+    "diagnose_conclusion": "failure",
+    "native_exit_code": null,
+    "driver_exit_code": null,
+    "native_eof_observed": false,
+    "native_eof_value": null,
+    "supervisor_terminal": false,
+    "observer_after": false,
+    "final_boundary_captured": false,
+    "exact_runtime_failure_cause": "unknown"
+  },
+  "interpretation": [
+    "The GitHub run and diagnose job are terminal failures.",
+    "No terminal diagnostic artifact or post-checkpoint-12 artifact exists.",
+    "The stale step snapshot cannot be treated as a completed interval-14 checkpoint.",
+    "No native/driver exit, EOF, supervisor terminal, terminal shard, measurement_complete, or observer-after identity can be claimed.",
+    "The failure terminal does not satisfy whole-cohort, fanout, aggregate, or release-certification acceptance."
+  ],
+  "p8_006": {
+    "decision": "keep_in_progress",
+    "closes_original_todo": false,
+    "reason": "Diagnostic run failed without terminal native evidence and intentionally does not supply the required successful 150/150 cohort, 1500 composite observations, successful aggregate, or fanout population."
+  },
+  "prohibited_actions_confirmed": {
+    "dispatch": false,
+    "rerun": false,
+    "cancel": false,
+    "github_state_mutation": false
+  }
+}

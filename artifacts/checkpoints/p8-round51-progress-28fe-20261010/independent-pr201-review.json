@@ -1,0 +1,145 @@
+{
+  "schema_version": 1,
+  "kind": "independent_pr_admission_review",
+  "repository": "jyqj/codecortex",
+  "pull_request": 201,
+  "observed_utc": "2026-10-10T05:57:12.483Z",
+  "reviewer_role": "non_author_read_only",
+  "immutable_identity": {
+    "state": "open",
+    "draft": true,
+    "merged": false,
+    "mergeable_snapshot": true,
+    "base_ref": "main",
+    "base_sha": "b9b089bb4eae072affe9326681d4980eae15fd84",
+    "current_main_sha": "b9b089bb4eae072affe9326681d4980eae15fd84",
+    "head_ref": "task/p8-task-profile-and-borrowed-cursor-bfcc-20261010",
+    "head_sha": "f97c5068d056969705e8387ba1f37d83847f5bee",
+    "head_tree": "39a053ae49b486764751a570d164e7cd41d7ff29",
+    "merge_test_sha": "9c4f29f5b290bfcd60375bc1c1c7a194b5099eae"
+  },
+  "ancestry_and_delta": {
+    "comparison": "ahead",
+    "ahead_by": 6,
+    "behind_by": 0,
+    "changed_files": 33,
+    "additions": 27908,
+    "deletions": 67,
+    "task_definition_changed": false,
+    "task_blob_head": "adb44ee70a4c129bfb443d4ecf678fb934c8ea6b",
+    "task_blob_main": "adb44ee70a4c129bfb443d4ecf678fb934c8ea6b",
+    "reviewed_scope": [
+      "two added measurement workflows",
+      "five modified Rust source/test files",
+      "profile/task drivers, protocols and controls",
+      "review/source-registry binding updates",
+      "archival evidence"
+    ],
+    "static_review": {
+      "blocker_found": false,
+      "notes": [
+        "The former rustfmt failure is corrected on the fixed head.",
+        "The borrowed SQLite text cursor keeps A-step/conversion before B-step/conversion, preserves rusqlite conversion variants, duplicate/asymmetric-EOF handling, digest bytes and bounded examples; dedicated tests are present.",
+        "New profile scopes are separately tagged and do not modify the original task ledger.",
+        "No current-main divergence was observed at this snapshot."
+      ]
+    }
+  },
+  "ordinary_pull_request_workflows": {
+    "run_count": 7,
+    "job_count": 26,
+    "completed_success": 25,
+    "in_progress": 1,
+    "failed": 0,
+    "pending_job": {
+      "run_id": 38025451807,
+      "run_name": "P8 runtime observations",
+      "job_id": 114135223703,
+      "job_name": "soak",
+      "status": "in_progress",
+      "active_step": "One-hour actual stdio session with Git switches and catalog churn",
+      "post_validation_steps": "pending"
+    },
+    "completed_run_ids": [
+      38025451863,
+      38025451825,
+      38025451862,
+      38025451790,
+      38025451979,
+      38025451919
+    ],
+    "main_ci_job": {
+      "job_id": 114135224079,
+      "conclusion": "success",
+      "confirmed_steps": [
+        "Format check",
+        "Clippy",
+        "Compile every default test target",
+        "Default regression within authorized scope",
+        "Fixed resource driver harmless fixtures and TODO consistency",
+        "Eval suite"
+      ]
+    }
+  },
+  "descriptive_task_profile_run": {
+    "run_id": 38026411200,
+    "head_sha": "f97c5068d056969705e8387ba1f37d83847f5bee",
+    "status": "in_progress",
+    "job_count": 46,
+    "completed_success": 36,
+    "in_progress": 10,
+    "queued": 0,
+    "build_job_id": 114138076763,
+    "build_conclusion": "success",
+    "outstanding": [
+      "no_op-100000",
+      "body-100000",
+      "api-100000",
+      "config-100000",
+      "batch_1-100000",
+      "batch_10-100000",
+      "batch_100-100000",
+      "batch_1000-100000",
+      "fanout-64",
+      "fanout-128"
+    ],
+    "aggregate_present": false,
+    "acceptance_note": "This N=1 descriptive population is distinct from the original N30/150-shard P8-006 cohort and cannot itself complete P8-006."
+  },
+  "all_same_head_checks": {
+    "total": 97,
+    "completed_success": 61,
+    "completed_skipped": 25,
+    "in_progress": 11,
+    "queued": 0,
+    "failure": 0,
+    "nonterminal_reason": "ten descriptive-study jobs and the ordinary one-hour soak remain in progress"
+  },
+  "decision": {
+    "verdict": "HOLD_DO_NOT_MERGE",
+    "merge_now_safe": false,
+    "repair_required_now": false,
+    "reasons": [
+      "The pull request remains Draft.",
+      "The required same-head one-hour soak is nonterminal and its post-run artifact validation has not run.",
+      "The explicitly dispatched same-head descriptive study is nonterminal and has no aggregate result.",
+      "GitHub mergeable=true is only a structural snapshot and does not override incomplete acceptance evidence."
+    ],
+    "next_action": [
+      "Wait for the existing runs; do not rerun, cancel, replace or relabel them.",
+      "After terminal results, freshly re-read PR head, main, base, checks and artifacts.",
+      "Only if the fixed head/base remain unchanged and required checks succeed should engineering admission be reconsidered.",
+      "Do not award original-TODO credit for CI, study execution, mergeability or a future PR merge."
+    ]
+  },
+  "methods": [
+    "GitHub PR metadata",
+    "main ref and commit comparison",
+    "all commit workflow runs",
+    "all check-runs with per_page=100",
+    "all task-profile jobs with per_page=100",
+    "ordinary workflow job and step APIs",
+    "changed-file inventory and selected product patches",
+    "head/main tasks.json blob equality"
+  ]
+}

@@ -190,6 +190,24 @@ class CaptureControls(unittest.TestCase):
         (self.root / "observer-after.json").write_text('{"source":"different"}')
         self.assertNotEqual(capture.verdict(self.root), 0)
 
+    def test_wrapper_traceback_and_stdout_are_captured_without_terminal_receipt(self):
+        streams = {
+            "wrapper.stdout": b"supervisor diagnostic\nunfinished ",
+            "wrapper.stderr": b"Traceback (most recent call last):\nraw-byte:\xff\x00",
+        }
+        for relative, data in streams.items():
+            self.write(relative, data)
+        bundle, manifest = capture.snapshot(self.root, 0)
+        self.assertFalse(manifest["supervisor_terminal_observed"])
+        self.assertFalse(manifest["native_EOF_claimed"])
+        for relative, expected in streams.items():
+            chunks = [row for row in manifest["all_captured_chunks"] if row["source"] == relative]
+            self.assertEqual(len(chunks), 1)
+            self.assertEqual((bundle / chunks[0]["name"]).read_bytes(), expected)
+            self.assertEqual(chunks[0]["sha256"], hashlib.sha256(expected).hexdigest())
+            self.assertEqual(manifest["acknowledged_prefix_bytes_before_this_upload"][relative], 0)
+        self.assertNotEqual(capture.verdict(self.root), 0)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -25,6 +25,7 @@ STREAMS = (
     "shard/native/raw.jsonl", "shard/native/worker.stderr",
     "shard/supervisor.stdout", "shard/supervisor.stderr",
     "driver.stdout", "driver.stderr",
+    "wrapper.stdout", "wrapper.stderr",
 )
 METADATA = (
     "configuration.json", "supervisor-started.json", "supervisor-terminal.json",

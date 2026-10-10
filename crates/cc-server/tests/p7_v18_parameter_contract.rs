@@ -550,9 +550,10 @@ mod loopback {
         session.index().await;
         let deadline = tokio::time::Instant::now() + Duration::from_secs(5);
         let backfilling = loop {
-            let status = session.status().await;
             if mock.calls.load(Ordering::SeqCst) > 0 {
-                break status;
+                // The mock holds the first response. Observe its request
+                // barrier before taking the pending-work status snapshot.
+                break session.status().await;
             }
             assert!(
                 !mock.task.is_finished(),

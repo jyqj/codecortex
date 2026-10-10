@@ -1,0 +1,130 @@
+{
+  "schema": "independent-complete45-original-aggregate-recovery-review-v1",
+  "reviewer": "/root/pr_triage",
+  "created_at": "2026-10-10T07:21:33.024177+00:00",
+  "decision": "accepted_complete_original45_input_aggregate_recovery",
+  "checks": 1803,
+  "source": "f97c5068d056969705e8387ba1f37d83847f5bee",
+  "run_id": 38026411200,
+  "attempt": 1,
+  "execution": {
+    "argv": [
+      "python3",
+      "-B",
+      "/workspace/scratch/bfccb8494ba0/round47-complete45-original-aggregate-recovery/invoke-original-aggregate-once.py"
+    ],
+    "cwd": "/workspace/scratch/bfccb8494ba0",
+    "started_at_utc": "2026-10-10T07:18:55.275103+00:00",
+    "completed_at_utc": "2026-10-10T07:19:32.623653+00:00",
+    "wall_seconds": 37.34855613599939,
+    "exit_code": 0,
+    "child_invocations": 1,
+    "retries": 0,
+    "kind": "Local complete-input original aggregate recovery; distinct from original Actions 42-input failure.",
+    "custody_faults": [],
+    "stdout": {
+      "bytes": 19662526,
+      "sha256": "f78e4eb6a5446b1c061d82c8c0d9d03808f6d10304d16ff3269eec6f9deab037"
+    },
+    "stderr": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "return_equals_actual_stdout": true
+  },
+  "original_return_identity": {
+    "bytes": 19662526,
+    "sha256": "f78e4eb6a5446b1c061d82c8c0d9d03808f6d10304d16ff3269eec6f9deab037",
+    "computed_git_blob": "595ae87d1c14514c6495364748d83b2450cae490"
+  },
+  "original_matrix_identity": {
+    "bytes": 19662526,
+    "sha256": "307900563e166677db09721100179f8d885ea5e57acb643876a2abbbcac51fca",
+    "computed_git_blob": "5557b907889cec555e01f7bfcf2371a444b60eeb"
+  },
+  "returned_stdout_matrix_boundary": "Original return/stdout byte-identical; output task-matrix differs only JSON serialization ordering and is structurally exact. Both original byte hashes retained.",
+  "accepted": {
+    "cells": 45,
+    "records": 85,
+    "setup": 40,
+    "mutation": 40,
+    "fanout": 5,
+    "cold_subset": 5,
+    "validated_input_count": 45,
+    "input_errors": [],
+    "missing_slots": [],
+    "registry_sha256": "b0a22aefd5964c1287f5496abbd5b2b22ae8a4c485714cb826fee8a4477acd78",
+    "task_build_receipt_sha256": "5b3f02a114fd68355916a4d94ec3b2c65a5895371e2bbdd97d24077598e50aab",
+    "binary_blake3": "96e4c329cafb9f0a61928cdc3c64e003782547d3489e66cfa614fdbab2eb884d",
+    "observer": {
+      "inputs": {
+        ".github/workflows/p8-task-profile.yml": "747d85f5905fd8b81b62283af18f696843fa4e6b29849e4972acdeee998266d9",
+        "docs/roadmap/code-index-v2/P8-TASK-PROFILE-DESCRIPTIVE.md": "95d2739ecb8e6b78aff44399c4160a4fe38ce453ac9f51085cd23a4edf794c9b",
+        "docs/roadmap/code-index-v2/p8-profile-task-descriptive-v1.json": "e1e724201b6dbf98fbca378df613b3ccb5b877e58125dbc578238167d062dba6",
+        "scripts/p7_build_identity.py": "5003305105464936edf8f444fc0b93cd14a5d5f074dc650f16de2259e86f1cc5",
+        "scripts/p8_runner_capacity.py": "2e37954df30b153ad82b49a5841a977451288c1730d03bfd2d0d7a2ace412939",
+        "scripts/p8_scale_diagnostic_capture.py": "d8080720506a6d89294a26878710db228e9d763b48bcfe69c1e9fdb717260caf",
+        "scripts/p8_scale_matrix.py": "b2c195d35034544b11caf436da631404b177699e7fa7a50dd46338864b8184de",
+        "scripts/p8_task_profile_capture.py": "31c5e63eba46b7c2c73593941ec358c64cd0a3feeed82d49b1403b4c0c8c6662",
+        "scripts/p8_task_profile_matrix.py": "8a3b7bad9448f56263bad49da1df7def16bfddaacaa1769abe97e710c73e776c",
+        "scripts/tests/test_p8_task_profile_capture.py": "cb0dddb4fc3b3e46de86e89bbaad470893819139dfc833ec74fb6e60fbc58c86",
+        "scripts/tests/test_p8_task_profile_matrix.py": "2841885f08d176a366dfc7a0e5e155e3e7e0bee8690d38b467fc600e401ca3e8"
+      },
+      "manifest_sha256": "b9b318b52309ae2db8e3b182c23b0d8887416cb63efe21ae0cbfe51c0d764c09",
+      "source_commit": "f97c5068d056969705e8387ba1f37d83847f5bee"
+    }
+  },
+  "observed_function_calls": {
+    "aggregate": 1,
+    "validate_build": 1,
+    "validate_shard": 45,
+    "combine": 1
+  },
+  "native_hash_trace": {
+    "actual_calls": 91,
+    "success": 91,
+    "binary": 1,
+    "plans": 45,
+    "raw": 45,
+    "fullargv_stdio_hashes_read": true,
+    "source": "sys.setprofile records original Python calls and subprocess.CompletedProcess return; no monkeypatch or replacement validator"
+  },
+  "input_preservation": {
+    "head_index_source_build_all45_before_after_equal": true,
+    "source_observer_files": 1107,
+    "original42_Actions_receipts_and_inventory_equal": true
+  },
+  "role_environment_preservation": "Every original measurement, registered slot/plan/build/registry/observer/source/run/attempt and full per-slot environment equals original accepted return. Cold no_op5 are exact setup subset. Existing original incomplete/resume and full15table predicates accepted by unchanged original validators.",
+  "prior_failure": {
+    "job_id": 114158378120,
+    "Actions_outcome": "failure",
+    "accepted_inputs": 42,
+    "missing_slots": [
+      [
+        "batch_100",
+        100000,
+        0
+      ],
+      [
+        "body",
+        100000,
+        0
+      ],
+      [
+        "config",
+        100000,
+        0
+      ]
+    ],
+    "never_relabelled_success": true
+  },
+  "scope": "Recovery re-assembles original measurements under the same fixed source/build/45 registration. It does not remeasure or replace original Actions outcome, and this peer did not call aggregate/validator/ELF/CRC. This supplies complete original aggregate evidence for subsequent original47-clause task review.",
+  "limits": [
+    "N1 per cell and separate measured environments; no N30, stable tail, cross-host speedup, old150/1350 slot credit or release certification.",
+    "Raw PID snapshots remain snapshots, vectors disabled/countnull; no invented peaks or provider success.",
+    "Task definitions/dependencies/status remain unchanged here. Formal006 and dependent task application require separate decisions."
+  ],
+  "peer_original_calls": 0,
+  "peer_ZIP_CRC_ELF_measurement_calls": 0,
+  "task_credit": 0
+}

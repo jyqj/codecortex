@@ -1,0 +1,89 @@
+{
+  "schema": "independent-original-aggregate-observability-preparation-v1",
+  "reviewer": "/root/pr_triage",
+  "recorded_at": "2026-10-10T07:03:31.750520+00:00",
+  "source": {
+    "scripts/p8_task_profile_matrix.py": {
+      "bytes": 29712,
+      "sha256": "8a3b7bad9448f56263bad49da1df7def16bfddaacaa1769abe97e710c73e776c",
+      "git_blob": "c858fcb4edea1f91b421367b67bf722f0c2fef3a",
+      "excerpts": [
+        {
+          "first_line": 157,
+          "last_line": 172,
+          "text": "def validate_build(directory, root=None):\n    root = Path(root or Path(__file__).resolve().parents[1]).resolve(strict=True)\n    directory = Path(directory).resolve(strict=True)\n    outer = verify_envelope(directory, \"task-build.json\", \"task-build\", root)\n    built, binary = full.validate_build(directory / \"native-build\", root)\n    require(outer[\"native_build_receipt_sha256\"] == file_sha256(directory / \"native-build/build.json\"),\n            \"profile build inner receipt differs\")\n    for key in (\"source_commit\", \"source_manifest_sha256\", \"binary_sha256\", \"binary_blake3\"):\n        require(outer[key] == built[key], \"profile build \" + key + \" differs\")\n    require(outer[\"registration_sha256\"] == file_sha256(directory / \"task-registry.json\"),\n            \"task registration bytes changed\")\n    require(full.exact_equal(full.read_json(directory / \"task-registry.json\"),\n            registration(outer[\"study\"], outer[\"driver_source\"], built,\n                         outer[\"native_build_receipt_sha256\"])), \"task registration differs\")\n    return outer, built, binary\n"
+        },
+        {
+          "first_line": 407,
+          "last_line": 444,
+          "text": "def aggregate(build_directory, directories, output, root=None):\n    out = full.new_directory(output)\n    attempts, shards, errors = [], [], []\n    result = dict(schema=SCHEMA, stage_scope=SCOPE, status=\"failed\", passed=False,\n                  release_certification=\"not_run\", task_statuses_changed=False)\n    try:\n        outer, built, binary = validate_build(build_directory, root)\n        result.update(study=outer[\"study\"], driver_source=outer[\"driver_source\"],\n                      registration_sha256=outer[\"registration_sha256\"],\n                      task_build_receipt_sha256=file_sha256(Path(build_directory) / \"task-build.json\"))\n        # Attempt every supplied cell once, retaining failures; never substitute a prefix.\n        for directory in directories:\n            entry = dict(directory=str(directory), status=\"failed\", passed=False)\n            try:\n                path = Path(directory)\n                entry[\"files\"] = full.inventory(path)\n                receipt = path / \"task-shard.json\"\n                if receipt.is_file():\n                    entry[\"original_task_receipt\"] = full.read_json(receipt)\n                    entry[\"receipt_sha256\"] = file_sha256(receipt)\n                inspected = validate_shard(path, outer, built, binary, build_directory, root)\n                shards.append(inspected)\n                entry.update(status=\"passed\", passed=True, slot=list(slot_key(inspected[\"plan\"])))\n            except ERRORS as error:\n                entry[\"error\"] = str(error)\n                errors.append(dict(directory=str(directory), error=str(error)))\n            attempts.append(entry)\n        require(not errors, \"one or more task cells failed original validation\")\n        result.update(combine(shards))\n    except ERRORS as error:\n        result[\"error\"] = str(error)\n    result[\"input_results\"] = attempts\n    result[\"input_errors\"] = errors\n    result[\"missing_slots\"] = [list(slot) for slot in sorted(expected_slots() - {slot_key(s[\"plan\"]) for s in shards})]\n    result[\"validated_input_count\"] = len(shards)\n    result[\"accepted_cell_count\"] = len({slot_key(shard[\"plan\"]) for shard in shards})\n    full.write_new(out / \"task-matrix.json\", result)\n    return result"
+        }
+      ]
+    },
+    "scripts/p8_scale_matrix.py": {
+      "bytes": 68769,
+      "sha256": "b2c195d35034544b11caf436da631404b177699e7fa7a50dd46338864b8184de",
+      "git_blob": "6d6c6e4362760fb1eb78770efe41b578e6552dc7",
+      "excerpts": [
+        {
+          "first_line": 134,
+          "last_line": 140,
+          "text": "def native_digest(binary, path):\n    result = subprocess.run([str(binary), \"--hash-file\", str(path)], check=True,\n                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=120)\n    value = result.stdout.decode().strip()\n    require(digest_ok(value), \"native evidence hash response is invalid\")\n    return value\n"
+        },
+        {
+          "first_line": 338,
+          "last_line": 341,
+          "text": "    binary = directory / \"p8-scale\"\n    require(binary.stat().st_size == record[\"binary_bytes\"] and file_sha256(binary) == record[\"binary_sha256\"] and\n            native_digest(binary, binary) == record[\"binary_blake3\"], \"preserved build executable changed\")\n    return record, binary"
+        },
+        {
+          "first_line": 849,
+          "last_line": 851,
+          "text": "        require(native_digest(binary, directory / \"native\" / file) == report.get(field), \"native \" + file + \" digest mismatch\")\n    require(report.get(\"summary\") == summary and summary.get(\"passed\") is True and report.get(\"shard_only\") is True and\n            summary.get(\"shard_only\") is True and report.get(\"registered_repetitions\") == plan[\"repetitions\"],"
+        }
+      ]
+    },
+    ".github/workflows/p8-task-profile.yml": {
+      "bytes": 27188,
+      "sha256": "747d85f5905fd8b81b62283af18f696843fa4e6b29849e4972acdeee998266d9",
+      "git_blob": "a99772d3d4ed4ba716f38041eed9d59313013ddd",
+      "excerpts": [
+        {
+          "first_line": 633,
+          "last_line": 678,
+          "text": "  aggregate:\n    if: always() && needs.build.result == 'success'\n    needs:\n    - build\n    - measure\n    runs-on: ubuntu-24.04\n    timeout-minutes: 30\n    steps:\n    - uses: actions/checkout@v4\n      with:\n        ref: ${{ github.event.pull_request.head.sha || github.sha }}\n        sparse-checkout-cone-mode: false\n        sparse-checkout: |\n          /*\n          !/artifacts/\n    - uses: actions/download-artifact@v4\n      with:\n        path: ${{ runner.temp }}/p8-task-build\n        name: p8-task-build-${{ github.run_id }}-${{ github.run_attempt }}\n    - uses: actions/download-artifact@v4\n      with:\n        path: ${{ runner.temp }}/p8-task-shards\n        pattern: p8-task-shard-*-${{ github.run_id }}-${{ github.run_attempt }}\n    - name: Validate all 45 cells and retain every failed or missing result\n      if: always()\n      run: |\n        python3 - <<'PY'\n        import os, pathlib, sys\n        sys.path.insert(0, 'scripts')\n        import p8_task_profile_matrix as matrix\n        root = pathlib.Path(os.environ['RUNNER_TEMP'])\n        binary = root / 'p8-task-build/native-build/p8-scale'\n        if binary.exists():\n            binary.chmod(0o755)\n        inputs = sorted((root / 'p8-task-shards').glob('p8-task-shard-*'))\n        result = matrix.aggregate(root / 'p8-task-build', inputs, root / 'p8-task-matrix')\n        print({key: result.get(key) for key in ('status', 'error', 'sample_count', 'cell_count')})\n        sys.exit(0 if result.get('passed') is True else 1)\n        PY\n    - uses: actions/upload-artifact@v4\n      if: always()\n      with:\n        name: p8-task-matrix-${{ github.run_id }}-${{ github.run_attempt }}\n        path: ${{ runner.temp }}/p8-task-matrix\n        if-no-files-found: error\n      name: Preserve task review including failure"
+        }
+      ]
+    }
+  },
+  "run": 38026411200,
+  "attempt": 1,
+  "status": "pending_original_final_two_slots_and_Actions_aggregate",
+  "entry_identity": {
+    "path": "/workspace/scratch/bfccb8494ba0/round46-final45-catalog-and-aggregate-preparation/pending-original-Actions-aggregate-intake-entry.json",
+    "sha256": "2f712d9ec818486b84c40ac5541f669ac954b12012eaafd2c311cfd8c2f09c74",
+    "git_blob": "858c39106fe61bd9d79a20beccc9fdd46f24a0ca"
+  },
+  "findings": {
+    "successful_source_path": {
+      "validate_build": 1,
+      "validate_shard": 45,
+      "hash_file_derived_count": 91,
+      "derivation": "build native_digest(binary,binary) once, plus native plan/raw twice per accepted shard"
+    },
+    "trace_boundary": "native_digest captures PIPE stdout/stderr and returns only digest; workflow prints four aggregate result fields. Unless actual originals expose more,91 is successful-source-path inference backed by terminal result, not91 separately observed producer argv/stdio records. Local intake traces stay separate executions. Failure may execute fewer calls.",
+    "inputs": "Workflow downloads only p8-task-build and p8-task-shard-*-run-attempt; progress prefix artifacts are excluded. Original aggregate validates original directories, not cached local accepted returns.",
+    "acceptance_read": "Actual original ZIP/log/metadata then input_results/errors/missing_slots/counts and exact slot/receipt joins.45cells=40setup+40mutation+5fanout=85records.5no_op cold points are setup subset. Sample names repeat across profiles so identity is(slot,role). Preserve per-host andN1 scope, all failures and unchanged original status.",
+    "no_repeated_aggregate": "Do not run local aggregate/combine/build/shard validator/hash utility; root solely downloads originals."
+  },
+  "execution": {
+    "source_files_read": 3,
+    "aggregate_calls": 0,
+    "combine_calls": 0,
+    "original_validator_calls": 0,
+    "native_calls": 0,
+    "ZIP_reads": 0,
+    "downloads": 0,
+    "task_credit": 0
+  },
+  "source_commit": "f97c5068d056969705e8387ba1f37d83847f5bee"
+}

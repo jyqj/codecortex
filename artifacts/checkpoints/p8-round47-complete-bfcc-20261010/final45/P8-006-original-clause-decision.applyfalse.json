@@ -1,0 +1,147 @@
+{
+  "schema": "P8-006-original-four-clause-evidence-decision-v1",
+  "apply_now": false,
+  "task_status_changed": false,
+  "recorded_at_utc": "2026-10-10T07:27:48.210513+00:00",
+  "task": "P8-006",
+  "recommendation": "accept_task_scope_for_root_manual_application",
+  "source": "f97c5068d056969705e8387ba1f37d83847f5bee",
+  "run_id": 38026411200,
+  "attempt": 1,
+  "original_clause_rows": [
+    {
+      "task_id": "P8-006",
+      "original_field": "steps[0]",
+      "original_text": "测no-op/body/API/config/batch和超预算闭包",
+      "evidence_keys": [
+        "S45"
+      ],
+      "existing_evidence": "八个fresh profile×五规模、五fanout的登记人口不变；当前42/45、79/85，API100k实际171次incremental/170次resume、最终ready、15表equal。",
+      "limitations": "body/config/batch_100各100k仍待原件；最终45/85/aggregate和正式决定保持null。",
+      "actual_final_decision": null
+    },
+    {
+      "task_id": "P8-006",
+      "original_field": "steps[1]",
+      "original_text": "输出各phase计数",
+      "evidence_keys": [
+        "S45"
+      ],
+      "existing_evidence": "原返回/raw包含prepare/reconcile/scan-diff/parse/resolve/commit等phase与build counts；最终应从实际原聚合和记录逐组列出。",
+      "limitations": "未完整，不提前填写五点cold及各mutation/fanout最终数值；不构造新validator。",
+      "actual_final_decision": null
+    },
+    {
+      "task_id": "P8-006",
+      "original_field": "acceptance[0]",
+      "original_text": "时间可归因且闭包完成后full parity，未完成有显式status",
+      "evidence_keys": [
+        "S45"
+      ],
+      "existing_evidence": "对完整cell保留initial/final15表、incomplete→resume→ready与独立facts，五fanout已实际接受；缺项不做通过结论。",
+      "limitations": "N1、每环境分列；无稳定tail/N30/跨host因果声称。待完整原Actions aggregate、raw+fulljoblog和原逐条决定。",
+      "actual_final_decision": null
+    },
+    {
+      "task_id": "P8-006",
+      "original_field": "acceptance[1]",
+      "original_text": "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。",
+      "evidence_keys": [
+        "G2"
+      ],
+      "existing_evidence": "当前源码主CI/closeout/26工程checks/soak实际通过，原V07相关方法按同tree bridge与历史scope引用。",
+      "limitations": "这不是45研究通过。旧真实repo质量/replay exit1不被当作G2增量phase；完整D4/V20/G8仍保持其实际状态。",
+      "actual_final_decision": null
+    }
+  ],
+  "clause_decisions": [
+    {
+      "field": "steps[0]",
+      "original": "测no-op/body/API/config/batch和超预算闭包",
+      "judgment": "covered",
+      "evidence": "40mutation cells =8registeredprofiles×5scales (no_op/body/api/config/batch1/10/100/1000), plus5fanoutcells. All45originalcells complete with original45/85aggregate recovery passed. Fanout16/64/128 first incomplete then complete2/8/16builds; API/body/config have real bounded resumes. No invented resume for batch1000 whose direct writes complete in one incremental build.",
+      "references": [
+        "final45-descriptive-results.json#/observations",
+        "complete45-receipt-custody-catalog.json#/cells"
+      ]
+    },
+    {
+      "field": "steps[1]",
+      "original": "输出各phase计数",
+      "judgment": "covered",
+      "evidence": "85role-qualified observations preserve original timing/counts and per-build raw report provenance; parsed/updated/scanned/skipped/selected counters, first/lastfreshness and resume counts derived from original emitted records.503 elapsed_ms values joined from previously accepted independent timing facts; sums match originalengine_ms. Repeated-work counts are not distinctfiles; missing emitted fields remainunavailable.",
+      "references": [
+        "final45-descriptive-results.json#/observations",
+        "503-build-elapsed-source-bridge.json",
+        "final45-analysis-originals.zip"
+      ]
+    },
+    {
+      "field": "acceptance[0]",
+      "original": "时间可归因且闭包完成后full parity，未完成有显式status",
+      "judgment": "covered_at_descriptive_N1_task_scope",
+      "evidence": "Separate engine/index/outer/full/parity timings, phase/build timing and per-cell environment retained. No nested timing doubleaddition or causal speedup claim. Original validators and aggregate confirm full15-table parity and finalclosure/EOF for all45. Intermediate incomplete states remain explicit. OriginalActions42 failure and prior incomplete/failed studies remain distinct; complete-input recovery does not overwrite them.",
+      "references": [
+        "final45-descriptive-results.json",
+        "complete45-recovery-execution-review.json"
+      ]
+    },
+    {
+      "field": "acceptance[1]",
+      "original": "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。",
+      "judgment": "covered_by_existing_exact_source_regression_and_scoped_historical_evidence",
+      "evidence": "Currentf97/main0da9 fulltree match and originalmainCI/all26/soak evidence retained. Named ordinary index/invalidation/resume regressions executed; ignored publicMCP methods are not relabelled as current runs. Their historical coverage stays attached to its original source. No claim of allV20/G8, stableN30, real-repository G2 incremental workload or passing oldquality/replay failure.",
+      "references": {
+        "description": "当前固定研究/代码与main同树；原主CI及全部26工程检查/soak",
+        "source": "f97c5068d056969705e8387ba1f37d83847f5bee",
+        "main": "0da9a2800d2b3112d584a8bad4f79785e01162a9",
+        "tree": "39a053ae49b486764751a570d164e7cd41d7ff29",
+        "main_CI_run": 38025451919,
+        "main_CI_job": 114135224079,
+        "main_log_git": "b42f2f685f4f2caaaa0497db6706399d9f89d998",
+        "main_review_git": "a1c7594462f7d33ea7ebcb8998a46d0e3163086a",
+        "soak_run": 38025451807,
+        "soak_job": 114135223703,
+        "terminal26_review_git": "52e0f0c71349f509244c72dc4428604d88aaf488",
+        "terminal_publication_commit": "6fffd5c5bcbf80df47066660a48fb5964463db73"
+      }
+    }
+  ],
+  "final_data": {
+    "local_path": "/workspace/scratch/bfccb8494ba0/round47-final45-results/final45-descriptive-results.json",
+    "bytes": 1517505,
+    "sha256": "c3931ba2170fd3895b2ec5ae890400e80c5d9eb65e5ec0eb0105e87da1b3487e",
+    "git_blob": "03c84c14d804fdc827b810aadc697960479dc1ae"
+  },
+  "recovery_review": {
+    "local_path": "/workspace/scratch/bfccb8494ba0/round47-complete45-original-aggregate-recovery/complete45-recovery-execution-review.json",
+    "bytes": 6033,
+    "sha256": "918d39d7a1b2eece6f20ed9393d6d1a625ccd5b98b7d38e9fedcf73b50073225",
+    "git_blob": "ca75e2ec7f81603b6f587cb6ae25c7ccc43f5656"
+  },
+  "regression": {
+    "description": "当前固定研究/代码与main同树；原主CI及全部26工程检查/soak",
+    "source": "f97c5068d056969705e8387ba1f37d83847f5bee",
+    "main": "0da9a2800d2b3112d584a8bad4f79785e01162a9",
+    "tree": "39a053ae49b486764751a570d164e7cd41d7ff29",
+    "main_CI_run": 38025451919,
+    "main_CI_job": 114135224079,
+    "main_log_git": "b42f2f685f4f2caaaa0497db6706399d9f89d998",
+    "main_review_git": "a1c7594462f7d33ea7ebcb8998a46d0e3163086a",
+    "soak_run": 38025451807,
+    "soak_job": 114135223703,
+    "terminal26_review_git": "52e0f0c71349f509244c72dc4428604d88aaf488",
+    "terminal_publication_commit": "6fffd5c5bcbf80df47066660a48fb5964463db73"
+  },
+  "scope_limits": [
+    "This is the preregistered independent profile_task_descriptive_v1 N1/45cells85records task study, not completion of old150/N30 studies.",
+    "Fivecold no_op setups are a subset of40setups; there are85records, not90.",
+    "D4 whole-program real-repository coverage and release-level V20/G8 remain their original broader scope; synthetic45 are not realrepository data.",
+    "Original Actions aggregate failed; local unchanged original aggregate recovered with complete inputs and91observed hash utility children.",
+    "No performance causal inference or stable tail/p99 claim. No taskdefinitions, dependencies, gates, budgets, source or states changed."
+  ],
+  "related_scope_originals": [
+    "round43-final-nine-application/006-clause-decision.applyfalse.json",
+    "round43-final-nine-application/readiness-and-real-repository.addendum.json"
+  ]
+}

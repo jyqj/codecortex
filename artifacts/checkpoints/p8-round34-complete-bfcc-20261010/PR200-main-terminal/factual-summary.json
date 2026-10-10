@@ -1,0 +1,83 @@
+{
+  "schema": "PR200-round34-main-terminal-and-exact-testmerge-bridge-v1",
+  "observed_clock": {
+    "current_time": "2026-10-10 01:50:16 UTC"
+  },
+  "PR": {
+    "head": "9cc6bf49f6dd81e4069a8004eed49addba0ab79b",
+    "reported_base": "09d4454fa45455dc5a8bfdfec67e31bb7ed162c7",
+    "merge_commit_sha": "08810679606d49cb1c7c9058f8da9ef5c5be8492",
+    "state": "open",
+    "draft": true,
+    "mergeable": true,
+    "mergeable_state": "unstable"
+  },
+  "main": {
+    "run": 38012386309,
+    "attempt": 1,
+    "status": "completed",
+    "conclusion": "success",
+    "head": "9cc6bf49f6dd81e4069a8004eed49addba0ab79b",
+    "jobs": [
+      {
+        "id": 114095050041,
+        "name": "check",
+        "status": "completed",
+        "conclusion": "success",
+        "completed_at": "2026-10-10T01:42:19Z"
+      },
+      {
+        "id": 114095050216,
+        "name": "msrv",
+        "status": "completed",
+        "conclusion": "success",
+        "completed_at": "2026-10-10T01:15:39Z"
+      },
+      {
+        "id": 114095050250,
+        "name": "security",
+        "status": "completed",
+        "conclusion": "success",
+        "completed_at": "2026-10-10T01:18:10Z"
+      }
+    ]
+  },
+  "ordinary": {
+    "total": 26,
+    "success": 25,
+    "running": [
+      {
+        "id": 114095049972,
+        "name": "soak",
+        "details_url": "https://github.com/jyqj/codecortex/actions/runs/38012386301/job/114095049972"
+      }
+    ]
+  },
+  "testmerge_bridges": [
+    {
+      "commit": "1e14b7ad8d097da0000e18597da0316143de919c",
+      "tree": "6461938788665701cfa4fa095a064a3a404ec492",
+      "parents": [
+        "09d4454fa45455dc5a8bfdfec67e31bb7ed162c7",
+        "9cc6bf49f6dd81e4069a8004eed49addba0ab79b"
+      ],
+      "whole_tree_equals_actual_G": "6461938788665701cfa4fa095a064a3a404ec492"
+    },
+    {
+      "commit": "08810679606d49cb1c7c9058f8da9ef5c5be8492",
+      "tree": "6461938788665701cfa4fa095a064a3a404ec492",
+      "parents": [
+        "30a6dff579c88593c1762db244eacbe6ee95cef9",
+        "9cc6bf49f6dd81e4069a8004eed49addba0ab79b"
+      ],
+      "whole_tree_equals_actual_G": "6461938788665701cfa4fa095a064a3a404ec492"
+    }
+  ],
+  "scope": "The old and fresh API testmerge objects have exact whole-tree equality to G9cc6. Which checkout the completed main job actually used still requires its original log; root is the sole log receiver. No Actions log or artifact download by reviewer. No new test/research/source/ref action.",
+  "next_actions": [
+    "Root receives mainjob114095050041 original completed log once and binds its actual checkout.",
+    "Soak remains pending; no further read before the previously agreed02:20+ window or a new root task.",
+    "No current terminal engineering failure or new code repair identified."
+  ],
+  "task_credit": 0
+}

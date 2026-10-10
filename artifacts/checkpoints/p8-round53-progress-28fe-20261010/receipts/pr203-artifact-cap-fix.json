@@ -1,0 +1,31 @@
+{
+  "schema": "codecortex.p8.round53.artifact_cap_fix_receipt.v1",
+  "generated_at": "2026-10-10T07:45:36.396Z",
+  "pr": 203,
+  "url": "https://github.com/jyqj/codecortex/pull/203",
+  "branch": "fix/p8-task-artifact-cap-20261010",
+  "base_sha": "0da9a2800d2b3112d584a8bad4f79785e01162a9",
+  "head_sha": "797e9e60516e9bb8cc3c35f14a6ec7dc0092aa4f",
+  "tree_sha": "2d5758b637c588fe07fcfcde99991f5468f89076",
+  "workflow_blob": "2ad2b5e36cbb7e9f368f1116e449d6d082f87744",
+  "diff": {
+    "files": 1,
+    "additions": 2,
+    "deletions": 10
+  },
+  "design": {
+    "remove_remote_upload": "upload_19",
+    "keep_local_freeze": "freeze_19",
+    "finish_previous_identity": "unset",
+    "expected_total_artifacts": 992,
+    "custody": "checkpoint-19 pending chunks included in final boundary"
+  },
+  "rejected_design": {
+    "finish_previous_identity": "upload_18",
+    "reason": "would falsely acknowledge checkpoint 19 and exclude its new chunks from final bundle"
+  },
+  "known_risk": "runner loss between local freeze_19 and final upload falls back to remote checkpoint 18; tail remains unknown",
+  "ci_at_freeze": "not_complete",
+  "merged": false,
+  "original_todo_credit": false
+}

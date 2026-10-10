@@ -1,0 +1,154 @@
+{
+  "schema": "codecortex-p8-round53-ledger-pr-review-v1",
+  "generated_at": "2026-10-10T07:40:00Z",
+  "scope": "read-only fresh review of main, authoritative ledger, issue 158, open PRs, and PR 180/178/181/184/188/191; changes after round52 only",
+  "sources": {
+    "main_branch": "https://api.github.com/repos/jyqj/codecortex/branches/main",
+    "tasks_tree_path": "docs/roadmap/code-index-v2/tasks.json",
+    "issue_158_comments": "https://api.github.com/repos/jyqj/codecortex/issues/158/comments?per_page=100",
+    "open_pulls": "https://api.github.com/repos/jyqj/codecortex/pulls?state=open&per_page=100",
+    "named_pulls": [
+      "https://api.github.com/repos/jyqj/codecortex/pulls/180",
+      "https://api.github.com/repos/jyqj/codecortex/pulls/178",
+      "https://api.github.com/repos/jyqj/codecortex/pulls/181",
+      "https://api.github.com/repos/jyqj/codecortex/pulls/184",
+      "https://api.github.com/repos/jyqj/codecortex/pulls/188",
+      "https://api.github.com/repos/jyqj/codecortex/pulls/191"
+    ],
+    "compare_base": "0da9a2800d2b3112d584a8bad4f79785e01162a9"
+  },
+  "main": {
+    "commit": "0da9a2800d2b3112d584a8bad4f79785e01162a9",
+    "tree": "39a053ae49b486764751a570d164e7cd41d7ff29",
+    "committed_at": "2026-10-10T06:05:09Z",
+    "changed_since_round52": false
+  },
+  "ledger": {
+    "blob": "adb44ee70a4c129bfb443d4ecf678fb934c8ea6b",
+    "total": 192,
+    "statuses": {
+      "done": 164,
+      "in_progress": 15,
+      "todo": 12,
+      "blocked": 1
+    },
+    "remaining": 28,
+    "p8_005": "done",
+    "p8_006_through_p8_020": "in_progress",
+    "new_original_todo_completions_since_round52": [],
+    "cumulative_since_163_baseline": [
+      "P8-005"
+    ],
+    "changed_since_round52": false
+  },
+  "issue_158": {
+    "latest_comment_id": 6094930598,
+    "latest_created_at": "2026-10-10T07:03:50Z",
+    "latest_round": 52,
+    "newer_comment_observed": false
+  },
+  "open_prs": [
+    {
+      "number": 3,
+      "head": "9619641903f0b9f397007ebbe85893ce8f6b5f97",
+      "draft": true,
+      "ahead_main": 12,
+      "behind_main": 628
+    },
+    {
+      "number": 4,
+      "head": "0466d490a169eb25d2c9070c65aae36060f2220b",
+      "draft": true,
+      "ahead_main": 15,
+      "behind_main": 628
+    },
+    {
+      "number": 65,
+      "head": "3babaa5aa0b11971e20b65625992a9b0dd7b8968",
+      "draft": true,
+      "ahead_main": 7,
+      "behind_main": 530
+    },
+    {
+      "number": 127,
+      "head": "222da64761971a3b546458aa16e2c2c9ea46cea7",
+      "draft": true,
+      "ahead_main": 4,
+      "behind_main": 457
+    },
+    {
+      "number": 137,
+      "head": "bc4e5602e10841258fb5583138419335bc9098dd",
+      "draft": true,
+      "ahead_main": 3,
+      "behind_main": 421
+    },
+    {
+      "number": 188,
+      "head": "cc177ddc9e6b8180b8d847539787672e7b689a1a",
+      "draft": true,
+      "ahead_main": 7,
+      "behind_main": 82
+    },
+    {
+      "number": 191,
+      "head": "1ebb6208f2f5f8fe8a5bf237c00a3d963f44bb08",
+      "draft": true,
+      "ahead_main": 9,
+      "behind_main": 67
+    }
+  ],
+  "named_prs": {
+    "178": {
+      "state": "closed",
+      "merged": false,
+      "head": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "closed_at": "2026-10-09T14:02:11Z"
+    },
+    "180": {
+      "state": "closed",
+      "merged": true,
+      "head": "88d5f547bb0fae273f4270742503fd1fd5e70bc2",
+      "merged_at": "2026-10-09T16:42:18Z"
+    },
+    "181": {
+      "state": "closed",
+      "merged": true,
+      "head": "d7426175ae21a9619cbcb393e41ec535695972d1",
+      "merged_at": "2026-10-09T11:00:55Z"
+    },
+    "184": {
+      "state": "closed",
+      "merged": false,
+      "head": "883230f2b44ebcf09495870db8c0e31d61270331",
+      "closed_at": "2026-10-09T14:40:40Z"
+    },
+    "188": {
+      "state": "open",
+      "draft": true,
+      "head": "cc177ddc9e6b8180b8d847539787672e7b689a1a",
+      "mergeable": true,
+      "mergeable_state": "clean"
+    },
+    "191": {
+      "state": "open",
+      "draft": true,
+      "head": "1ebb6208f2f5f8fe8a5bf237c00a3d963f44bb08",
+      "mergeable": true,
+      "mergeable_state": "clean"
+    }
+  },
+  "decision": {
+    "safe_immediate_merge_candidates": [],
+    "safe_immediate_close_candidates": [],
+    "external_original_todo_completions": [],
+    "rationale": [
+      "All seven open pull requests remain Draft and diverged from current main.",
+      "PR188 and PR191 remain negative or limited performance studies; clean mergeability is not acceptance evidence.",
+      "PR3, PR4, PR65, PR127 and PR137 retain previously documented unabsorbed intent; no new supersession proof was observed.",
+      "PR closure, mergeability, CI state, and descriptive studies are not counted as original TODO completion."
+    ],
+    "mutations_performed": [],
+    "ref_or_pr_writes_performed": false
+  }
+}

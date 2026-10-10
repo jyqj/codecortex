@@ -1,0 +1,113 @@
+{
+  "schema": "codecortex-independent-static-patch-review-v1",
+  "review_kind": "p8-task-profile-artifact-cap-minimal-patch",
+  "generated_at_utc": "2026-10-10T07:42:55.609Z",
+  "repository": "jyqj/codecortex",
+  "source_commit": "f97c5068d056969705e8387ba1f37d83847f5bee",
+  "inputs": {
+    ".github/workflows/p8-task-profile.yml": "a99772d3d4ed4ba716f38041eed9d59313013ddd",
+    "scripts/p8_task_profile_capture.py": "f749e58a96cfc31e0ecf1374be74f1e8eb3caef9",
+    "scripts/p8_scale_diagnostic_capture.py": "0ce885a45e6373e2c80f4e65d70dfa08fdaf4cb1"
+  },
+  "observed_failure": {
+    "run_id": 38026411200,
+    "total_artifacts": 1037,
+    "distribution": {
+      "build": 1,
+      "capacity": 45,
+      "progress": 945,
+      "shard": 45,
+      "matrix": 1
+    },
+    "aggregate_download_log": "Found 1000 artifact(s); 42 shard artifacts downloaded",
+    "official_shards_after_terminal": 45,
+    "official_matrix_missing_slots": [
+      [
+        "batch_100",
+        100000,
+        0
+      ],
+      [
+        "body",
+        100000,
+        0
+      ],
+      [
+        "config",
+        100000,
+        0
+      ]
+    ]
+  },
+  "proposed_patch_under_review": {
+    "delete_step": "actions/upload-artifact for p8-task-progress-${cell}-${run}-${attempt}-19",
+    "keep_local_step": "freeze_19 checkpoint generation remains",
+    "proposed_finish_env_change": "PREVIOUS_ARTIFACT_ID/DIGEST from steps.upload_19 to steps.upload_18",
+    "keep": "final upload and complete shard upload"
+  },
+  "artifact_count": {
+    "before_matrix_current": 1036,
+    "current_with_matrix": 1037,
+    "projected_before_matrix": 991,
+    "projected_with_matrix": 992,
+    "arithmetic": "remove exactly one remote progress artifact per 45 cells: 1037 - 45 = 992",
+    "count_claim_valid": true
+  },
+  "code_semantics": {
+    "freeze_19_call": {
+      "index": 19,
+      "previous": "upload_18",
+      "effect": "snapshot() correctly acknowledges checkpoint 18 using upload_18, then captures new bytes into checkpoint 19 and leaves those checkpoint-19 chunks pending."
+    },
+    "finish_call_as_proposed": {
+      "index": 20,
+      "previous": "upload_18",
+      "effect": "snapshot() calls acknowledge(directory,state,index-1=19,upload_18). acknowledge() trusts the supplied ID/digest and marks checkpoint 19 included_chunk_names acknowledged, even though upload_18 contains checkpoint 18, not checkpoint 19."
+    },
+    "consequences": [
+      "The same upload_18 ID/digest is recorded as custody for both checkpoint 18 and checkpoint 19.",
+      "Chunks first captured in checkpoint 19 are falsely marked remotely acknowledged.",
+      "The final checkpoint excludes those falsely acknowledged chunks from included_chunk_names.",
+      "The final manifest custody chain is therefore incorrect; terminal-adjacent captured bytes are not preserved by the final progress artifact.",
+      "The separately uploaded complete shard may still contain native shard raw, but it does not repair the false progress-artifact custody statement and does not cover every non-shard STREAM such as driver/wrapper streams."
+    ]
+  },
+  "verdict": {
+    "exact_patch_safe": false,
+    "artifact_count_992": true,
+    "cumulative_raw_custody_preserved": false,
+    "identity_chain_preserved": false,
+    "reason": "PREVIOUS_ARTIFACT_* identifies the immediately preceding checkpoint artifact, not merely the most recent successful artifact. Reusing upload_18 while checkpoint 19 exists produces a false acknowledgment."
+  },
+  "minimal_safe_revision": {
+    "workflow_changes": [
+      "Delete the remote upload-artifact -19 step.",
+      "Keep freeze_19 unchanged, including its PREVIOUS_ARTIFACT_* binding to upload_18; this correctly acknowledges checkpoint 18.",
+      "For finish, omit PREVIOUS_ARTIFACT_ID and PREVIOUS_ARTIFACT_DIGEST entirely (or pass empty values). Do not bind finish to upload_18."
+    ],
+    "resulting_semantics": [
+      "finish snapshot index 20 calls acknowledge(index 19, empty, empty), which is a no-op.",
+      "Checkpoint-19 chunks remain pending and are included again in the final bundle together with bytes captured after freeze_19.",
+      "The state already records upload_18 because freeze_19 acknowledged it, so the final manifest retains truthful prior custody through checkpoint 18.",
+      "The final manifest's all_captured_chunks plus included_chunk_names permits reconstruction from acknowledged artifacts through upload_18 plus the final artifact.",
+      "No native raw bytes are deleted or rewritten; the complete shard remains separately uploaded."
+    ],
+    "projected_artifacts_with_matrix": 992
+  },
+  "interruption_window_risk": {
+    "interval": "after local freeze_19 completes and before the final artifact upload successfully completes",
+    "truthful_remote_boundary": "upload_18 remains the newest remotely acknowledged prefix",
+    "locally_only": "checkpoint-19 chunks and any later chunks remain only on the runner until final upload",
+    "catastrophic_runner_loss": "those suffix bytes can be lost if the runner dies before final upload; they must be reported as unknown/lost runner tail, never as zero",
+    "complete_shard_note": "The always-uploaded shard can mitigate normal step failures if the runner remains alive, but cannot guarantee recovery after catastrophic runner loss and does not justify a false checkpoint acknowledgment.",
+    "comparative_risk": "One terminal-adjacent remote prefix is removed; evidence freshness on catastrophic loss can regress by at most that checkpoint interval relative to the current workflow."
+  },
+  "scope": {
+    "code_written": false,
+    "ref_written": false,
+    "workflow_dispatched": false,
+    "rerun": false,
+    "cancel": false,
+    "todo_credit": false
+  }
+}

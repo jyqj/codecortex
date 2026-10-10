@@ -1,0 +1,272 @@
+{
+  "schema": "codecortex.p8_006_acceptance_independent_review.v1",
+  "unattached": true,
+  "round": 53,
+  "frozen_at_utc": "2026-10-10T07:43:39.054Z",
+  "reviewer_scope": "Read-only fresh acceptance review of P8-006 original N30 scale evidence. No dispatch, rerun, cancellation, relabeling, pooling, task mutation, PR mutation, or offline replacement aggregate.",
+  "repository": "jyqj/codecortex",
+  "authoritative_main": {
+    "commit": "0da9a2800d2b3112d584a8bad4f79785e01162a9",
+    "tree": "39a053ae49b486764751a570d164e7cd41d7ff29",
+    "tasks_path": "docs/roadmap/code-index-v2/tasks.json",
+    "tasks_blob": "adb44ee70a4c129bfb443d4ecf678fb934c8ea6b",
+    "task": {
+      "id": "P8-006",
+      "status": "in_progress",
+      "next_task": "P8-006",
+      "title": "增量规模与fanout曲线",
+      "depends_on": [
+        "P7-020",
+        "P8-001",
+        "P8-005"
+      ],
+      "dependency_status": {
+        "P7-020": "done",
+        "P8-001": "done",
+        "P8-005": "done"
+      },
+      "validations": [
+        "V07",
+        "V20"
+      ],
+      "acceptance": [
+        "时间可归因且闭包完成后full parity，未完成有显式status",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ]
+    },
+    "scale_protocol": {
+      "doc_path": "docs/roadmap/code-index-v2/P8-SCALE.md",
+      "doc_blob": "d23c80666c8885ee7274cdffc3c023e6a0ef9e08",
+      "fixed_population": "5 scales x 30 repetitions = 150 shards; 9 main-stage observations x 5 scales x 30 plus 5 fanout x 30 = 1500 samples",
+      "main_budget": "dirty200/resume1024",
+      "fanout_budget": "dirty8/resume128",
+      "note": "Sources, binaries, profiles, populations, and failed samples are not interchangeable."
+    }
+  },
+  "original_n30_runs": [
+    {
+      "run_id": 37896198208,
+      "source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+      "workflow": "p8-scale.yml",
+      "profile": "scale_capacity_v1",
+      "dirty_budget": 200,
+      "status": "completed",
+      "conclusion": "failure",
+      "accepted_shards": "4/150",
+      "jobs": {
+        "success": 5,
+        "failure": 2,
+        "skipped": 1
+      },
+      "failure_boundary": "100k rep0 preflight failure; aggregate failure; measure skipped",
+      "matrix_artifact": {
+        "id": 11616736761,
+        "digest": "sha256:e9bddc19668e8466cd55c31d9d297e3b1ac0fb00ded2b2f0d9615795d8b8cc1e"
+      }
+    },
+    {
+      "run_id": 37902429727,
+      "source": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "workflow": "p8-scale.yml",
+      "profile": "scale_capacity_v1",
+      "dirty_budget": 200,
+      "status": "completed",
+      "conclusion": "failure",
+      "accepted_shards": "4/150",
+      "jobs": {
+        "success": 5,
+        "failure": 2,
+        "skipped": 1
+      },
+      "failure_boundary": "100k rep0 preflight failure; aggregate failure; measure skipped",
+      "matrix_artifact": {
+        "id": 11619200069,
+        "digest": "sha256:2914d0b238c9ba2614532affd28bfe11132d7d0ce45b3f3b75d391f4132e9363"
+      }
+    },
+    {
+      "run_id": 37910924354,
+      "source": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302",
+      "workflow": "p8-scale.yml",
+      "profile": "scale_capacity_v1",
+      "dirty_budget": 200,
+      "status": "completed",
+      "conclusion": "failure",
+      "accepted_shards": "4/150",
+      "jobs": {
+        "success": 5,
+        "failure": 2,
+        "skipped": 1
+      },
+      "failure_boundary": "100k rep0 preflight failure; aggregate failure; measure skipped",
+      "matrix_artifact": {
+        "id": 11626127365,
+        "digest": "sha256:cb0d43a48f20e8629723a501b5764706288b594edf6bcd58cbce03bf99ac90f5e"
+      }
+    },
+    {
+      "run_id": 37962416564,
+      "source": "4fe927488d5cb7f26bd27c7624745fb1b6ca202b",
+      "workflow": "p8-scale.yml",
+      "profile": "scale_capacity_v1",
+      "dirty_budget": 200,
+      "status": "completed",
+      "conclusion": "failure",
+      "accepted_shards": "4/150",
+      "jobs": {
+        "success": 5,
+        "failure": 2,
+        "skipped": 1
+      },
+      "failure_boundary": "100k rep0 preflight failure; aggregate failure; measure skipped",
+      "matrix_artifact": {
+        "id": 11647916837,
+        "digest": "sha256:c53a9aec823f9d4448f56c117a017e467ed9092647182be281681291de16d9c6"
+      }
+    },
+    {
+      "run_id": 37982220020,
+      "source": "008f1ec0ae16b9b6aff9f20d033b17b2219168f8",
+      "workflow": "p8-scale-wide-dirty.yml",
+      "profile": "scale_wide_dirty_v1",
+      "dirty_budget": 4096,
+      "status": "completed",
+      "conclusion": "failure",
+      "accepted_shards": "4/150",
+      "jobs": {
+        "success": 5,
+        "failure": 2,
+        "skipped": 1
+      },
+      "failure_boundary": "100k rep0 preflight failure; aggregate failure; measure skipped",
+      "matrix_artifact": {
+        "id": 11651413055,
+        "digest": "sha256:1a442892700c45cebaaa4108fa04c5d84a533f34b8686530861672abb565a4e4"
+      }
+    },
+    {
+      "run_id": 38013753078,
+      "source": "9cc6bf49f6dd81e4069a8004eed49addba0ab79b",
+      "workflow": "p8-scale-wide-dirty.yml",
+      "profile": "scale_wide_dirty_v1",
+      "dirty_budget": 4096,
+      "status": "completed",
+      "conclusion": "failure",
+      "accepted_shards": "4/150",
+      "jobs": {
+        "success": 5,
+        "failure": 2,
+        "skipped": 1
+      },
+      "failure_boundary": "100k rep0 preflight failure; aggregate failure; measure skipped",
+      "matrix_artifact": {
+        "id": 11658738280,
+        "size_bytes": 580,
+        "digest": "sha256:716be1cef60ff03736583ca7bca4dd75be435c44fc6936aa801df6cf57a4f32b"
+      }
+    }
+  ],
+  "non_substitutable_evidence": [
+    {
+      "run_id": 38012409915,
+      "source": "9cc6bf49f6dd81e4069a8004eed49addba0ab79b",
+      "workflow": "p8-scale-100k-diagnostic.yml",
+      "population": "single 100k rep0 retained-progress diagnostic",
+      "status": "completed",
+      "conclusion": "failure",
+      "jobs": {
+        "build": "success",
+        "diagnose": "failure"
+      },
+      "artifacts": {
+        "count": 15,
+        "last_checkpoint": 12,
+        "terminal_artifact": false
+      },
+      "why_not_acceptance": "No terminal shard, native EOF/exit, supervisor terminal, measurement_complete, observer-after identity, N30 cohort, fanout population, or successful aggregate."
+    },
+    {
+      "run_id": 38026411200,
+      "source": "f97c5068d056969705e8387ba1f37d83847f5bee",
+      "workflow": "p8-task-profile.yml",
+      "population": "p8-profile-task-descriptive-v1; N=1; 45 cells / 85 retained records when complete",
+      "status": "completed",
+      "conclusion": "failure",
+      "jobs": {
+        "success": 46,
+        "failure": 1,
+        "aggregate_job": "failure"
+      },
+      "official_artifacts": {
+        "total": 1037,
+        "build": 1,
+        "capacity": 45,
+        "progress": 945,
+        "shard": 45,
+        "matrix": 1
+      },
+      "matrix_artifact": {
+        "id": 11662173135,
+        "size_bytes": 25280,
+        "github_digest": "sha256:846446d1267f876f0b03ac514cfe78c14748a53b38043bbf357e77689cc01a42",
+        "independent_sha256": "846446d1267f876f0b03ac514cfe78c14748a53b38043bbf357e77689cc01a42",
+        "zip_crc": "pass",
+        "inner_file": "task-matrix.json",
+        "inner_status": "failed",
+        "inner_passed": false,
+        "release_certification": "not_run",
+        "accepted_cell_count": 42,
+        "validated_input_count": 42,
+        "missing_slots": [
+          [
+            "batch_100",
+            100000,
+            0
+          ],
+          [
+            "body",
+            100000,
+            0
+          ],
+          [
+            "config",
+            100000,
+            0
+          ]
+        ],
+        "error": "missing task slots or mixed source/binary/driver/build/run/attempt",
+        "input_errors": []
+      },
+      "post_run_artifact_observation": "Official artifact API currently lists all 45 shard artifacts, including three slots omitted by the immutable aggregate result. Their ZIP digests/CRC and task-shard receipts were independently received and each task-shard says passed. This does not retroactively change the actual failed aggregate; no replacement aggregate was created.",
+      "protocol_doc": {
+        "path": "docs/roadmap/code-index-v2/P8-TASK-PROFILE-DESCRIPTIVE.md",
+        "blob": "5cb2c5d144c8e12c2379af50252d21765e615f37",
+        "explicit_boundary": "Neither the sequential 150-shard study nor the 1,350-cell isolated-profile study; N=1 and no task/release status change."
+      },
+      "why_not_acceptance": "Different registered N=1 descriptive population; actual matrix failed; it cannot fill, pool with, or relabel the N30/150-shard/1500-sample population."
+    }
+  ],
+  "fresh_search": {
+    "checked_recent_runs_per_page": 100,
+    "new_original_n30_run_after_round52": false,
+    "only_recent_scale_workflow_for_f97c": "38026411204 was skipped",
+    "note": "No successful original N30 150-shard cohort or external artifact appeared after Round52."
+  },
+  "acceptance_decision": {
+    "p8_006_can_close": false,
+    "status_should_remain": "in_progress",
+    "new_original_todo_credit": 0,
+    "satisfied": [
+      "All hard task dependencies are currently done.",
+      "Several source/profile-specific failures and partial raw records remain preserved."
+    ],
+    "missing": [
+      "One same-source, same-binary, same-profile original cohort with a successful terminal 100k shard.",
+      "150/150 accepted original shards.",
+      "All 1500 prescribed observations, including 5 fanout levels x N30.",
+      "Successful original aggregate with complete time attribution, explicit incomplete statuses, closure completion, full fifteen-table parity, and V07/V20 review.",
+      "No cross-source/profile/population pooling or relabeling."
+    ]
+  },
+  "mutations_performed": []
+}

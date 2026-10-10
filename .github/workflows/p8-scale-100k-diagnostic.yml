@@ -1,0 +1,415 @@
+name: P8 independent 100k diagnostic with retained progress
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [labeled]
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: never
+  CARGO_INCREMENTAL: "0"
+  CARGO_BUILD_JOBS: "2"
+  RUSTFLAGS: ""
+
+jobs:
+  build:
+    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'p8-scale-100k-diagnostic-run'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/artifacts/
+            /artifacts/checkpoints/capability-snapshot-optimization-20261003/current-status-under-test.rs
+            /artifacts/checkpoints/capability-snapshot-optimization-20261003/v2-status-checks.rs
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.95.0
+          components: rustfmt
+      - name: Original formatting and scale protocol controls
+        env:
+          CARGO_TARGET_DIR: ${{ runner.temp }}/p8-diagnostic-protocol-cargo
+        run: |
+          cargo fmt --all -- --check
+          cargo test --locked -p cc-eval --test p8_scale
+          PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s scripts/tests -p test_p8_scale_diagnostic_capture.py -v
+      - name: Compile one immutable executable with the original driver
+        run: |
+          python3 scripts/p8_scale_matrix.py build --root "$GITHUB_WORKSPACE" \
+            --output "$RUNNER_TEMP/p8-diagnostic-build" --target-directory "$RUNNER_TEMP/p8-diagnostic-cargo"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: p8-100k-diagnostic-build-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-diagnostic-build
+          if-no-files-found: error
+
+  diagnose:
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    env:
+      DIAGNOSTIC_DIR: ${{ runner.temp }}/p8-100k-diagnostic
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/artifacts/
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.95.0
+      - uses: actions/download-artifact@v4
+        with:
+          name: p8-100k-diagnostic-build-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-diagnostic-build
+      - name: Original capacity preparation
+        env:
+          P8_EXPECTED_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}
+          P8_CAPACITY_PREPARE_ALLOWED: ${{ github.repository == 'jyqj/codecortex' && runner.environment == 'github-hosted' && runner.os == 'Linux' }}
+        run: |
+          python3 scripts/p8_runner_capacity.py --scale 100000 \
+            --output "$RUNNER_TEMP/p8-diagnostic-capacity" --prepare-ephemeral
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: p8-100k-diagnostic-capacity-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-diagnostic-capacity
+          if-no-files-found: error
+      - name: Launch the original full-stage 100k rep0 command
+        id: launch
+        env:
+          EXPECTED_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          chmod +x "$RUNNER_TEMP/p8-diagnostic-build/p8-scale"
+          python3 scripts/p8_scale_diagnostic_capture.py launch --directory "$DIAGNOSTIC_DIR" \
+            --root "$GITHUB_WORKSPACE" --build "$RUNNER_TEMP/p8-diagnostic-build" --expected-source "$EXPECTED_SOURCE"
+      - name: Freeze original byte prefix at interval 1 of 20
+        id: checkpoint_00
+        if: always() && steps.launch.outcome == 'success'
+        run: python3 scripts/p8_scale_diagnostic_capture.py checkpoint --directory "$DIAGNOSTIC_DIR" --index 0
+      - uses: actions/upload-artifact@v4
+        id: upload_00
+        if: always() && steps.checkpoint_00.outputs.ready == 'true'
+        continue-on-error: true
+        with:
+          name: p8-100k-diagnostic-progress-${{ github.run_id }}-${{ github.run_attempt }}-00
+          path: ${{ steps.checkpoint_00.outputs.bundle }}
+          if-no-files-found: error
+      - name: Freeze original byte prefix at interval 2 of 20
+        id: checkpoint_01
+        if: always() && steps.launch.outcome == 'success' && (steps.checkpoint_00.outputs.running == 'true' || steps.checkpoint_00.outcome == 'failure')
+        env:
+          PREVIOUS_ARTIFACT_ID: ${{ steps.upload_00.outcome == 'success' && steps.upload_00.outputs.artifact-id || '' }}
+          PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_00.outputs.artifact-digest }}
+        run: python3 scripts/p8_scale_diagnostic_capture.py checkpoint --directory "$DIAGNOSTIC_DIR" --index 1
+      - uses: actions/upload-artifact@v4
+        id: upload_01
+        if: always() && steps.checkpoint_01.outputs.ready == 'true'
+        continue-on-error: true
+        with:
+          name: p8-100k-diagnostic-progress-${{ github.run_id }}-${{ github.run_attempt }}-01
+          path: ${{ steps.checkpoint_01.outputs.bundle }}
+          if-no-files-found: error
+      - name: Freeze original byte prefix at interval 3 of 20
+        id: checkpoint_02
+        if: always() && steps.launch.outcome == 'success' && (steps.checkpoint_01.outputs.running == 'true' || steps.checkpoint_01.outcome == 'failure')
+        env:
+          PREVIOUS_ARTIFACT_ID: ${{ steps.upload_01.outcome == 'success' && steps.upload_01.outputs.artifact-id || '' }}
+          PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_01.outputs.artifact-digest }}
+        run: python3 scripts/p8_scale_diagnostic_capture.py checkpoint --directory "$DIAGNOSTIC_DIR" --index 2
+      - uses: actions/upload-artifact@v4
+        id: upload_02
+        if: always() && steps.checkpoint_02.outputs.ready == 'true'
+        continue-on-error: true
+        with:
+          name: p8-100k-diagnostic-progress-${{ github.run_id }}-${{ github.run_attempt }}-02
+          path: ${{ steps.checkpoint_02.outputs.bundle }}
+          if-no-files-found: error
+      - name: Freeze original byte prefix at interval 4 of 20
+        id: checkpoint_03
+        if: always() && steps.launch.outcome == 'success' && (steps.checkpoint_02.outputs.running == 'true' || steps.checkpoint_02.outcome == 'failure')
+        env:
+          PREVIOUS_ARTIFACT_ID: ${{ steps.upload_02.outcome == 'success' && steps.upload_02.outputs.artifact-id || '' }}
+          PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_02.outputs.artifact-digest }}
+        run: python3 scripts/p8_scale_diagnostic_capture.py checkpoint --directory "$DIAGNOSTIC_DIR" --index 3
+      - uses: actions/upload-artifact@v4
+        id: upload_03
+        if: always() && steps.checkpoint_03.outputs.ready == 'true'
+        continue-on-error: true
+        with:
+          name: p8-100k-diagnostic-progress-${{ github.run_id }}-${{ github.run_attempt }}-03
+          path: ${{ steps.checkpoint_03.outputs.bundle }}
+          if-no-files-found: error
+      - name: Freeze original byte prefix at interval 5 of 20
+        id: checkpoint_04
+        if: always() && steps.launch.outcome == 'success' && (steps.checkpoint_03.outputs.running == 'true' || steps.checkpoint_03.outcome == 'failure')
+        env:
+          PREVIOUS_ARTIFACT_ID: ${{ steps.upload_03.outcome == 'success' && steps.upload_03.outputs.artifact-id || '' }}
+          PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_03.outputs.artifact-digest }}
+        run: python3 scripts/p8_scale_diagnostic_capture.py checkpoint --directory "$DIAGNOSTIC_DIR" --index 4
+      - uses: actions/upload-artifact@v4
+        id: upload_04
+        if: always() && steps.checkpoint_04.outputs.ready == 'true'
+        continue-on-error: true
+        with:
+          name: p8-100k-diagnostic-progress-${{ github.run_id }}-${{ github.run_attempt }}-04
+          path: ${{ steps.checkpoint_04.outputs.bundle }}
+          if-no-files-found: error
+      - name: Freeze original byte prefix at interval 6 of 20
+        id: checkpoint_05
+        if: always() && steps.launch.outcome == 'success' && (steps.checkpoint_04.outputs.running == 'true' || steps.checkpoint_04.outcome == 'failure')
+        env:
+          PREVIOUS_ARTIFACT_ID: ${{ steps.upload_04.outcome == 'success' && steps.upload_04.outputs.artifact-id || '' }}
+          PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_04.outputs.artifact-digest }}
+        run: python3 scripts/p8_scale_diagnostic_capture.py checkpoint --directory "$DIAGNOSTIC_DIR" --index 5
+      - uses: actions/upload-artifact@v4
+        id: upload_05
+        if: always() && steps.checkpoint_05.outputs.ready == 'true'
+        continue-on-error: true
+        with:
+          name: p8-100k-diagnostic-progress-${{ github.run_id }}-${{ github.run_attempt }}-05
+          path: ${{ steps.checkpoint_05.outputs.bundle }}
+          if-no-files-found: error
+      - name: Freeze original byte prefix at interval 7 of 20
+        id: checkpoint_06
+        if: always() && steps.launch.outcome == 'success' && (steps.checkpoint_05.outputs.running == 'true' || steps.checkpoint_05.outcome == 'failure')
+        env:
+          PREVIOUS_ARTIFACT_ID: ${{ steps.upload_05.outcome == 'success' && steps.upload_05.outputs.artifact-id || '' }}
+          PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_05.outputs.artifact-digest }}
+        run: python3 scripts/p8_scale_diagnostic_capture.py checkpoint --directory "$DIAGNOSTIC_DIR" --index 6
+      - uses: actions/upload-artifact@v4
+        id: upload_06
+        if: always() && steps.checkpoint_06.outputs.ready == 'true'
+        continue-on-error: true
+        with:
+          name: p8-100k-diagnostic-progress-${{ github.run_id }}-${{ github.run_attempt }}-06
+          path: ${{ steps.checkpoint_06.outputs.bundle }}
+          if-no-files-found: error
+      - name: Freeze original byte prefix at interval 8 of 20
+        id: checkpoint_07
+        if: always() && steps.launch.outcome == 'success' && (steps.checkpoint_06.outputs.running == 'true' || steps.checkpoint_06.outcome == 'failure')
+        env:
+          PREVIOUS_ARTIFACT_ID: ${{ steps.upload_06.outcome == 'success' && steps.upload_06.outputs.artifact-id || '' }}
+          PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_06.outputs.artifact-digest }}
+        run: python3 scripts/p8_scale_diagnostic_capture.py checkpoint --directory "$DIAGNOSTIC_DIR" --index 7
+      - uses: actions/upload-artifact@v4
+        id: upload_07
+        if: always() && steps.checkpoint_07.outputs.ready == 'true'
+        continue-on-error: true
+        with:
+          name: p8-100k-diagnostic-progress-${{ github.run_id }}-${{ github.run_attempt }}-07
+          path: ${{ steps.checkpoint_07.outputs.bundle }}
+          if-no-files-found: error
+      - name: Freeze original byte prefix at interval 9 of 20
+        id: checkpoint_08
+        if: always() && steps.launch.outcome == 'success' && (steps.checkpoint_07.outputs.running == 'true' || steps.checkpoint_07.outcome == 'failure')
+        env:
+          PREVIOUS_ARTIFACT_ID: ${{ steps.upload_07.outcome == 'success' && steps.upload_07.outputs.artifact-id || '' }}
+          PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_07.outputs.artifact-digest }}
+        run: python3 scripts/p8_scale_diagnostic_capture.py checkpoint --directory "$DIAGNOSTIC_DIR" --index 8
+      - uses: actions/upload-artifact@v4
+        id: upload_08
+        if: always() && steps.checkpoint_08.outputs.ready == 'true'
+        continue-on-error: true
+        with:
+          name: p8-100k-diagnostic-progress-${{ github.run_id }}-${{ github.run_attempt }}-08
+          path: ${{ steps.checkpoint_08.outputs.bundle }}
+          if-no-files-found: error
+      - name: Freeze original byte prefix at interval 10 of 20
+        id: checkpoint_09
+        if: always() && steps.launch.outcome == 'success' && (steps.checkpoint_08.outputs.running == 'true' || steps.checkpoint_08.outcome == 'failure')
+        env:
+          PREVIOUS_ARTIFACT_ID: ${{ steps.upload_08.outcome == 'success' && steps.upload_08.outputs.artifact-id || '' }}
+          PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_08.outputs.artifact-digest }}
+        run: python3 scripts/p8_scale_diagnostic_capture.py checkpoint --directory "$DIAGNOSTIC_DIR" --index 9
+      - uses: actions/upload-artifact@v4
+        id: upload_09
+        if: always() && steps.checkpoint_09.outputs.ready == 'true'
+        continue-on-error: true
+        with:
+          name: p8-100k-diagnostic-progress-${{ github.run_id }}-${{ github.run_attempt }}-09
+          path: ${{ steps.checkpoint_09.outputs.bundle }}
+          if-no-files-found: error
+      - name: Freeze original byte prefix at interval 11 of 20
+        id: checkpoint_10
+        if: always() && steps.launch.outcome == 'success' && (steps.checkpoint_09.outputs.running == 'true' || steps.checkpoint_09.outcome == 'failure')
+        env:
+          PREVIOUS_ARTIFACT_ID: ${{ steps.upload_09.outcome == 'success' && steps.upload_09.outputs.artifact-id || '' }}
+          PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_09.outputs.artifact-digest }}
+        run: python3 scripts/p8_scale_diagnostic_capture.py checkpoint --directory "$DIAGNOSTIC_DIR" --index 10
+      - uses: actions/upload-artifact@v4
+        id: upload_10
+        if: always() && steps.checkpoint_10.outputs.ready == 'true'
+        continue-on-error: true
+        with:
+          name: p8-100k-diagnostic-progress-${{ github.run_id }}-${{ github.run_attempt }}-10
+          path: ${{ steps.checkpoint_10.outputs.bundle }}
+          if-no-files-found: error
+      - name: Freeze original byte prefix at interval 12 of 20
+        id: checkpoint_11
+        if: always() && steps.launch.outcome == 'success' && (steps.checkpoint_10.outputs.running == 'true' || steps.checkpoint_10.outcome == 'failure')
+        env:
+          PREVIOUS_ARTIFACT_ID: ${{ steps.upload_10.outcome == 'success' && steps.upload_10.outputs.artifact-id || '' }}
+          PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_10.outputs.artifact-digest }}
+        run: python3 scripts/p8_scale_diagnostic_capture.py checkpoint --directory "$DIAGNOSTIC_DIR" --index 11
+      - uses: actions/upload-artifact@v4
+        id: upload_11
+        if: always() && steps.checkpoint_11.outputs.ready == 'true'
+        continue-on-error: true
+        with:
+          name: p8-100k-diagnostic-progress-${{ github.run_id }}-${{ github.run_attempt }}-11
+          path: ${{ steps.checkpoint_11.outputs.bundle }}
+          if-no-files-found: error
+      - name: Freeze original byte prefix at interval 13 of 20
+        id: checkpoint_12
+        if: always() && steps.launch.outcome == 'success' && (steps.checkpoint_11.outputs.running == 'true' || steps.checkpoint_11.outcome == 'failure')
+        env:
+          PREVIOUS_ARTIFACT_ID: ${{ steps.upload_11.outcome == 'success' && steps.upload_11.outputs.artifact-id || '' }}
+          PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_11.outputs.artifact-digest }}
+        run: python3 scripts/p8_scale_diagnostic_capture.py checkpoint --directory "$DIAGNOSTIC_DIR" --index 12
+      - uses: actions/upload-artifact@v4
+        id: upload_12
+        if: always() && steps.checkpoint_12.outputs.ready == 'true'
+        continue-on-error: true
+        with:
+          name: p8-100k-diagnostic-progress-${{ github.run_id }}-${{ github.run_attempt }}-12
+          path: ${{ steps.checkpoint_12.outputs.bundle }}
+          if-no-files-found: error
+      - name: Freeze original byte prefix at interval 14 of 20
+        id: checkpoint_13
+        if: always() && steps.launch.outcome == 'success' && (steps.checkpoint_12.outputs.running == 'true' || steps.checkpoint_12.outcome == 'failure')
+        env:
+          PREVIOUS_ARTIFACT_ID: ${{ steps.upload_12.outcome == 'success' && steps.upload_12.outputs.artifact-id || '' }}
+          PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_12.outputs.artifact-digest }}
+        run: python3 scripts/p8_scale_diagnostic_capture.py checkpoint --directory "$DIAGNOSTIC_DIR" --index 13
+      - uses: actions/upload-artifact@v4
+        id: upload_13
+        if: always() && steps.checkpoint_13.outputs.ready == 'true'
+        continue-on-error: true
+        with:
+          name: p8-100k-diagnostic-progress-${{ github.run_id }}-${{ github.run_attempt }}-13
+          path: ${{ steps.checkpoint_13.outputs.bundle }}
+          if-no-files-found: error
+      - name: Freeze original byte prefix at interval 15 of 20
+        id: checkpoint_14
+        if: always() && steps.launch.outcome == 'success' && (steps.checkpoint_13.outputs.running == 'true' || steps.checkpoint_13.outcome == 'failure')
+        env:
+          PREVIOUS_ARTIFACT_ID: ${{ steps.upload_13.outcome == 'success' && steps.upload_13.outputs.artifact-id || '' }}
+          PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_13.outputs.artifact-digest }}
+        run: python3 scripts/p8_scale_diagnostic_capture.py checkpoint --directory "$DIAGNOSTIC_DIR" --index 14
+      - uses: actions/upload-artifact@v4
+        id: upload_14
+        if: always() && steps.checkpoint_14.outputs.ready == 'true'
+        continue-on-error: true
+        with:
+          name: p8-100k-diagnostic-progress-${{ github.run_id }}-${{ github.run_attempt }}-14
+          path: ${{ steps.checkpoint_14.outputs.bundle }}
+          if-no-files-found: error
+      - name: Freeze original byte prefix at interval 16 of 20
+        id: checkpoint_15
+        if: always() && steps.launch.outcome == 'success' && (steps.checkpoint_14.outputs.running == 'true' || steps.checkpoint_14.outcome == 'failure')
+        env:
+          PREVIOUS_ARTIFACT_ID: ${{ steps.upload_14.outcome == 'success' && steps.upload_14.outputs.artifact-id || '' }}
+          PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_14.outputs.artifact-digest }}
+        run: python3 scripts/p8_scale_diagnostic_capture.py checkpoint --directory "$DIAGNOSTIC_DIR" --index 15
+      - uses: actions/upload-artifact@v4
+        id: upload_15
+        if: always() && steps.checkpoint_15.outputs.ready == 'true'
+        continue-on-error: true
+        with:
+          name: p8-100k-diagnostic-progress-${{ github.run_id }}-${{ github.run_attempt }}-15
+          path: ${{ steps.checkpoint_15.outputs.bundle }}
+          if-no-files-found: error
+      - name: Freeze original byte prefix at interval 17 of 20
+        id: checkpoint_16
+        if: always() && steps.launch.outcome == 'success' && (steps.checkpoint_15.outputs.running == 'true' || steps.checkpoint_15.outcome == 'failure')
+        env:
+          PREVIOUS_ARTIFACT_ID: ${{ steps.upload_15.outcome == 'success' && steps.upload_15.outputs.artifact-id || '' }}
+          PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_15.outputs.artifact-digest }}
+        run: python3 scripts/p8_scale_diagnostic_capture.py checkpoint --directory "$DIAGNOSTIC_DIR" --index 16
+      - uses: actions/upload-artifact@v4
+        id: upload_16
+        if: always() && steps.checkpoint_16.outputs.ready == 'true'
+        continue-on-error: true
+        with:
+          name: p8-100k-diagnostic-progress-${{ github.run_id }}-${{ github.run_attempt }}-16
+          path: ${{ steps.checkpoint_16.outputs.bundle }}
+          if-no-files-found: error
+      - name: Freeze original byte prefix at interval 18 of 20
+        id: checkpoint_17
+        if: always() && steps.launch.outcome == 'success' && (steps.checkpoint_16.outputs.running == 'true' || steps.checkpoint_16.outcome == 'failure')
+        env:
+          PREVIOUS_ARTIFACT_ID: ${{ steps.upload_16.outcome == 'success' && steps.upload_16.outputs.artifact-id || '' }}
+          PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_16.outputs.artifact-digest }}
+        run: python3 scripts/p8_scale_diagnostic_capture.py checkpoint --directory "$DIAGNOSTIC_DIR" --index 17
+      - uses: actions/upload-artifact@v4
+        id: upload_17
+        if: always() && steps.checkpoint_17.outputs.ready == 'true'
+        continue-on-error: true
+        with:
+          name: p8-100k-diagnostic-progress-${{ github.run_id }}-${{ github.run_attempt }}-17
+          path: ${{ steps.checkpoint_17.outputs.bundle }}
+          if-no-files-found: error
+      - name: Freeze original byte prefix at interval 19 of 20
+        id: checkpoint_18
+        if: always() && steps.launch.outcome == 'success' && (steps.checkpoint_17.outputs.running == 'true' || steps.checkpoint_17.outcome == 'failure')
+        env:
+          PREVIOUS_ARTIFACT_ID: ${{ steps.upload_17.outcome == 'success' && steps.upload_17.outputs.artifact-id || '' }}
+          PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_17.outputs.artifact-digest }}
+        run: python3 scripts/p8_scale_diagnostic_capture.py checkpoint --directory "$DIAGNOSTIC_DIR" --index 18
+      - uses: actions/upload-artifact@v4
+        id: upload_18
+        if: always() && steps.checkpoint_18.outputs.ready == 'true'
+        continue-on-error: true
+        with:
+          name: p8-100k-diagnostic-progress-${{ github.run_id }}-${{ github.run_attempt }}-18
+          path: ${{ steps.checkpoint_18.outputs.bundle }}
+          if-no-files-found: error
+      - name: Freeze original byte prefix at interval 20 of 20
+        id: checkpoint_19
+        if: always() && steps.launch.outcome == 'success' && (steps.checkpoint_18.outputs.running == 'true' || steps.checkpoint_18.outcome == 'failure')
+        env:
+          PREVIOUS_ARTIFACT_ID: ${{ steps.upload_18.outcome == 'success' && steps.upload_18.outputs.artifact-id || '' }}
+          PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_18.outputs.artifact-digest }}
+        run: python3 scripts/p8_scale_diagnostic_capture.py checkpoint --directory "$DIAGNOSTIC_DIR" --index 19
+      - uses: actions/upload-artifact@v4
+        id: upload_19
+        if: always() && steps.checkpoint_19.outputs.ready == 'true'
+        continue-on-error: true
+        with:
+          name: p8-100k-diagnostic-progress-${{ github.run_id }}-${{ github.run_attempt }}-19
+          path: ${{ steps.checkpoint_19.outputs.bundle }}
+          if-no-files-found: error
+      - name: Preserve final or interrupted diagnostic boundary
+        if: always() && steps.launch.outcome == 'success'
+        env:
+          PREVIOUS_ARTIFACT_ID: ${{ steps.upload_19.outcome == 'success' && steps.upload_19.outputs.artifact-id || '' }}
+          PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_19.outputs.artifact-digest }}
+        run: python3 scripts/p8_scale_diagnostic_capture.py finish --directory "$DIAGNOSTIC_DIR" --index 20
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.launch.outcome == 'success'
+        with:
+          name: p8-100k-diagnostic-original-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/p8-100k-diagnostic/shard
+            ${{ runner.temp }}/p8-100k-diagnostic/checkpoints/20
+            ${{ runner.temp }}/p8-100k-diagnostic/configuration.json
+            ${{ runner.temp }}/p8-100k-diagnostic/capture-state.json
+            ${{ runner.temp }}/p8-100k-diagnostic/observer-*.json
+            ${{ runner.temp }}/p8-100k-diagnostic/supervisor-*.json
+            ${{ runner.temp }}/p8-100k-diagnostic/driver.*
+            ${{ runner.temp }}/p8-100k-diagnostic/wrapper.*
+          if-no-files-found: error
+      - name: Return the actual driver/native outcome, never prefix availability
+        if: always() && steps.launch.outcome == 'success'
+        run: python3 scripts/p8_scale_diagnostic_capture.py verdict --directory "$DIAGNOSTIC_DIR"

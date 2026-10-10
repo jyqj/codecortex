@@ -1,0 +1,943 @@
+{
+  "schema": "p8_GW4_independent_terminal_boundary_review_v1",
+  "reviewed_at_utc": "2026-10-10T00:25:15.301228+00:00",
+  "reviewer": "execution_recon",
+  "verdict": "accepted_scoped_failed_cohort_boundary_no_new_measurement_credit",
+  "scope": "Independent read of saved official metadata, failed aggregate matrix/log and exact workflow; not a rerun of aggregate, shard validator or measurement.",
+  "identity": {
+    "source": "008f1ec0ae16b9b6aff9f20d033b17b2219168f8",
+    "run_id": 37982220020,
+    "attempt": 1,
+    "workload_profile": "scale_wide_dirty_v1",
+    "oracle_capacity_profile": "scale_capacity_v1"
+  },
+  "run": {
+    "status": "completed",
+    "conclusion": "failure",
+    "created_at": "2026-10-09T19:43:59Z",
+    "updated_at": "2026-10-09T23:58:42Z",
+    "event": "pull_request",
+    "path": ".github/workflows/p8-scale-wide-dirty.yml"
+  },
+  "terminal_jobs": [
+    {
+      "id": 114000097090,
+      "name": "preflight (100000, 0)",
+      "status": "completed",
+      "conclusion": "failure",
+      "started_at": "2026-10-09T20:16:10Z",
+      "completed_at": "2026-10-09T23:58:26Z",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-09T20:16:11Z",
+          "completed_at": "2026-10-09T20:16:12Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-09T20:16:12Z",
+          "completed_at": "2026-10-09T20:16:14Z"
+        },
+        {
+          "name": "Run dtolnay/rust-toolchain@stable",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-09T20:16:14Z",
+          "completed_at": "2026-10-09T20:16:22Z"
+        },
+        {
+          "name": "Run actions/download-artifact@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-09T20:16:22Z",
+          "completed_at": "2026-10-09T20:16:23Z"
+        },
+        {
+          "name": "Observe and prepare the registered capacity on this disposable hosted VM",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-10-09T20:16:23Z",
+          "completed_at": "2026-10-09T20:16:23Z"
+        },
+        {
+          "name": "Preserve capacity observations and any unsuccessful preparation",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-10-09T20:16:23Z",
+          "completed_at": "2026-10-09T20:16:23Z"
+        },
+        {
+          "name": "Execute all phases for this registered single-repetition capacity slice",
+          "status": "in_progress",
+          "conclusion": null,
+          "number": 7,
+          "started_at": "2026-10-09T20:16:23Z",
+          "completed_at": null
+        },
+        {
+          "name": "Preserve original shard including unsuccessful measurements",
+          "status": "pending",
+          "conclusion": null,
+          "number": 8,
+          "started_at": null,
+          "completed_at": null
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "pending",
+          "conclusion": null,
+          "number": 16,
+          "started_at": null,
+          "completed_at": null
+        }
+      ]
+    },
+    {
+      "id": 114077867196,
+      "name": "aggregate",
+      "status": "completed",
+      "conclusion": "failure",
+      "started_at": "2026-10-09T23:58:29Z",
+      "completed_at": "2026-10-09T23:58:41Z",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-09T23:58:30Z",
+          "completed_at": "2026-10-09T23:58:31Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-09T23:58:31Z",
+          "completed_at": "2026-10-09T23:58:34Z"
+        },
+        {
+          "name": "Run actions/download-artifact@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-09T23:58:34Z",
+          "completed_at": "2026-10-09T23:58:36Z"
+        },
+        {
+          "name": "Run actions/download-artifact@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-09T23:58:36Z",
+          "completed_at": "2026-10-09T23:58:38Z"
+        },
+        {
+          "name": "Replay every raw record and reject missing or incompatible cells",
+          "status": "completed",
+          "conclusion": "failure",
+          "number": 5,
+          "started_at": "2026-10-09T23:58:38Z",
+          "completed_at": "2026-10-09T23:58:38Z"
+        },
+        {
+          "name": "Preserve raw-only matrix review",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-10-09T23:58:38Z",
+          "completed_at": "2026-10-09T23:58:39Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-10-09T23:58:39Z",
+          "completed_at": "2026-10-09T23:58:39Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-10-09T23:58:39Z",
+          "completed_at": "2026-10-09T23:58:39Z"
+        }
+      ]
+    },
+    {
+      "id": 114077867756,
+      "name": "measure",
+      "status": "completed",
+      "conclusion": "skipped",
+      "started_at": "2026-10-09T23:58:27Z",
+      "completed_at": "2026-10-09T23:58:26Z",
+      "steps": []
+    }
+  ],
+  "artifact_inventory": {
+    "total": 11,
+    "build": 1,
+    "capacity": 5,
+    "measurement": 4,
+    "failed_matrix": 1,
+    "100k_measurement_artifact_present": false
+  },
+  "matrix": {
+    "original_artifact_id": 11651413055,
+    "status": "failed",
+    "passed": false,
+    "release_certification": "not_run",
+    "sample_count_field_present": false,
+    "log_printed_sample_count": null,
+    "reason_for_None": "Workflow line 212 uses result.get; original matrix lacks this field.",
+    "missing_count": 146,
+    "unique_missing_count": 146,
+    "missing_exactly": "All five scales at repetitions 1..29, plus 100000/repetition 0.",
+    "missing_slots": [
+      [
+        1000,
+        1
+      ],
+      [
+        1000,
+        2
+      ],
+      [
+        1000,
+        3
+      ],
+      [
+        1000,
+        4
+      ],
+      [
+        1000,
+        5
+      ],
+      [
+        1000,
+        6
+      ],
+      [
+        1000,
+        7
+      ],
+      [
+        1000,
+        8
+      ],
+      [
+        1000,
+        9
+      ],
+      [
+        1000,
+        10
+      ],
+      [
+        1000,
+        11
+      ],
+      [
+        1000,
+        12
+      ],
+      [
+        1000,
+        13
+      ],
+      [
+        1000,
+        14
+      ],
+      [
+        1000,
+        15
+      ],
+      [
+        1000,
+        16
+      ],
+      [
+        1000,
+        17
+      ],
+      [
+        1000,
+        18
+      ],
+      [
+        1000,
+        19
+      ],
+      [
+        1000,
+        20
+      ],
+      [
+        1000,
+        21
+      ],
+      [
+        1000,
+        22
+      ],
+      [
+        1000,
+        23
+      ],
+      [
+        1000,
+        24
+      ],
+      [
+        1000,
+        25
+      ],
+      [
+        1000,
+        26
+      ],
+      [
+        1000,
+        27
+      ],
+      [
+        1000,
+        28
+      ],
+      [
+        1000,
+        29
+      ],
+      [
+        5000,
+        1
+      ],
+      [
+        5000,
+        2
+      ],
+      [
+        5000,
+        3
+      ],
+      [
+        5000,
+        4
+      ],
+      [
+        5000,
+        5
+      ],
+      [
+        5000,
+        6
+      ],
+      [
+        5000,
+        7
+      ],
+      [
+        5000,
+        8
+      ],
+      [
+        5000,
+        9
+      ],
+      [
+        5000,
+        10
+      ],
+      [
+        5000,
+        11
+      ],
+      [
+        5000,
+        12
+      ],
+      [
+        5000,
+        13
+      ],
+      [
+        5000,
+        14
+      ],
+      [
+        5000,
+        15
+      ],
+      [
+        5000,
+        16
+      ],
+      [
+        5000,
+        17
+      ],
+      [
+        5000,
+        18
+      ],
+      [
+        5000,
+        19
+      ],
+      [
+        5000,
+        20
+      ],
+      [
+        5000,
+        21
+      ],
+      [
+        5000,
+        22
+      ],
+      [
+        5000,
+        23
+      ],
+      [
+        5000,
+        24
+      ],
+      [
+        5000,
+        25
+      ],
+      [
+        5000,
+        26
+      ],
+      [
+        5000,
+        27
+      ],
+      [
+        5000,
+        28
+      ],
+      [
+        5000,
+        29
+      ],
+      [
+        10000,
+        1
+      ],
+      [
+        10000,
+        2
+      ],
+      [
+        10000,
+        3
+      ],
+      [
+        10000,
+        4
+      ],
+      [
+        10000,
+        5
+      ],
+      [
+        10000,
+        6
+      ],
+      [
+        10000,
+        7
+      ],
+      [
+        10000,
+        8
+      ],
+      [
+        10000,
+        9
+      ],
+      [
+        10000,
+        10
+      ],
+      [
+        10000,
+        11
+      ],
+      [
+        10000,
+        12
+      ],
+      [
+        10000,
+        13
+      ],
+      [
+        10000,
+        14
+      ],
+      [
+        10000,
+        15
+      ],
+      [
+        10000,
+        16
+      ],
+      [
+        10000,
+        17
+      ],
+      [
+        10000,
+        18
+      ],
+      [
+        10000,
+        19
+      ],
+      [
+        10000,
+        20
+      ],
+      [
+        10000,
+        21
+      ],
+      [
+        10000,
+        22
+      ],
+      [
+        10000,
+        23
+      ],
+      [
+        10000,
+        24
+      ],
+      [
+        10000,
+        25
+      ],
+      [
+        10000,
+        26
+      ],
+      [
+        10000,
+        27
+      ],
+      [
+        10000,
+        28
+      ],
+      [
+        10000,
+        29
+      ],
+      [
+        50000,
+        1
+      ],
+      [
+        50000,
+        2
+      ],
+      [
+        50000,
+        3
+      ],
+      [
+        50000,
+        4
+      ],
+      [
+        50000,
+        5
+      ],
+      [
+        50000,
+        6
+      ],
+      [
+        50000,
+        7
+      ],
+      [
+        50000,
+        8
+      ],
+      [
+        50000,
+        9
+      ],
+      [
+        50000,
+        10
+      ],
+      [
+        50000,
+        11
+      ],
+      [
+        50000,
+        12
+      ],
+      [
+        50000,
+        13
+      ],
+      [
+        50000,
+        14
+      ],
+      [
+        50000,
+        15
+      ],
+      [
+        50000,
+        16
+      ],
+      [
+        50000,
+        17
+      ],
+      [
+        50000,
+        18
+      ],
+      [
+        50000,
+        19
+      ],
+      [
+        50000,
+        20
+      ],
+      [
+        50000,
+        21
+      ],
+      [
+        50000,
+        22
+      ],
+      [
+        50000,
+        23
+      ],
+      [
+        50000,
+        24
+      ],
+      [
+        50000,
+        25
+      ],
+      [
+        50000,
+        26
+      ],
+      [
+        50000,
+        27
+      ],
+      [
+        50000,
+        28
+      ],
+      [
+        50000,
+        29
+      ],
+      [
+        100000,
+        0
+      ],
+      [
+        100000,
+        1
+      ],
+      [
+        100000,
+        2
+      ],
+      [
+        100000,
+        3
+      ],
+      [
+        100000,
+        4
+      ],
+      [
+        100000,
+        5
+      ],
+      [
+        100000,
+        6
+      ],
+      [
+        100000,
+        7
+      ],
+      [
+        100000,
+        8
+      ],
+      [
+        100000,
+        9
+      ],
+      [
+        100000,
+        10
+      ],
+      [
+        100000,
+        11
+      ],
+      [
+        100000,
+        12
+      ],
+      [
+        100000,
+        13
+      ],
+      [
+        100000,
+        14
+      ],
+      [
+        100000,
+        15
+      ],
+      [
+        100000,
+        16
+      ],
+      [
+        100000,
+        17
+      ],
+      [
+        100000,
+        18
+      ],
+      [
+        100000,
+        19
+      ],
+      [
+        100000,
+        20
+      ],
+      [
+        100000,
+        21
+      ],
+      [
+        100000,
+        22
+      ],
+      [
+        100000,
+        23
+      ],
+      [
+        100000,
+        24
+      ],
+      [
+        100000,
+        25
+      ],
+      [
+        100000,
+        26
+      ],
+      [
+        100000,
+        27
+      ],
+      [
+        100000,
+        28
+      ],
+      [
+        100000,
+        29
+      ]
+    ],
+    "aggregate_original_exit_code": 1,
+    "original_log_lines": {
+      "four_measurement_artifacts": [
+        281,
+        282,
+        283,
+        284
+      ],
+      "failed_result": 326,
+      "actual_exit_1": 327
+    }
+  },
+  "acceptance_unchanged": {
+    "accepted_shards": 4,
+    "registered_shards": 150,
+    "accepted_observations": 41,
+    "registered_observations": 1500,
+    "accepted_rep0_scales": [
+      1000,
+      5000,
+      10000,
+      50000
+    ],
+    "new_accepted_shards": 0,
+    "task_completion_credit": 0,
+    "whole_study_complete": false,
+    "previous_acceptance_basis": "Retained original intake ledger; no prior shard or build was revalidated in this review."
+  },
+  "failure_known": [
+    "Official 100k job and run are completed/failure; native step metadata remains in_progress and later shard upload remains pending.",
+    "The 145 remaining matrix slots did not execute: measure dependency job is skipped with empty steps, matching the original needs:[build,preflight] graph.",
+    "The original aggregate downloaded the build and the four available rep0 measurement artifacts, then failed with exit 1 and the exact 146-slot missing set.",
+    "Startup capacity preparation and upload succeeded. This does not establish later peak RSS, disk use or resource availability."
+  ],
+  "failure_unknown": {
+    "native_exit_code": null,
+    "native_wall_time": null,
+    "last_native_phase": null,
+    "native_deadline_exceeded": null,
+    "OOM_or_OS_kill": null,
+    "disk_exhaustion": null,
+    "runner_loss": null,
+    "explicit_cancellation": null,
+    "peak_RSS_or_disk": null,
+    "notes": "No 100k native report/raw/stdout/stderr was uploaded. Job/step timestamps are scheduler metadata, not native receipts; they cannot assign the failure to the five-hour native cap or to a product hotspot."
+  },
+  "access_limits": {
+    "job_log": "Original single download returned HTTP 404 BlobNotFound.",
+    "check_output": {
+      "title": null,
+      "summary": null,
+      "text": null,
+      "annotations_count": 1,
+      "annotations_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/114000097090/annotations"
+    },
+    "annotations": "One annotation exists but its content was unavailable: connector endpoint returned HTTP 400 unsupported.",
+    "public_job_page": "Saved lookup returned DisabledError.",
+    "additional_network_calls_by_this_review": 0
+  },
+  "bounded_source_finding": {
+    "workflow_git_blob": "7fa4723860df70178ce6ed58cd305acaa7c76069",
+    "lines": {
+      "execute_then_upload": [
+        98,
+        115
+      ],
+      "dependent_matrix": [
+        117,
+        126
+      ],
+      "aggregate_failure": [
+        198,
+        213
+      ]
+    },
+    "finding": "The original post-command upload is guarded by always(), but the actual job never started that step. Therefore this implementation does not guarantee retained native evidence when execution stops before the later step can run. This is an evidence-retention limitation, not proof of runner loss or another cause.",
+    "unchanged_contract": "No N, seed, workload profile, dirty/resume limits, fanout, oracle, timeout, output budget or acceptance predicate was changed."
+  },
+  "minimal_next_steps_proposed_not_executed": [
+    {
+      "order": 1,
+      "action": "Close this attempt as failed/incomplete and stop terminal polling; keep all four accepted slots and the 146 missing slots explicit.",
+      "boundary": "Do not splice later-source results into this source/run/attempt or turn capacity receipts into measurement credit."
+    },
+    {
+      "order": 2,
+      "action": "If a supported different official route exists, the transport owner may make one bounded retrieval of the whole-run log archive or the recorded check annotation. Do not loop the already failed single-job log route.",
+      "boundary": "If unavailable, preserve unknown cause; log recovery is not an additional acceptance gate."
+    },
+    {
+      "order": 3,
+      "action": "Before another full-cohort launch, prepare a small separately identified diagnostic producer that periodically preserves a bounded native progress/last-event snapshot and parent wait/termination record while the workload is still running, instead of relying exclusively on a final upload step.",
+      "boundary": "A later always() or shell EXIT trap alone cannot guarantee survival of a lost runner. Any checkpoint transport must have an explicit durable destination and must preserve incomplete/failure status. Review the concrete implementation before execution."
+    },
+    {
+      "order": 4,
+      "action": "After that source and evidence path are reviewed, use at most an explicitly authorized independent 100k preflight diagnostic to distinguish native phase cost from termination/environment failure before committing to another 150-slot study.",
+      "boundary": "This is a proposal, not a dispatch. Keep original workload/limits for comparability, bind the new source/build separately, and disclose observation overhead. Diagnostic evidence is not a substitute for the registered N30 population and cannot repair this failed attempt."
+    }
+  ],
+  "causal_limits": "No speedup, slowdown or performance-fix attribution is made from this missing 100k output. Current-main dual-spool compatibility fixes and other source changes did not execute in this fixed 008f cohort.",
+  "original_inputs": [
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round31-GW4-terminal-failure-original-intake/terminal-official-and-access-originals.json",
+      "bytes": 586206,
+      "sha256": "708206da0e044485f1fb4bfee7b9b5c7cdc5dafc8d2040228ea65fe9e248de1a",
+      "git_blob": "624f9f3cf89caf0a830560d1d4760681ae61c4ee"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round31-GW4-terminal-failure-original-intake/single-original-matrix-intake.json",
+      "bytes": 3540,
+      "sha256": "68c90300526810f1f070fe56cd069263cc12733ab2196638276c66e67ab58008",
+      "git_blob": "f34b5db8859cd89b583ea93d1019d6ac73c2c32f"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round31-GW4-terminal-failure-original-intake/extracted/matrix.json",
+      "bytes": 1978,
+      "sha256": "c14cf58287f4cb49cd942e5b26150ab46156375a19157d17426eb8301d2ae6ea",
+      "git_blob": "826742d5fa994e91336414f21dd0b8fa974c591d"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round31-GW4-terminal-failure-original-intake/114077867196-original-aggregate.log",
+      "bytes": 31068,
+      "sha256": "363855de7b43d8b4bc4eed3d85e40210d3bbe092ecdda2d83a138a0922d34ba7",
+      "git_blob": "36f14b1ac96ac56dacbfba9c3616b040b3dfd7cf"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round29-GW4-static-schedule/p8-scale-wide-dirty.original.yml",
+      "bytes": 9544,
+      "sha256": "6a85b4d0a3e93c2ec77f49b7804d1320510cdaa457673c701846a70c21f830a9",
+      "git_blob": "7fa4723860df70178ce6ed58cd305acaa7c76069"
+    }
+  ],
+  "original_immutable_locators": {
+    "official_and_access_json": "624f9f3cf89caf0a830560d1d4760681ae61c4ee",
+    "aggregate_log": "36f14b1ac96ac56dacbfba9c3616b040b3dfd7cf",
+    "failed_matrix_zip": "7f5283fbc9bf6ac2f5d6ec40da38716b2e696a90",
+    "failed_matrix_member": "826742d5fa994e91336414f21dd0b8fa974c591d"
+  },
+  "operations_not_performed": [
+    "download",
+    "ZIP CRC or extraction",
+    "build/shard/aggregate validation",
+    "ELF execution",
+    "measurement",
+    "source modification",
+    "ref/label/workflow mutation"
+  ],
+  "original_bytes_unchanged": true
+}

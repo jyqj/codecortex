@@ -1,0 +1,159 @@
+{
+  "ELF": {
+    "bytes": 8545304,
+    "mode_boundary": "Original execution mode is the workflow receipt; ZIP mode is recorded separately and may be packaging-normalized. No ELF executed here.",
+    "original_runtime_retained_mode": "0o755",
+    "sha256": "01b59a44076ad37015dd21532f48446af321963230fa44da5c7ec21a8f53b4bd",
+    "zip_stored_mode": "0o100755"
+  },
+  "analysis": {
+    "bytes": 96207,
+    "git_blob": "3d1e5f7693f5b6bd7706701cb3ab7a7e2fd771d8",
+    "local_path": "/workspace/scratch/bfccb8494ba0/round31-PR191-equal-lifetime-independent-review/independent-analysis.json",
+    "sha256": "7106f872eda1eff2f4eafcb808c3cc24dc7462873d7c9c5c658428306e087344"
+  },
+  "cases": [
+    {
+      "all20_median_retained_over_original": 0.9878087466983558,
+      "case": "single_plain",
+      "equal": 0,
+      "original_first_median_ratio": 0.9064284577788888,
+      "pairs": 20,
+      "retained_faster": 10,
+      "retained_first_median_ratio": 1.1336644913542542,
+      "retained_slower": 10,
+      "zero_denominators": []
+    },
+    {
+      "all20_median_retained_over_original": 0.9236396347917569,
+      "case": "short_plain_6",
+      "equal": 0,
+      "original_first_median_ratio": 0.9128923237444448,
+      "pairs": 20,
+      "retained_faster": 18,
+      "retained_first_median_ratio": 0.9765797088830164,
+      "retained_slower": 2,
+      "zero_denominators": []
+    },
+    {
+      "all20_median_retained_over_original": 0.9226148603546359,
+      "case": "mixed_32",
+      "equal": 0,
+      "original_first_median_ratio": 0.9104644175438548,
+      "pairs": 20,
+      "retained_faster": 17,
+      "retained_first_median_ratio": 0.9262413476096414,
+      "retained_slower": 3,
+      "zero_denominators": []
+    },
+    {
+      "all20_median_retained_over_original": 0.9869783151274238,
+      "case": "compressed_64",
+      "equal": 0,
+      "original_first_median_ratio": 0.9844463032680513,
+      "pairs": 20,
+      "retained_faster": 18,
+      "retained_first_median_ratio": 0.9909762940424612,
+      "retained_slower": 2,
+      "zero_denominators": []
+    }
+  ],
+  "complete_case_count": 4,
+  "complete_pair_count": 80,
+  "execution_scope": "This reviewer ran the frozen offline reader once only. No ELF/product/probe/validator/new workflow/network retrieval executed. Original Actions Cargo result is separately preserved.",
+  "first_order_per_case": {
+    "original": 10,
+    "retained": 10
+  },
+  "identity": {
+    "G": "1ebb6208f2f5f8fe8a5bf237c00a3d963f44bb08",
+    "artifact": 11652521049,
+    "attempt": 1,
+    "job": 114081058770,
+    "run": 38007966044,
+    "tree": "2f25902215490675396fbf114cb6029d7e7b8b8d"
+  },
+  "limits": [
+    "Finite same-connection mechanism observation only; original timer excludes begin/readback/rollback and verification/drop.",
+    "Connection, allocator and cache history remain; each case and both first-orders reported separately.",
+    "All slower and zero-denominator observations retained; no speed threshold, pooled-case acceptance, fullscale/TODO credit or relabel of old cost-v1."
+  ],
+  "negative_pairs_count": 17,
+  "negative_pairs_retained_in_full_analysis": true,
+  "observer_count": 2,
+  "original_cargo_exit": 0,
+  "original_libtest": {
+    "failed": 0,
+    "filtered": 215,
+    "ignored": 0,
+    "passed": 1
+  },
+  "original_producer": {
+    "debug_assertions": false,
+    "features": [],
+    "fresh": false,
+    "kind": [
+      "lib"
+    ],
+    "opt_level": "3",
+    "package": "cc-db",
+    "target": "cc_db",
+    "test": true
+  },
+  "primary_interpretation": "Evidence integrity and full observation accepted; not a universal speedup. Single-plain has a pronounced first-order split: all ten retained-first pairs are slower. The other three cases have medians below one in both orders but contain seven slower individual pairs. Preserve all seventeen slower pairs and all eighty observations. No significance, machine-independent, end-to-end indexing, whole-scale or release-performance claim.",
+  "reader_original_single_execution": {
+    "argv": [
+      "python",
+      "/workspace/scratch/bfccb8494ba0/round31-PR191-equal-lifetime-intake-preparation/review-originals.py",
+      "--zip",
+      "/workspace/scratch/bfccb8494ba0/round31-PR191-equal-lifetime-original-intake/PR191-equal-lifetime-11652521049-original.zip",
+      "--run-json",
+      "/workspace/scratch/bfccb8494ba0/round31-PR191-equal-lifetime-original-intake/original-run.json",
+      "--job-json",
+      "/workspace/scratch/bfccb8494ba0/round31-PR191-equal-lifetime-original-intake/original-observe-job.json",
+      "--artifact-json",
+      "/workspace/scratch/bfccb8494ba0/round31-PR191-equal-lifetime-original-intake/original-artifact.json",
+      "--job-log",
+      "/workspace/scratch/bfccb8494ba0/round31-PR191-equal-lifetime-original-intake/114081058770-original-observe.log",
+      "--binding",
+      "/workspace/scratch/bfccb8494ba0/round31-PR191-equal-lifetime-intake-preparation/fixed-source-binding.json",
+      "--output",
+      "/workspace/scratch/bfccb8494ba0/round31-PR191-equal-lifetime-independent-review"
+    ],
+    "cwd": "/workspace/scratch/bfccb8494ba0",
+    "execution_scope": "Only frozen offline reader; no ELF/product/network execution",
+    "exit_code": 0,
+    "finished_at_utc": "2026-10-10T00:25:51.515387+00:00",
+    "reader_sha256_after": "f6e6829f8d319eebcedb0f1b3188d76254b57797b2538d8b1b33f439a8cc05ae",
+    "reader_sha256_before": "f6e6829f8d319eebcedb0f1b3188d76254b57797b2538d8b1b33f439a8cc05ae",
+    "started_at_utc": "2026-10-10T00:25:51.389266+00:00"
+  },
+  "reader_receipt": {
+    "bytes": 10781,
+    "git_blob": "5b3a84f7ba936ef7b88f48c2434b55409b1c3102",
+    "local_path": "/workspace/scratch/bfccb8494ba0/round31-PR191-equal-lifetime-independent-review/reader-execution.json",
+    "sha256": "a75c993cc0dde3de9806ba6edc3aeb9e6c6cd945470940cb317568cd9ca8218c"
+  },
+  "recorded_at_utc": "2026-10-10T00:26:38.658469+00:00",
+  "reviewer": "/root/todo_audit",
+  "schema": "pr191-equal-lifetime-independent-verdict-v1",
+  "source_input_count": 1096,
+  "task_scope": {
+    "done": 164,
+    "new_completed": 0,
+    "remaining": 28,
+    "scale_samples_added": 0
+  },
+  "transport": {
+    "all15_members_original_CRC_checked_once_by_this_reader": true,
+    "all_original_input_hashes_beforeafter_equal": true,
+    "original_stdout_stderr_joblog_and_observation_agree": true,
+    "wholeZIP": {
+      "bytes": 3837759,
+      "path": "/workspace/scratch/bfccb8494ba0/round31-PR191-equal-lifetime-original-intake/PR191-equal-lifetime-11652521049-original.zip",
+      "sha256": "7fad953120447df34c7c046dd0a8457aa02d8dd47fe2c748497ed816e33f609b"
+    }
+  },
+  "typed_evidence_boundary": "The artifact contains one reference digest and two assertion-success booleans, not two independent typed-row dumps/digests. Original fixed Rust helper fully asserts each typed base/FTS output against the single immutable reference before explicit drop; original child0/unique libtest and matching stdout/observation/joblog support that claim. This reader does not invent absent rows or re-execute BLAKE3/probe.",
+  "verdict": "accepted_scoped_complete_original_observation"
+}

@@ -1,0 +1,279 @@
+{
+  "schema": "post-nine-017-019-conditional-route-link-v1",
+  "apply_now": false,
+  "current_counts": {
+    "done": 164,
+    "remaining": 28,
+    "session_completed": 1
+  },
+  "source_post_nine_input": {
+    "path": "/workspace/scratch/bfccb8494ba0/round39-post-nine-addendum/post-nine-baseline-addendum.applyfalse.json",
+    "bytes": 26812,
+    "sha256": "7aa168b973f2d5ccbde33734a2e17b5c1485211343bbf40f97a990b1fbe259cb",
+    "git_blob": "aa289172d782c0fae0a6872005452ad99b30f7c4"
+  },
+  "source_post_nine_input_actual_blob": "aa289172d782c0fae0a6872005452ad99b30f7c4",
+  "own_scope_and_prior_execution_records": [
+    {
+      "task_id": "P8-017",
+      "current_status": "in_progress",
+      "apply_now": false,
+      "proposed_status_only_after_acceptance": "done",
+      "original_hard_dependencies": [
+        "P8-016"
+      ],
+      "required_actual_dependency_closeout_receipt": null,
+      "original_definition": {
+        "id": "P8-017",
+        "title": "删除临时兼容和重复模块",
+        "depends_on": [
+          "P8-016"
+        ],
+        "steps": [
+          "清临时旧branch/重复评分器/多份schema来源",
+          "保留必要外部wire兼容"
+        ],
+        "acceptance": [
+          "运行路径只有一个事实与算法所有者，删除有回归证据",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "validations": [
+          "V18",
+          "V21"
+        ],
+        "conditional": null,
+        "conditional_dependencies": [],
+        "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。"
+      },
+      "reused_accepted_claim_ids": [
+        "017-owner",
+        "017-deletion",
+        "shared-V18",
+        "shared-V21"
+      ],
+      "reused_evidence_keys": [
+        "current_ci",
+        "installer_and_declared_facts",
+        "owner_review",
+        "platform_rollback"
+      ],
+      "own_scope_assessment": "existing components accepted; no additional concrete own-scope implementation or mandatory execution gap identified in these retained records",
+      "new_evidence": [],
+      "remaining_before_actual_done": [
+        "原硬依赖实际done及其回执",
+        "实际最终结项决定与非空不可变证据指针；本准备不能代签"
+      ],
+      "future_evidence_append": {
+        "date": null,
+        "target_sha": "b9b089bb4eae072affe9326681d4980eae15fd84",
+        "status": "future_actual_task_acceptance_not_applied",
+        "source_evidence_bridge_blob": "7108a17fab7a7589652896ef654e0383d8cbef30",
+        "claim_map_blob": "e863b8b3fe42a5fe3797fac251f48f158362087d",
+        "baseline_review_blob": null,
+        "final_dependency_receipt": null,
+        "final_independent_decision": null,
+        "artifact_paths": null,
+        "scope": "原task自身组件与按序依赖闭合；不扩成新的统计、全release或live认证",
+        "rollback_status": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。"
+      },
+      "future_implementation_notes_append": "复用原ownership、删除及相关V18/V21证据，原35轮publication bridge已确认PR198三文档实际合入；历史删除、lane收口、平台/回滚控制各保持原source/run，不把prepare-only或旧ignored误算执行。实际P8-016结项后，可按原定义进行017正式结项；当前准备不改状态。",
+      "conditional_counts_after_nine_and_this_task": {
+        "done": 174,
+        "remaining": 18,
+        "session_completed": 11
+      }
+    },
+    {
+      "task_id": "P8-018",
+      "current_status": "in_progress",
+      "apply_now": false,
+      "proposed_status_only_after_acceptance": "done",
+      "original_hard_dependencies": [
+        "P8-017"
+      ],
+      "required_actual_dependency_closeout_receipt": null,
+      "original_definition": {
+        "id": "P8-018",
+        "title": "文档事实与安装契约同步",
+        "depends_on": [
+          "P8-017"
+        ],
+        "steps": [
+          "从schema/capabilities生成可核查事实",
+          "更新安装/故障/默认离线说明"
+        ],
+        "acceptance": [
+          "文档表数/schema/工具数不再漂移，设计与已实现标识分开",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "validations": [
+          "V18",
+          "V21"
+        ],
+        "conditional": null,
+        "conditional_dependencies": [],
+        "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。"
+      },
+      "reused_accepted_claim_ids": [
+        "018-facts",
+        "018-doc-drift",
+        "018-install",
+        "shared-V18",
+        "shared-V21"
+      ],
+      "reused_evidence_keys": [
+        "PR198",
+        "current_ci",
+        "installer_and_declared_facts",
+        "platform_rollback"
+      ],
+      "own_scope_assessment": "existing components accepted; no additional concrete own-scope implementation or mandatory execution gap identified in these retained records",
+      "new_evidence": [
+        "018-convention actual baseline execution"
+      ],
+      "remaining_before_actual_done": [
+        "原硬依赖实际done及其回执",
+        "实际最终结项决定与非空不可变证据指针；本准备不能代签"
+      ],
+      "future_evidence_append": {
+        "date": null,
+        "target_sha": "b9b089bb4eae072affe9326681d4980eae15fd84",
+        "status": "future_actual_task_acceptance_not_applied",
+        "source_evidence_bridge_blob": "7108a17fab7a7589652896ef654e0383d8cbef30",
+        "claim_map_blob": "e863b8b3fe42a5fe3797fac251f48f158362087d",
+        "baseline_review_blob": "565e1c18e24a382c43f18f8bf9ecef8873d4b4d0",
+        "final_dependency_receipt": null,
+        "final_independent_decision": null,
+        "artifact_paths": null,
+        "scope": "原task自身组件与按序依赖闭合；不扩成新的统计、全release或live认证",
+        "rollback_status": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。"
+      },
+      "future_implementation_notes_append": "原事实生成/检查、安装/故障/默认离线说明及PR198完整15表文字修正证据复用。新增固定b9、workflow de14、run38020782259/a1原update-doc-baselines实际退出0，三条历史DRIFT原样保留；TEST_PLAN历史基线不覆盖，原2815/76为脚本footer汇总，非unique/allfeatures/release。旧not_run保持其创建时态，新证据追加补足此约定执行缺口。实际017结项后可依原定义正式判断018；当前不改状态。",
+      "conditional_counts_after_nine_and_this_task": {
+        "done": 175,
+        "remaining": 17,
+        "session_completed": 12
+      }
+    },
+    {
+      "task_id": "P8-019",
+      "current_status": "in_progress",
+      "apply_now": false,
+      "proposed_status_only_after_acceptance": "done",
+      "original_hard_dependencies": [
+        "P8-018"
+      ],
+      "required_actual_dependency_closeout_receipt": null,
+      "original_definition": {
+        "id": "P8-019",
+        "title": "发布工件与完整报告归档",
+        "depends_on": [
+          "P8-018"
+        ],
+        "steps": [
+          "归档精确binary/checksum/manifest/raw/gates",
+          "latest只指向run"
+        ],
+        "acceptance": [
+          "报告可重算，历史原始run不被下一轮覆盖",
+          "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+        ],
+        "validations": [
+          "V01",
+          "V04",
+          "V21"
+        ],
+        "conditional": null,
+        "conditional_dependencies": [],
+        "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。"
+      },
+      "reused_accepted_claim_ids": [
+        "019-custody",
+        "019-replay",
+        "019-V01",
+        "shared-V21"
+      ],
+      "reused_evidence_keys": [
+        "PR198",
+        "archive",
+        "current_ci",
+        "platform_rollback"
+      ],
+      "own_scope_assessment": "existing components accepted; no additional concrete own-scope implementation or mandatory execution gap identified in these retained records",
+      "new_evidence": [],
+      "remaining_before_actual_done": [
+        "原硬依赖实际done及其回执",
+        "实际最终结项决定与非空不可变证据指针；本准备不能代签"
+      ],
+      "future_evidence_append": {
+        "date": null,
+        "target_sha": "b9b089bb4eae072affe9326681d4980eae15fd84",
+        "status": "future_actual_task_acceptance_not_applied",
+        "source_evidence_bridge_blob": "7108a17fab7a7589652896ef654e0383d8cbef30",
+        "claim_map_blob": "e863b8b3fe42a5fe3797fac251f48f158362087d",
+        "baseline_review_blob": null,
+        "final_dependency_receipt": null,
+        "final_independent_decision": null,
+        "artifact_paths": null,
+        "scope": "原task自身组件与按序依赖闭合；不扩成新的统计、全release或live认证",
+        "rollback_status": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。"
+      },
+      "future_implementation_notes_append": "复用原42archive控制和3个native replay命名控制，原source/配置/重复执行分母保持；PR198已发布仅在副本的单run重算说明。完整性verify与数值replay分开，binary/checksum/manifest/raw/gates及no-clobber/latest-run原要求不变。实际018结项后可按归档功能scope正式判断019；不由此宣布完整150研究、指标门或G8发行通过。",
+      "conditional_counts_after_nine_and_this_task": {
+        "done": 176,
+        "remaining": 16,
+        "session_completed": 13
+      }
+    }
+  ],
+  "baseline_current_evidence": {
+    "actual_run_id": 38020782259,
+    "attempt": 1,
+    "exit_code": 0,
+    "historical_DRIFT_count": 3,
+    "actual_review_blob": "565e1c18e24a382c43f18f8bf9ecef8873d4b4d0",
+    "independent_peer_blob": "c1a9c241793a4c29e411249a5ea0af6dbca56462",
+    "historical_TEST_PLAN_not_refreshed": true
+  },
+  "formal_decisions": {
+    "P8-017": null,
+    "P8-018": null,
+    "P8-019": null
+  },
+  "future_application_date": null,
+  "future_actual_source_base": null,
+  "conditions": [
+    "Nine preceding tasks must genuinely close under their unchanged original definitions and dependency evidence.",
+    "Reuse the recorded own-scope proofs with their original source/run identities; append a bounded current-source applicability bridge where the final implementation differs, not blanket reruns.",
+    "Each017→018→019 still needs its own original hard dependency done and a real final task decision; this preparation alone supplies neither.",
+    "Baseline actual0 and3historicalDRIFT fill the previously unexecuted contribution-script record, not whole-release or statistics certification.",
+    "The future evidence target/application source is actual futuremain; all embedded b9/earlier targets remain historical execution identities."
+  ],
+  "conditional_counts": [
+    {
+      "after": "nine",
+      "done": 173,
+      "remaining": 19,
+      "session_completed": 10
+    },
+    {
+      "after": "P8-017",
+      "done": 174,
+      "remaining": 18,
+      "session_completed": 11
+    },
+    {
+      "after": "P8-018",
+      "done": 175,
+      "remaining": 17,
+      "session_completed": 12
+    },
+    {
+      "after": "P8-019",
+      "done": 176,
+      "remaining": 16,
+      "session_completed": 13
+    }
+  ],
+  "tasks_modified": false
+}

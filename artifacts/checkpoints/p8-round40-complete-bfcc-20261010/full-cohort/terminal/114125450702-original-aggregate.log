@@ -1,0 +1,371 @@
+﻿2026-10-10T03:54:48.2461623Z Current runner version: '2.337.0'
+2026-10-10T03:54:48.2480747Z ##[group]Runner Image Provisioner
+2026-10-10T03:54:48.2481456Z Hosted Compute Agent
+2026-10-10T03:54:48.2482033Z Version: 20261002.596
+2026-10-10T03:54:48.2482558Z Commit: c3d12f3313a95f25162a1503be624f3b0617f8c0
+2026-10-10T03:54:48.2483443Z Build Date: 2026-10-02T22:28:27Z
+2026-10-10T03:54:48.2484032Z Worker ID: {70793caa-4f35-4dd0-b66b-f2e8b1b78347}
+2026-10-10T03:54:48.2484636Z Region: centralus
+2026-10-10T03:54:48.2485129Z Cloud: Azure
+2026-10-10T03:54:48.2485576Z ##[endgroup]
+2026-10-10T03:54:48.2486596Z ##[group]Operating System
+2026-10-10T03:54:48.2487190Z Ubuntu
+2026-10-10T03:54:48.2487618Z 24.04.5
+2026-10-10T03:54:48.2488101Z LTS
+2026-10-10T03:54:48.2488527Z ##[endgroup]
+2026-10-10T03:54:48.2489002Z ##[group]Runner Image
+2026-10-10T03:54:48.2489539Z Image: ubuntu-24.04
+2026-10-10T03:54:48.2489992Z Version: 20261004.327.1
+2026-10-10T03:54:48.2491065Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-10T03:54:48.2492446Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327
+2026-10-10T03:54:48.2493425Z ##[endgroup]
+2026-10-10T03:54:48.2494394Z ##[group]GITHUB_TOKEN Permissions
+2026-10-10T03:54:48.2495924Z Contents: read
+2026-10-10T03:54:48.2496431Z Metadata: read
+2026-10-10T03:54:48.2496931Z ##[endgroup]
+2026-10-10T03:54:48.2498493Z Secret source: Actions
+2026-10-10T03:54:48.2499296Z Cache mode: write
+2026-10-10T03:54:48.2499873Z Prepare workflow directory
+2026-10-10T03:54:48.3880061Z Prepare all required actions
+2026-10-10T03:54:48.3910639Z Getting action download info
+2026-10-10T03:54:48.6061404Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-10T03:54:48.8962979Z Download action repository 'actions/download-artifact@v4' (SHA:d3f86a106a0bac45b974a628896c90dbdf5c8093)
+2026-10-10T03:54:49.6236379Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-10-10T03:54:50.4090591Z Complete job name: aggregate
+2026-10-10T03:54:50.5144977Z ##[group]Run actions/checkout@v4
+2026-10-10T03:54:50.5145723Z with:
+2026-10-10T03:54:50.5146274Z   ref: 9cc6bf49f6dd81e4069a8004eed49addba0ab79b
+2026-10-10T03:54:50.5147018Z   sparse-checkout-cone-mode: false
+2026-10-10T03:54:50.5147700Z   sparse-checkout: /*
+!/artifacts/
+
+2026-10-10T03:54:50.5148356Z   repository: jyqj/codecortex
+2026-10-10T03:54:50.5153142Z   token: ***
+2026-10-10T03:54:50.5153643Z   ssh-strict: true
+2026-10-10T03:54:50.5154163Z   ssh-user: git
+2026-10-10T03:54:50.5154692Z   persist-credentials: true
+2026-10-10T03:54:50.5155263Z   clean: true
+2026-10-10T03:54:50.5155752Z   fetch-depth: 1
+2026-10-10T03:54:50.5156271Z   fetch-tags: false
+2026-10-10T03:54:50.5156803Z   show-progress: true
+2026-10-10T03:54:50.5157332Z   lfs: false
+2026-10-10T03:54:50.5157815Z   submodules: false
+2026-10-10T03:54:50.5158351Z   set-safe-directory: true
+2026-10-10T03:54:50.5158959Z   allow-unsafe-pr-checkout: false
+2026-10-10T03:54:50.5159690Z env:
+2026-10-10T03:54:50.5160195Z   CARGO_TERM_COLOR: never
+2026-10-10T03:54:50.5160766Z   CARGO_INCREMENTAL: 0
+2026-10-10T03:54:50.5161305Z   CARGO_BUILD_JOBS: 2
+2026-10-10T03:54:50.5161826Z   RUSTFLAGS: 
+2026-10-10T03:54:50.5162314Z ##[endgroup]
+2026-10-10T03:54:50.5790335Z Syncing repository: jyqj/codecortex
+2026-10-10T03:54:50.5791847Z ##[group]Getting Git version info
+2026-10-10T03:54:50.5792815Z Working directory is '/home/runner/work/codecortex/codecortex'
+2026-10-10T03:54:50.5794102Z [command]/usr/bin/git version
+2026-10-10T03:54:50.5848507Z git version 2.55.0
+2026-10-10T03:54:50.5859991Z ##[endgroup]
+2026-10-10T03:54:50.5868295Z Temporarily overriding HOME='/home/runner/work/_temp/673b6bfe-7ce3-4f39-9e77-405d1c9fc0c7' before making global git config changes
+2026-10-10T03:54:50.5871581Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-10T03:54:50.5873446Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/codecortex/codecortex
+2026-10-10T03:54:50.6237753Z Deleting the contents of '/home/runner/work/codecortex/codecortex'
+2026-10-10T03:54:50.6245933Z ##[group]Initializing the repository
+2026-10-10T03:54:50.6247739Z [command]/usr/bin/git init /home/runner/work/codecortex/codecortex
+2026-10-10T03:54:50.7256049Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-10T03:54:50.7257270Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-10T03:54:50.7258696Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-10T03:54:50.7259606Z hint: call:
+2026-10-10T03:54:50.7260281Z hint:
+2026-10-10T03:54:50.7260897Z hint: 	git config --global init.defaultBranch <name>
+2026-10-10T03:54:50.7261715Z hint:
+2026-10-10T03:54:50.7262392Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-10T03:54:50.7263894Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-10T03:54:50.7265151Z hint:
+2026-10-10T03:54:50.7265777Z hint: 	git branch -m <name>
+2026-10-10T03:54:50.7266329Z hint:
+2026-10-10T03:54:50.7267060Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-10T03:54:50.7268279Z Initialized empty Git repository in /home/runner/work/codecortex/codecortex/.git/
+2026-10-10T03:54:50.7270313Z [command]/usr/bin/git remote add origin https://github.com/jyqj/codecortex
+2026-10-10T03:54:50.7454315Z ##[endgroup]
+2026-10-10T03:54:50.7455669Z ##[group]Disabling automatic garbage collection
+2026-10-10T03:54:50.7456887Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-10T03:54:50.7840269Z ##[endgroup]
+2026-10-10T03:54:50.7841118Z ##[group]Setting up auth
+2026-10-10T03:54:50.7841982Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-10T03:54:50.7867713Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-10T03:54:50.8190573Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-10T03:54:50.8215710Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-10T03:54:50.8402561Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-10T03:54:50.8414510Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-10T03:54:50.8586015Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-10T03:54:50.8641874Z ##[endgroup]
+2026-10-10T03:54:50.8642329Z ##[group]Fetching the repository
+2026-10-10T03:54:50.8648009Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --filter=blob:none --depth=1 origin 9cc6bf49f6dd81e4069a8004eed49addba0ab79b
+2026-10-10T03:54:51.9201332Z From https://github.com/jyqj/codecortex
+2026-10-10T03:54:51.9264366Z  * branch            9cc6bf49f6dd81e4069a8004eed49addba0ab79b -> FETCH_HEAD
+2026-10-10T03:54:51.9266622Z ##[endgroup]
+2026-10-10T03:54:51.9267349Z ##[group]Determining the checkout info
+2026-10-10T03:54:51.9267625Z ##[endgroup]
+2026-10-10T03:54:51.9267837Z ##[group]Setting up sparse checkout
+2026-10-10T03:54:51.9268062Z [command]/usr/bin/git config core.sparseCheckout true
+2026-10-10T03:54:51.9268512Z [command]/usr/bin/git rev-parse --git-path info/sparse-checkout
+2026-10-10T03:54:51.9268721Z .git/info/sparse-checkout
+2026-10-10T03:54:51.9275050Z ##[endgroup]
+2026-10-10T03:54:51.9275396Z ##[group]Checking out the ref
+2026-10-10T03:54:51.9278539Z [command]/usr/bin/git checkout --progress --force 9cc6bf49f6dd81e4069a8004eed49addba0ab79b
+2026-10-10T03:54:53.6880669Z Updating files:   0% (1/1674)
+2026-10-10T03:54:53.6894537Z Updating files:   1% (17/1674)
+2026-10-10T03:54:53.6913330Z Updating files:   2% (34/1674)
+2026-10-10T03:54:53.6926311Z Updating files:   3% (51/1674)
+2026-10-10T03:54:53.6936722Z Updating files:   4% (67/1674)
+2026-10-10T03:54:53.6945963Z Updating files:   5% (84/1674)
+2026-10-10T03:54:53.6952215Z Updating files:   6% (101/1674)
+2026-10-10T03:54:53.6980452Z Updating files:   7% (118/1674)
+2026-10-10T03:54:53.7000933Z Updating files:   8% (134/1674)
+2026-10-10T03:54:53.7040469Z Updating files:   9% (151/1674)
+2026-10-10T03:54:53.7054858Z Updating files:  10% (168/1674)
+2026-10-10T03:54:53.7059751Z Updating files:  11% (185/1674)
+2026-10-10T03:54:53.7068833Z Updating files:  12% (201/1674)
+2026-10-10T03:54:53.7073471Z Updating files:  13% (218/1674)
+2026-10-10T03:54:53.7086056Z Updating files:  14% (235/1674)
+2026-10-10T03:54:53.7096956Z Updating files:  15% (252/1674)
+2026-10-10T03:54:53.7113883Z Updating files:  16% (268/1674)
+2026-10-10T03:54:53.7128336Z Updating files:  17% (285/1674)
+2026-10-10T03:54:53.7151917Z Updating files:  18% (302/1674)
+2026-10-10T03:54:53.7171121Z Updating files:  19% (319/1674)
+2026-10-10T03:54:53.7193173Z Updating files:  20% (335/1674)
+2026-10-10T03:54:53.7201254Z Updating files:  21% (352/1674)
+2026-10-10T03:54:53.7214721Z Updating files:  22% (369/1674)
+2026-10-10T03:54:53.7229500Z Updating files:  23% (386/1674)
+2026-10-10T03:54:53.7243324Z Updating files:  24% (402/1674)
+2026-10-10T03:54:53.7248416Z Updating files:  25% (419/1674)
+2026-10-10T03:54:53.7252175Z Updating files:  26% (436/1674)
+2026-10-10T03:54:53.7256560Z Updating files:  27% (452/1674)
+2026-10-10T03:54:53.7261096Z Updating files:  28% (469/1674)
+2026-10-10T03:54:53.7266211Z Updating files:  29% (486/1674)
+2026-10-10T03:54:53.7270999Z Updating files:  30% (503/1674)
+2026-10-10T03:54:53.7279073Z Updating files:  31% (519/1674)
+2026-10-10T03:54:53.7284864Z Updating files:  32% (536/1674)
+2026-10-10T03:54:53.7295728Z Updating files:  33% (553/1674)
+2026-10-10T03:54:53.7306567Z Updating files:  34% (570/1674)
+2026-10-10T03:54:53.7317501Z Updating files:  35% (586/1674)
+2026-10-10T03:54:53.7328246Z Updating files:  36% (603/1674)
+2026-10-10T03:54:53.7337409Z Updating files:  37% (620/1674)
+2026-10-10T03:54:53.7344862Z Updating files:  38% (637/1674)
+2026-10-10T03:54:53.7354851Z Updating files:  39% (653/1674)
+2026-10-10T03:54:53.7365846Z Updating files:  40% (670/1674)
+2026-10-10T03:54:53.7378325Z Updating files:  41% (687/1674)
+2026-10-10T03:54:53.7387050Z Updating files:  42% (704/1674)
+2026-10-10T03:54:53.7400174Z Updating files:  43% (720/1674)
+2026-10-10T03:54:53.7414389Z Updating files:  44% (737/1674)
+2026-10-10T03:54:53.7423403Z Updating files:  45% (754/1674)
+2026-10-10T03:54:53.7435373Z Updating files:  46% (771/1674)
+2026-10-10T03:54:53.7445274Z Updating files:  47% (787/1674)
+2026-10-10T03:54:53.7454084Z Updating files:  48% (804/1674)
+2026-10-10T03:54:53.7462899Z Updating files:  49% (821/1674)
+2026-10-10T03:54:53.7471260Z Updating files:  50% (837/1674)
+2026-10-10T03:54:53.7478516Z Updating files:  51% (854/1674)
+2026-10-10T03:54:53.7487863Z Updating files:  52% (871/1674)
+2026-10-10T03:54:53.7499416Z Updating files:  53% (888/1674)
+2026-10-10T03:54:53.7513118Z Updating files:  54% (904/1674)
+2026-10-10T03:54:53.7520969Z Updating files:  55% (921/1674)
+2026-10-10T03:54:53.7537541Z Updating files:  56% (938/1674)
+2026-10-10T03:54:53.7548299Z Updating files:  57% (955/1674)
+2026-10-10T03:54:53.7563441Z Updating files:  58% (971/1674)
+2026-10-10T03:54:53.7580232Z Updating files:  59% (988/1674)
+2026-10-10T03:54:53.7593113Z Updating files:  60% (1005/1674)
+2026-10-10T03:54:53.7607994Z Updating files:  61% (1022/1674)
+2026-10-10T03:54:53.7619784Z Updating files:  62% (1038/1674)
+2026-10-10T03:54:53.7630781Z Updating files:  63% (1055/1674)
+2026-10-10T03:54:53.7645303Z Updating files:  64% (1072/1674)
+2026-10-10T03:54:53.7656380Z Updating files:  65% (1089/1674)
+2026-10-10T03:54:53.7667998Z Updating files:  66% (1105/1674)
+2026-10-10T03:54:53.7677598Z Updating files:  67% (1122/1674)
+2026-10-10T03:54:53.7686659Z Updating files:  68% (1139/1674)
+2026-10-10T03:54:53.7704440Z Updating files:  69% (1156/1674)
+2026-10-10T03:54:53.7710490Z Updating files:  70% (1172/1674)
+2026-10-10T03:54:53.7715694Z Updating files:  71% (1189/1674)
+2026-10-10T03:54:53.7733576Z Updating files:  72% (1206/1674)
+2026-10-10T03:54:53.7744555Z Updating files:  73% (1223/1674)
+2026-10-10T03:54:53.7755344Z Updating files:  74% (1239/1674)
+2026-10-10T03:54:53.7765616Z Updating files:  75% (1256/1674)
+2026-10-10T03:54:53.7772308Z Updating files:  76% (1273/1674)
+2026-10-10T03:54:53.7778139Z Updating files:  77% (1289/1674)
+2026-10-10T03:54:53.7786444Z Updating files:  78% (1306/1674)
+2026-10-10T03:54:53.7811290Z Updating files:  79% (1323/1674)
+2026-10-10T03:54:53.7817945Z Updating files:  80% (1340/1674)
+2026-10-10T03:54:53.7824301Z Updating files:  81% (1356/1674)
+2026-10-10T03:54:53.7831300Z Updating files:  82% (1373/1674)
+2026-10-10T03:54:53.7842924Z Updating files:  83% (1390/1674)
+2026-10-10T03:54:53.7849745Z Updating files:  84% (1407/1674)
+2026-10-10T03:54:53.7859034Z Updating files:  85% (1423/1674)
+2026-10-10T03:54:53.7883129Z Updating files:  86% (1440/1674)
+2026-10-10T03:54:53.7891057Z Updating files:  87% (1457/1674)
+2026-10-10T03:54:53.7898739Z Updating files:  88% (1474/1674)
+2026-10-10T03:54:53.7910233Z Updating files:  89% (1490/1674)
+2026-10-10T03:54:53.7920492Z Updating files:  90% (1507/1674)
+2026-10-10T03:54:53.7954016Z Updating files:  91% (1524/1674)
+2026-10-10T03:54:53.7966547Z Updating files:  92% (1541/1674)
+2026-10-10T03:54:53.7983826Z Updating files:  93% (1557/1674)
+2026-10-10T03:54:53.7993357Z Updating files:  94% (1574/1674)
+2026-10-10T03:54:53.8005496Z Updating files:  95% (1591/1674)
+2026-10-10T03:54:53.8016642Z Updating files:  96% (1608/1674)
+2026-10-10T03:54:53.8029241Z Updating files:  97% (1624/1674)
+2026-10-10T03:54:53.8039300Z Updating files:  98% (1641/1674)
+2026-10-10T03:54:53.8047015Z Updating files:  99% (1658/1674)
+2026-10-10T03:54:53.8047288Z Updating files: 100% (1674/1674)
+2026-10-10T03:54:53.8047583Z Updating files: 100% (1674/1674), done.
+2026-10-10T03:54:53.8211063Z Note: switching to '9cc6bf49f6dd81e4069a8004eed49addba0ab79b'.
+2026-10-10T03:54:53.8211336Z 
+2026-10-10T03:54:53.8211447Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-10T03:54:53.8211705Z changes and commit them, and you can discard any commits you make in this
+2026-10-10T03:54:53.8211964Z state without impacting any branches by switching back to a branch.
+2026-10-10T03:54:53.8212114Z 
+2026-10-10T03:54:53.8212217Z If you want to create a new branch to retain commits you create, you may
+2026-10-10T03:54:53.8212460Z do so (now or later) by using -c with the switch command. Example:
+2026-10-10T03:54:53.8212749Z 
+2026-10-10T03:54:53.8212836Z   git switch -c <new-branch-name>
+2026-10-10T03:54:53.8212935Z 
+2026-10-10T03:54:53.8212991Z Or undo this operation with:
+2026-10-10T03:54:53.8213080Z 
+2026-10-10T03:54:53.8213129Z   git switch -
+2026-10-10T03:54:53.8213200Z 
+2026-10-10T03:54:53.8213312Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-10T03:54:53.8213500Z 
+2026-10-10T03:54:53.8213621Z HEAD is now at 9cc6bf4 chore(review): bind diagnostic workflow context correction
+2026-10-10T03:54:53.8229874Z ##[endgroup]
+2026-10-10T03:54:53.8265277Z [command]/usr/bin/git log -1 --format=%H
+2026-10-10T03:54:53.8283042Z 9cc6bf49f6dd81e4069a8004eed49addba0ab79b
+2026-10-10T03:54:53.8463480Z ##[group]Run actions/download-artifact@v4
+2026-10-10T03:54:53.8463651Z with:
+2026-10-10T03:54:53.8463789Z   name: p8-scale-wide-dirty-build-38013753078
+2026-10-10T03:54:53.8463984Z   path: /home/runner/work/_temp/p8-scale-wide-dirty-build
+2026-10-10T03:54:53.8464168Z   merge-multiple: false
+2026-10-10T03:54:53.8464300Z   repository: jyqj/codecortex
+2026-10-10T03:54:53.8464430Z   run-id: 38013753078
+2026-10-10T03:54:53.8464541Z env:
+2026-10-10T03:54:53.8464648Z   CARGO_TERM_COLOR: never
+2026-10-10T03:54:53.8464773Z   CARGO_INCREMENTAL: 0
+2026-10-10T03:54:53.8464889Z   CARGO_BUILD_JOBS: 2
+2026-10-10T03:54:53.8465145Z   RUSTFLAGS: 
+2026-10-10T03:54:53.8465252Z ##[endgroup]
+2026-10-10T03:54:53.9406198Z Downloading single artifact
+2026-10-10T03:54:53.9496248Z (node:2094) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-10T03:54:53.9496755Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-10T03:54:54.0860873Z Preparing to download the following artifacts:
+2026-10-10T03:54:54.0861546Z - p8-scale-wide-dirty-build-38013753078 (ID: 11655028182, Size: 9236971, Expected Digest: sha256:db774b0964b648ba12ae0afcf50827cbe43c532c336ab20f9c4c6c06b2e0d269)
+2026-10-10T03:54:54.2394116Z Redirecting to blob download url: https://productionresultssa2.blob.core.windows.net/actions-results/27ceba49-fb97-8be5-985c-9d429f7d3e3c/workflow-job-run-e422e140-756b-563d-bc27-45da85003101/artifacts/de8f7296476a1a4946cf8ac6416d1f317ee9800bf19fd1725801621b16408866.zip
+2026-10-10T03:54:54.2399386Z Starting download of artifact to: /home/runner/work/_temp/p8-scale-wide-dirty-build
+2026-10-10T03:54:54.4186338Z (node:2094) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+2026-10-10T03:54:54.7999704Z SHA256 digest of downloaded artifact is db774b0964b648ba12ae0afcf50827cbe43c532c336ab20f9c4c6c06b2e0d269
+2026-10-10T03:54:54.8000050Z Artifact download completed successfully.
+2026-10-10T03:54:54.8000223Z Total of 1 artifact(s) downloaded
+2026-10-10T03:54:54.8003587Z Download artifact has finished successfully
+2026-10-10T03:54:54.8951714Z ##[group]Run actions/download-artifact@v4
+2026-10-10T03:54:54.8951882Z with:
+2026-10-10T03:54:54.8952022Z   pattern: p8-scale-wide-dirty-shard-*-38013753078
+2026-10-10T03:54:54.8952230Z   path: /home/runner/work/_temp/p8-scale-wide-dirty-shards
+2026-10-10T03:54:54.8952412Z   merge-multiple: false
+2026-10-10T03:54:54.8952548Z   repository: jyqj/codecortex
+2026-10-10T03:54:54.8952860Z   run-id: 38013753078
+2026-10-10T03:54:54.8952989Z env:
+2026-10-10T03:54:54.8953099Z   CARGO_TERM_COLOR: never
+2026-10-10T03:54:54.8953227Z   CARGO_INCREMENTAL: 0
+2026-10-10T03:54:54.8953345Z   CARGO_BUILD_JOBS: 2
+2026-10-10T03:54:54.8953465Z   RUSTFLAGS: 
+2026-10-10T03:54:54.8953575Z ##[endgroup]
+2026-10-10T03:54:54.9986847Z (node:2106) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-10T03:54:54.9987433Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-10T03:54:55.1796300Z Found 10 artifact(s)
+2026-10-10T03:54:55.1796833Z Filtering artifacts by pattern 'p8-scale-wide-dirty-shard-*-38013753078'
+2026-10-10T03:54:55.1816073Z Preparing to download the following artifacts:
+2026-10-10T03:54:55.1816719Z - p8-scale-wide-dirty-shard-50000-0-38013753078 (ID: 11657735385, Size: 2892090, Expected Digest: sha256:575d13e2303aae7755ceec6f3f15a1a04760216baa4de73a5db8bdc47121d376)
+2026-10-10T03:54:55.1829948Z - p8-scale-wide-dirty-shard-10000-0-38013753078 (ID: 11655269053, Size: 837126, Expected Digest: sha256:41919dd2253f2a3cad5b75d7abc7be89aec10b2667dcceba308b1e5ea8238bf2)
+2026-10-10T03:54:55.1830992Z - p8-scale-wide-dirty-shard-5000-0-38013753078 (ID: 11655148761, Size: 576931, Expected Digest: sha256:cb94225f6f3a8a5a75d1072540de9bf12c08d2f7b3249a6e78d3bc95d5c3c71f)
+2026-10-10T03:54:55.1831832Z - p8-scale-wide-dirty-shard-1000-0-38013753078 (ID: 11655068379, Size: 949968, Expected Digest: sha256:955fbe772b309790977ba858b396ea373559d87c1b73c3d3e973d2542484ff0d)
+2026-10-10T03:54:55.3328130Z Redirecting to blob download url: https://productionresultssa2.blob.core.windows.net/actions-results/27ceba49-fb97-8be5-985c-9d429f7d3e3c/workflow-job-run-2cf09996-3776-51fa-9105-fda63979e14d/artifacts/728c4233f3e70b692b48fafb0b49fb6fbb4bfa4e949381350a8745b7124ed5c0.zip
+2026-10-10T03:54:55.3329046Z Starting download of artifact to: /home/runner/work/_temp/p8-scale-wide-dirty-shards/p8-scale-wide-dirty-shard-50000-0-38013753078
+2026-10-10T03:54:55.4127038Z Redirecting to blob download url: https://productionresultssa2.blob.core.windows.net/actions-results/27ceba49-fb97-8be5-985c-9d429f7d3e3c/workflow-job-run-71425b34-7744-5f0e-8548-8bcb93a12502/artifacts/5fad5a7c6d187916cc191ffe1f443433e2ef7e1196ac581f0c25205adff08607.zip
+2026-10-10T03:54:55.4128140Z Starting download of artifact to: /home/runner/work/_temp/p8-scale-wide-dirty-shards/p8-scale-wide-dirty-shard-1000-0-38013753078
+2026-10-10T03:54:55.4158817Z Redirecting to blob download url: https://productionresultssa2.blob.core.windows.net/actions-results/27ceba49-fb97-8be5-985c-9d429f7d3e3c/workflow-job-run-40334c33-8b0b-5577-8916-c4aa0ecf7855/artifacts/784e4e0a1725362af3d7ba81e80c19d35e1066a44e8d41e20b5f44f0ed5f4ca5.zip
+2026-10-10T03:54:55.4160081Z Starting download of artifact to: /home/runner/work/_temp/p8-scale-wide-dirty-shards/p8-scale-wide-dirty-shard-10000-0-38013753078
+2026-10-10T03:54:55.4326122Z Redirecting to blob download url: https://productionresultssa2.blob.core.windows.net/actions-results/27ceba49-fb97-8be5-985c-9d429f7d3e3c/workflow-job-run-c207662e-ee38-51fc-8e4d-a6dd2d0b8409/artifacts/7f8d54e36e420ad05edd0ff304e7f5c3a43152ccea4ff75009a5e173fda45a20.zip
+2026-10-10T03:54:55.4327483Z Starting download of artifact to: /home/runner/work/_temp/p8-scale-wide-dirty-shards/p8-scale-wide-dirty-shard-5000-0-38013753078
+2026-10-10T03:54:55.5504737Z (node:2106) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+2026-10-10T03:54:55.6945767Z SHA256 digest of downloaded artifact is 41919dd2253f2a3cad5b75d7abc7be89aec10b2667dcceba308b1e5ea8238bf2
+2026-10-10T03:54:55.6946134Z Artifact download completed successfully.
+2026-10-10T03:54:55.7402754Z SHA256 digest of downloaded artifact is cb94225f6f3a8a5a75d1072540de9bf12c08d2f7b3249a6e78d3bc95d5c3c71f
+2026-10-10T03:54:55.7403174Z Artifact download completed successfully.
+2026-10-10T03:54:55.7715438Z SHA256 digest of downloaded artifact is 955fbe772b309790977ba858b396ea373559d87c1b73c3d3e973d2542484ff0d
+2026-10-10T03:54:55.7715880Z Artifact download completed successfully.
+2026-10-10T03:54:55.8730023Z SHA256 digest of downloaded artifact is 575d13e2303aae7755ceec6f3f15a1a04760216baa4de73a5db8bdc47121d376
+2026-10-10T03:54:55.8730554Z Artifact download completed successfully.
+2026-10-10T03:54:55.8730828Z Total of 4 artifact(s) downloaded
+2026-10-10T03:54:55.8735385Z Download artifact has finished successfully
+2026-10-10T03:54:55.8865489Z ##[group]Run python3 - <<'PY'
+2026-10-10T03:54:55.8865736Z [36;1mpython3 - <<'PY'[0m
+2026-10-10T03:54:55.8865902Z [36;1mimport os, pathlib, sys[0m
+2026-10-10T03:54:55.8866087Z [36;1msys.path.insert(0, 'scripts')[0m
+2026-10-10T03:54:55.8866274Z [36;1mimport p8_scale_matrix as matrix[0m
+2026-10-10T03:54:55.8866489Z [36;1mroot = pathlib.Path(os.environ['RUNNER_TEMP'])[0m
+2026-10-10T03:54:55.8866739Z [36;1mbinary = root / 'p8-scale-wide-dirty-build/p8-scale'[0m
+2026-10-10T03:54:55.8866950Z [36;1mif binary.exists():[0m
+2026-10-10T03:54:55.8867128Z [36;1m    binary.chmod(0o755)[0m
+2026-10-10T03:54:55.8867400Z [36;1minputs = sorted((root / 'p8-scale-wide-dirty-shards').glob('p8-scale-wide-dirty-shard-*'))[0m
+2026-10-10T03:54:55.8867798Z [36;1mresult = matrix.aggregate(root / 'p8-scale-wide-dirty-build', inputs, root / 'p8-scale-wide-dirty-matrix',[0m
+2026-10-10T03:54:55.8868214Z [36;1m                          repetitions=30, shard_count=30, capacity_profile=matrix.WIDE_DIRTY_PROFILE)[0m
+2026-10-10T03:54:55.8868540Z [36;1mprint({key: result.get(key) for key in ('status', 'error', 'sample_count')})[0m
+2026-10-10T03:54:55.8868817Z [36;1msys.exit(0 if result.get('passed') is True else 1)[0m
+2026-10-10T03:54:55.8869009Z [36;1mPY[0m
+2026-10-10T03:54:55.9093911Z shell: /usr/bin/bash -e {0}
+2026-10-10T03:54:55.9094118Z env:
+2026-10-10T03:54:55.9094267Z   CARGO_TERM_COLOR: never
+2026-10-10T03:54:55.9094420Z   CARGO_INCREMENTAL: 0
+2026-10-10T03:54:55.9094561Z   CARGO_BUILD_JOBS: 2
+2026-10-10T03:54:55.9094879Z   RUSTFLAGS: 
+2026-10-10T03:54:55.9095005Z ##[endgroup]
+2026-10-10T03:54:56.2520196Z {'status': 'failed', 'error': 'missing matrix shards: [(1000, 1), (1000, 2), (1000, 3), (1000, 4), (1000, 5), (1000, 6), (1000, 7), (1000, 8), (1000, 9), (1000, 10), (1000, 11), (1000, 12), (1000, 13), (1000, 14), (1000, 15), (1000, 16), (1000, 17), (1000, 18), (1000, 19), (1000, 20), (1000, 21), (1000, 22), (1000, 23), (1000, 24), (1000, 25), (1000, 26), (1000, 27), (1000, 28), (1000, 29), (5000, 1), (5000, 2), (5000, 3), (5000, 4), (5000, 5), (5000, 6), (5000, 7), (5000, 8), (5000, 9), (5000, 10), (5000, 11), (5000, 12), (5000, 13), (5000, 14), (5000, 15), (5000, 16), (5000, 17), (5000, 18), (5000, 19), (5000, 20), (5000, 21), (5000, 22), (5000, 23), (5000, 24), (5000, 25), (5000, 26), (5000, 27), (5000, 28), (5000, 29), (10000, 1), (10000, 2), (10000, 3), (10000, 4), (10000, 5), (10000, 6), (10000, 7), (10000, 8), (10000, 9), (10000, 10), (10000, 11), (10000, 12), (10000, 13), (10000, 14), (10000, 15), (10000, 16), (10000, 17), (10000, 18), (10000, 19), (10000, 20), (10000, 21), (10000, 22), (10000, 23), (10000, 24), (10000, 25), (10000, 26), (10000, 27), (10000, 28), (10000, 29), (50000, 1), (50000, 2), (50000, 3), (50000, 4), (50000, 5), (50000, 6), (50000, 7), (50000, 8), (50000, 9), (50000, 10), (50000, 11), (50000, 12), (50000, 13), (50000, 14), (50000, 15), (50000, 16), (50000, 17), (50000, 18), (50000, 19), (50000, 20), (50000, 21), (50000, 22), (50000, 23), (50000, 24), (50000, 25), (50000, 26), (50000, 27), (50000, 28), (50000, 29), (100000, 0), (100000, 1), (100000, 2), (100000, 3), (100000, 4), (100000, 5), (100000, 6), (100000, 7), (100000, 8), (100000, 9), (100000, 10), (100000, 11), (100000, 12), (100000, 13), (100000, 14), (100000, 15), (100000, 16), (100000, 17), (100000, 18), (100000, 19), (100000, 20), (100000, 21), (100000, 22), (100000, 23), (100000, 24), (100000, 25), (100000, 26), (100000, 27), (100000, 28), (100000, 29)]', 'sample_count': None}
+2026-10-10T03:54:56.2600905Z ##[error]Process completed with exit code 1.
+2026-10-10T03:54:56.2663826Z ##[group]Run actions/upload-artifact@v4
+2026-10-10T03:54:56.2664005Z with:
+2026-10-10T03:54:56.2664157Z   name: p8-scale-wide-dirty-matrix-38013753078
+2026-10-10T03:54:56.2664378Z   path: /home/runner/work/_temp/p8-scale-wide-dirty-matrix
+2026-10-10T03:54:56.2664579Z   if-no-files-found: error
+2026-10-10T03:54:56.2664726Z   compression-level: 6
+2026-10-10T03:54:56.2664862Z   overwrite: false
+2026-10-10T03:54:56.2665003Z   include-hidden-files: false
+2026-10-10T03:54:56.2665148Z env:
+2026-10-10T03:54:56.2665269Z   CARGO_TERM_COLOR: never
+2026-10-10T03:54:56.2665412Z   CARGO_INCREMENTAL: 0
+2026-10-10T03:54:56.2665546Z   CARGO_BUILD_JOBS: 2
+2026-10-10T03:54:56.2665678Z   RUSTFLAGS: 
+2026-10-10T03:54:56.2665799Z ##[endgroup]
+2026-10-10T03:54:56.3696016Z (node:2134) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-10T03:54:56.3696561Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-10T03:54:56.3728933Z With the provided path, there will be 1 file uploaded
+2026-10-10T03:54:56.3731832Z Artifact name is valid!
+2026-10-10T03:54:56.3732315Z Root directory input is valid!
+2026-10-10T03:54:56.6314331Z Beginning upload of artifact content to blob storage
+2026-10-10T03:54:56.6417264Z (node:2134) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-10T03:54:56.7731886Z Uploaded bytes 580
+2026-10-10T03:54:56.8104026Z Finished uploading artifact content to blob storage!
+2026-10-10T03:54:56.8104732Z SHA256 digest of uploaded artifact zip is 716be1cef60ff03736583ca7bca4dd75be435c44fc6936aa801df6cf57a4f32b
+2026-10-10T03:54:56.8105967Z Finalizing artifact upload
+2026-10-10T03:54:57.0421572Z Artifact p8-scale-wide-dirty-matrix-38013753078.zip successfully finalized. Artifact ID 11658738280
+2026-10-10T03:54:57.0422508Z Artifact p8-scale-wide-dirty-matrix-38013753078 has been successfully uploaded! Final size is 580 bytes. Artifact ID is 11658738280
+2026-10-10T03:54:57.0427069Z Artifact download URL: https://github.com/jyqj/codecortex/actions/runs/38013753078/artifacts/11658738280
+2026-10-10T03:54:57.0561580Z Post job cleanup.
+2026-10-10T03:54:57.1093683Z [command]/usr/bin/git version
+2026-10-10T03:54:57.1120965Z git version 2.55.0
+2026-10-10T03:54:57.1142110Z Temporarily overriding HOME='/home/runner/work/_temp/d4aa2fe8-c507-47c3-8a89-cff2465b72b9' before making global git config changes
+2026-10-10T03:54:57.1143066Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-10T03:54:57.1145350Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/codecortex/codecortex
+2026-10-10T03:54:57.1172400Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-10T03:54:57.1196195Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-10T03:54:57.1389853Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-10T03:54:57.1410358Z http.https://github.com/.extraheader
+2026-10-10T03:54:57.1417267Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-10T03:54:57.1442224Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-10T03:54:57.1624200Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-10T03:54:57.1647820Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-10T03:54:57.1944819Z Cleaning up orphan processes
+2026-10-10T03:54:57.2156593Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/download-artifact@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

@@ -1,0 +1,408 @@
+{
+  "schema": "pr192-source-successor-and-history-disposition-v1",
+  "read_only": true,
+  "source_observation": {
+    "pull": {
+      "path": "/workspace/scratch/bfccb8494ba0/round40-PR192-profile-isolation-review/pull.official-original.json",
+      "bytes": 51052,
+      "sha256": "4ca3c8c8365eee56e0962519edc34bfe988ee635a54e91765827d443717164f8",
+      "git_blob": "ce1b8e36f37e25cc3871206fb369413bed5f1a3b"
+    },
+    "files": {
+      "path": "/workspace/scratch/bfccb8494ba0/round40-PR192-profile-isolation-review/files.official-original.json",
+      "bytes": 799104,
+      "sha256": "352fdc223ecb3c2102d9b3b22e6bc8116ad0bcf979ca0b3cbb2a430aaf19b17d",
+      "git_blob": "3a7b1bd7d93b63b010ac956d80e92442b9ae2681"
+    },
+    "not_fresh_PR_state_claim": true
+  },
+  "original_PR": {
+    "number": 192,
+    "head": "e7f8e913861f32e6745bcd56794601133b621c34",
+    "base": "10ec828beb94200ec679302c45115760ebd55ee9",
+    "state_at_observation": "open",
+    "merged_at_observation": false,
+    "changed_paths": 34
+  },
+  "source_accounting": [
+    {
+      "path": ".github/workflows/p8-profile.yml",
+      "old_PR_status": "A",
+      "donor": {
+        "bytes": 30744,
+        "sha256": "fcbaecc807b5eb7de70a5e42d42293f3eb6688c447c07264c2193528586a5681",
+        "git_blob": "d1bc4ce9f9be397b7b1673b4996fea41cc4f8566"
+      },
+      "main_before": null,
+      "integrated_base": {
+        "bytes": 30744,
+        "sha256": "fcbaecc807b5eb7de70a5e42d42293f3eb6688c447c07264c2193528586a5681",
+        "git_blob": "d1bc4ce9f9be397b7b1673b4996fea41cc4f8566"
+      },
+      "new_final_candidate": {
+        "bytes": 30744,
+        "sha256": "fcbaecc807b5eb7de70a5e42d42293f3eb6688c447c07264c2193528586a5681",
+        "git_blob": "d1bc4ce9f9be397b7b1673b4996fea41cc4f8566"
+      },
+      "disposition": "donor exact bytes retained"
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/mutation_case.rs",
+      "old_PR_status": "M",
+      "donor": {
+        "bytes": 13421,
+        "sha256": "7474be8aa7c98a720f0a57b36431f7592845439086595c38119b3aac9d522618",
+        "git_blob": "edeba7de44347ad0e77f2472a7d0cd0672618f50"
+      },
+      "main_before": {
+        "bytes": 10784,
+        "sha256": "d57c5e804d90e085c1b01a3371bb8e1f811f8d653eaa0ad0e76c245afc9f5a7a",
+        "git_blob": "1db56a9ece3a9d986af43c6b66d8e29a87ec4ec6"
+      },
+      "integrated_base": {
+        "bytes": 13421,
+        "sha256": "7474be8aa7c98a720f0a57b36431f7592845439086595c38119b3aac9d522618",
+        "git_blob": "edeba7de44347ad0e77f2472a7d0cd0672618f50"
+      },
+      "new_final_candidate": {
+        "bytes": 13421,
+        "sha256": "7474be8aa7c98a720f0a57b36431f7592845439086595c38119b3aac9d522618",
+        "git_blob": "edeba7de44347ad0e77f2472a7d0cd0672618f50"
+      },
+      "disposition": "exact common-base three-way integration retains donor behavior and main wide; new named scope is an explicit further delta"
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+      "old_PR_status": "M",
+      "donor": {
+        "bytes": 53984,
+        "sha256": "dd9ab10d98f48d9502d3297efee81466a7cad43abdf2fcfa33e2071f29fc7a33",
+        "git_blob": "586b0ee9cea8ac6f796a45897a1c0e495cf03632"
+      },
+      "main_before": {
+        "bytes": 51010,
+        "sha256": "9cc69645b214e8c530b47ebdf469e2cfb09498a3f5ac4f2640b3c1a97e053b53",
+        "git_blob": "7c257c02d4ce97f20ffe80de8d12f96345c713c8"
+      },
+      "integrated_base": {
+        "bytes": 54924,
+        "sha256": "27b4ed346b192dcf6ad0bf03787e741695ef19916efdd9152fab4500f80b80dd",
+        "git_blob": "704a91710fe1ee72dee781d113a80c8f670a1e8b"
+      },
+      "new_final_candidate": {
+        "bytes": 56294,
+        "sha256": "ac2042f0e6a227cb5d53394e4ae09c6ecedf98ade7d2119dcaf4b1344be57743",
+        "git_blob": "edc56c0ab9c0b3c35f319cdfc2be23ce13bdc220"
+      },
+      "disposition": "exact common-base three-way integration retains donor behavior and main wide; new named scope is an explicit further delta"
+    },
+    {
+      "path": "crates/cc-eval/src/bin/p8-scale.rs",
+      "old_PR_status": "M",
+      "donor": {
+        "bytes": 6818,
+        "sha256": "a72f0dea310ea47df29ca6b94b68eed50d69ff6a0380733b1069eeec4aa4b15f",
+        "git_blob": "1e147fb89ad772f07cf45e82918012fd443cfc0a"
+      },
+      "main_before": {
+        "bytes": 5731,
+        "sha256": "f102c0c37e1378291656c99a918723c77b36e7e3c71aa79a1202bbad712bcf36",
+        "git_blob": "4af70331e55499f21c0f8feddf63f72b42b9d43f"
+      },
+      "integrated_base": {
+        "bytes": 6958,
+        "sha256": "95d2f35b1a815f9b69d1e20b01a2649c95de3196269b9494fac45118040beb5a",
+        "git_blob": "60b9971e86a61623af40eceea65e42fb7d313889"
+      },
+      "new_final_candidate": {
+        "bytes": 7136,
+        "sha256": "86837977997b80c1198f2c4e1c284008704d7a60bb58c57d25b415226173f62c",
+        "git_blob": "1175287cd6eb2e60f1a86829cf621ac66296d444"
+      },
+      "disposition": "exact common-base three-way integration retains donor behavior and main wide; new named scope is an explicit further delta"
+    },
+    {
+      "path": "crates/cc-eval/tests/p8_scale.rs",
+      "old_PR_status": "M",
+      "donor": {
+        "bytes": 29976,
+        "sha256": "5ada1a4cded4f83d21b847f85fca2ad3057359ec1a72d213c0fee841cb096c18",
+        "git_blob": "62ffe7605d81afc690896af7d668d3e24b8f2655"
+      },
+      "main_before": {
+        "bytes": 28112,
+        "sha256": "d9d6d1243ff95d99746d22a409d701494ccf2d763b6c09106b0a56aa8340613d",
+        "git_blob": "93ad04c355201db61595bbed70ca6289337a6adb"
+      },
+      "integrated_base": {
+        "bytes": 33292,
+        "sha256": "65c256e66ffa4869e2369096e1f02258975c5fbbb0a940bb10e409d94fff0291",
+        "git_blob": "13695a700636df168c25cbf9dc46579e3e7a98f9"
+      },
+      "new_final_candidate": {
+        "bytes": 38530,
+        "sha256": "0cfbbe80b6810101ffaf688102a3fd3c9cbfe0e5252ee81260bd5be8f8b95a6d",
+        "git_blob": "73fae8c137def57e87454db9d10a299e3357ada2"
+      },
+      "disposition": "exact common-base three-way integration retains donor behavior and main wide; new named scope is an explicit further delta"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/P8-PROFILE-ISOLATED.md",
+      "old_PR_status": "A",
+      "donor": {
+        "bytes": 5122,
+        "sha256": "8b7c572c3bffe98047dd533ae1f2edf2d9a4256f6b984d9b34b6e597e9da2ec2",
+        "git_blob": "9934eb2d471ef5f5721fafcf538332dea64063b1"
+      },
+      "main_before": null,
+      "integrated_base": {
+        "bytes": 5122,
+        "sha256": "8b7c572c3bffe98047dd533ae1f2edf2d9a4256f6b984d9b34b6e597e9da2ec2",
+        "git_blob": "9934eb2d471ef5f5721fafcf538332dea64063b1"
+      },
+      "new_final_candidate": {
+        "bytes": 5122,
+        "sha256": "8b7c572c3bffe98047dd533ae1f2edf2d9a4256f6b984d9b34b6e597e9da2ec2",
+        "git_blob": "9934eb2d471ef5f5721fafcf538332dea64063b1"
+      },
+      "disposition": "donor exact bytes retained"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/p8-profile-isolated-v1.json",
+      "old_PR_status": "A",
+      "donor": {
+        "bytes": 3609,
+        "sha256": "5305be655982b61ab1f2d70c82977853a4644a700019d352be1a3abdc5e94475",
+        "git_blob": "9a8e949aa7c0619f3bd92c6d0c72d3fde342890d"
+      },
+      "main_before": null,
+      "integrated_base": {
+        "bytes": 3609,
+        "sha256": "5305be655982b61ab1f2d70c82977853a4644a700019d352be1a3abdc5e94475",
+        "git_blob": "9a8e949aa7c0619f3bd92c6d0c72d3fde342890d"
+      },
+      "new_final_candidate": {
+        "bytes": 3609,
+        "sha256": "5305be655982b61ab1f2d70c82977853a4644a700019d352be1a3abdc5e94475",
+        "git_blob": "9a8e949aa7c0619f3bd92c6d0c72d3fde342890d"
+      },
+      "disposition": "donor exact bytes retained"
+    },
+    {
+      "path": "scripts/p8_profile_matrix.py",
+      "old_PR_status": "A",
+      "donor": {
+        "bytes": 24837,
+        "sha256": "9a1c12f4b7294466bce5eb30d962a3d66609c722554d90a2658e5c0eb886dee7",
+        "git_blob": "88d05e7c1a51ca5fba78cd3ec5d28df8fbd6bbad"
+      },
+      "main_before": null,
+      "integrated_base": {
+        "bytes": 24837,
+        "sha256": "9a1c12f4b7294466bce5eb30d962a3d66609c722554d90a2658e5c0eb886dee7",
+        "git_blob": "88d05e7c1a51ca5fba78cd3ec5d28df8fbd6bbad"
+      },
+      "new_final_candidate": {
+        "bytes": 24837,
+        "sha256": "9a1c12f4b7294466bce5eb30d962a3d66609c722554d90a2658e5c0eb886dee7",
+        "git_blob": "88d05e7c1a51ca5fba78cd3ec5d28df8fbd6bbad"
+      },
+      "disposition": "donor exact bytes retained"
+    },
+    {
+      "path": "scripts/p8_scale_matrix.py",
+      "old_PR_status": "M",
+      "donor": {
+        "bytes": 67721,
+        "sha256": "b2494f9726528083210bb4e9581145d5e2f2e841b883533df5c3636e157d17f7",
+        "git_blob": "016cc1910485ec6582baf6a5ba95b5d0982dc30c"
+      },
+      "main_before": {
+        "bytes": 66810,
+        "sha256": "ea1b4a60854b8bbbfc057760ef055861a3279440b3df7f9c39dd1e32505b1a43",
+        "git_blob": "86f6dd904a4a981302b45675f013319e5d442d0f"
+      },
+      "integrated_base": {
+        "bytes": 68417,
+        "sha256": "517ef57435cdf75ae6bf597dc29aac65fc39b17feabe59d97d28122fd6c467c4",
+        "git_blob": "2ba11c5112c7fcd471bf2397ca3aed046b6bfd18"
+      },
+      "new_final_candidate": {
+        "bytes": 68769,
+        "sha256": "b2c195d35034544b11caf436da631404b177699e7fa7a50dd46338864b8184de",
+        "git_blob": "6d6c6e4362760fb1eb78770efe41b578e6552dc7"
+      },
+      "disposition": "exact common-base three-way integration retains donor behavior and main wide; new named scope is an explicit further delta"
+    },
+    {
+      "path": "scripts/tests/test_p8_profile_matrix.py",
+      "old_PR_status": "A",
+      "donor": {
+        "bytes": 10569,
+        "sha256": "58ba7c40563deb3252738e10d520a2d310909253303670e9b72b15374e35df8c",
+        "git_blob": "9191cd80a83eaa2525d3f015e20d000984e31f27"
+      },
+      "main_before": null,
+      "integrated_base": {
+        "bytes": 10569,
+        "sha256": "58ba7c40563deb3252738e10d520a2d310909253303670e9b72b15374e35df8c",
+        "git_blob": "9191cd80a83eaa2525d3f015e20d000984e31f27"
+      },
+      "new_final_candidate": {
+        "bytes": 10569,
+        "sha256": "58ba7c40563deb3252738e10d520a2d310909253303670e9b72b15374e35df8c",
+        "git_blob": "9191cd80a83eaa2525d3f015e20d000984e31f27"
+      },
+      "disposition": "donor exact bytes retained"
+    }
+  ],
+  "preserved_artifact_leaves_at_original_head": [
+    {
+      "path": "artifacts/checkpoints/p8-profile-format-repair-a217-20261009/candidate-manifest.json",
+      "git_blob": "d5f3edef83a8a32abb52451d9867dfd704c536ea",
+      "status": "added"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-profile-format-repair-a217-20261009/candidate.patch",
+      "git_blob": "ecaf6e2ba8047b953a7d7db1df36af97768938c2",
+      "status": "added"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-profile-format-repair-a217-20261009/fixed-product-composition-plan.json",
+      "git_blob": "75e8400c2231437f2a30315838b65750db30d974",
+      "status": "added"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-profile-format-repair-a217-20261009/independent-source-review.json",
+      "git_blob": "dee70edb436f7547543985d85d5aaa46cdb008b4",
+      "status": "added"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-profile-format-repair-a217-20261009/original-ci/actual-testmerge-identity.json",
+      "git_blob": "0f16854a953114ab1a30e18c79c3e3e1dcd1ad41",
+      "status": "added"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-profile-format-repair-a217-20261009/original-ci/independent-original-job-log-review.json",
+      "git_blob": "c5bb854091b10134195bb8ccb284900ebf3bb20b",
+      "status": "added"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-profile-format-repair-a217-20261009/original-ci/original.log",
+      "git_blob": "d180d6606e42edb4605bfb1e890be9bfd6f7c225",
+      "status": "added"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-profile-format-repair-a217-20261009/original-formatter-hunks.json",
+      "git_blob": "443bdeeb9afdd8fb41086cb19535fb9d5a9e984f",
+      "status": "added"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-profile-format-repair-a217-20261009/preparation-v1-failure.json",
+      "git_blob": "c9fc39ee1bc18dd7282696aa8cf428aeec7bf8c1",
+      "status": "added"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-profile-format-repair-a217-20261009/runtime-independent-format-review.json",
+      "git_blob": "e41608b487de027f5bec2b8258605e15982ac95c",
+      "status": "added"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-profile-isolated-source-a217-20261009/all-controls-v1.stderr",
+      "git_blob": "ca1c4e622cf230af46cc2d787b1b9ba74a74c917",
+      "status": "added"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-profile-isolated-source-a217-20261009/all-controls-v1.stdout",
+      "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "status": "added"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-profile-isolated-source-a217-20261009/candidate-manifest-v2.json",
+      "git_blob": "c0f3eb9813217aa4f94f77cefddc1ebf6c342ae6",
+      "status": "added"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-profile-isolated-source-a217-20261009/candidate-v2.patch",
+      "git_blob": "192c6c15d11251c302d9ffb1292d4367981ae75a",
+      "status": "added"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-profile-isolated-source-a217-20261009/fixed-product-composition-plan.json",
+      "git_blob": "c898aeb19357981e5bd30bbfb587e4a5e2bc062c",
+      "status": "added"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-profile-isolated-source-a217-20261009/independent-source-review.json",
+      "git_blob": "e61608ecd0f167d2b3f03f9f6e3034fe08309978",
+      "status": "added"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-profile-isolated-source-a217-20261009/profile-v2-runtime-independent-review.json",
+      "git_blob": "6d101dee67636bc57a20dc86d5dd7e15cb662fb5",
+      "status": "added"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-profile-isolated-source-a217-20261009/python-controls-v1.json",
+      "git_blob": "199dd512b960b1516e6914922e2a9a678085e248",
+      "status": "added"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-profile-isolated-source-a217-20261009/runtime-peer-envelope-controls.py",
+      "git_blob": "b70f93657be67f528dba9be71c52770e21b0e078",
+      "status": "added"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-profile-isolated-source-a217-20261009/runtime-peer-envelope-controls.stderr",
+      "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "status": "added"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-profile-isolated-source-a217-20261009/runtime-peer-envelope-controls.stdout",
+      "git_blob": "92308fc8942ff51ef372cf7f5847c4067e465995",
+      "status": "added"
+    },
+    {
+      "path": "artifacts/checkpoints/p8-profile-isolated-source-a217-20261009/v1-to-v2-changes.json",
+      "git_blob": "9338be291661019af5e505c28224cf44fdd9d4d5",
+      "status": "added"
+    }
+  ],
+  "historical_bindings_not_copied_into_new_source": [
+    {
+      "path": "scripts/reviewed-source-registry-v15.json",
+      "git_blob": "db97c71f043ca89654428c03949b075497314011",
+      "status": "modified"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v15.py",
+      "git_blob": "0093989124e0b8b84914c4ea8fa50381904ba207",
+      "status": "modified"
+    }
+  ],
+  "artifact_directory_locators": [
+    "https://github.com/jyqj/codecortex/tree/e7f8e913861f32e6745bcd56794601133b621c34/artifacts/checkpoints/p8-profile-format-repair-a217-20261009",
+    "https://github.com/jyqj/codecortex/tree/e7f8e913861f32e6745bcd56794601133b621c34/artifacts/checkpoints/p8-profile-isolated-source-a217-20261009"
+  ],
+  "new_actual_product_commit": null,
+  "new_actual_successor_PR": null,
+  "new_actual_main_merge": null,
+  "can_claim_now": [
+    "Ten source paths are accounted for in the reviewed candidate; original five additions retain exact donor bytes.",
+    "OldN30/1350 protocol is preserved and is not redefined as45.",
+    "Original source/review/CI/failure22artifact leaves and twooldbinding identities remain separately addressed at e7f8."
+  ],
+  "cannot_claim_now": [
+    "All34 donor leaves merged into currentmain.",
+    "The new source has passed actualCI/native45.",
+    "PR192 or its1350 study contributed newtask observations."
+  ],
+  "supersession_conditions": [
+    "Fresh-read PR192 head before action; if changed frome7f8, first account only for the newdelta.",
+    "Identify an actual durable successorcommit andPR containing these ten integrated source paths plus the separately reviewed newscope; compare exact finaltree/paths.",
+    "Preserve the original e7f8 history and22artifact directory locators and recorded failures/CI; do not copy oldP/R pins onto newsource.",
+    "Root may close originalPR as replaced after durable reviewed successor handoff, clearly stating whether successorCI/merge remain pending; this is not product/runtime/task acceptance.",
+    "To say alreadyintegratedintomain, first cite the actual successor merge and exactsource bridge. Full1350 or45 execution is not a PRsupersession prerequisite and receives no credit from closure."
+  ],
+  "recommended_current_action": "Keep pending until root supplies actual successoridentity. No close/comment/ref action performed."
+}

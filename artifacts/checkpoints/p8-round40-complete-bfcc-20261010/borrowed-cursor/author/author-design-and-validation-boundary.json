@@ -1,0 +1,70 @@
+{
+  "schema": "p8-borrowed-sorted-cursor-author-design-v1",
+  "author": "execution_recon",
+  "base_commit": "b9b089bb4eae072affe9326681d4980eae15fd84",
+  "base_tree": "6461938788665701cfa4fa095a064a3a404ec492",
+  "actual_P_at_author_freeze": null,
+  "independent_review": "pending pr_triage; this author record is not an independent source approval",
+  "problem": "The complete canonical scratch read currently allocates an owned String for every A/B row, though comparison, digest update and bounded examples only need that row until the next cursor advance.",
+  "one_changed_path": "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+  "implementation": [
+    "row_text borrows the current Text ValueRef and validates UTF8 with the exact rusqlite0.40.1 Utf8Error(0,error) mapping. Non-text retains InvalidColumnType(0,actual column name,original SQL type). get_ref(0) preserves invalid-index errors; no unsafe UTF8 or lifetime extension.",
+    "next_row preserves Rows::next step followed immediately by conversion; next_pair calls A to completion before stepping B. The two independent mutable Rows borrows bound the two returned str references.",
+    "The production loop consumes both references for the original equality, examples and independent digests before either cursor advances. The only loop changes replace its two next_row statements with next_pair and remove now-unnecessary as_deref calls.",
+    "Both complete A and B spools, all fifteen tables, sorted duplicate ordinal preservation, full EOF, signed-zero Value fallback, independent hashes, all capacity/byte/count limits, full SQLite error paths and the original nine per-table public fields remain unchanged. No witness, Map cleanup, SQL exclusion, chunk-statement, plan or workflow change."
+  ],
+  "dependency_api_evidence": {
+    "lock": "Cargo.lock pins rusqlite0.40.1 checksum11438310b19e3109b6446c33d1ed5e889428cf2e278407bc7896bc4aaea43323",
+    "original_upstream_local": "round40-rusqlite-v0.40.1-upstream/{src/row.rs,src/types/value_ref.rs,src/types/from_sql.rs}; exact hashes in author-static-preservation.json",
+    "origin": "Root-fetched official rusqlite/rusqlite v0.40.1 source with original API responses; no second upstream request by author.",
+    "reviewed_rules": [
+      "String FromSql uses ValueRef.as_str then ToString.",
+      "as_str accepts Text only and reports invalid UTF8 through FromSqlError::Utf8Error; it does not coerce SQL NULL/Integer/Real/Blob.",
+      "Row::get maps Utf8Error to rusqlite::Error::Utf8Error(index,error), and InvalidType to InvalidColumnType(index,column_name,data_type). It does not map this UTF8 path to a generic conversion failure.",
+      "Row::get_ref narrows the lifetime to the row borrow, valid only until that cursor's next SQLite step; two statements own independent Rows."
+    ]
+  },
+  "three_new_private_controls_pending_execution": [
+    {
+      "name": "borrowed_cursor_text_matches_owned_conversion_and_row_storage",
+      "risk": "Compare original row.get<String> and borrowed results on plain/Unicode/embedded NUL/empty text, invalid UTF8, NULL/Integer/Real/Blob; exact error Debug and display/db_error equality; successful text pointer and length match the actual current SQLite Text slice."
+    },
+    {
+      "name": "borrowed_cursor_pair_preserves_both_rows_duplicates_and_asymmetric_eof",
+      "risk": "Two real sorted scratch cursors keep A valid while B steps, duplicate/Unicode/signed-zero canonical strings and large body survive; both asymmetric EOF directions and empty A are consumed; full digests match original owned sorted rows; bounded examples remain owned after statements drop."
+    },
+    {
+      "name": "borrowed_cursor_pair_keeps_original_step_and_conversion_error_order",
+      "risk": "The actual production pair helper is compared with the original owned A-then-B baseline for A/B invalid UTF8 conversion and SQLite integer-overflow step failures, including empty A. Cursor positions verify that A failure did not step B, and B failure occurred after exactly one A advance."
+    }
+  ],
+  "existing_controls": "All previous internal test bytes retained; existing13 benchmark_oracle_streaming integration controls unchanged, including full15tables, signedzero, malformed/schema/FK/UTF8, second-input budgets, A-only-fits/A+B-SQLITE_FULL and public-field exactness.",
+  "actual_local_validation": {
+    "static_attempt01": "exit1: author's preservation helper selected the first cfg(test) attribute on a struct field instead of the test module; original stdout/stderr/receipt preserved. Not a Rust/source failure.",
+    "static_attempt02": "exit0: explicit cfg(test) plus mod tests anchor;14 mechanical metadata/byte/inverse/AST assertions passed. No product execution.",
+    "preparation_copy": "Initial optional cp of CONTRIBUTING from sparse worktree emitted cannot stat; compound shell continued and candidate creation succeeded. CONTRIBUTING was already read via git show, then recovered byte-exact from fixedb9; no failure is hidden or counted as a test.",
+    "cargo": "not available in PATH",
+    "rustc": "not available in PATH",
+    "Rust_compile": "not_run",
+    "rustfmt": "not_run",
+    "clippy": "not_run",
+    "new_Rust_controls": "not_run",
+    "existing_Rust_controls": "not_run",
+    "native_or_probe_or_study": "not_run"
+  },
+  "recommended_related_CI_commands_not_executed_here": [
+    "cargo fmt --all -- --check",
+    "cargo test --locked -p cc-eval --lib borrowed_cursor -- --nocapture",
+    "cargo test --locked -p cc-eval --test benchmark_oracle_streaming",
+    "Existing ordinary CI lint/default workspace/fixture/source-admission commands remain unchanged; do not replace them with these focused controls."
+  ],
+  "remaining_risks": [
+    "Rust type/lifetime checking and actual compiler/Clippy/rustfmt acceptance remain pending; static Python checks are not substitutes.",
+    "The matching error mapping is tied to Cargo.lock's current rusqlite0.40.1 and must be re-reviewed if the dependency changes.",
+    "Avoiding owned row copies is a source-level mechanism claim only. No wall-time, allocator count, whole-parity, end-to-end or5h completion benefit has been measured.",
+    "No running study/source/budget/N/profile was changed; the completed cohort failure remains separate and unexplained by this candidate."
+  ],
+  "new_TODO_credit": 0,
+  "new_scale_samples": 0,
+  "refs_changed": false
+}

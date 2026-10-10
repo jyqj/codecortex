@@ -1,0 +1,269 @@
+--- a/crates/cc-eval/src/benchmark/oracle/streaming.rs
++++ b/crates/cc-eval/src/benchmark/oracle/streaming.rs
+@@ -225,11 +225,39 @@
+     Ok(count)
+ }
+ 
+-fn next_row(rows: &mut rusqlite::Rows<'_>) -> Result<Option<String>> {
++// Match rusqlite 0.40.1 Row::get::<_, String>(0), but keep successful text
++// borrowed from the current SQLite row. In particular, malformed UTF8 has its
++// original Utf8Error variant, and non-text values retain their column name/type.
++fn row_text<'row>(row: &'row rusqlite::Row<'_>) -> rusqlite::Result<&'row str> {
++    let value = row.get_ref(0)?;
++    match value {
++        ValueRef::Text(bytes) => {
++            std::str::from_utf8(bytes).map_err(|error| rusqlite::Error::Utf8Error(0, error))
++        }
++        _ => Err(rusqlite::Error::InvalidColumnType(
++            0,
++            row.as_ref().column_name(0)?.to_owned(),
++            value.data_type(),
++        )),
++    }
++}
++
++fn next_row<'row>(rows: &'row mut rusqlite::Rows<'_>) -> Result<Option<&'row str>> {
+     rows.next()
+         .map_err(db_error)?
+-        .map(|row| row.get::<_, String>(0).map_err(db_error))
++        .map(|row| row_text(row).map_err(db_error))
+         .transpose()
++}
++
++fn next_pair<'a, 'b>(
++    arows: &'a mut rusqlite::Rows<'_>,
++    brows: &'b mut rusqlite::Rows<'_>,
++) -> Result<(Option<&'a str>, Option<&'b str>)> {
++    // A's step AND conversion precede B's step, including on either failure.
++    // Each borrow ends before its own cursor advances on the next iteration.
++    let av = next_row(arows)?;
++    let bv = next_row(brows)?;
++    Ok((av, bv))
+ }
+ 
+ fn equal_rows(a: Option<&str>, b: Option<&str>) -> Result<bool> {
+@@ -355,23 +383,22 @@
+         let mut different_rows = 0u64;
+         let mut examples = Vec::new();
+         loop {
+-            let av = next_row(&mut arows)?;
+-            let bv = next_row(&mut brows)?;
++            let (av, bv) = next_pair(&mut arows, &mut brows)?;
+             if av.is_none() && bv.is_none() {
+                 break;
+             }
+-            if !equal_rows(av.as_deref(), bv.as_deref())? {
++            if !equal_rows(av, bv)? {
+                 different_rows += 1;
+                 if examples.len() < 3 {
+                     examples.push(json!({
+                         "sorted_row": position,
+-                        "incremental": example(av.as_deref())?,
+-                        "full": example(bv.as_deref())?,
++                        "incremental": example(av)?,
++                        "full": example(bv)?,
+                     }));
+                 }
+             }
+-            append_digest(&mut ah, av.as_deref(), position);
+-            append_digest(&mut bh, bv.as_deref(), position);
++            append_digest(&mut ah, av, position);
++            append_digest(&mut bh, bv, position);
+             position += 1;
+         }
+         ah.update(b"]");
+@@ -795,4 +822,193 @@
+             );
+         }
+     }
+-}
++
++    #[test]
++    fn borrowed_cursor_text_matches_owned_conversion_and_row_storage() {
++        let connection = Connection::open_in_memory().unwrap();
++        for sql in [
++            "SELECT 'plain' AS canonical",
++            "SELECT 'é/中文' || char(0) || 'tail' AS canonical",
++            "SELECT '' AS canonical",
++            "SELECT CAST(x'80' AS TEXT) AS canonical",
++            "SELECT NULL AS canonical",
++            "SELECT 7 AS canonical",
++            "SELECT -0.0 AS canonical",
++            "SELECT x'6162' AS canonical",
++        ] {
++            let mut statement = connection.prepare(sql).unwrap();
++            let mut rows = statement.query([]).unwrap();
++            let row = rows.next().unwrap().unwrap();
++            let expected = row.get::<_, String>(0);
++            let actual = row_text(row);
++            match (expected, actual) {
++                (Ok(expected), Ok(actual)) => {
++                    assert_eq!(actual, expected);
++                    let ValueRef::Text(bytes) = row.get_ref(0).unwrap() else {
++                        panic!("successful String conversion requires SQLite text");
++                    };
++                    assert_eq!(actual.as_ptr(), bytes.as_ptr());
++                    assert_eq!(actual.len(), bytes.len());
++                }
++                (Err(expected), Err(actual)) => {
++                    assert_eq!(format!("{actual:?}"), format!("{expected:?}"));
++                    assert_eq!(actual.to_string(), expected.to_string());
++                    assert_eq!(db_error(actual).to_string(), db_error(expected).to_string());
++                }
++                _ => panic!("borrowed and owned text conversion disagree for {sql}"),
++            }
++        }
++    }
++
++    #[test]
++    fn borrowed_cursor_pair_preserves_both_rows_duplicates_and_asymmetric_eof() {
++        let directory = tempfile::tempdir().unwrap();
++        let scratch = open_scratch(
++            &directory.path().join("canonical.sqlite3"),
++            StreamingLimits::default(),
++        )
++        .unwrap();
++        let common = [
++            r#"{"n":-0.0}"#.to_string(),
++            r#"{"n":0.0}"#.to_string(),
++            r#"{"s":"duplicate"}"#.to_string(),
++            r#"{"s":"duplicate"}"#.to_string(),
++            r#"{"s":"é/中文\u0000tail"}"#.to_string(),
++            serde_json::to_string(&json!({"s": "x".repeat(20 * 1024)})).unwrap(),
++        ];
++        for side in 0..2 {
++            for (ordinal, value) in common.iter().enumerate() {
++                scratch
++                    .execute(
++                        "INSERT INTO canonical_rows(side,value,ordinal) VALUES (?1,?2,?3)",
++                        (side, value, i64::try_from(ordinal).unwrap()),
++                    )
++                    .unwrap();
++            }
++        }
++        scratch
++            .execute(
++                "INSERT INTO canonical_rows(side,value,ordinal) VALUES (1,?1,99)",
++                [r#"{"zz":"B-only"}"#],
++            )
++            .unwrap();
++        let expected_a = ordered_rows(&scratch, 0);
++        let expected_b = ordered_rows(&scratch, 1);
++        let empty = Vec::new();
++        for (a_side, b_side, a_expected, b_expected) in [
++            (0, 1, &expected_a, &expected_b),
++            (1, 0, &expected_b, &expected_a),
++            (2, 1, &empty, &expected_b),
++        ] {
++            let mut owned_examples = Vec::new();
++            let mut actual_a = blake3::Hasher::new();
++            let mut actual_b = blake3::Hasher::new();
++            actual_a.update(b"[");
++            actual_b.update(b"[");
++            {
++                let mut astmt = scratch.prepare(SORTED_ROWS_SQL).unwrap();
++                let mut bstmt = scratch.prepare(SORTED_ROWS_SQL).unwrap();
++                let mut arows = astmt.query([a_side]).unwrap();
++                let mut brows = bstmt.query([b_side]).unwrap();
++                let mut position = 0;
++                loop {
++                    let (av, bv) = next_pair(&mut arows, &mut brows).unwrap();
++                    // A remains valid after B steps, and neither borrow escapes
++                    // the iteration. The owned baseline retains duplicate rows.
++                    assert_eq!(av, a_expected.get(position).map(String::as_str));
++                    assert_eq!(bv, b_expected.get(position).map(String::as_str));
++                    if av.is_none() && bv.is_none() {
++                        break;
++                    }
++                    if !equal_rows(av, bv).unwrap() && owned_examples.len() < 3 {
++                        owned_examples.push((example(av).unwrap(), example(bv).unwrap()));
++                    }
++                    append_digest(&mut actual_a, av, position as u64);
++                    append_digest(&mut actual_b, bv, position as u64);
++                    position += 1;
++                }
++                assert_eq!(position, a_expected.len().max(b_expected.len()));
++                assert_eq!(next_pair(&mut arows, &mut brows).unwrap(), (None, None));
++            }
++            actual_a.update(b"]");
++            actual_b.update(b"]");
++            assert_eq!(
++                actual_a.finalize().to_hex().as_str(),
++                manifest::digest(format!("[{}]", a_expected.join(",")).as_bytes())
++            );
++            assert_eq!(
++                actual_b.finalize().to_hex().as_str(),
++                manifest::digest(format!("[{}]", b_expected.join(",")).as_bytes())
++            );
++            // These bounded examples own their values after both statements drop.
++            let expected_examples: Vec<_> = (0..a_expected.len().max(b_expected.len()))
++                .filter(|&index| {
++                    !equal_rows(
++                        a_expected.get(index).map(String::as_str),
++                        b_expected.get(index).map(String::as_str),
++                    )
++                    .unwrap()
++                })
++                .take(3)
++                .map(|index| {
++                    (
++                        example(a_expected.get(index).map(String::as_str)).unwrap(),
++                        example(b_expected.get(index).map(String::as_str)).unwrap(),
++                    )
++                })
++                .collect();
++            assert_eq!(owned_examples, expected_examples);
++        }
++    }
++
++    #[test]
++    fn borrowed_cursor_pair_keeps_original_step_and_conversion_error_order() {
++        fn owned_next(rows: &mut rusqlite::Rows<'_>) -> Result<Option<String>> {
++            rows.next()
++                .map_err(db_error)?
++                .map(|row| row.get::<_, String>(0).map_err(db_error))
++                .transpose()
++        }
++        let connection = Connection::open_in_memory().unwrap();
++        let a_values = "SELECT 'a-first' AS value UNION ALL SELECT 'a-second'";
++        let b_values = "SELECT 'b-first' AS value UNION ALL SELECT 'b-second'";
++        let conversion_error = "SELECT CAST(x'80' AS TEXT) AS value";
++        let step_error = "SELECT abs(-9223372036854775808) AS value";
++        let empty = "SELECT 'unused' AS value WHERE 0";
++        for (a_sql, b_sql, a_fails) in [
++            (conversion_error, b_values, true),
++            (step_error, b_values, true),
++            (a_values, conversion_error, false),
++            (a_values, step_error, false),
++            (empty, conversion_error, false),
++            (empty, step_error, false),
++        ] {
++            let mut original_a = connection.prepare(a_sql).unwrap();
++            let mut original_b = connection.prepare(b_sql).unwrap();
++            let mut original_arows = original_a.query([]).unwrap();
++            let mut original_brows = original_b.query([]).unwrap();
++            let expected = (|| -> Result<()> {
++                owned_next(&mut original_arows)?;
++                owned_next(&mut original_brows)?;
++                Ok(())
++            })()
++            .unwrap_err();
++            let mut astmt = connection.prepare(a_sql).unwrap();
++            let mut bstmt = connection.prepare(b_sql).unwrap();
++            let mut arows = astmt.query([]).unwrap();
++            let mut brows = bstmt.query([]).unwrap();
++            let actual = next_pair(&mut arows, &mut brows).unwrap_err();
++            assert_eq!(actual.to_string(), expected.to_string());
++            if a_fails {
++                // Neither A's sqlite3_step failure nor its UTF8 conversion
++                // failure may advance B before returning the original error.
++                assert_eq!(next_row(&mut brows).unwrap(), Some("b-first"));
++            } else if a_sql == empty {
++                assert_eq!(next_row(&mut arows).unwrap(), None);
++            } else {
++                // B fails only after A has advanced and converted exactly once.
++                assert_eq!(next_row(&mut arows).unwrap(), Some("a-second"));
++            }
++        }
++    }
++}

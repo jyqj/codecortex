@@ -1,0 +1,99 @@
+{
+  "source": {
+    "source": "750e5b33a0cbc7702d8c85827763c9a76d4b46ff",
+    "source_tree": "49b17528a181d540868c2093aa553abc7b57f46f",
+    "review": "d40eb7bba7ca2131b565cb95f1ce3d718913fe51",
+    "review_tree": "0e654ea60fb401f81ef8fa2c2908154be51d130d",
+    "product": "da4584aebf2bba1b4b0a53a93ac2f9ae8f9de032",
+    "product_tree": "15d3c38a0b81efcf107ac031aba041034a65fd85",
+    "review_path": "artifacts/checkpoints/p8-task-profile-and-borrowed-cursor-bfcc-20261010/independent-source-review.json",
+    "review_sha256": "f1220e7eceda57247575e1b4e378fcfedf7fe89dbe26507f7139712ecb61b8a8",
+    "original_source_commit": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Action completed."
+        }
+      ],
+      "structuredContent": {
+        "sha": "750e5b33a0cbc7702d8c85827763c9a76d4b46ff"
+      },
+      "isError": false
+    },
+    "original_source_tree": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Action completed."
+        }
+      ],
+      "structuredContent": {
+        "sha": "49b17528a181d540868c2093aa553abc7b57f46f"
+      },
+      "isError": false
+    }
+  },
+  "branch": {
+    "branch": "task/p8-task-profile-and-borrowed-cursor-bfcc-20261010",
+    "head": "750e5b33a0cbc7702d8c85827763c9a76d4b46ff",
+    "original": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Action completed."
+        }
+      ],
+      "structuredContent": {
+        "branch": "task/p8-task-profile-and-borrowed-cursor-bfcc-20261010"
+      },
+      "isError": false
+    }
+  },
+  "pull_request": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Action completed."
+      }
+    ],
+    "structuredContent": {
+      "url": "https://github.com/jyqj/codecortex/pull/201",
+      "number": 201,
+      "state": "open",
+      "merged": false,
+      "mergeable": false,
+      "draft": true,
+      "body": "## Why\n\nP8-006 needs a complete, attributable record for each mutation profile and scale. PR #192 contains the fresh-profile implementation but predates the current wide4096 support. This PR integrates that work onto current main and adds a separately registered descriptive population with complete original-output retention.\n\nThe continuous study [38013753078/attempt 1](https://github.com/jyqj/codecortex/actions/runs/38013753078) remains failed: four of 150 cells and 41 of 1,500 observations are available, with no original 100k shard. Its unavailable native outcome is not attributed to a code cause. Its results and the separately running diagnostic are retained under their original identities.\n\n## Changes\n\n- Integrate PR #192's 10 source files by three-way composition, preserving current wide4096 behavior and the original N30/1,350-cell protocol.\n- Add explicit `profile_task_descriptive_v1`: eight profiles at five scales plus five fanout cells, **45 cells / 85 retained records / N=1**. Each cell uses fresh A/B setup and retains the original fifteen-table parity, mutation, closure and full control. Five cold points are selected prospectively from the no-op setup records.\n- Register all exact plans, source, binary, observer closure, build, run and attempt before execution. The new workflow schedules an independent matrix and preserves bounded original prefixes plus the separate whole shard. Aggregate acceptance requires every original cell; missing, duplicate, failed or mixed-source inputs remain failures.\n- Borrow sorted SQLite text during successful row comparison instead of allocating an owned String for every row. Preserve A-before-B error order, rusqlite conversion errors, duplicate rows, digest bytes, bounded examples and existing resource limits. This is an implementation change with no measured speedup claim.\n\nThe native five-hour limit includes setup through final parity for each cell. This new population has a different execution history and total budget from the old continuous study. N=1 supports descriptive observations; tail stability, significance and release certification remain inconclusive or unrun as applicable.\n\nProtocol: [P8-TASK-PROFILE-DESCRIPTIVE.md](https://github.com/jyqj/codecortex/blob/750e5b33a0cbc7702d8c85827763c9a76d4b46ff/docs/roadmap/code-index-v2/P8-TASK-PROFILE-DESCRIPTIVE.md).\n\n## Validation and source admission\n\n- Independent review accepts the actual 18-file product delta: 12 added and six modified files. Complete inventories contain 1,096 product files, 157 validation inputs and 80 source differences from the historical approval base.\n- Actual local checks: 64 existing synthetic Python controls, two explicit-scope controls covering 13 cases, 12 new task-driver controls, and three harmless capture controls passed. AST, Bash syntax, matrix shape and input-before/after checks are retained with their original outputs.\n- Rust compilation, rustfmt, Clippy, original Rust controls and the new Release 45-plan control require CI. The task study has not been triggered. CI and native execution evidence will be appended without relabeling the local Python checks.\n- Original task definitions, dependencies and statuses are unchanged: **164/192 done; 28 remaining**. Source admission alone closes no TODO.\n\nImmutable chain: [P da4584ae](https://github.com/jyqj/codecortex/commit/da4584aebf2bba1b4b0a53a93ac2f9ae8f9de032) → [R d40eb7bb](https://github.com/jyqj/codecortex/commit/d40eb7bba7ca2131b565cb95f1ce3d718913fe51) → [G 750e5b33](https://github.com/jyqj/codecortex/commit/750e5b33a0cbc7702d8c85827763c9a76d4b46ff). [Independent actual-source review](https://github.com/jyqj/codecortex/blob/d40eb7bba7ca2131b565cb95f1ce3d718913fe51/artifacts/checkpoints/p8-task-profile-and-borrowed-cursor-bfcc-20261010/independent-source-review.json).\n\nPR #192 remains on hold until this integration is validated and merged. Its original review/CI records and 22 artifact additions remain available at its fixed head; this PR does not present them as executions of the new source.\n",
+      "title": "feat(eval): register complete task profiles and borrow sorted rows",
+      "base": "main",
+      "base_sha": "b9b089bb4eae072affe9326681d4980eae15fd84",
+      "head": "task/p8-task-profile-and-borrowed-cursor-bfcc-20261010",
+      "head_sha": "750e5b33a0cbc7702d8c85827763c9a76d4b46ff",
+      "head_repo_id": 1249213794,
+      "head_repo_full_name": "jyqj/codecortex",
+      "merge_commit_sha": null,
+      "user": {
+        "login": "jyqj",
+        "name": "jyqj",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/174292474?v=4",
+        "id": 174292474
+      },
+      "requested_reviewers": null,
+      "requested_team_reviewers": null,
+      "diff": null,
+      "comments": null,
+      "created_at": "2026-10-10T04:41:41Z",
+      "updated_at": "2026-10-10T04:41:41Z",
+      "closed_at": null,
+      "merged_at": null,
+      "commits": 3,
+      "changed_files": 30,
+      "additions": 16703,
+      "deletions": 67,
+      "display_url": "https://github.com/jyqj/codecortex/pull/201",
+      "display_title": "feat(eval): register complete task profiles and borrow sorted rows"
+    },
+    "isError": false
+  }
+}

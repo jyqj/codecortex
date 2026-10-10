@@ -1,0 +1,310 @@
+{
+  "schema": "PR203-bounded-independent-static-review-v1",
+  "reviewer": "pr_triage",
+  "decision": "mechanism_plausible_but_existing_source_admission_blocker",
+  "observed_at": {
+    "current_time": "2026-10-10 07:58:37 UTC"
+  },
+  "pr": {
+    "number": 203,
+    "state": "open",
+    "draft": true,
+    "head": "797e9e60516e9bb8cc3c35f14a6ec7dc0092aa4f",
+    "base": "0da9a2800d2b3112d584a8bad4f79785e01162a9",
+    "labels": []
+  },
+  "commit": {
+    "sha": "797e9e60516e9bb8cc3c35f14a6ec7dc0092aa4f",
+    "tree": "2d5758b637c588fe07fcfcde99991f5468f89076",
+    "parents": [
+      "0da9a2800d2b3112d584a8bad4f79785e01162a9"
+    ],
+    "author_date": "2026-10-10T07:44:09Z"
+  },
+  "exact_diff": [
+    {
+      "sha": "2ad2b5e36cbb7e9f368f1116e449d6d082f87744",
+      "filename": ".github/workflows/p8-task-profile.yml",
+      "status": "modified",
+      "additions": 2,
+      "deletions": 10,
+      "changes": 12,
+      "blob_url": "https://github.com/jyqj/codecortex/blob/797e9e60516e9bb8cc3c35f14a6ec7dc0092aa4f/.github%2Fworkflows%2Fp8-task-profile.yml",
+      "raw_url": "https://github.com/jyqj/codecortex/raw/797e9e60516e9bb8cc3c35f14a6ec7dc0092aa4f/.github%2Fworkflows%2Fp8-task-profile.yml",
+      "contents_url": "https://api.github.com/repos/jyqj/codecortex/contents/.github%2Fworkflows%2Fp8-task-profile.yml?ref=797e9e60516e9bb8cc3c35f14a6ec7dc0092aa4f",
+      "patch": "@@ -596,19 +596,11 @@ jobs:\n       env:\n         PREVIOUS_ARTIFACT_ID: ${{ steps.upload_18.outputs.artifact-id }}\n         PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_18.outputs.artifact-digest }}\n-    - uses: actions/upload-artifact@v4\n-      if: always() && steps.freeze_19.outputs.ready == 'true'\n-      with:\n-        name: p8-task-progress-${{ matrix.cell }}-${{ github.run_id }}-${{ github.run_attempt }}-19\n-        path: ${{ steps.freeze_19.outputs.bundle }}\n-        if-no-files-found: error\n-      id: upload_19\n+    # Keep checkpoint 19 local. Its pending chunks are carried by the final\n+    # boundary, avoiding the 1,000-artifact listing cap without falsifying custody.\n     - name: Preserve final or interrupted task diagnostic boundary\n       id: finish\n       if: always() && steps.launch.outcome == 'success'\n-      env:\n-        PREVIOUS_ARTIFACT_ID: ${{ steps.upload_19.outputs.artifact-id }}\n-        PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_19.outputs.artifact-digest }}\n       run: |\n         python3 scripts/p8_task_profile_capture.py finish \\\n           --directory \"$RUNNER_TEMP/p8-task-cell-$P8_TASK_CELL\" --index 20"
+    }
+  ],
+  "workflow": {
+    "local_path": "/workspace/scratch/bfccb8494ba0/round48-PR203-bounded-review/head-p8-task-profile.yml",
+    "bytes": 26865,
+    "sha256": "2dfcab748378de13e2bc5ffef3a35bb08ff4448921496c1119d8b4c4e552c344",
+    "git_blob": "2ad2b5e36cbb7e9f368f1116e449d6d082f87744"
+  },
+  "mechanism": {
+    "changed": "Remove only upload_19 and finish PREVIOUS_ARTIFACT_ID/DIGEST environment; two comments added. Parsed YAML confirms all other jobs, measurement steps, 45-cell matrix, event/permissions/limits identical.",
+    "freeze_19": "Still calls checkpoint index19 and acknowledges genuine upload_18 outputs.",
+    "finish": "Calls index20 with empty previous artifact identity. core.acknowledge returns without claiming index19 remote custody. core.snapshot packages all unacknowledged chunks into final, including those frozen at19.",
+    "failure_boundary": "If runner is lost between local19 and final upload, newest retained remote checkpoint stays18; additional tail is unknown. This is a real change to interim diagnostic retention, not loss of completed whole-shard acceptance requirements.",
+    "native_or_acceptance_changes": false,
+    "unchanged": [
+      "native source and all driver parameters",
+      "N1/45 cells/85 observations",
+      "5h and 512MiB native limits",
+      "whole-shard uploads and strict original aggregate",
+      "capture wrapper/core source and verdict",
+      "original research records and task states"
+    ]
+  },
+  "artifact_arithmetic": {
+    "old_final_run_total": 1037,
+    "new_single_attempt_total_if_all_defined_uploads_succeed": 992,
+    "new_before_matrix_upload": 991,
+    "formula": {
+      "build": 1,
+      "capacity": 45,
+      "progress": 900,
+      "whole_shards": 45,
+      "matrix": 1
+    },
+    "margin_after_matrix_to_observed1000": 8,
+    "interpretation": "Source-level count mitigation for this fixed single attempt. It does not repair enumeration/pagination, guarantee arbitrary future extra artifacts/reruns, or prove a new complete research result."
+  },
+  "original_failure_fact_vs_inference": {
+    "actual_original_run": 38026411200,
+    "actual_aggregate_job": 114158378120,
+    "actual_log_found": 1000,
+    "actual_complete_shards_downloaded": 42,
+    "actual_missing": [
+      "batch_100-100000",
+      "body-100000",
+      "config-100000"
+    ],
+    "original_failure_peer": "e6ab7248a27e731171f0d741499486c59ea11bb5",
+    "exact_download_action": "d3f86a106a0bac45b974a628896c90dbdf5c8093",
+    "source_verified_here": "download-artifact invokes listArtifacts(latest:true), then applies pattern in memory; local downloaded original source lines136-149. This shows selection after listing. A universal REST 1000 limit is not inferred.",
+    "inference": "Keeping all this attempt artifacts under1000 should avoid this observed truncation/selection failure, conditional on this same enumeration behavior and no extra artifact population. No modified workflow aggregate was executed in this review.",
+    "recovery_preserved": "Original Actions42 failure and independently accepted complete45 unchanged-source recovery remain separate historical evidence."
+  },
+  "blockers": [
+    {
+      "kind": "existing_v15_validation_source_binding",
+      "path": ".github/workflows/p8-task-profile.yml",
+      "registry_product": "3481da0baf46bf510580951a4f5fbc9cb2255ae5",
+      "registry_review": "533e900cf83900f726e92835956137356081861f",
+      "expected_sha256": "747d85f5905fd8b81b62283af18f696843fa4e6b29849e4972acdeee998266d9",
+      "actual_sha256": "2dfcab748378de13e2bc5ffef3a35bb08ff4448921496c1119d8b4c4e552c344",
+      "expected_old_git": "a99772d3d4ed4ba716f38041eed9d59313013ddd",
+      "actual_new_git": "2ad2b5e36cbb7e9f368f1116e449d6d082f87744",
+      "evidence": "Only workflow changed, registry and guard inherited. verify_reviewed_source_v15.py L123-131 reads reviewed PRODUCT bytes then unchanged_file L78-89 compares current disk; ci.yml L54 executes original v15 CLI.",
+      "conclusion": "Current head cannot pass this existing source admission as-is. This is static source-derived rejection, not a claim that the currently running main check has already failed.",
+      "minimal_path": "Preserve this one-leaf candidate, create actual reviewed validation delta and canonical R, update registry/four guard constants mechanically, then execute original source/task admission and ordinary CI; do not relax guard or rerun original studies."
+    }
+  ],
+  "validation_remaining": {
+    "actual_check_snapshot": {
+      "total": 20,
+      "states": {
+        "success": 13,
+        "in_progress": 5,
+        "skipped": 2
+      },
+      "checks": [
+        {
+          "id": 114164870951,
+          "name": "cold linux / 1.95 / semantic",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 114164870928,
+          "name": "cold linux / stable / semantic",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 114164870895,
+          "name": "lifecycle",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 114164870886,
+          "name": "cold linux / 1.95 / default",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 114164870873,
+          "name": "cold macos / stable / default",
+          "status": "in_progress",
+          "conclusion": null
+        },
+        {
+          "id": 114164870847,
+          "name": "cold macos / 1.95 / default",
+          "status": "in_progress",
+          "conclusion": null
+        },
+        {
+          "id": 114164870845,
+          "name": "offline (semantic)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 114164870844,
+          "name": "cold macos / stable / semantic",
+          "status": "in_progress",
+          "conclusion": null
+        },
+        {
+          "id": 114164870834,
+          "name": "check",
+          "status": "in_progress",
+          "conclusion": null
+        },
+        {
+          "id": 114164870823,
+          "name": "cold linux / stable / default",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 114164870822,
+          "name": "cold macos / 1.95 / semantic",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 114164870792,
+          "name": "msrv",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 114164870783,
+          "name": "offline (default)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 114164870770,
+          "name": "closeout",
+          "status": "in_progress",
+          "conclusion": null
+        },
+        {
+          "id": 114164870689,
+          "name": "actual recovery and rollback matrix",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 114164870673,
+          "name": "mechanism",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 114164870639,
+          "name": "security",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 114164870551,
+          "name": "engineering",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 114164849696,
+          "name": "mixed",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "id": 114164827003,
+          "name": "admission_and_controls",
+          "status": "completed",
+          "conclusion": "skipped"
+        }
+      ]
+    },
+    "not_yet_proven": [
+      "all ordinary head CI successful",
+      "dynamic omitted-upload19 to final pending-chunk behavior on this exact workflow",
+      "future aggregate receiving all45 through GitHub download action"
+    ],
+    "bounded_optional_control": "Existing task capture controls do not explicitly name skipped upload19 to final20. A harmless host fixture could verify pending chunk reuse/no invented ACK under omitted upload, including failed final upload; not a new cost study and not performed here.",
+    "research_rerun_required_by_this_review": false
+  },
+  "source_and_originals": [
+    {
+      "local_path": "/workspace/scratch/bfccb8494ba0/round48-PR203-bounded-review/official-originals.json",
+      "bytes": 188559,
+      "sha256": "4119054003c573b04c8ade54cbb5b24c12684779be36544cdeb4116db2002f69",
+      "git_blob": "a8e8ccbda76b5c308e2973fd1d3d3801ff67fd0c"
+    },
+    {
+      "local_path": "/workspace/scratch/bfccb8494ba0/round48-PR203-bounded-review/workflow-head.official-original.json",
+      "bytes": 349,
+      "sha256": "5ec431b8d5865652d8b0cb8cd8f0acb9370af0c4b10991ac77ba183d891ce1a2",
+      "git_blob": "19756532b025cba81cc78872609dc95c22c97b80"
+    },
+    {
+      "local_path": "/workspace/scratch/bfccb8494ba0/round48-PR203-bounded-review/workflow-head.raw-original.json",
+      "bytes": 56101,
+      "sha256": "5728a44b7f034535c776b6786ec5b674ec3ec07a9de1d360d86ec176b0cebed5",
+      "git_blob": "70ab8a96dfb6aa880c244c820f87811e7dd9f4c9"
+    },
+    {
+      "local_path": "/workspace/scratch/bfccb8494ba0/round48-PR203-bounded-review/guard-source.official-originals.json",
+      "bytes": 429901,
+      "sha256": "a57a2915daaf73462cb1f6ccac62e2f4e25fb15412d297b556f7903a5a7fc977",
+      "git_blob": "6783b9ad5af0c1c3b071379d481a270bd3abaf28"
+    },
+    {
+      "local_path": "/workspace/scratch/bfccb8494ba0/round48-PR203-bounded-review/head-p8-task-profile.yml",
+      "bytes": 26865,
+      "sha256": "2dfcab748378de13e2bc5ffef3a35bb08ff4448921496c1119d8b4c4e552c344",
+      "git_blob": "2ad2b5e36cbb7e9f368f1116e449d6d082f87744"
+    },
+    {
+      "local_path": "/workspace/scratch/bfccb8494ba0/round48-PR203-bounded-review/head-reviewed-source-registry-v15.json",
+      "bytes": 183121,
+      "sha256": "cce1f24ebccdf007117004b7d7e9cec8377fdb8aa106e33d379e0c5b9d95354f",
+      "git_blob": "550263e844b8ff2577a7ca0f81a61db401f0e5bb"
+    },
+    {
+      "local_path": "/workspace/scratch/bfccb8494ba0/round48-PR203-bounded-review/head-verify_reviewed_source_v15.py",
+      "bytes": 11094,
+      "sha256": "504575b1ee0db7aecbc6d75eee4a9875fb5482cf4286cd9bd0ef21a2353f63fc",
+      "git_blob": "8dddb85f5d09e6fa9543f8ab0cce9ea9e06050d2"
+    },
+    {
+      "local_path": "/workspace/scratch/bfccb8494ba0/round48-PR203-bounded-review/head-ci.yml",
+      "bytes": 11046,
+      "sha256": "7e659bc2f8cf1565238b2903864639a2e4bfc0887721d9482f128f6e83b81914",
+      "git_blob": "8c7325eb88b791f909e72c4b6c79b417185e4386"
+    },
+    {
+      "local_path": "/workspace/scratch/bfccb8494ba0/round48-PR203-bounded-review/workflow.diff",
+      "bytes": 1233,
+      "sha256": "290328e101920fda27847ec45cac41caaab8acccb34a29e19053152a19c3b211",
+      "git_blob": "7d60543a18130abfd4c675232887876f399c3195"
+    }
+  ],
+  "read_recovery_history": [
+    "GitHub contents_url with percent-encoded .github path rejected400; saved unchanged. Known exact raw URL succeeded once.",
+    "Three local Git blob reads with NoLazy returned128 because cache lacked their bodies; no implicit fetch. Official exact-head source reads then used."
+  ],
+  "not_performed": [
+    "job log or Actions artifact download",
+    "new tests, capture execution or native experiment",
+    "source guard execution",
+    "PR/comment/label/ref mutation",
+    "claim current main fix or TODO completion"
+  ]
+}

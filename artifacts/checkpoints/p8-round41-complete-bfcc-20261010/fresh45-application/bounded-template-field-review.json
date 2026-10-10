@@ -1,0 +1,68 @@
+{
+  "schema": "fresh45-report-template-bounded-peer-v1",
+  "recorded_at_utc": "2026-10-10T05:09:51.573372+00:00",
+  "reviewer": "execution_recon",
+  "author_disclosure": "Reviewer authored task driver, not this report template. This is field/unit/count compatibility review only, not independent approval of the task driver or future evidence.",
+  "verdict": "accepted_scoped_preparation_no_execution_credit",
+  "source": "f97c5068d056969705e8387ba1f37d83847f5bee",
+  "inputs": [
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round41-fresh45-result-application-preparation/original-result-report.template.json",
+      "bytes": 11625,
+      "sha256": "43da865548920d3458e027e423dbe8bd2019758ba4a4fe9324f0740bebba7c35",
+      "git_blob": "5710768cbe217c7de9fd997c4ebaf99abc27391a"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round41-fresh45-result-application-preparation/processing-and-application-plan.md",
+      "bytes": 7711,
+      "sha256": "2be16f77c3930397336c9156b5a9c6911818b3cb796986d45208fff190b065f7",
+      "git_blob": "1097264a742b26bb42ff7dcc901dc5a2f71f1f01"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round41-fresh45-result-application-preparation/bounded-output-and-readiness-review.json",
+      "bytes": 8008,
+      "sha256": "8e0ea330726db13367fba226235321b2bb7f772bba3ce598172dd8f6fcfd4659",
+      "git_blob": "4014cc6f2a7f1f75fcd2e8e4cac444a4b8b7d9ab"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round41-task-profile-original-intake-preparation/source-exact-G2/scripts/p8_task_profile_matrix.py",
+      "bytes": 29712,
+      "sha256": "8a3b7bad9448f56263bad49da1df7def16bfddaacaa1769abe97e710c73e776c",
+      "git_blob": "c858fcb4edea1f91b421367b67bf722f0c2fef3a"
+    }
+  ],
+  "findings": [
+    {
+      "topic": "original output selectors",
+      "finding": "All six selected top-level fields exist in original combine output: cold_curve_from_no_op, setup_pairs, mutation_samples, fanout_samples, environments, cells. Aggregate-only input_results/errors/missing_slots remain separate original outcomes."
+    },
+    {
+      "topic": "85 record identities",
+      "finding": "40 setup plus40 mutation plus5 fanout; (source,run,attempt,slot,record_role) separates repeated sample strings. Five no_op cold points are an immutable display subset of the40 setups, not5 extra records."
+    },
+    {
+      "topic": "environment and N1",
+      "finding": "Row environment_id joins exact environments; preserves hosts/config/paths, no cross-host pooling or stable-tail/causal claims."
+    },
+    {
+      "topic": "units and counts",
+      "finding": "Original *_ms and *_us retain integer units; conversion to seconds divides1000 or1000000 respectively. Phases are six *_ms timings, not work counts; missing fanout timing stays null. Additional work counts only from already accepted original build_finished.report with byte/label provenance."
+    },
+    {
+      "topic": "timing/resources",
+      "finding": "Nested phase/build/full-control/parity values are not added as disjoint totals; snapshots are not peaks or process-tree maxima. Fanout measured file count is N+1, files[1000] only the capacity field."
+    },
+    {
+      "topic": "acceptance/application boundary",
+      "finding": "Original acceptance/aggregate predicates are reused; template cannot substitute for native EOF/closure/parity or custody. Matrix passed is not automatic task completion. All execution/result identities remain null at preparation time, apply_nowfalse, task_credit0."
+    }
+  ],
+  "static_AST_selector_comparison_passed": true,
+  "source_modules_imported": false,
+  "validators_or_aggregate_executed": false,
+  "data_processed": false,
+  "test_or_measurement_execution": false,
+  "source_or_template_modified": false,
+  "new_gate_added": false,
+  "unresolved_field_mapping_blockers": []
+}

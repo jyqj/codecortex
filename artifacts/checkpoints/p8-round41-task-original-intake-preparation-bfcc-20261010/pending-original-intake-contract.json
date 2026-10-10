@@ -1,0 +1,116 @@
+{
+  "actual_source_view_preparation": {
+    "argv": [
+      "python3",
+      "-B",
+      "/workspace/scratch/bfccb8494ba0/round41-task-profile-original-intake-preparation/prepare-fixed-source-view.v2.py"
+    ],
+    "completed_at_utc": "2026-10-10T04:54:20.259277+00:00",
+    "cwd": "/workspace/scratch/bfccb8494ba0",
+    "duration_seconds": 3.2457020950023434,
+    "exit_code": 0,
+    "native_validator_calls": 0,
+    "remote_fetches": 0,
+    "started_at_utc": "2026-10-10T04:54:17.013577+00:00",
+    "stderr": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stdout": {
+      "bytes": 256,
+      "sha256": "b64de37792d0f1b96d47f0f764740245a9c9aae62277e740cdc712d54cb8543d"
+    }
+  },
+  "binding": {
+    "bytes": 6725,
+    "git_blob": "b0cce820de8ea448174213f4cb92cbeb26f6c88a",
+    "path": "/workspace/scratch/bfccb8494ba0/round41-task-profile-original-intake-preparation/binding.template.json",
+    "sha256": "1bfce578d1aa8b3fe3dfa36ac4b490dc780e193f735b0280540ddd0eb63f335e"
+  },
+  "execution_to_date": {
+    "Actions_downloads": 0,
+    "ELF_calls": 0,
+    "Rust_calls": 0,
+    "accepted_cells": 0,
+    "inspect_raw_calls": 0,
+    "new_runs": 0,
+    "source_modules_imported": false,
+    "source_view_preparation_exit": 0,
+    "task_credit": 0,
+    "validate_build_calls": 0,
+    "validate_shard_calls": 0
+  },
+  "original_call_contracts": {
+    "build": {
+      "directory_members": [
+        "task-build.json",
+        "task-registry.json",
+        "native-build/build.json",
+        "native-build/p8-scale"
+      ],
+      "execution_boundary": "Original full.validate_build internally executes the preserved ELF --hash-file as a hash utility. It does not compile or run a measurement. Call only once for a newly received build and retain complete original return/stdio/exit.",
+      "function": "p8_task_profile_matrix.validate_build(directory, root=source_root)",
+      "return": "outer, built, binary",
+      "reuse": "Retain original returned outer/built/binary and exact sealed files inventory for subsequent same-study shard validation; no repeated validate_build."
+    },
+    "matrix": {
+      "intake_boundary": "Retain original aggregate receipt and its actual producer execution evidence. Any local invocation, if needed after original artifacts exist, must be separately requested and recorded; do not pre-execute aggregate or manufacture passed.",
+      "original_predicate": "combine requires every expected unique slot and one source/binary/driver/build/run/attempt identity, complete original closure and parity; 45 cells and 85 records.",
+      "producer": "p8_task_profile_matrix.aggregate"
+    },
+    "shard": {
+      "directory_members": [
+        "task-shard.json",
+        "native-shard/shard.json",
+        "native-shard/registered-plan.json",
+        "native-shard/native/raw.jsonl"
+      ],
+      "execution_boundary": "One original function call for each newly received complete slot; original inner validator can invoke ELF --hash-file for plan/raw digests. No product measurement or rebuilding.",
+      "function": "p8_task_profile_matrix.validate_shard(directory, outer_build, built, binary, build_directory, root=source_root)",
+      "result": "Retain the entire original returned object, including all 2 records per mutation cell or 1 fanout record; do not substitute progress prefixes."
+    }
+  },
+  "pending_identity": [
+    "run_id",
+    "run_attempt",
+    "event",
+    "build_job_id",
+    "build_artifact",
+    "binary",
+    "build_acceptance"
+  ],
+  "previous_preparation_failure": {
+    "bytes": 1042,
+    "git_blob": "a159f9a1f5739bac116fdff225fa2e885c25ce50",
+    "path": "/workspace/scratch/bfccb8494ba0/round41-task-profile-original-intake-preparation/prepare-attempt01-failure-boundary.json",
+    "sha256": "3e26747ee428d40b72e911ec6bbb59837fec6d95ca843fa51c73cce243349d84"
+  },
+  "producer_namespace": {
+    "build": "p8-task-build-{run_id}-{attempt}",
+    "capacity": "p8-task-capacity-{cell}-{run_id}-{attempt}",
+    "matrix": "p8-task-matrix-{run_id}-{attempt}",
+    "progress": "p8-task-progress-{cell}-{run_id}-{attempt}-{index}",
+    "shard": "p8-task-shard-{cell}-{run_id}-{attempt}"
+  },
+  "recorded_at_utc": "2026-10-10T04:55:58.881167+00:00",
+  "schema": "pending-original-task-intake-contract-v1",
+  "scope_limits": [
+    "This is an independent N1 descriptive task population, not the old 150-cell or 1350-cell study.",
+    "Five no_op setup records are the preselected cold curve subset of forty setup records; retain the other 35.",
+    "Native five-hour deadline, seed, all rows/15-table parity and resource budgets are unchanged.",
+    "No stable-tail statistics or automatic task status updates.",
+    "Current product authorship and host execution receipt are separate from pr_triage independent semantic review."
+  ],
+  "source_materialization": {
+    "bytes": 329331,
+    "git_blob": "2b14b07044999b534ed4320dbdef28043efbaf27",
+    "path": "/workspace/scratch/bfccb8494ba0/round41-task-profile-original-intake-preparation/source-materialization-receipt.json",
+    "sha256": "25b127fa3e8637a5dbeb43c9cb8eb9489aa5a49c6105b7b3cc4f8c3b95677230"
+  },
+  "transport_scope": [
+    "Root uniquely downloads/materializes new official artifacts; reuse already recorded CRC rather than double traversal.",
+    "For a new ZIP retain whole bytes, official ID/name/size/digest/source/run/attempt, safe member paths/modes and CRC/hash record.",
+    "Original failed data and partial uploads remain original failures/unknowns. Native result and byte custody are distinct.",
+    "Progress records/ACKs retain exact offset/hash coverage and unknown tail; they do not replace full shard artifacts or increase accepted records."
+  ]
+}

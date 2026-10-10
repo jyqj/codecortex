@@ -1,0 +1,355 @@
+{
+  "schema": "fresh45-original-result-report-template-v1",
+  "prepared_at_utc": "2026-10-10 05:04:30 UTC",
+  "apply_now": false,
+  "purpose": "Presentation/existing acceptance field mapping only; not an alternative validator, aggregator, workload or task writer.",
+  "immutable_existing_application": {
+    "path": "round40-fresh45-dependent-application-preparation/nine-task-fresh45-route.applyfalse.json",
+    "bytes": 68039,
+    "sha256": "8548628516c7942154e6f661a6d48294ef5d424e07cfee63cd32aee63aad30e1",
+    "git_blob": "b4af966dd0c82e48f10d26ca314b4c5a65bc7868"
+  },
+  "known_source_preparation_identity": {
+    "source": "f97c5068d056969705e8387ba1f37d83847f5bee",
+    "source_tree": "39a053ae49b486764751a570d164e7cd41d7ff29",
+    "product": "3481da0baf46bf510580951a4f5fbc9cb2255ae5",
+    "review": "533e900cf83900f726e92835956137356081861f",
+    "protocol": "p8-profile-task-descriptive-v1",
+    "stage_scope": "profile_task_descriptive_v1",
+    "workflow": {
+      "bytes": 27188,
+      "canonical_input": true,
+      "git_blob": "a99772d3d4ed4ba716f38041eed9d59313013ddd",
+      "mode": "100644",
+      "sha256": "747d85f5905fd8b81b62283af18f696843fa4e6b29849e4972acdeee998266d9"
+    }
+  },
+  "actual_execution_and_evidence": {
+    "run_id": null,
+    "run_attempt": null,
+    "event": null,
+    "started_at": null,
+    "finished_at": null,
+    "official_run_locator": null,
+    "build_job_id": null,
+    "build_artifact": null,
+    "original_validate_build_receipt": null,
+    "task_build_receipt": null,
+    "task_registry": null,
+    "binary": null,
+    "complete_45_cell_catalog": null,
+    "original_aggregate": null,
+    "aggregate_execution": null,
+    "independent_intake_review": null,
+    "current_source_CI": null,
+    "regression_source_applicability": null,
+    "formal_006_decision": null,
+    "final_publication_commit": null
+  },
+  "original_result_claims": {
+    "schema": null,
+    "stage_scope": null,
+    "status": null,
+    "passed": null,
+    "study": null,
+    "engine": null,
+    "registered_repetitions": null,
+    "cell_count": null,
+    "sample_count": null,
+    "record_count": null,
+    "setup_pair_count": null,
+    "mutation_sample_count": null,
+    "fanout_sample_count": null,
+    "validated_input_count": null,
+    "accepted_cell_count": null,
+    "input_errors": null,
+    "missing_slots": null,
+    "capacity_contract": null,
+    "release_certification": null,
+    "G8": null
+  },
+  "expected_protocol_only": {
+    "cells": 45,
+    "records": 85,
+    "setup_pairs": 40,
+    "mutation_points": 40,
+    "fanout_points": 5,
+    "cold_display_subset": 5,
+    "N_per_cell": 1,
+    "source_files_requested": [
+      1000,
+      5000,
+      10000,
+      50000,
+      100000
+    ],
+    "auxiliary_visible_config_files_per_scale_cell": 1,
+    "seed": 12648430,
+    "dirty_budget": 200,
+    "max_resume_builds": 1024,
+    "fanout_dirty_budget": 8,
+    "fanout_max_resume_builds": 128,
+    "deadline_ms": 18000000,
+    "max_native_output_bytes": 536870912,
+    "profile": "release",
+    "physical_oracle_profile": "scale_capacity_v1"
+  },
+  "views": [
+    {
+      "name": "five_point_cold_curve",
+      "select": "/cold_curve_from_no_op",
+      "expected_rows": 5,
+      "sort_by": "slot[1] numeric ascending",
+      "record_role": "setup",
+      "subset_of": "/setup_pairs",
+      "selection": "Pre-registered no_op setup only; retain all five, no best-of",
+      "expected_scales": [
+        1000,
+        5000,
+        10000,
+        50000,
+        100000
+      ],
+      "n_per_cell": 1,
+      "row_identity": [
+        "source",
+        "run_id",
+        "run_attempt",
+        "slot",
+        "record_role"
+      ],
+      "copy_sample_fields_if_present": [
+        "engine_ms",
+        "index_wall_us",
+        "outer_incremental_wall_us",
+        "full_control_ms",
+        "parity_wall_us",
+        "whole_fixture_wall_us",
+        "builds",
+        "first_build_incomplete",
+        "build_timing",
+        "full_control_build_timing",
+        "phases",
+        "counts"
+      ],
+      "missing_optional_fields": "null/unavailable, never 0",
+      "environment_pointer": "/environments/<environment_id>"
+    },
+    {
+      "name": "all_setup_records",
+      "select": "/setup_pairs",
+      "expected_rows": 40,
+      "sort_by": "slot profile then numeric amount",
+      "record_role": "setup",
+      "retain": "sample complete object plus resource_snapshots, even the 35 not used in the cold display",
+      "n_per_cell": 1,
+      "row_identity": [
+        "source",
+        "run_id",
+        "run_attempt",
+        "slot",
+        "record_role"
+      ],
+      "copy_sample_fields_if_present": [
+        "engine_ms",
+        "index_wall_us",
+        "outer_incremental_wall_us",
+        "full_control_ms",
+        "parity_wall_us",
+        "whole_fixture_wall_us",
+        "builds",
+        "first_build_incomplete",
+        "build_timing",
+        "full_control_build_timing",
+        "phases",
+        "counts"
+      ],
+      "missing_optional_fields": "null/unavailable, never 0",
+      "environment_pointer": "/environments/<environment_id>"
+    },
+    {
+      "name": "mutation_points",
+      "select": "/mutation_samples",
+      "expected_rows": 40,
+      "sort_by": "slot profile then numeric amount",
+      "record_role": "mutation",
+      "expected_profiles": [
+        "no_op",
+        "body",
+        "api",
+        "config",
+        "batch_1",
+        "batch_10",
+        "batch_100",
+        "batch_1000"
+      ],
+      "n_per_cell": 1,
+      "row_identity": [
+        "source",
+        "run_id",
+        "run_attempt",
+        "slot",
+        "record_role"
+      ],
+      "copy_sample_fields_if_present": [
+        "engine_ms",
+        "index_wall_us",
+        "outer_incremental_wall_us",
+        "full_control_ms",
+        "parity_wall_us",
+        "whole_fixture_wall_us",
+        "builds",
+        "first_build_incomplete",
+        "build_timing",
+        "full_control_build_timing",
+        "phases",
+        "counts"
+      ],
+      "missing_optional_fields": "null/unavailable, never 0",
+      "environment_pointer": "/environments/<environment_id>"
+    },
+    {
+      "name": "fanout_points",
+      "select": "/fanout_samples",
+      "expected_rows": 5,
+      "sort_by": "slot[1] numeric ascending",
+      "record_role": "fanout",
+      "expected_fanouts": [
+        1,
+        4,
+        16,
+        64,
+        128
+      ],
+      "actual_fixture_file_count_rule": "fanout+1; do not treat plan files:[1000] as measured file count",
+      "n_per_cell": 1,
+      "row_identity": [
+        "source",
+        "run_id",
+        "run_attempt",
+        "slot",
+        "record_role"
+      ],
+      "copy_sample_fields_if_present": [
+        "engine_ms",
+        "index_wall_us",
+        "outer_incremental_wall_us",
+        "full_control_ms",
+        "parity_wall_us",
+        "whole_fixture_wall_us",
+        "builds",
+        "first_build_incomplete",
+        "build_timing",
+        "full_control_build_timing",
+        "phases",
+        "counts"
+      ],
+      "missing_optional_fields": "null/unavailable, never 0",
+      "environment_pointer": "/environments/<environment_id>"
+    },
+    {
+      "name": "environment_strata",
+      "select": "/environments",
+      "retained_exact": true,
+      "join_on": "each row.environment_id",
+      "policy": "Do not collapse distinct hashes, host/config/paths, or pool repetitions across environments"
+    },
+    {
+      "name": "cell_and_custody_index",
+      "select": "/cells",
+      "expected_rows": 45,
+      "join_on": "slot",
+      "retained_exact": true,
+      "additional_original_fields": [
+        "/evidence",
+        "/input_results",
+        "/input_errors",
+        "/missing_slots",
+        "/input_digests"
+      ]
+    }
+  ],
+  "display_units": {
+    "*_ms": "integer original retained; optional seconds=value/1000",
+    "*_us": "integer original retained; optional seconds=value/1000000",
+    "phases": "scan_diff_ms,parse_ms,resolve_ms,write_ms,postprocess_ms,analysis_ms",
+    "nested_timing_rule": "No additive total from nested phase/build/control/parity values. Do not infer absent fanout parity time.",
+    "work_counts": "Do not relabel phases as counts; refer to original build_finished.report file/dirty/project/document fields if needed."
+  },
+  "native_equality_and_budget_review": {
+    "actual_original_build_acceptance": null,
+    "actual_original_shard_acceptance_catalog": null,
+    "actual_original_aggregate_acceptance": null,
+    "owned_by_existing_predicates": [
+      "exact plans and single source/binary/observer/build/registry/run/attempt",
+      "45 exact slots and 85 records; duplicate/extra/missing reject",
+      "native and worker exit, complete raw EOF and original output inventory",
+      "original five-hour supervisor and 512MiB native-output contract",
+      "all15 typed canonical tables/row multiplicity and complete closure",
+      "initial/final parity, independent config/fanout assertions, actual first-incomplete-to-closure",
+      "original dirty/resume budgets, unchanged seed and explicit fresh profile scope"
+    ],
+    "rule": "Record exact original outcomes and evidence locators. Do not substitute a summary, Actions conclusion, hash equality, progress prefix or transport CRC. Do not rerun original checks merely to populate this report."
+  },
+  "data_integrity_boundary": {
+    "separate_native_outcome_and_custody": true,
+    "signed_zero": "The original typed comparison governs; equal signed zero may have different digests. Do not add digest-string equality.",
+    "vectors": "Retain disabled/count:null and absent fields as recorded.",
+    "resources": "Original snapshots only, not peak/process-tree maxima.",
+    "phase_counts_raw_locator": null,
+    "all_original_failures_retained": null
+  },
+  "actual_report_sections": {
+    "cold_table": null,
+    "all_setup_table": null,
+    "mutation_table": null,
+    "fanout_table": null,
+    "environments": null,
+    "phase_work_counts_or_original_locators": null,
+    "custody_and_original_failures": null,
+    "scope_conclusion": null
+  },
+  "forbidden_interpretations": [
+    "85+5=90",
+    "sample string alone uniquely identifies all85",
+    "best-of selection among same-scale setups",
+    "N1 tail percentile/CI/statistical significance/speedup",
+    "cross-host causal timing or continuous-history equivalence",
+    "old150/1500 or1350 population complete",
+    "G8/release/wholeV20 passed",
+    "task done from matrix passed alone"
+  ],
+  "application_handoff": {
+    "reuse_application_blob": "b4af966dd0c82e48f10d26ca314b4c5a65bc7868",
+    "fill_only_on_actual_evidence": "updates[0].conditional_patch.append_evidence; derive a new append-only candidate, never change frozen b4af",
+    "formal_task_decision": null,
+    "eight_downstream_updates_policy": "Keep updates[1:], source_component_index, original definitions/deps unchanged; insert only their actual closure dates/locators when eligible.",
+    "commands_not_executed": [
+      [
+        "python3",
+        "scripts/code_index_plan.py",
+        "--write"
+      ],
+      [
+        "python3",
+        "scripts/code_index_plan.py"
+      ]
+    ],
+    "affected_files": [
+      "docs/roadmap/code-index-v2/tasks.json",
+      "docs/roadmap/code-index-v2/05-TODO.md",
+      "README.md",
+      "docs/roadmap/code-index-v2/README.md",
+      "docs/roadmap/code-index-v2/08-HANDOFF.md"
+    ],
+    "if_all_nine_actually_integrated": {
+      "done_before": 164,
+      "done_after": 173,
+      "remaining_before": 28,
+      "remaining_after": 19,
+      "session_before": 1,
+      "session_after": 10
+    },
+    "current_credit": 0
+  }
+}

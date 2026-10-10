@@ -1,0 +1,65 @@
+{
+  "schema": "rebuild-chunk-statements-independent-review-v1",
+  "verdict": "accepted_scoped_static",
+  "reviewer": "/root/scale_closeout",
+  "created_utc": "2026-10-09T16:12:09.685554+00:00",
+  "parent": "fffd950d5b34b0180f308db1428a57d5bf358bf1",
+  "inputs": [
+    {
+      "path": "/workspace/scratch/a217aaae3bde/p8-rebuild-chunk-statements-candidate/candidate-manifest-v1.json",
+      "bytes": 6494,
+      "sha256": "007bdd4de9af1f39245788d4cc4b498e064796fea8597df2fe36a0b8c25a5c47",
+      "git_blob_sha1": "a3358f00ccc9f66e737385ddf86be25dd1ee3073"
+    },
+    {
+      "path": "/workspace/scratch/a217aaae3bde/p8-rebuild-chunk-statements-candidate/candidate.patch",
+      "bytes": 30586,
+      "sha256": "d8bf71555690cf55e2c6d22a5e7e6ad2240b6c3e328f5c12fb5ad7f0d654fced",
+      "git_blob_sha1": "9375ddcb03d4e8164f296eb5236a9376929fd38a"
+    },
+    {
+      "path": "/workspace/scratch/a217aaae3bde/p8-rebuild-chunk-statements-candidate/crates/cc-db/src/index_db_write_batch.rs",
+      "bytes": 61668,
+      "sha256": "1f7a9a8d1326fbcf3cf9beb909284ea95aee6c17605c26ef1752a9e8a8cd0a4b",
+      "git_blob_sha1": "969909fbd79dc11bb33596bff3a8b3dca185b6c9"
+    },
+    {
+      "path": "/workspace/scratch/a217aaae3bde/p8-rebuild-chunk-statements-candidate/crates/cc-db/src/rebuild_chunk_statement_tests.rs",
+      "bytes": 18855,
+      "sha256": "836eded6f99d7e6dbe97f32ada0a7bd57ca99acc3674ba9f8c3a592f6c32aa53",
+      "git_blob_sha1": "1b88f597192fda6a10e206b657352b5cf3badfaa"
+    }
+  ],
+  "actual_controls": {
+    "inverse_patch_returncode": 0,
+    "exact_original_file_restored": true,
+    "new_test_removed_by_inverse": true,
+    "original_public_loop_exact_except_nesting": true,
+    "independent_reference_loop_exact_except_receiver": true,
+    "official_rusqlite_sources_size_sha_git_verified": true,
+    "normal_test_methods_exact": [
+      "rebuild_chunks_match_plain_compressed_source_and_short_sidecar",
+      "rebuild_chunks_keep_lazy_empty_missing_fts_and_source_error_prefixes",
+      "rebuild_chunks_keep_constraint_trigger_order_and_transaction_rollback",
+      "retained_statement_clears_bindings_on_success_and_each_failure",
+      "retained_statement_resets_before_schema_changes_and_reprepares",
+      "public_and_rebuild_file_paths_keep_complete_database_values"
+    ]
+  },
+  "findings": [
+    "The change is confined to rebuild_dependency_batches=true. The ordinary/public false-branch keeps the previous chunk loop; data before/after that loop and transaction boundaries reconstruct exactly to the fixed parent.",
+    "Two lazily initialized Option<CachedStatement> values borrow the same Connection for only this file call. Plain/compressed variants use identical base SQL; FTS has its own fixed SQL. No statement borrows chunk text/blob memory after execute; clear_bindings explicitly matches prior CachedStatement Drop cleanup.",
+    "Fallible source_json and compression choice precede base prepare/bind/execute on every row, then conn.last_insert_rowid is evaluated before lazy FTS preparation. Missing FTS and invalid source therefore retain the old visible prefix. Later errors return immediately and drop both handles before caller teardown.",
+    "Fixed rusqlite0.40.1 execute binds, checks, steps and resets. New code maps through the same db_err before clearing bindings, including bind/check/step failures, and does not add an extra sqlite reset or change row parameters.",
+    "Existing connection cache capacity is unchanged. The two live handles are outside the cache until their file call ends; cache recency/retention differs as intended. This is not a claim of identical allocation or byte-identical binary, and no wall-time gain has yet been measured.",
+    "Six added ordinary controls compare the original prepare_cached/drop loop and typed complete database values, including source/short sidecar, empty input/missing FTS/visible prefix, constraint/trigger order/rollback, binding cleanup/failure, schema change/reprepare and public/rebuild values.",
+    "The ignored cost probe uses the exact retained original per-row loop baseline, four input classes and20 alternating rounds. It compares full typed base/FTS rows, with begin/readback/rollback outside timer and no speed threshold. This is an in-memory mechanism observation, not full-staging or P8 scale evidence."
+  ],
+  "limitations": [
+    "Rust compiler, rustfmt, six controls and ignored probe have not run in this environment. Static review cannot certify compilation or performance.",
+    "Existing original study budgets, workload, oracle, task states and source identities are not changed or credited by this review."
+  ],
+  "blockers": [],
+  "task_statuses_changed": false,
+  "remaining": 29
+}

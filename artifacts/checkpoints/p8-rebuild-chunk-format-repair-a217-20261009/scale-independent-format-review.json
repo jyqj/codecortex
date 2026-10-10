@@ -1,0 +1,44 @@
+{
+  "schema": "chunk-four-actual-formatter-hunks-independent-review-v1",
+  "reviewer": "scale_closeout",
+  "reviewed_at": "2026-10-09T16:50:03.742098+00:00",
+  "verdict": "accepted_scoped_static",
+  "parent": "87c2274e497c3d0c9d40de4b538794318672e028",
+  "original_failed_job": 113923069943,
+  "original_log": {
+    "bytes": 40301,
+    "git_blob": "ac6e0b5e13c86709f11962c478f6eed8990c04b3",
+    "path": "/workspace/scratch/a217aaae3bde/p8-rebuild-chunk-statements-candidate/current-ci/job-113923069943/original.log",
+    "sha256": "ccc0e906062e536bd7e9b8a39f72f2d5749e0878cdef66a4359e00a943c1f46e"
+  },
+  "findings": [
+    "All four before/after hunks occur exactly once and reconstruct both complete candidate files byte-for-byte. All emitted hunk lines occur in the retained full original formatter log.",
+    "Three hunks are whitespace-only; compare_prefix folds the call and removes one optional trailing argument comma. No argument, expression, assertion, SQL, order, test count or cost schema changes.",
+    "The original cost run remains attributable to 87c; no measurement or prior failure is relabeled."
+  ],
+  "files": [
+    {
+      "path": "crates/cc-db/src/index_db_write_batch.rs",
+      "before_sha256": "1f7a9a8d1326fbcf3cf9beb909284ea95aee6c17605c26ef1752a9e8a8cd0a4b",
+      "after_sha256": "9234b0c00c00a11b950be5f1d95046a204f796909ccea06fe7c421b111cdda7a",
+      "after_git_blob": "708cacdf9660254c0a8d21f68677978b5372535b",
+      "exact_hunks": 1
+    },
+    {
+      "path": "crates/cc-db/src/rebuild_chunk_statement_tests.rs",
+      "before_sha256": "836eded6f99d7e6dbe97f32ada0a7bd57ca99acc3674ba9f8c3a592f6c32aa53",
+      "after_sha256": "6d19d47b551cb160b92318ba58b5cc8438760d1ca380a4827a9e8079bea7721b",
+      "after_git_blob": "4096905f967bab0cd50003c663f85efc7942c682",
+      "exact_hunks": 3
+    }
+  ],
+  "execution": {
+    "rustfmt": false,
+    "compile": false,
+    "tests": false,
+    "native": false
+  },
+  "unresolved_blockers": [],
+  "formal_task_completion": false,
+  "remaining": 29
+}

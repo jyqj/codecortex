@@ -1,0 +1,50 @@
+--- a/crates/cc-db/src/index_db_write_batch.rs
++++ b/crates/cc-db/src/index_db_write_batch.rs
+@@ -956,7 +956,8 @@
+                 // payload pre-compressed during prepare (off the write lock);
+                 // fall back to compressing here for callers without a side-car.
+                 let fallback;
+-                let use_compressed: Option<&[u8]> = match chunk_blobs.and_then(|b| b.get(chunk_idx)) {
++                let use_compressed: Option<&[u8]> = match chunk_blobs.and_then(|b| b.get(chunk_idx))
++                {
+                     Some(precomputed) => precomputed.as_deref(),
+                     None => {
+                         fallback = compress_chunk_text(&c.text);
+--- a/crates/cc-db/src/rebuild_chunk_statement_tests.rs
++++ b/crates/cc-db/src/rebuild_chunk_statement_tests.rs
+@@ -203,11 +203,7 @@
+ 
+ #[test]
+ fn rebuild_chunks_keep_lazy_empty_missing_fts_and_source_error_prefixes() {
+-    let (_, empty) = compare_prefix(
+-        &unit(0),
+-        None,
+-        "DROP TABLE chunks_fts; DROP TABLE chunks;",
+-    );
++    let (_, empty) = compare_prefix(&unit(0), None, "DROP TABLE chunks_fts; DROP TABLE chunks;");
+     assert!(empty.is_ok());
+ 
+     let (conn, missing) = compare_prefix(&unit(2), None, "DROP TABLE chunks_fts;");
+@@ -216,7 +212,11 @@
+ 
+     let mut invalid = unit(2);
+     invalid.outcome.chunks[0].source = Some(source(&invalid.outcome.chunks[0].text));
+-    invalid.outcome.chunks[0].source.as_mut().unwrap().slice_digest = "invalid".into();
++    invalid.outcome.chunks[0]
++        .source
++        .as_mut()
++        .unwrap()
++        .slice_digest = "invalid".into();
+     let (conn, early) = compare_prefix(&invalid, None, "DROP TABLE chunks_fts;");
+     assert!(early.unwrap_err().contains("invalid chunk source evidence"));
+     assert!(rows(&conn, "chunks").is_empty());
+@@ -323,7 +323,8 @@
+     let old = Connection::open_in_memory().unwrap();
+     let new = Connection::open_in_memory().unwrap();
+     for conn in [&old, &new] {
+-        conn.execute_batch("CREATE TABLE sample(a INTEGER)").unwrap();
++        conn.execute_batch("CREATE TABLE sample(a INTEGER)")
++            .unwrap();
+     }
+     let sql = "INSERT INTO sample(a) VALUES(?1)";
+     let mut slot = None;

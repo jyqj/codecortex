@@ -1,0 +1,118 @@
+{
+  "cost_probe": {
+    "cases": [
+      "single_plain",
+      "short_plain_6",
+      "mixed_32",
+      "compressed_64"
+    ],
+    "command": "cargo test --release --locked -p cc-db --lib index_db_write_batch::rebuild_chunk_statement_tests::rebuild_chunk_statements_release_cost_probe -- --exact --ignored --nocapture --test-threads=1",
+    "exact_test": "index_db_write_batch::rebuild_chunk_statement_tests::rebuild_chunk_statements_release_cost_probe",
+    "expected_records": 80,
+    "not_claimed": "Not disk/full-staging wall time, not a scale study, not a speed threshold, not TODO evidence.",
+    "rounds_per_case": 20,
+    "scope": "Same SQLite in-memory full schema and original dropped explicit indexes/cache64. Exact old per-row prepare_cached/drop loop baseline. Begin/readback/rollback and typed row digest outside timer. Every result/base/FTS row compared; separate ordinary controls cover errors and visible prefixes.",
+    "timing_assertions": false,
+    "warmup_per_path_per_case": 1
+  },
+  "created_utc": "2026-10-09T16:07:33.890212+00:00",
+  "done_count": 163,
+  "execution": {
+    "cargo_available": false,
+    "cost_probe": "not_run",
+    "native_study": "not_run",
+    "reason": "No cargo/rustfmt installed in this environment; no installation or workload started.",
+    "rust_compile": "not_run",
+    "rust_controls": "not_run",
+    "rustfmt": "not_run",
+    "rustfmt_available": false
+  },
+  "files": [
+    {
+      "bytes": 61668,
+      "change": "modified",
+      "git_blob": "969909fbd79dc11bb33596bff3a8b3dca185b6c9",
+      "mode": "100644",
+      "path": "/workspace/scratch/a217aaae3bde/p8-rebuild-chunk-statements-candidate/crates/cc-db/src/index_db_write_batch.rs",
+      "repository_path": "crates/cc-db/src/index_db_write_batch.rs",
+      "sha256": "1f7a9a8d1326fbcf3cf9beb909284ea95aee6c17605c26ef1752a9e8a8cd0a4b"
+    },
+    {
+      "bytes": 18855,
+      "change": "added",
+      "git_blob": "1b88f597192fda6a10e206b657352b5cf3badfaa",
+      "mode": "100644",
+      "path": "/workspace/scratch/a217aaae3bde/p8-rebuild-chunk-statements-candidate/crates/cc-db/src/rebuild_chunk_statement_tests.rs",
+      "repository_path": "crates/cc-db/src/rebuild_chunk_statement_tests.rs",
+      "sha256": "836eded6f99d7e6dbe97f32ada0a7bd57ca99acc3674ba9f8c3a592f6c32aa53"
+    }
+  ],
+  "formal_task_change": false,
+  "intent": "Remove repeated prepared-statement cache take/return for two existing chunk INSERT statements, scoped to one rebuild-owned file loop.",
+  "normal_controls": [
+    "rebuild_chunks_match_plain_compressed_source_and_short_sidecar",
+    "rebuild_chunks_keep_lazy_empty_missing_fts_and_source_error_prefixes",
+    "rebuild_chunks_keep_constraint_trigger_order_and_transaction_rollback",
+    "retained_statement_clears_bindings_on_success_and_each_failure",
+    "retained_statement_resets_before_schema_changes_and_reprepares",
+    "public_and_rebuild_file_paths_keep_complete_database_values"
+  ],
+  "parent": "fffd950d5b34b0180f308db1428a57d5bf358bf1",
+  "patch": {
+    "bytes": 30586,
+    "git_blob": "9375ddcb03d4e8164f296eb5236a9376929fd38a",
+    "mode": "100644",
+    "path": "/workspace/scratch/a217aaae3bde/p8-rebuild-chunk-statements-candidate/candidate.patch",
+    "sha256": "d8bf71555690cf55e2c6d22a5e7e6ad2240b6c3e328f5c12fb5ad7f0d654fced"
+  },
+  "remaining_count": 29,
+  "remote_mutations": false,
+  "rusqlite_contract": {
+    "cache_rs": "CachedStatement::drop -> cache_stmt clears bindings; cache get removes/returns same cached prepared handles.",
+    "locked_version": "0.40.1",
+    "official_source": [
+      {
+        "bytes": 10263,
+        "git_blob": "c72f2d1764fd8bcf4c497ef5b3e4dde4a8a9c719",
+        "mode": "100644",
+        "official_url": "https://api.github.com/repos/rusqlite/rusqlite/contents/src/cache.rs?ref=v0.40.1",
+        "path": "/workspace/scratch/a217aaae3bde/p8-rebuild-chunk-statements-candidate/rusqlite-0.40.1-source/cache.rs",
+        "sha256": "aabbbd6f1cb4b1961d1df4e60545def916a2564183a9c6fdf51257713523cca0"
+      },
+      {
+        "bytes": 48168,
+        "git_blob": "ba30f22cbfbcf777adc84b8e5490bd980a8824d5",
+        "mode": "100644",
+        "official_url": "https://api.github.com/repos/rusqlite/rusqlite/contents/src/statement.rs?ref=v0.40.1",
+        "path": "/workspace/scratch/a217aaae3bde/p8-rebuild-chunk-statements-candidate/rusqlite-0.40.1-source/statement.rs",
+        "sha256": "cc53dcc82755d97a48f2fa3b33d4d65c0f06fa45af0896441100e2467bfcc478"
+      },
+      {
+        "bytes": 8407,
+        "git_blob": "4e091987c81bb0f2f2966ba8915005ce41234280",
+        "mode": "100644",
+        "official_url": "https://api.github.com/repos/rusqlite/rusqlite/contents/src/raw_statement.rs?ref=v0.40.1",
+        "path": "/workspace/scratch/a217aaae3bde/p8-rebuild-chunk-statements-candidate/rusqlite-0.40.1-source/raw_statement.rs",
+        "sha256": "3814424bb427ad821a18af7cf09860a37aab0d8056f69d7d18d4268a6ea0bb5c"
+      }
+    ],
+    "raw_statement_rs": "clear_bindings delegates sqlite3_clear_bindings; reset delegates sqlite3_reset.",
+    "scope_note": "Repeated cache access is proven; repeated SQLite compilation and a wall-time benefit are not.",
+    "statement_rs": "execute binds then execute_with_bound_parameters checks, steps, resets and maps SQLite result. clear_bindings is public."
+  },
+  "schema": "rebuild-owned-chunk-statements-candidate-v1",
+  "scope": {
+    "cleanup": "Execute result mapped through original db_err then bindings cleared on success and bind/check/step failure. Handles drop before document_store or on error. rusqlite resets after step as before; no extra reset is introduced.",
+    "ordering": "source_json -> original compression/sidecar selection -> base prepare/bind/execute -> last_insert_rowid -> lazy FTS prepare/bind/execute, repeated per row.",
+    "ordinary_and_public_paths": "Original loop preserved; existing rebuild_dependency_batches flag alone selects new path.",
+    "storage": "Two Option<CachedStatement> handles; no row buffers or raised cache capacity.",
+    "unchanged": "Exact SQL/params, compression, source_json, transaction boundaries, partial prefix, FTS order, all 15-table oracle/budgets/study/N/status."
+  },
+  "static_proof": {
+    "bytes": 1633,
+    "git_blob": "6a7d550fb02a0b175dc861ed508d9621aa20e8ee",
+    "mode": "100644",
+    "path": "/workspace/scratch/a217aaae3bde/p8-rebuild-chunk-statements-candidate/static-preservation-proof.json",
+    "sha256": "09c15bb38924fee314ef6167532af053b85be217cd161f5ae08fdd0fd2fb8a41"
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "schema_version": 1,
+  "review": "round52_pr201_ordinary_engineering_admission_independent_read_only",
+  "observed_at_utc": "2026-10-10T07:01:03.924Z",
+  "repository": "jyqj/codecortex",
+  "pull_request": 201,
+  "fresh_identity": {
+    "state": "closed",
+    "merged": true,
+    "merged_at": "2026-10-10T06:05:09Z",
+    "draft": false,
+    "head_sha": "f97c5068d056969705e8387ba1f37d83847f5bee",
+    "head_tree": "39a053ae49b486764751a570d164e7cd41d7ff29",
+    "base_sha": "b9b089bb4eae072affe9326681d4980eae15fd84",
+    "merge_commit_sha": "0da9a2800d2b3112d584a8bad4f79785e01162a9",
+    "current_main_sha": "0da9a2800d2b3112d584a8bad4f79785e01162a9",
+    "merge_commit_tree": "39a053ae49b486764751a570d164e7cd41d7ff29",
+    "merge_parents": [
+      "b9b089bb4eae072affe9326681d4980eae15fd84",
+      "f97c5068d056969705e8387ba1f37d83847f5bee"
+    ],
+    "post_merge_mergeability": {
+      "mergeable": null,
+      "mergeable_state": "unknown",
+      "interpretation": "post-merge API state; not a pre-merge blocker"
+    }
+  },
+  "ordinary_ci": {
+    "exact_head": "f97c5068d056969705e8387ba1f37d83847f5bee",
+    "workflow_count": 7,
+    "job_count": 26,
+    "totals": {
+      "success": 26,
+      "failure": 0,
+      "in_progress": 0,
+      "queued": 0
+    },
+    "workflows": [
+      {
+        "run_id": 38025451863,
+        "name": "P8 original failure gates",
+        "conclusion": "success",
+        "jobs": 1
+      },
+      {
+        "run_id": 38025451807,
+        "name": "P8 runtime observations",
+        "conclusion": "success",
+        "jobs": 6
+      },
+      {
+        "run_id": 38025451825,
+        "name": "P7 closeout evidence",
+        "conclusion": "success",
+        "jobs": 4
+      },
+      {
+        "run_id": 38025451862,
+        "name": "P7 engineering regressions",
+        "conclusion": "success",
+        "jobs": 1
+      },
+      {
+        "run_id": 38025451790,
+        "name": "P8 platform cold builds",
+        "conclusion": "success",
+        "jobs": 10
+      },
+      {
+        "run_id": 38025451979,
+        "name": "P8 lifecycle and resource observations",
+        "conclusion": "success",
+        "jobs": 1
+      },
+      {
+        "run_id": 38025451919,
+        "name": "CI",
+        "conclusion": "success",
+        "jobs": 3
+      }
+    ]
+  },
+  "soak": {
+    "run_id": 38025451807,
+    "job_id": 114135223703,
+    "checkout_sha": "f97c5068d056969705e8387ba1f37d83847f5bee",
+    "job_conclusion": "success",
+    "all_steps_success": true,
+    "result": {
+      "status": "passed_observation",
+      "exit_code": 0,
+      "task_complete": false,
+      "profile": "soak",
+      "offered": 3601,
+      "outcomes": {
+        "success": 3601
+      },
+      "observed_work_ns": 3600053244226,
+      "observed_work_seconds": 3600.053244226,
+      "reads": 2400,
+      "builds": 1201,
+      "actual_concurrency_maximum": 1,
+      "read_build_overlap": false,
+      "real_branch_switches": 200,
+      "observed_catalog_compactions": 25,
+      "rss": {
+        "observed_samples": 3594,
+        "sampled_peak_bytes": 146984960,
+        "allowed_bytes": 185454592,
+        "passed": true
+      },
+      "resource_time_coverage_passed": true,
+      "failures": [],
+      "statistics_replay_identical": true,
+      "parity_exit_code": 0,
+      "semantic_backfill": "not_run_in_default_product_profile",
+      "tail_stability_claim": false
+    },
+    "retained_verification": {
+      "status": "sealed_artifacts_verified",
+      "files": 2111,
+      "observation_status": "passed_observation",
+      "observation_exit_code": 0
+    },
+    "artifact": {
+      "id": 11661147993,
+      "name": "p8-soak-f97c5068d056969705e8387ba1f37d83847f5bee",
+      "size_in_bytes": 51028840,
+      "official_digest": "sha256:7649f77bac03768b44698150e32f343ce6ffdcb2228d9a6ff343e75ec81f291c",
+      "independent_download_sha256": "7649f77bac03768b44698150e32f343ce6ffdcb2228d9a6ff343e75ec81f291c",
+      "zip_crc": "passed_no_errors",
+      "archive_entries_including_directories": 2131,
+      "source_run_head_sha": "f97c5068d056969705e8387ba1f37d83847f5bee"
+    }
+  },
+  "conclusion": {
+    "engineering_merge_preconditions": "satisfied_at_exact_head_before_external_merge",
+    "current_fact": "PR was already normally merged by another collaborator before this review froze",
+    "remaining_engineering_blocker": false,
+    "scope_limits": [
+      "task_complete remains false",
+      "maximum business concurrency was one and read/build overlap was false",
+      "semantic backfill was not run in this workload",
+      "tail_stability_claim is false",
+      "ordinary CI and merge do not establish P8-006 N30/150-shard acceptance, performance-task completion, or release certification",
+      "no original TODO credit"
+    ],
+    "write_operations_performed_by_this_review": "none except the explicitly requested unattached evidence blob"
+  }
+}

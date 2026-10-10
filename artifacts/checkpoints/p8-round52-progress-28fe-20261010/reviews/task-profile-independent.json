@@ -1,0 +1,149 @@
+{
+  "schema": "codecortex-independent-task-profile-run-review-v1",
+  "generated_at": "2026-10-10T07:01:26.910Z",
+  "repository": "jyqj/codecortex",
+  "scope": "read-only independent snapshot; no rerun/cancel/write to run or PR",
+  "run": {
+    "id": 38026411200,
+    "url": "https://github.com/jyqj/codecortex/actions/runs/38026411200",
+    "attempt": 1,
+    "status": "in_progress",
+    "conclusion": null,
+    "source_commit": "f97c5068d056969705e8387ba1f37d83847f5bee",
+    "source_tree": "39a053ae49b486764751a570d164e7cd41d7ff29",
+    "workflow_path": ".github/workflows/p8-task-profile.yml",
+    "workflow_blob": "a99772d3d4ed4ba716f38041eed9d59313013ddd",
+    "workflow_identity": "P8 complete descriptive task profile measurements",
+    "snapshot_jobs": {
+      "total": 46,
+      "build_success": 1,
+      "measure_success": 44,
+      "measure_in_progress": 1,
+      "measure_failure": 0,
+      "aggregate_present": false
+    },
+    "unfinished_job": {
+      "id": 114139257162,
+      "name": "measure (body-100000, body, 100000)",
+      "status": "in_progress",
+      "started_at": "2026-10-10T05:14:02Z",
+      "latest_step": "Freeze original byte prefix at absolute interval 8 of 20",
+      "latest_step_started_at": "2026-10-10T06:59:21Z",
+      "complete_shard_present": false,
+      "progress_artifacts_present": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    }
+  },
+  "declared_population": {
+    "descriptive_only": true,
+    "repetitions_per_cell": 1,
+    "cells": 45,
+    "records_if_complete": 85,
+    "decomposition": {
+      "mutation_profiles": [
+        "no_op",
+        "body",
+        "api",
+        "config",
+        "batch_1",
+        "batch_10",
+        "batch_100",
+        "batch_1000"
+      ],
+      "mutation_scales": [
+        1000,
+        5000,
+        10000,
+        50000,
+        100000
+      ],
+      "mutation_cells": 40,
+      "setup_plus_mutation_records": 80,
+      "fanout_values": [
+        1,
+        4,
+        16,
+        64,
+        128
+      ],
+      "fanout_cells": 5,
+      "fanout_records": 5
+    },
+    "script_source": {
+      "path": "scripts/p8_task_profile_matrix.py",
+      "blob": "c858fcb4edea1f91b421367b67bf722f0c2fef3a",
+      "schema": "p8-profile-task-descriptive-v1",
+      "stage_scope": "profile_task_descriptive_v1",
+      "complete_status": "complete_task_descriptive_coverage",
+      "statistics_scope": "N1 per cell, each environment retained; no pooled or tail statistics",
+      "completion_scope": "P8-006 descriptive task evidence only; no automatic task completion"
+    }
+  },
+  "artifacts": {
+    "official_total": 1021,
+    "exact_partition": {
+      "build": 1,
+      "capacity": 45,
+      "progress_prefix": 931,
+      "complete_shard": 44,
+      "matrix": 0,
+      "other": 0
+    },
+    "build": {
+      "id": 11659139900,
+      "size_bytes": 9250795,
+      "sha256": "65ae643b212d826533aa74a55c69e875ea964751966c5487434adbdfb57ac3b9",
+      "source_commit": "f97c5068d056969705e8387ba1f37d83847f5bee"
+    },
+    "completed_100k_example": {
+      "cell": "batch_100-100000",
+      "id": 11663266493,
+      "size_bytes": 4744796,
+      "sha256": "785e8886ed4ef1321d58bf04cee579d9bfbf994f8bb21eafc60b1db96bbc401d"
+    },
+    "unfinished_body_100k_latest_prefix": {
+      "artifact_id": 11662936727,
+      "suffix": "06",
+      "size_bytes": 134712,
+      "sha256": "08d353dd7ba9dd0f6067d240faccd6762a8715baf9e893ebc755e6f0d1b0c3fd",
+      "created_at": "2026-10-10T06:59:21Z"
+    },
+    "matrix_absent": true,
+    "measurement_or_release_artifact_absent": true,
+    "download_validation": "not performed because run is nonterminal; official digest and exact inventory are preserved, but green jobs are not promoted to aggregate acceptance"
+  },
+  "acceptance": {
+    "complete_cells": false,
+    "complete_records": false,
+    "successful_aggregate": false,
+    "missing_cells": [
+      "body-100000"
+    ],
+    "missing_record_count_if_only_missing_cell_completes_as_declared": 2,
+    "accepted_cell_count_unknown_until_aggregate": true,
+    "accepted_record_count_unknown_until_aggregate": true,
+    "p8_006_completion_credit": false,
+    "original_todo_credit": 0,
+    "reason": [
+      "run is nonterminal and aggregate has not started",
+      "only 44 of 45 complete shard artifacts exist",
+      "declared N=1 descriptive population is not the original N30/150-shard/1500-composite P8-006 study",
+      "no matrix, successful aggregate, release certification, pooled tail statistics, or whole-cohort completion exists"
+    ]
+  },
+  "prohibitions_observed": {
+    "rerun": false,
+    "cancel": false,
+    "dispatch": false,
+    "pooling": false,
+    "relabeling": false,
+    "task_status_change": false
+  }
+}

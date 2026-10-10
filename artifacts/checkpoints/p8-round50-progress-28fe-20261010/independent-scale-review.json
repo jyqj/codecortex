@@ -1,0 +1,257 @@
+{
+  "schema": "codecortex-p8-round50-independent-scale-acceptance-v1",
+  "generated_at_utc": "2026-10-10T04:48:00Z",
+  "reviewer_role": "independent read-only scale acceptance reviewer",
+  "repository": "jyqj/codecortex",
+  "subject": {
+    "run_id": 38013753078,
+    "run_url": "https://github.com/jyqj/codecortex/actions/runs/38013753078",
+    "workflow": "P8 wide dirty complete scale measurements",
+    "workflow_path": ".github/workflows/p8-scale-wide-dirty.yml",
+    "attempt": 1,
+    "event": "pull_request",
+    "source_sha": "9cc6bf49f6dd81e4069a8004eed49addba0ab79b",
+    "source_tree": "6461938788665701cfa4fa095a064a3a404ec492",
+    "profile": "scale_wide_dirty_v1",
+    "identity_note": "Current-source G9cc6 full-wide cohort. It is not the old dirty200 source and not the old dirty4096 source."
+  },
+  "fresh_api_terminal": {
+    "observed_at_utc": "2026-10-10T04:47:00Z",
+    "run_status": "completed",
+    "run_conclusion": "failure",
+    "run_created_at": "2026-10-10T01:35:19Z",
+    "run_updated_at": "2026-10-10T03:54:59Z",
+    "jobs": [
+      {
+        "id": 114099388607,
+        "name": "build",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 114100438947,
+        "name": "preflight (1000, 0)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 114100438895,
+        "name": "preflight (5000, 0)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 114100438873,
+        "name": "preflight (10000, 0)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 114100438890,
+        "name": "preflight (50000, 0)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 114100438875,
+        "name": "preflight (100000, 0)",
+        "status": "completed",
+        "conclusion": "failure",
+        "api_step_snapshot": {
+          "execute_all_phases": {
+            "number": 7,
+            "status": "in_progress",
+            "conclusion": null
+          },
+          "preserve_original_shard": {
+            "number": 8,
+            "status": "pending",
+            "conclusion": null
+          }
+        },
+        "interpretation": "The job is terminal failure, but its step snapshot is not a terminal native receipt. No 100k shard artifact exists. The exact native/wrapper failure cause is not asserted."
+      },
+      {
+        "id": 114125450702,
+        "name": "aggregate",
+        "status": "completed",
+        "conclusion": "failure"
+      },
+      {
+        "id": 114125451149,
+        "name": "measure",
+        "status": "completed",
+        "conclusion": "skipped"
+      }
+    ]
+  },
+  "artifacts": {
+    "api_count": 11,
+    "successful_shard_artifacts": [
+      {
+        "capacity": 1000,
+        "repetition": 0,
+        "artifact_id": 11655068379
+      },
+      {
+        "capacity": 5000,
+        "repetition": 0,
+        "artifact_id": 11655148761
+      },
+      {
+        "capacity": 10000,
+        "repetition": 0,
+        "artifact_id": 11655269053
+      },
+      {
+        "capacity": 50000,
+        "repetition": 0,
+        "artifact_id": 11657735385
+      }
+    ],
+    "shard_100000_artifact": null,
+    "measurement_artifacts": [],
+    "matrix": {
+      "artifact_id": 11658738280,
+      "name": "p8-scale-wide-dirty-matrix-38013753078",
+      "size_in_bytes": 580,
+      "github_digest": "sha256:716be1cef60ff03736583ca7bca4dd75be435c44fc6936aa801df6cf57a4f32b",
+      "independent_download_sha256": "716be1cef60ff03736583ca7bca4dd75be435c44fc6936aa801df6cf57a4f32b",
+      "zip_crc": "pass",
+      "member": {
+        "name": "matrix.json",
+        "uncompressed_bytes": 1978
+      },
+      "parsed": {
+        "schema": "p8-scale-matrix-v1",
+        "status": "failed",
+        "passed": false,
+        "release_certification": "not_run",
+        "missing_cells": 146,
+        "missing_breakdown": {
+          "1000": [
+            1,
+            29
+          ],
+          "5000": [
+            1,
+            29
+          ],
+          "10000": [
+            1,
+            29
+          ],
+          "50000": [
+            1,
+            29
+          ],
+          "100000": [
+            0,
+            29
+          ]
+        }
+      }
+    }
+  },
+  "cohort_accounting": {
+    "registered_capacities": [
+      1000,
+      5000,
+      10000,
+      50000,
+      100000
+    ],
+    "repetitions_per_capacity": 30,
+    "registered_shards": 150,
+    "successful_shards": 4,
+    "missing_shards": 146,
+    "registered_composite_observations": 1500,
+    "complete_composite_observations": false,
+    "successful_aggregate": false,
+    "measurement_job_executed": false
+  },
+  "p8_006_original_acceptance": {
+    "task_status_before_review": "in_progress",
+    "task_definition_source": "docs/roadmap/code-index-v2/tasks.json at main b9b089bb4eae072affe9326681d4980eae15fd84",
+    "gates": [
+      {
+        "gate": "100k terminal successful shard",
+        "result": "fail",
+        "evidence": "job 114100438875 failure and no 100k shard artifact"
+      },
+      {
+        "gate": "150/150 successful shards",
+        "result": "fail",
+        "evidence": "4/150 successful; 146 missing"
+      },
+      {
+        "gate": "1500 composite observations",
+        "result": "fail",
+        "evidence": "cohort never expanded beyond four rep0 shards"
+      },
+      {
+        "gate": "successful aggregate",
+        "result": "fail",
+        "evidence": "job 114125450702 failure; matrix passed=false"
+      },
+      {
+        "gate": "measurement and release certification",
+        "result": "fail",
+        "evidence": "measure skipped; release_certification=not_run"
+      },
+      {
+        "gate": "complete attributable phases and full parity across cohort",
+        "result": "fail",
+        "evidence": "100k shard absent and 146 cells missing"
+      },
+      {
+        "gate": "complete fanout population",
+        "result": "fail",
+        "evidence": "whole cohort incomplete"
+      }
+    ],
+    "decision": "not_accepted",
+    "todo_credit": 0,
+    "resulting_status": "in_progress",
+    "blocker_summary": "The current-source full-wide cohort failed at the 100k preflight boundary, never generated the remaining 145 measurement jobs, failed aggregate, and skipped measure."
+  },
+  "source_separation": [
+    {
+      "run_id": 37962416564,
+      "source_sha": "4fe927488d5cb7f26bd27c7624745fb1b6ca202b",
+      "profile": "scale_capacity_v1",
+      "dirty_budget": 200,
+      "retained_status": "100k failure; aggregate failure; measure skipped; 4/150 shards; accepted historical 41/1500 composite observations",
+      "pooling_with_current": "forbidden"
+    },
+    {
+      "run_id": 37982220020,
+      "source_sha": "008f1ec0ae16b9b6aff9f20d033b17b2219168f8",
+      "profile": "scale_wide_dirty_v1",
+      "dirty_budget": 4096,
+      "retained_status": "100k failure; aggregate failure; measure skipped; 4/150 shards",
+      "pooling_with_current": "forbidden"
+    },
+    {
+      "run_id": 38013753078,
+      "source_sha": "9cc6bf49f6dd81e4069a8004eed49addba0ab79b",
+      "profile": "scale_wide_dirty_v1",
+      "dirty_budget": 4096,
+      "retained_status": "100k failure; aggregate failure; measure skipped; 4/150 shards",
+      "pooling_with_other_sources": "forbidden"
+    }
+  ],
+  "limitations": [
+    "The workflow job-log download endpoint returned BlobNotFound during this review; exact native or wrapper failure cause is therefore not claimed.",
+    "A completed/failure GitHub job with a stale in_progress step snapshot is not re-labelled as native terminal success.",
+    "No source/profile/binary sample is pooled, relabelled, or substituted.",
+    "No workflow was dispatched, rerun, or cancelled.",
+    "No PR, test, artifact, failure, or subgate is counted as an original TODO completion."
+  ],
+  "final_decision": {
+    "p8_006": "remain_in_progress",
+    "newly_completed_original_todos": [],
+    "original_todo_credit": 0,
+    "downstream_dependency_effect": "P8-007 through P8-013 and P8-016 remain dependency-open/blocked by the unchanged chain."
+  }
+}

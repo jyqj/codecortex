@@ -1,0 +1,262 @@
+{
+  "schema_version": 1,
+  "review": "round50_pr_ledger_independent_read_only",
+  "generated_at": "2026-10-10T04:48:44.871Z",
+  "repository": "jyqj/codecortex",
+  "scope": [
+    "fresh main identity",
+    "authoritative tasks.json ledger",
+    "Issue #158 latest coordination",
+    "all open pull-request heads, states, divergence and observed workflow checks",
+    "safe merge/close candidate decision"
+  ],
+  "authority": {
+    "main_sha": "b9b089bb4eae072affe9326681d4980eae15fd84",
+    "main_tree": "6461938788665701cfa4fa095a064a3a404ec492",
+    "main_url": "https://github.com/jyqj/codecortex/commit/b9b089bb4eae072affe9326681d4980eae15fd84",
+    "tasks_path": "docs/roadmap/code-index-v2/tasks.json",
+    "tasks_blob_sha": "adb44ee70a4c129bfb443d4ecf678fb934c8ea6b",
+    "tasks_blob_basis": "main is unchanged since the prior verified blob identity; this review also freshly read and parsed the file at the exact main SHA",
+    "ledger": {
+      "total": 192,
+      "done": 164,
+      "in_progress": 15,
+      "todo": 12,
+      "blocked": 1,
+      "remaining": 28,
+      "current_phase": "P8",
+      "next_task": "P8-006"
+    },
+    "target_statuses": {
+      "P8-005": "done",
+      "P8-006": "in_progress",
+      "P8-007": "in_progress",
+      "P8-008": "in_progress",
+      "P8-009": "in_progress",
+      "P8-010": "in_progress",
+      "P8-011": "in_progress",
+      "P8-012": "in_progress",
+      "P8-013": "in_progress",
+      "P8-016": "in_progress"
+    },
+    "original_todo_delta": {
+      "newly_completed_ids": [],
+      "newly_completed_count": 0,
+      "cumulative_since_163_baseline": [
+        "P8-005"
+      ],
+      "cumulative_count": 1
+    },
+    "issue_158_latest": {
+      "comment_id": 6093353243,
+      "created_at": "2026-10-10T03:34:59Z",
+      "url": "https://github.com/jyqj/codecortex/issues/158#issuecomment-6093353243",
+      "statement": "Round 49 records no new original TODO, 28 remaining, P8-006 still in progress, and eight then-open PRs on HOLD."
+    }
+  },
+  "newly_observed_delta": {
+    "open_pr_count": 9,
+    "new_pr": {
+      "number": 201,
+      "url": "https://github.com/jyqj/codecortex/pull/201",
+      "title": "feat(eval): register complete task profiles and borrow sorted rows",
+      "state": "open",
+      "draft": true,
+      "mergeable_snapshot": true,
+      "base_sha": "b9b089bb4eae072affe9326681d4980eae15fd84",
+      "head_sha": "750e5b33a0cbc7702d8c85827763c9a76d4b46ff",
+      "relation_to_main": {
+        "status": "ahead",
+        "ahead_by": 3,
+        "behind_by": 0
+      },
+      "commits": 3,
+      "changed_files": 30,
+      "additions": 16703,
+      "deletions": 67,
+      "tasks_json_changed": false,
+      "observed_checks_at": "2026-10-10T04:48:44.871Z",
+      "observed_job_counts": {
+        "success": 12,
+        "in_progress": 12,
+        "failure": 1,
+        "total": 25
+      },
+      "workflow_runs": [
+        {
+          "id": 38024957104,
+          "name": "P8 lifecycle and resource observations",
+          "status": "in_progress",
+          "conclusion": null
+        },
+        {
+          "id": 38024957063,
+          "name": "P8 runtime observations",
+          "status": "in_progress",
+          "conclusion": null
+        },
+        {
+          "id": 38024957109,
+          "name": "P8 original failure gates",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 38024957114,
+          "name": "P7 closeout evidence",
+          "status": "in_progress",
+          "conclusion": null
+        },
+        {
+          "id": 38024957203,
+          "name": "CI",
+          "status": "completed",
+          "conclusion": "failure"
+        },
+        {
+          "id": 38024957096,
+          "name": "P8 platform cold builds",
+          "status": "in_progress",
+          "conclusion": null
+        },
+        {
+          "id": 38024957126,
+          "name": "P7 engineering regressions",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ],
+      "blocking_failure": {
+        "workflow_run_id": 38024957203,
+        "job_id": 114133731619,
+        "job_name": "check",
+        "step": "Format check",
+        "command": "cargo fmt --all -- --check",
+        "exit_code": 1,
+        "file": "crates/cc-eval/tests/p8_scale.rs",
+        "line": 964,
+        "difference": "ScaleShard inline literal must be rustfmt-expanded; later CI steps were skipped"
+      },
+      "claimed_scope_boundary": [
+        "integrates PR #192 source onto current main",
+        "adds a separate descriptive N=1 task-profile population",
+        "borrows sorted SQLite text without a measured speedup claim",
+        "task study has not been triggered",
+        "source admission alone closes no original TODO"
+      ],
+      "decision": "HOLD_DO_NOT_MERGE",
+      "reasons": [
+        "exact-head CI is failing rustfmt",
+        "twelve observed jobs remain in progress",
+        "new task-profile study is not an execution result or original TODO acceptance",
+        "no authoritative task status changed"
+      ],
+      "original_todo_credit": 0
+    }
+  },
+  "open_pull_requests": [
+    {
+      "number": 201,
+      "draft": true,
+      "state": "open",
+      "head": "750e5b33a0cbc7702d8c85827763c9a76d4b46ff",
+      "base": "b9b089bb4eae072affe9326681d4980eae15fd84",
+      "main_relation": "ahead 3 / behind 0",
+      "checks": "12 success / 12 in_progress / 1 failure; CI rustfmt failure",
+      "decision": "HOLD"
+    },
+    {
+      "number": 192,
+      "draft": true,
+      "state": "open",
+      "head": "e7f8e913861f32e6745bcd56794601133b621c34",
+      "base": "10ec828beb94200ec679302c45115760ebd55ee9",
+      "main_relation": "ahead 6 / behind 54",
+      "checks": "7 workflow runs completed success at fixed head",
+      "decision": "HOLD until #201 is actually corrected, fully validated and merged; do not pre-close as superseded"
+    },
+    {
+      "number": 191,
+      "draft": true,
+      "state": "open",
+      "head": "1ebb6208f2f5f8fe8a5bf237c00a3d963f44bb08",
+      "base": "fffd950d5b34b0180f308db1428a57d5bf358bf1",
+      "main_relation": "ahead 9 / behind 60",
+      "checks": "ordinary workflows successful; optional cost run skipped and equal-lifetime run successful",
+      "decision": "HOLD; retained observations include adverse/order-sensitive pairs and do not establish default benefit"
+    },
+    {
+      "number": 188,
+      "draft": true,
+      "state": "open",
+      "head": "cc177ddc9e6b8180b8d847539787672e7b689a1a",
+      "base": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+      "main_relation": "ahead 7 / behind 75",
+      "checks": "7 workflow runs completed success at fixed head",
+      "decision": "HOLD; frozen performance counterevidence remains unresolved"
+    },
+    {
+      "number": 65,
+      "draft": true,
+      "state": "open",
+      "head": "3babaa5aa0b11971e20b65625992a9b0dd7b8968",
+      "base": "bc8e22bd6b4f85774e7b84a3e6a30da8dc4a3b29",
+      "main_relation": "ahead 7 / behind 523",
+      "checks": "historical CI success",
+      "decision": "HOLD; uncarried holdout-custody intent must be preserved"
+    },
+    {
+      "number": 4,
+      "draft": true,
+      "state": "open",
+      "head": "0466d490a169eb25d2c9070c65aae36060f2220b",
+      "base": "9619641903f0b9f397007ebbe85893ce8f6b5f97",
+      "main_relation": "ahead 15 / behind 621",
+      "checks": "historical Code index quality and CI success",
+      "decision": "HOLD; uncarried product intent remains"
+    },
+    {
+      "number": 3,
+      "draft": true,
+      "state": "open",
+      "head": "9619641903f0b9f397007ebbe85893ce8f6b5f97",
+      "base": "4514630dcd26481cf6dbc2aff38824ed71ef06da",
+      "main_relation": "ahead 12 / behind 621",
+      "checks": "historical Code index quality success and CI failure",
+      "decision": "HOLD; uncarried product intent remains"
+    },
+    {
+      "number": 127,
+      "draft": true,
+      "state": "open",
+      "head": "222da64761971a3b546458aa16e2c2c9ea46cea7",
+      "base": "513a98c9a94b15ec77153df41af26fa3c8c0b5e8",
+      "main_relation": "ahead 4 / behind 450",
+      "checks": "historical CI success",
+      "decision": "HOLD; uncarried opt-in publication-group intent remains"
+    },
+    {
+      "number": 137,
+      "draft": true,
+      "state": "open",
+      "head": "bc4e5602e10841258fb5583138419335bc9098dd",
+      "base": "5f4e7d1643802078d3c1253eec7b5670bd487d6a",
+      "main_relation": "ahead 3 / behind 414",
+      "checks": "historical CI failure",
+      "decision": "HOLD; uncarried diagnostics intent remains"
+    }
+  ],
+  "decisions": {
+    "safe_merge_candidates": [],
+    "safe_close_candidates": [],
+    "merge_or_close_performed": false,
+    "authoritative_task_edit_performed": false,
+    "conclusion": "No original TODO is newly complete. PR #201 is the only new PR delta and is not admissible because exact-head CI fails rustfmt and other jobs are unfinished. All nine open PRs remain HOLD."
+  },
+  "limitations": [
+    "Historical workflow success on stale/diverged heads is not current-main admission.",
+    "A successful or mergeable GitHub snapshot is not original TODO acceptance.",
+    "PR #201's untriggered N=1 descriptive study cannot replace or relabel existing P8-006 scale populations.",
+    "This review is read-only except for this unattached evidence blob."
+  ]
+}

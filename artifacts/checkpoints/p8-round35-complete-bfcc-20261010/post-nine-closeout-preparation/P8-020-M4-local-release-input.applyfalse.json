@@ -1,0 +1,356 @@
+{
+  "schema": "p8_020_m4_local_release_input_draft_v1",
+  "recorded_at_utc": "2026-10-10T02:27:19.772815+00:00",
+  "apply_now": false,
+  "executable_manifest_ready": false,
+  "task_state_modified": false,
+  "selected_profile": "M4-local",
+  "status": "blocked_preparation_only",
+  "release_certified": false,
+  "final_release_decision": null,
+  "final_P8_006_complete_cohort_receipt": null,
+  "original_task": {
+    "id": "P8-020",
+    "title": "P8发布评审与遗留关闭",
+    "depends_on": [
+      "P8-001",
+      "P8-002",
+      "P8-003",
+      "P8-004",
+      "P8-005",
+      "P8-006",
+      "P8-007",
+      "P8-008",
+      "P8-009",
+      "P8-010",
+      "P8-011",
+      "P8-012",
+      "P8-013",
+      "P8-016",
+      "P8-017",
+      "P8-018",
+      "P8-019"
+    ],
+    "steps": [
+      "G8按local/semantic能力分别审核",
+      "汇总风险、回滚和后续决策"
+    ],
+    "acceptance": [
+      "本次选择发布范围内blocker为0，其他证据不足明确列出",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validations": [
+      "V18",
+      "V19",
+      "V20",
+      "V21"
+    ],
+    "conditional": null,
+    "conditional_dependencies": [
+      {
+        "task": "P8-015",
+        "when": "M4-semantic release; not required for M4-local"
+      }
+    ],
+    "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+    "evidence": [
+      {
+        "target_sha": "78ae91eeae6edae6bea29c27f24b251773341c00",
+        "artifact_paths": [
+          "artifacts/checkpoints/p8-next-ten-20261008/release-review/"
+        ],
+        "scope": "preparatory engineering only; exact executed script and product identities are recorded in the linked original receipts; no full task or G8 acceptance",
+        "review": "independent subagent review and main-agent integration; original acceptance/dependencies preserved",
+        "rollback_status": "revert this task tooling; preserve original raw evidence and candidate source",
+        "summary": "按原192任务/G8定义生成local与semantic依赖和证据缺口总账；19项控制及两次实际CLI完成，两个发布范围仍blocked，不能凭纸面passed自动批准"
+      }
+    ],
+    "implementation_notes": "\n2026-10-08 第三轮：按原192任务/G8定义生成local与semantic依赖和证据缺口总账；19项控制及两次实际CLI完成，两个发布范围仍blocked，不能凭纸面passed自动批准。只计原始TODO推进，完整前置/验收仍开放。"
+  },
+  "ledger": {
+    "local_path": "/workspace/scratch/bfccb8494ba0/round32-capture-context-admission/guard-view/docs/roadmap/code-index-v2/tasks.json",
+    "bytes": 879341,
+    "sha256": "e0a612bb4d42f63be01c17e77ff627db3581200275fbfa9e60679399e90877c6",
+    "git_blob": "adb44ee70a4c129bfb443d4ecf678fb934c8ea6b"
+  },
+  "current_blockers": {
+    "unfinished_original_direct_dependencies": [
+      {
+        "task": "P8-006",
+        "status": "in_progress"
+      },
+      {
+        "task": "P8-007",
+        "status": "in_progress"
+      },
+      {
+        "task": "P8-008",
+        "status": "in_progress"
+      },
+      {
+        "task": "P8-009",
+        "status": "in_progress"
+      },
+      {
+        "task": "P8-010",
+        "status": "in_progress"
+      },
+      {
+        "task": "P8-011",
+        "status": "in_progress"
+      },
+      {
+        "task": "P8-012",
+        "status": "in_progress"
+      },
+      {
+        "task": "P8-013",
+        "status": "in_progress"
+      },
+      {
+        "task": "P8-016",
+        "status": "in_progress"
+      },
+      {
+        "task": "P8-017",
+        "status": "in_progress"
+      },
+      {
+        "task": "P8-018",
+        "status": "in_progress"
+      },
+      {
+        "task": "P8-019",
+        "status": "in_progress"
+      }
+    ],
+    "final_006_acceptance": "still absent; current new full cohort is incomplete",
+    "final_candidate_and_evidence_manifest": "not fixed by this preparation",
+    "independent_selected_scope_blocker_zero_decision": null
+  },
+  "existing_release_tool_evidence": [
+    {
+      "target_sha": "78ae91eeae6edae6bea29c27f24b251773341c00",
+      "artifact_paths": [
+        "artifacts/checkpoints/p8-next-ten-20261008/release-review/"
+      ],
+      "scope": "preparatory engineering only; exact executed script and product identities are recorded in the linked original receipts; no full task or G8 acceptance",
+      "review": "independent subagent review and main-agent integration; original acceptance/dependencies preserved",
+      "rollback_status": "revert this task tooling; preserve original raw evidence and candidate source",
+      "summary": "按原192任务/G8定义生成local与semantic依赖和证据缺口总账；19项控制及两次实际CLI完成，两个发布范围仍blocked，不能凭纸面passed自动批准"
+    }
+  ],
+  "existing_19_controls": "Referenced original task evidence only; no rerun or promotion to new-source release approval.",
+  "reusable_publication_bridge": {
+    "local_path": "/workspace/scratch/bfccb8494ba0/round35-post-nine-closeout-preparation/P8-017-019-publication-bridge.applyfalse.json",
+    "bytes": 23149,
+    "sha256": "cd1dc5f142010ec97fec709d8f4381a63d5c49af0877b4ec480d0548727ac9ae",
+    "git_blob": "7108a17fab7a7589652896ef654e0383d8cbef30"
+  },
+  "existing_nine_task_plan": {
+    "git_blob": "cda11e87c03780f92d5587097f2f8195986579ee",
+    "original_support_git_blob": "0fee0f4d7e40dbe483644f4663ec45b9c75a4e76",
+    "apply_now": false,
+    "do_not_regenerate_or_change_original_requirements": true
+  },
+  "cohort_context_only": {
+    "registration_git": "43e4abe32871a148dc2210cdff16ee263b9200e6",
+    "last_accepted_progress_git": "1e5fb14c064d0f049c73e1a7bf2b2a3d5647e836",
+    "run_id": 38013753078,
+    "attempt": 1,
+    "source": "9cc6bf49f6dd81e4069a8004eed49addba0ab79b",
+    "profile": "scale_wide_dirty_v1",
+    "expected_shards": 150,
+    "expected_observations": 1500,
+    "accepted_as_of_referenced_progress": {
+      "shards": 3,
+      "observations": 32
+    },
+    "not_fresh_poll": true,
+    "diagnostic_cohort_credit": 0,
+    "final_receipt": null
+  },
+  "evidence_groups_to_resolve": [
+    {
+      "claim": "Original fixed local quality and scoring acceptance",
+      "task_group": [
+        "P8-001",
+        "P8-002",
+        "P8-003",
+        "P8-004",
+        "P8-010",
+        "P8-011",
+        "P8-012",
+        "P8-013"
+      ],
+      "source": "reuse original accepted task evidence and nine-task template; do not relabel old heldout executions or run new heldout",
+      "final_commit_path_sha256_records": null
+    },
+    {
+      "claim": "V20 cold scale, continuous history, concurrency, attributed resources and statistics",
+      "task_group": [
+        "P8-005",
+        "P8-006",
+        "P8-007",
+        "P8-008",
+        "P8-009"
+      ],
+      "source": "005 actual cold044/a2da custody; future006 separate fixed complete wide cohort; accepted other components retain original sources",
+      "cold_005_ledger_commit": "a2daea38bc72cb3cf9c95535b852fff214debf2b",
+      "final_006_record": null,
+      "final_other_task_receipts": null
+    },
+    {
+      "claim": "V21 original platform/schema/cache/package/MSRV/rollback and source applicability",
+      "task_group": [
+        "P8-016"
+      ],
+      "source": {
+        "source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+        "run": 37890757129,
+        "previous_source": "277f2490fad3fa30f2812b5547bad033867c9ea5",
+        "evidence_commit": "cd92ce4b931e770994770ba3dba6fd0a47a505ea",
+        "platform_review_path": "artifacts/checkpoints/p8-round19-evidence-20261009/platform/root-independent-reception.json",
+        "recovery_review_path": "artifacts/checkpoints/p8-round19-evidence-20261009/recovery/root-independent-original-evidence-review.json",
+        "scope": "Already accepted original 8 fresh-target Linux/macOS x1.95/stable xdefault/semantic cells; version25→24→25→originalbackup real stdio, cache isolation and package switching. Original dev/SDK/source identities retained; not current release certification; no reread/replay by this review"
+      },
+      "final_dependency_closeout": null
+    },
+    {
+      "claim": "V18 compatibility, ownership, facts, installation, archive/replay",
+      "task_group": [
+        "P8-017",
+        "P8-018",
+        "P8-019"
+      ],
+      "source": {
+        "claim_map_git": "e863b8b3fe42a5fe3797fac251f48f158362087d",
+        "publication_bridge": {
+          "local_path": "/workspace/scratch/bfccb8494ba0/round35-post-nine-closeout-preparation/P8-017-019-publication-bridge.applyfalse.json",
+          "bytes": 23149,
+          "sha256": "cd1dc5f142010ec97fec709d8f4381a63d5c49af0877b4ec480d0548727ac9ae",
+          "git_blob": "7108a17fab7a7589652896ef654e0383d8cbef30"
+        }
+      },
+      "final_task_decisions": null
+    }
+  ],
+  "original_tool": {
+    "local_path": "/workspace/scratch/bfccb8494ba0/round32-capture-context-admission/guard-view/scripts/p8_release_review.py",
+    "bytes": 15811,
+    "sha256": "dd421c1a2ca753c9a4777e6db1a7cc7d2c5ca7e98b87e61a9aff5ea59048c26f",
+    "git_blob": "30b2611b04dfed78c45feb9c3e99c74cf03b563f",
+    "command_template": "python3 scripts/p8_release_review.py --repo <isolated-local-repo-with-required-objects> --manifest <filled-original-schema.json> --output <new-output-directory>",
+    "not_executed": true,
+    "input_digest_format": "sha256_sorted_compact_path_sha256_json_no_newline_v1",
+    "frozen_definitions_repo_path": "artifacts/checkpoints/p8-next-ten-20261008/release-review/original-definitions.json",
+    "frozen_definitions_sha256": "ff2dff22f5064dca04254e8191fdf93a52155acbbaf2c52d03ff147b519690aa",
+    "definition_body_read_this_preparation": false,
+    "local_definition_object_currently_materialized": false,
+    "frozen_source_dependency": "Use original immutable definition snapshot; materialize that declared local object if absent. Do not regenerate it from modified tasks.",
+    "always_preparatory": "Original code always returns status=not_accepted, release_certified=false and exit_code=1. A complete metadata ledger never substitutes for independent release acceptance.",
+    "record_boundary": "Historical engineering/platform receipts keep scoped_engineering and original source. Do not relabel them release_validation or edit source/status/digest to remove generated metadata gaps; applicability is a separately reasoned decision, not an automatic demand to rerun every old component."
+  },
+  "original_manifest_template_NOT_READY": {
+    "schema_version": 1,
+    "run_id": null,
+    "state_commit": null,
+    "candidate": {
+      "source_commit": null,
+      "input_digest": null,
+      "input_digest_format": "sha256_sorted_compact_path_sha256_json_no_newline_v1"
+    },
+    "records": []
+  },
+  "original_record_template_NOT_READY": {
+    "id": null,
+    "task": null,
+    "profile": "local",
+    "scope": null,
+    "coverage": [],
+    "record": {
+      "commit": null,
+      "path": null,
+      "sha256": null
+    },
+    "status_path": null,
+    "source_path": null,
+    "input_digest_path": null,
+    "input_digest_format": null
+  },
+  "manifest_fill_rules": [
+    "Use actual immutable post-closeout state commit, actual selected release source and exact original digest format; null placeholders are intentionally not valid executable input.",
+    "Each evidence pointer needs full actual commit + regular repository path + original SHA256. Bare computed blob OIDs or signed URLs are not commit/path receipts.",
+    "Coverage labels come unchanged from the original frozen g8.validations and g8.release_checks. No new labels or gates are invented here.",
+    "Read status/source/input-digest JSON key paths from actual records; null stays unknown. Do not force historical records into a matching current-source assertion.",
+    "Preserve original errors, partials, timeouts and disabled/unavailable/null resources; do not pool different sources/profiles or convert standalone diagnostic samples into cohort observations."
+  ],
+  "risk_and_rollback_inputs": [
+    {
+      "risk": "006 incomplete or unsuccessful fixed cohort",
+      "current_state": "open",
+      "required_fact": "actual complete fixed-cohort acceptance/custody or retained failure",
+      "fallback": "do not publish an unpassed capability claim; preserve all original raw"
+    },
+    {
+      "risk": "source-specific results and original compatibility failures",
+      "current_state": "retained",
+      "required_fact": "actual source applicability for chosen scope",
+      "fallback": "retain G8/C3ff/older witness failure identities; do not replace them with current-source claims"
+    },
+    {
+      "risk": "platform and package scope broader than a historical component",
+      "current_state": "explicit scope boundary",
+      "required_fact": "match only claimed OS/toolchain/package/schema evidence",
+      "fallback": "restore previous verified binary/config; keep schema/cache recovery originals"
+    },
+    {
+      "risk": "archive mutation or untraceable release pointer",
+      "current_state": "existing no-clobber controls accepted",
+      "required_fact": "final binary/checksum/manifest/raw/gates and immutable run link",
+      "fallback": "new derived output on copies; never rewrite original runs/latest to an unaccepted run"
+    },
+    {
+      "risk": "real semantic/provider claims without authorization/evidence",
+      "current_state": "excluded from selected local scope",
+      "required_fact": "none added for M4-local; preserve conditional semantic block",
+      "fallback": "default local/offline behavior, no live call"
+    }
+  ],
+  "optional_boundaries": {
+    "P8-014": "optional judge is not a local/semantic blocker; no execution credit",
+    "P8-015": "conditional for M4-semantic only, no semantic release certification",
+    "P7-018": "real-provider authorization/evidence missing; no live execution",
+    "P9": "not expanded and not a G8 blocker"
+  },
+  "future_application_order_and_counts": [
+    {
+      "after_actual_tasks": "006,007–013,016",
+      "done": 173,
+      "remaining": 19,
+      "source": "unchanged existing nine-task checklist"
+    },
+    {
+      "after_actual_task": "017",
+      "done": 174,
+      "remaining": 18
+    },
+    {
+      "after_actual_task": "018",
+      "done": 175,
+      "remaining": 17
+    },
+    {
+      "after_actual_task": "019",
+      "done": 176,
+      "remaining": 16
+    },
+    {
+      "after_actual_task": "020",
+      "done": 177,
+      "remaining": 15
+    }
+  ],
+  "counts_are_conditional_not_current": true,
+  "update_rules": "Root applies only after actual prerequisite and original acceptance decisions. Append status/evidence/implementation_notes and use original generated-view commands; preserve definitions, dependencies, protected subgates and historical evidence. This draft performs no update."
+}

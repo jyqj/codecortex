@@ -1,0 +1,508 @@
+{
+  "schema": "p8_post_nine_publication_bridge_v1",
+  "recorded_at_utc": "2026-10-10T02:27:19.772815+00:00",
+  "author": "/root/todo_audit",
+  "append_only": true,
+  "apply_now": false,
+  "task_state_modified": false,
+  "task_credit": 0,
+  "ledger": {
+    "local_path": "/workspace/scratch/bfccb8494ba0/round32-capture-context-admission/guard-view/docs/roadmap/code-index-v2/tasks.json",
+    "bytes": 879341,
+    "sha256": "e0a612bb4d42f63be01c17e77ff627db3581200275fbfa9e60679399e90877c6",
+    "git_blob": "adb44ee70a4c129bfb443d4ecf678fb934c8ea6b"
+  },
+  "counts": {
+    "done": 164,
+    "remaining": 28,
+    "session_new_done": 1
+  },
+  "inherited_map": {
+    "local_path": "/workspace/scratch/bfccb8494ba0/round29-P8-017-019-claim-map/claim-to-original-evidence-map.json",
+    "bytes": 31966,
+    "sha256": "18088601c9e8ebf87499ca0ae7b36abeb43f410551568c164f0f4cc57deab90f",
+    "git_blob": "e863b8b3fe42a5fe3797fac251f48f158362087d"
+  },
+  "historical_map_not_rewritten": "Its creation-time PR198 open/pending fields remain original; this separate record bridges actual publication only.",
+  "publication": {
+    "pr": 198,
+    "url": "https://github.com/jyqj/codecortex/pull/198",
+    "merge_commit": "09d4454fa45455dc5a8bfdfec67e31bb7ed162c7",
+    "tree": "00b2877fc2003045467db450730ca05cf2e29317",
+    "ordered_parents": [
+      "a406a4968c46ab005225666e60e81acddaa77de8",
+      "335237cf35f0972431fc37a8c6237a1ae51dbd75"
+    ],
+    "committed_at": "2026-10-09T23:38:02Z",
+    "three_document_blobs": {
+      "docs/BENCHMARK.md": "39513e0fa62eeab815e0c503594846d48b75c8e6",
+      "docs/roadmap/code-index-v2/P8-OWNERSHIP.md": "487fef20517cac0b1ebab12a6ff10669ac476bba",
+      "docs/roadmap/code-index-v2/P8-RELEASE-EVIDENCE.md": "a42b65ef36c155cfefd7894a06faf9338db4fb63"
+    },
+    "official_merge_record": {
+      "local_path": "/workspace/scratch/bfccb8494ba0/round30-PR190-main-integration/official/main-commit.original.json",
+      "bytes": 2915,
+      "sha256": "ca1a8840ccfa8f18e23aa524bf413b3d592bc13b2cab5bb66dc05b28c14412e8",
+      "git_blob": "fd59aab6bf4639631c1797535bb23764bfdb5528"
+    },
+    "earlier_source_to_merge_compare": {
+      "local_path": "/workspace/scratch/bfccb8494ba0/round30-PR190-main-integration/official/main-from-b8ab-compare.original.json",
+      "bytes": 132017,
+      "sha256": "7edefada4066749de7540125c750c4abdeaa88234717db06353fad663e1c5fcb",
+      "git_blob": "5d34b821e94371f33c41894b561ec295f0486e58"
+    },
+    "same_tree_existing_ci": {
+      "path": "/workspace/scratch/bfccb8494ba0/round30-PR198-complete-merge/114064292585-original-main.log",
+      "bytes": 1087369,
+      "sha256": "bc44a2b11c3bfecbcaacf79735f2b090a077db0b081fd07f3569b2a1c6a15e3b",
+      "git_blob": "1cfd499a2d16ebdeaf68b86cbaf46c841b5713cd",
+      "local_text_transport_initial_bytes": 1087370,
+      "extra_transport_terminal_newlines_removed": 1,
+      "original_downloads": 1,
+      "executed_checkout": "65951958b93134ca70477197bc7098f65c41976d",
+      "executed_tree": "00b2877fc2003045467db450730ca05cf2e29317",
+      "job_id": 114064292585,
+      "run_id": 38002699110,
+      "actual_outcome": "success"
+    },
+    "later_product_G4786_three_doc_identity": {
+      "source": "4786c1457b47c5baf4c09d32b96048795e863111",
+      "command": [
+        "git",
+        "-C",
+        "/workspace/scratch/bfccb8494ba0/round32-capture-context-admission/guard-view",
+        "ls-tree",
+        "4786c1457b47c5baf4c09d32b96048795e863111",
+        "--",
+        "docs/BENCHMARK.md",
+        "docs/roadmap/code-index-v2/P8-OWNERSHIP.md",
+        "docs/roadmap/code-index-v2/P8-RELEASE-EVIDENCE.md"
+      ],
+      "exit_code": 0,
+      "stdout": "100644 blob 39513e0fa62eeab815e0c503594846d48b75c8e6\tdocs/BENCHMARK.md\n100644 blob 487fef20517cac0b1ebab12a6ff10669ac476bba\tdocs/roadmap/code-index-v2/P8-OWNERSHIP.md\n100644 blob a42b65ef36c155cfefd7894a06faf9338db4fb63\tdocs/roadmap/code-index-v2/P8-RELEASE-EVIDENCE.md\n",
+      "stderr": ""
+    },
+    "latest_main_observed_by_root": {
+      "source": "30a6dff579c88593c1762db244eacbe6ee95cef9",
+      "tree": "6518a5b317683a24ded3a69b027da6a04b8c996c",
+      "equal_tree_source": "4786c1457b47c5baf4c09d32b96048795e863111",
+      "provenance": "Root existing official observation, no new API poll by this preparation"
+    }
+  },
+  "original_definitions": [
+    {
+      "id": "P8-017",
+      "title": "删除临时兼容和重复模块",
+      "depends_on": [
+        "P8-016"
+      ],
+      "steps": [
+        "清临时旧branch/重复评分器/多份schema来源",
+        "保留必要外部wire兼容"
+      ],
+      "acceptance": [
+        "运行路径只有一个事实与算法所有者，删除有回归证据",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V18",
+        "V21"
+      ],
+      "conditional": null,
+      "conditional_dependencies": [],
+      "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。"
+    },
+    {
+      "id": "P8-018",
+      "title": "文档事实与安装契约同步",
+      "depends_on": [
+        "P8-017"
+      ],
+      "steps": [
+        "从schema/capabilities生成可核查事实",
+        "更新安装/故障/默认离线说明"
+      ],
+      "acceptance": [
+        "文档表数/schema/工具数不再漂移，设计与已实现标识分开",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V18",
+        "V21"
+      ],
+      "conditional": null,
+      "conditional_dependencies": [],
+      "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。"
+    },
+    {
+      "id": "P8-019",
+      "title": "发布工件与完整报告归档",
+      "depends_on": [
+        "P8-018"
+      ],
+      "steps": [
+        "归档精确binary/checksum/manifest/raw/gates",
+        "latest只指向run"
+      ],
+      "acceptance": [
+        "报告可重算，历史原始run不被下一轮覆盖",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V01",
+        "V04",
+        "V21"
+      ],
+      "conditional": null,
+      "conditional_dependencies": [],
+      "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。"
+    }
+  ],
+  "claim_updates": [
+    {
+      "id": "017-owner",
+      "task": "P8-017",
+      "original_claim": "清临时旧branch/重复评分器/多份schema来源；运行路径只有一个事实与算法所有者",
+      "evidence_keys": [
+        "owner_review"
+      ],
+      "status": "accepted_own_component",
+      "minimum_next_action": "无需再造删除或额外测试；保留已审ownership来源矩阵；PR198仅将矩阵落地。",
+      "boundary": "Rust与Python legacy统计、lane目录、DDL来源已收口；compat/native和test-only参考不是必须删除的重复算法；没有强制穷尽全仓callgraph的新门。",
+      "inherited_claim_map_git": "e863b8b3fe42a5fe3797fac251f48f158362087d"
+    },
+    {
+      "id": "017-deletion",
+      "task": "P8-017",
+      "original_claim": "删除有回归证据",
+      "evidence_keys": [
+        "owner_review",
+        "current_ci"
+      ],
+      "status": "accepted_own_component",
+      "minimum_next_action": "无需重跑旧303+1、427/301或16命名控制。",
+      "boundary": "18重复测试移除、17其余测试保留及后续实际原回归分别保留source，不把prepare-only四variant计运行。",
+      "inherited_claim_map_git": "e863b8b3fe42a5fe3797fac251f48f158362087d"
+    },
+    {
+      "id": "shared-V18",
+      "task": "P8-017/P8-018",
+      "original_claim": "14工具/旧mode/参数schema-sanitize-dispatch-status/默认无网络无key",
+      "evidence_keys": [
+        "current_ci",
+        "installer_and_declared_facts"
+      ],
+      "status": "accepted_relevant_existing_controls",
+      "minimum_next_action": "复用下附精确原log行；无新live/provider或全矩阵要求。",
+      "boundary": "真实stdio参数/模式/策略覆盖已实跑；ignored首遍与随后显式执行分开，不能用进程内测试冒称stdio。",
+      "inherited_claim_map_git": "e863b8b3fe42a5fe3797fac251f48f158362087d"
+    },
+    {
+      "id": "shared-V21",
+      "task": "P8-017/P8-018/P8-019",
+      "original_claim": "新旧schema受控重建、cache不误读、default/semantic两包、SDK/MSRV",
+      "evidence_keys": [
+        "platform_rollback",
+        "current_ci"
+      ],
+      "status": "accepted_original_component_evidence",
+      "minimum_next_action": "引用已接受平台/回滚来源和本次current-schema/cache回归；等待各原task依赖按序关闭。",
+      "boundary": "原8格和25→24→25演练保持275e/277f/dev身份，不能标a406或新发行包；没有每个文档修改重跑8格的原门。",
+      "inherited_claim_map_git": "e863b8b3fe42a5fe3797fac251f48f158362087d"
+    },
+    {
+      "id": "017-dependency",
+      "task": "P8-017",
+      "original_claim": "depends_on P8-016",
+      "evidence_keys": [
+        "platform_rollback"
+      ],
+      "status": "original_dependency_open",
+      "minimum_next_action": "等原P8-016依赖闭合；当前已接受自身范围不归零。",
+      "boundary": "没有发现新增生产实现或必需删除控制缺口；task仍in_progress。",
+      "inherited_claim_map_git": "e863b8b3fe42a5fe3797fac251f48f158362087d"
+    },
+    {
+      "id": "018-facts",
+      "task": "P8-018",
+      "original_claim": "从schema/capabilities生成可核查事实；设计与实现分开",
+      "evidence_keys": [
+        "installer_and_declared_facts",
+        "current_ci"
+      ],
+      "status": "accepted_own_component",
+      "minimum_next_action": "沿原p8_facts真实passed引用，不要求运行时导出不存在文件。",
+      "boundary": "8crates/schema25/30base+5FTS/14MCP等声明范围；runtime_certified=false。",
+      "inherited_claim_map_git": "e863b8b3fe42a5fe3797fac251f48f158362087d"
+    },
+    {
+      "id": "018-doc-drift",
+      "task": "P8-018",
+      "original_claim": "文档表数/schema/工具数不再漂移",
+      "evidence_keys": [
+        "PR198"
+      ],
+      "status": "accepted_document_fix_published",
+      "minimum_next_action": "Publication wait is satisfied by actual PR198 merge; preserve original dependency and convention observation.",
+      "boundary": "唯一已证明本次漂移是mutation-case十四→15表，14MCP工具没有变化。",
+      "inherited_claim_map_git": "e863b8b3fe42a5fe3797fac251f48f158362087d"
+    },
+    {
+      "id": "018-install",
+      "task": "P8-018",
+      "original_claim": "安装/故障/默认离线说明与相关回归",
+      "evidence_keys": [
+        "installer_and_declared_facts",
+        "current_ci"
+      ],
+      "status": "accepted_own_component",
+      "minimum_next_action": "无新发现安装说明实现缺口；复用原56+5与当前配置保留/无效不写入控制。",
+      "boundary": "不把安装配置回归当打包或付费provider认证；历史not_run不改写。",
+      "inherited_claim_map_git": "e863b8b3fe42a5fe3797fac251f48f158362087d"
+    },
+    {
+      "id": "018-convention",
+      "task": "P8-018",
+      "original_claim": "CONTRIBUTING数字改动后的update-doc-baselines约定",
+      "evidence_keys": [
+        "current_ci"
+      ],
+      "status": "documented_process_check_not_run_no_known_waiver",
+      "minimum_next_action": "Retain the exact process deviation and actual source-review/merge handling; Root records applicability disposition without pretending the script ran.",
+      "boundary": "脚本不检查oracle表数；直接cargo all-targets会超出currentCI故障测试范围；这是现成约定的未执行记录，不新增150/全release硬门，也不自动抹去上述原任务证据。",
+      "inherited_claim_map_git": "e863b8b3fe42a5fe3797fac251f48f158362087d"
+    },
+    {
+      "id": "018-dependency",
+      "task": "P8-018",
+      "original_claim": "depends_on P8-017",
+      "evidence_keys": [
+        "owner_review"
+      ],
+      "status": "original_dependency_open",
+      "minimum_next_action": "等017；文档修正整合与贡献约定处置后，自身无已识别生产缺口。",
+      "boundary": "不可此刻置done。",
+      "inherited_claim_map_git": "e863b8b3fe42a5fe3797fac251f48f158362087d"
+    },
+    {
+      "id": "019-custody",
+      "task": "P8-019",
+      "original_claim": "精确binary/checksum/manifest/raw/gates；历史run不被覆盖；latest只指向run",
+      "evidence_keys": [
+        "archive",
+        "current_ci"
+      ],
+      "status": "accepted_own_component",
+      "minimum_next_action": "无需新增归档实现或重复42控制；复用精确归档、无覆盖、latest条件和失败保持原件。",
+      "boundary": "caller build声明不等于构建证明；本地latest不是发布频道，非文件系统WORM。",
+      "inherited_claim_map_git": "e863b8b3fe42a5fe3797fac251f48f158362087d"
+    },
+    {
+      "id": "019-replay",
+      "task": "P8-019",
+      "original_claim": "报告可重算；V04 raw到metrics/report及错误状态",
+      "evidence_keys": [
+        "archive",
+        "current_ci",
+        "PR198"
+      ],
+      "status": "accepted_own_component_and_document_clarification_published",
+      "minimum_next_action": "Publication wait is satisfied; no new combined archive/replay E2E requirement.",
+      "boundary": "archive integrity和numerical replay分别验；old native tests已实跑；不要求各外层gate不同schema逐字相同。",
+      "inherited_claim_map_git": "e863b8b3fe42a5fe3797fac251f48f158362087d"
+    },
+    {
+      "id": "019-V01",
+      "task": "P8-019",
+      "original_claim": "SHA/dirty/binary/toolchain与旧测试/真实stdio；原fresh-target构建",
+      "evidence_keys": [
+        "platform_rollback",
+        "current_ci",
+        "archive"
+      ],
+      "status": "accepted_applicable_original_evidence",
+      "minimum_next_action": "按原平台/构建/stdio收据分别引用，不把普通test profile说成cold release。",
+      "boundary": "这项归档功能不额外要求新的100k/live/holdout研究。",
+      "inherited_claim_map_git": "e863b8b3fe42a5fe3797fac251f48f158362087d"
+    },
+    {
+      "id": "019-dependency",
+      "task": "P8-019",
+      "original_claim": "depends_on P8-018",
+      "evidence_keys": [
+        "archive"
+      ],
+      "status": "original_dependency_open",
+      "minimum_next_action": "等018；自身实现和相关既存控制没有新增已识别阻塞。",
+      "boundary": "不自动声明完整G8发行通过。",
+      "inherited_claim_map_git": "e863b8b3fe42a5fe3797fac251f48f158362087d"
+    }
+  ],
+  "inherited_evidence_identities": {
+    "current_ci": {
+      "source": "b8ab8ecdc5b32993fc02ce43877b7e172b8a4b3f",
+      "run": 37994312848,
+      "job": 114036304013,
+      "checkout": "3f9d8f7a4448d0a75c43eda87850e5a7955e461a",
+      "log": {
+        "path": "round28-PR195-b8ab-terminal-recovery/check.original-decoded.log",
+        "bytes": 1086267,
+        "sha256": "09cc0fccf27ffb61efdbcc3ab9d6df4a1ee166164b478e631bc55a289bc32721",
+        "git_blob": "dda53d175bbe34d0b285b462dd6ca8016dce1d56"
+      },
+      "peer_git": "8d26efe448ab5a3140c3692d31ccca7530ee9eb3",
+      "scope": "Actual original debug/test/normal authorized default plus relevant HTTP/real MCP controls; no new-head execution or cold release inferred"
+    },
+    "current_source_bridge": {
+      "git_blob": "b891354b19c3354cec4b8792ac21127d85d0d000",
+      "source": "a406a4968c46ab005225666e60e81acddaa77de8",
+      "same_product_validation_as": "b8ab8ecdc5b32993fc02ce43877b7e172b8a4b3f",
+      "official_compare_changed_only_5_P8005_progress_docs": true,
+      "whole_tree_equal": false
+    },
+    "owner_review": {
+      "report_git": "0e5fd5de6599825486e60cea567572c8010fd23a",
+      "support_git": "8480e193ee7a4b9880da467d3f92cafc20b2f7d3",
+      "original_cleanup_source": "b069c73a0d76736e1dfb3eb64e79cad6980b773f",
+      "original_lane_source": "fa6562ad70c6a6f2a7a1e65594df23f807e62f18",
+      "current_named_control_log_git": "2ec9f3f4a724d064bdaf02ac179ee61d7f8fb0ef",
+      "current_run": 37995531210,
+      "current_job": 114040465849,
+      "current_checkout": "eee3b5326b9c4afff2400f2e8b7ac46f66fd46d0",
+      "scope": "16 named owner controls and 35 overlapping engine/other names all present ok; no fabricated unique summed count"
+    },
+    "installer_and_declared_facts": {
+      "source": "51138c236cf2ed47858e2306f9c7bfd3600aaef9",
+      "source_tree": "24df8be11955fda1f2e320de483e9eb4ddd1ffb3",
+      "log_git": "907b9a33cb22d7a13b947e4fac6aaa121c594d55",
+      "support_zip_git": "1fc494aa4dc149d4c85b97b4bb8ec2dfd9aa024a",
+      "installer_unit": 56,
+      "installer_cli": 5,
+      "facts_line": 5777,
+      "scope": "Existing exact PR196 execution; later b8ab original lines also retained independently, no execution relabel"
+    },
+    "platform_rollback": {
+      "source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+      "run": 37890757129,
+      "previous_source": "277f2490fad3fa30f2812b5547bad033867c9ea5",
+      "evidence_commit": "cd92ce4b931e770994770ba3dba6fd0a47a505ea",
+      "platform_review_path": "artifacts/checkpoints/p8-round19-evidence-20261009/platform/root-independent-reception.json",
+      "recovery_review_path": "artifacts/checkpoints/p8-round19-evidence-20261009/recovery/root-independent-original-evidence-review.json",
+      "scope": "Already accepted original 8 fresh-target Linux/macOS x1.95/stable xdefault/semantic cells; version25→24→25→originalbackup real stdio, cache isolation and package switching. Original dev/SDK/source identities retained; not current release certification; no reread/replay by this review"
+    },
+    "archive": {
+      "source": "379099a4a7b09ebe9928c190017bae53d8d1edf6",
+      "archive_source_git": "79c8ab476d1c9fb17a190a1c280f82c614a5dc1a",
+      "report_source_git": "8d633bd75772e2ef4cfead559688a6fea4ca6644",
+      "scope_originals_git": "5c2770c4f920e844bafa9c4088cbd26ef4728bb9",
+      "doc_peer_git": "383b475fed125e507bf1add78c1b7d287ceb029e",
+      "original_controls": 42,
+      "archive_test_lines": [
+        5564,
+        5605
+      ],
+      "replay_control_group": "benchmark_reports 11 passed; default/HTTP duplicate identities not added together"
+    },
+    "PR198": {
+      "url": "https://github.com/jyqj/codecortex/pull/198",
+      "head": "335237cf35f0972431fc37a8c6237a1ae51dbd75",
+      "base": "a406a4968c46ab005225666e60e81acddaa77de8",
+      "status_as_of_creation": "open/not_merged",
+      "readback_report_git": "9bb06d978271b599414dd50f85e0aeb0f7622055",
+      "paths": {
+        "docs/BENCHMARK.md": "39513e0fa62eeab815e0c503594846d48b75c8e6",
+        "docs/roadmap/code-index-v2/P8-OWNERSHIP.md": "487fef20517cac0b1ebab12a6ff10669ac476bba",
+        "docs/roadmap/code-index-v2/P8-RELEASE-EVIDENCE.md": "a42b65ef36c155cfefd7894a06faf9338db4fb63"
+      },
+      "current_CI": "root owner; no new observation by this review"
+    }
+  },
+  "contribution_convention_applicability": {
+    "original_convention": {
+      "local_path": "/workspace/scratch/bfccb8494ba0/round29-P8-017-019-claim-map/original/CONTRIBUTING.md",
+      "bytes": 3565,
+      "sha256": "a832246f555c6418f3071c335a09200f6cbc8e8155095d5cad342badd7c33780",
+      "git_blob": "e70d34871f78f394578a6e4273df75dd92afa35f",
+      "lines": [
+        81,
+        82
+      ],
+      "text": "文档里的可核对数字（测试数、语料数、schema 版本等）改动后运行 scripts/update-doc-baselines.sh 核对 docs/TEST_PLAN.md 的基线。"
+    },
+    "original_script": {
+      "local_path": "/workspace/scratch/bfccb8494ba0/round29-P8-017-019-claim-map/original/update-doc-baselines.sh",
+      "bytes": 3571,
+      "sha256": "04d63124fc8405610c91fb4a591e17e2dd06ce1f20cf995123263b12a4b0b59c",
+      "git_blob": "e33fa140e9a6e5461f77cb66e633ec4ba38d2700",
+      "cargo_command_line": 15,
+      "command": "cargo test --workspace --all-targets",
+      "comparisons_lines": [
+        59,
+        89
+      ],
+      "checks": [
+        "cc-db passed count",
+        "total passed",
+        "total ignored",
+        "corpus count"
+      ],
+      "does_not_check": "oracle TABLES length or the BENCHMARK fifteen-table phrase",
+      "exit_boundary": "DRIFT is printed but not returned as an explicit exit status; exit 0 alone is not a no-drift receipt"
+    },
+    "specific_change": "PR198 corrects one oracle table-list phrase 14→15; MCP tools remain 14; TEST_PLAN counts and schema are not changed by these three docs.",
+    "actual_authorized_handling": {
+      "local_path": "/workspace/scratch/bfccb8494ba0/round29-docs-root-review/independent-final-docs-review.json",
+      "bytes": 2241,
+      "sha256": "5a34bc9f865a94c62ce916852d7dc7058b72d6ed166ebf9125f19a216cb40da4",
+      "git_blob": "fd9066061871f067faee62253ac5ddafde60de11",
+      "status": "accepted_for_docs_integration",
+      "source_check": "Root read TABLES 12–28, tables() 36–37 and mutation_case 130/170–173/212; exact final three document blobs were merged in PR198."
+    },
+    "script_execution": "not_run_in_known_evidence",
+    "waiver_or_exception_receipt": null,
+    "interpretation": "The numeric wording falls within the broad convention. Direct source review and ordinary CI establish the actual phrase correction but do not count as this script executing or an authorized waiver. The known process deviation remains explicit for Root disposition; it is not converted into a new task-level 150-shard/full-release gate.",
+    "unknown_not_promoted": true,
+    "peer_followup": "pr_triage round35 found no later script execution or explicit disposition receipt in its existing evidence; no new search/execution requested."
+  },
+  "use_after_nine": [
+    {
+      "task": "P8-017",
+      "required_prior_task": "P8-016",
+      "required_actual_dependency_closeout": null,
+      "accepted_components": [
+        "017-owner",
+        "017-deletion",
+        "shared-V18",
+        "shared-V21"
+      ],
+      "future_decision": null
+    },
+    {
+      "task": "P8-018",
+      "required_prior_task": "P8-017",
+      "required_actual_dependency_closeout": null,
+      "accepted_components": [
+        "018-facts",
+        "018-doc-drift",
+        "018-install",
+        "shared-V18",
+        "shared-V21"
+      ],
+      "known_process_deviation": "baseline script not_run; no known waiver; retain truthful disposition",
+      "future_decision": null
+    },
+    {
+      "task": "P8-019",
+      "required_prior_task": "P8-018",
+      "required_actual_dependency_closeout": null,
+      "accepted_components": [
+        "019-custody",
+        "019-replay",
+        "019-V01",
+        "shared-V21"
+      ],
+      "future_decision": null
+    }
+  ],
+  "execution_boundary": "No test, replay, script, artifact validator, CRC or product executed; old original scopes/sources stay separate. Ordinary PR198 CI is not a new-source runtime/platform/release certification."
+}

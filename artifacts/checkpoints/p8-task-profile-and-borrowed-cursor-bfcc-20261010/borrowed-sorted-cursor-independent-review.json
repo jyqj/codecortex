@@ -1,0 +1,149 @@
+{
+  "schema": "independent-borrowed-sorted-cursor-source-review-v1",
+  "reviewer": "/root/pr_triage",
+  "author": "/root/execution_recon",
+  "reviewer_is_not_candidate_author": true,
+  "recorded_utc": "2026-10-10T04:20:08.637295+00:00",
+  "result": "accepted_scoped_for_engineering_candidate_pending_original_Rust_CI",
+  "actual_candidate_P": null,
+  "base_commit": "b9b089bb4eae072affe9326681d4980eae15fd84",
+  "base_tree": "6461938788665701cfa4fa095a064a3a404ec492",
+  "source": {
+    "repository_path": "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+    "mode": "100644",
+    "before": {
+      "local_path": "/workspace/scratch/bfccb8494ba0/round40-borrowed-sorted-cursor-candidate/original/crates/cc-eval/src/benchmark/oracle/streaming.rs",
+      "bytes": 30271,
+      "sha256": "fadf2722a56132022ff47487bb151384277c9d217bf2e64c85da40b9bfc8b7f0",
+      "git_blob": "70394ba06bf714bce1af64a9b9c400f0e0584a46"
+    },
+    "after": {
+      "local_path": "/workspace/scratch/bfccb8494ba0/round40-borrowed-sorted-cursor-candidate/candidate/crates/cc-eval/src/benchmark/oracle/streaming.rs",
+      "bytes": 39984,
+      "sha256": "863dbceec78660565fe589c208f55cc07623fe638ff70f314c30c63585438367",
+      "git_blob": "059023a9cd58f2427c196851ba31ca3197a4d5dd"
+    }
+  },
+  "patch": {
+    "local_path": "/workspace/scratch/bfccb8494ba0/round40-borrowed-sorted-cursor-candidate/source.patch",
+    "bytes": 11849,
+    "sha256": "bff7a3854e28960449ad66537b7811e0adc784aa95f3a4eeeb38b96087c3c89b",
+    "git_blob": "855241b8097cc7fd0a3bde04943d6476c74fb8d7"
+  },
+  "narrow_byte_proof": {
+    "local_path": "/workspace/scratch/bfccb8494ba0/round40-borrowed-sorted-cursor-independent-review/source-byte-bridge.json",
+    "bytes": 1864,
+    "sha256": "79b7574630de840d1f29c635d3d99fa53c310c67902a1b083e08333c8a0011df",
+    "git_blob": "425fa581765812b67e98bfea2edafa38a0e4e11f"
+  },
+  "mechanical_receipt": {
+    "local_path": "/workspace/scratch/bfccb8494ba0/round40-borrowed-sorted-cursor-independent-review/verification-receipt.json",
+    "bytes": 631,
+    "sha256": "423a74e794c215efea2d79f89b0a9e35afb5b3f7f3fb02660d641b030ee23bee",
+    "git_blob": "9972b19110e2b286582cdc7d6f73a7df3e1447fd"
+  },
+  "source_findings": [
+    {
+      "area": "Conversion and error identity",
+      "finding": "Read exact upstream rusqlite0.40.1 Row::get, Row::get_ref, FromSql<String> and ValueRef::as_str. Old String conversion is UTF8 as_str then ToString. Candidate skips only ToString on successful TEXT; invalid UTF8 uses Error::Utf8Error(0,error), other SQLite types use InvalidColumnType(0,column_name,data_type). get_ref applies the same column-index validation first. column_name(0) remains valid after successful get_ref(0). Errors are still mapped by unchanged db_error. No lossy conversion or NULL-as-empty acceptance."
+    },
+    {
+      "area": "Borrow lifetime and two cursors",
+      "finding": "Rows::next returns a row tied to its mutable borrow. next_row returns a str with that same borrow lifetime. next_pair has independent A/B lifetimes and steps A then B; stepping the independent B statement does not advance/reset A. Both references are consumed inside one loop iteration and never stored in the report; owned JSON examples and digests are produced before advancing either cursor. No unsafe introduced."
+    },
+    {
+      "area": "Error order",
+      "finding": "next_pair performs A sqlite3_step and A text conversion before B sqlite3_step/conversion, preserving both early failures and EOF behavior. The comparison, bounded example decoding, A digest then B digest follow in their old order. Holding A text while B advances changes allocation retention but neither source snapshot nor SQL statement ordering."
+    },
+    {
+      "area": "Duplicate and equality semantics",
+      "finding": "Sorted SQL including BINARY collation, primary key duplicate ordinal, append_digest position and Value equality fallback are unchanged. Signed-zero Value equality and duplicate-preserving digests remain separate decisions. Asymmetric exhaustion continues until both EOF; no rows are sampled or skipped."
+    },
+    {
+      "area": "Resource compatibility",
+      "finding": "Both A and B full spools still run before comparison. Same 64/8/1 insert tiers,64KiB buffer,limits,per-row accounting,page cap,read snapshots,temp lifecycle and source projection. The previously restored SQLITE_FULL behavior is not bypassed. Report table fields and top-level schema unchanged; no public witness field reintroduced."
+    },
+    {
+      "area": "Bounded examples",
+      "finding": "example() remains unchanged and owns JSON Values or digest summaries before row borrow expires. First-three limit and16KiB body bound remain unchanged."
+    }
+  ],
+  "new_controls_static_review": [
+    {
+      "name": "borrowed_cursor_text_matches_owned_conversion_and_row_storage",
+      "scope": "Plain/Unicode/NUL/empty TEXT, malformed UTF8,NULL,INTEGER,REAL,BLOB; compares original owned String result/error Debug and Display/db_error, verifies successful pointer/length equals actual ValueRef text. This tests allocation mechanism and exact conversion, not runtime speed."
+    },
+    {
+      "name": "borrowed_cursor_pair_preserves_both_rows_duplicates_and_asymmetric_eof",
+      "scope": "Uses actual scratch schema and real next_pair, duplicates/signed-zero text/Unicode and20KiB row; checks A survives B step, both unequal lengths and empty A, repeated EOF, digest equality to owned ordered baseline, owned examples after statements drop."
+    },
+    {
+      "name": "borrowed_cursor_pair_keeps_original_step_and_conversion_error_order",
+      "scope": "Uses original owned_next reference, real SQLite step overflow and UTF8 conversion errors on A/B, empty A with B errors; verifies B unadvanced on A failure and A advanced once on B failure."
+    }
+  ],
+  "preservation": {
+    "exact_inverse_of_three_scoped_hunks_restores_entire_original": true,
+    "pre_cursor_spool_and_budgets_unchanged": true,
+    "equal_rows_digest_examples_scratch_preserved": true,
+    "entire_preexisting_internal_test_module_prefix_preserved": true,
+    "only_three_new_private_controls": [
+      "borrowed_cursor_text_matches_owned_conversion_and_row_storage",
+      "borrowed_cursor_pair_preserves_both_rows_duplicates_and_asymmetric_eof",
+      "borrowed_cursor_pair_keeps_original_step_and_conversion_error_order"
+    ],
+    "existing13_integration_file_exact": true,
+    "no_unsafe": true
+  },
+  "upstream_read_only_sources": [
+    {
+      "local_path": "/workspace/scratch/bfccb8494ba0/round40-rusqlite-v0.40.1-upstream/src/row.rs",
+      "bytes": 21490,
+      "sha256": "ca0d543ee7004db58d365bdf45708aa59d9c81ef20e20b4da40ab3eea6aaa492",
+      "git_blob": "202ba7f3a7cdc6760807e39b2265512275694f2c"
+    },
+    {
+      "local_path": "/workspace/scratch/bfccb8494ba0/round40-rusqlite-v0.40.1-upstream/src/types/from_sql.rs",
+      "bytes": 15865,
+      "sha256": "321815d30a5987df0b775975d70b06b46d258ac32b0b7a095b589063d18af087",
+      "git_blob": "5c90629b5e1b6fd9a7bb574e0381488165a34487"
+    },
+    {
+      "local_path": "/workspace/scratch/bfccb8494ba0/round40-rusqlite-v0.40.1-upstream/src/types/value_ref.rs",
+      "bytes": 11497,
+      "sha256": "7ccb0e379a067ded70ae6754209e3e824bc465cc260bca2f3e57245a65082562",
+      "git_blob": "33d9477890d283f19d77d65fe679cb7dbf07ee5d"
+    }
+  ],
+  "mechanism_and_performance_boundary": {
+    "supported_by_source": "Successful sorted-row read avoids two owned String allocations/copies per paired present row; missing sides naturally allocate none. Read paths remain the same.",
+    "not_established": "No measured latency/RSS gain, no5h completion guarantee, no attribution of diagnostic parity time to String allocation, no full100k study or correctness execution. SQLite traversal, sorting,spooling,JSON Value fallback,digest costs remain.",
+    "prior_probe_results_not_transferred": true
+  },
+  "execution": {
+    "only_independent_Python_byte_comparison": {
+      "exit_code": 0,
+      "duration_seconds": 0.031231970999215264
+    },
+    "Rust_compile": "not_run",
+    "rustfmt": "not_run",
+    "Clippy": "not_run",
+    "new3_Rust_controls": "not_run",
+    "old13_external_controls": "not_run_here; exact unchanged bytes",
+    "new_measurement": "not_run",
+    "source_guard": "not_run",
+    "no_source_mutation_by_reviewer": true
+  },
+  "author_history": "Author preservation helper v1 assertion1 due selecting struct cfg(test) rather than mod tests was preserved; corrected helper actual0, candidate bytes did not change. This is not a Rust failure or Rust success.",
+  "blockers_found": [],
+  "remaining_original_validation": "Run existing formatting/compile/appropriate unit+13 integration controls in ordinary new-source engineering CI when authorized. No extra timing threshold or research is imposed by this review.",
+  "immutable_author_locators": {
+    "source": "059023a9cd58f2427c196851ba31ca3197a4d5dd",
+    "manifest": "3664c7fa13a35d7754824462502dfd29d4c63a6a",
+    "patch": "855241b8097cc7fd0a3bde04943d6476c74fb8d7",
+    "author": "da6e3eb71c21046b98d97113c969ee259be9071a",
+    "support": "fb8d6fa89252aece48e670fb86596a071f6ebdfc"
+  },
+  "task_credit": 0,
+  "study_counts_unchanged": true
+}

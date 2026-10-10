@@ -1,0 +1,265 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_triage",
+  "recorded_at": "2026-10-10T03:09:46.665463+00:00",
+  "fixed_main": "b9b089bb4eae072affe9326681d4980eae15fd84",
+  "fixed_tree": "6461938788665701cfa4fa095a064a3a404ec492",
+  "scope": "read-only exact P8-014 scope and existing original preparation; no execution or task mutation",
+  "official_ledger_content_equals_local": true,
+  "ledger_identity": {
+    "local_path": "/workspace/scratch/bfccb8494ba0/round36-006-and-dependency-scope-review/fixed-main-source/docs/roadmap/code-index-v2/tasks.json",
+    "bytes": 879341,
+    "sha256": "e0a612bb4d42f63be01c17e77ff627db3581200275fbfa9e60679399e90877c6",
+    "git_blob_computed": "adb44ee70a4c129bfb443d4ecf678fb934c8ea6b"
+  },
+  "original_P8_014_definition": {
+    "id": "P8-014",
+    "phase": "P8",
+    "phase_name": "规模、质量与发行认证",
+    "batch": "P8-C",
+    "title": "可选LLM评审旁证流程",
+    "status": "in_progress",
+    "priority": "normal",
+    "scope": [
+      "crates/cc-eval/benchmarks/manifests/",
+      "docs/BENCHMARK.md"
+    ],
+    "depends_on": [
+      "P8-013"
+    ],
+    "steps": [
+      "冻结judge prompt/model并盲化系统名",
+      "复核争议答案/证据充分性"
+    ],
+    "deliverables": [
+      "可选LLM评审旁证流程的实现/配置或规格变更",
+      "artifacts/benchmarks/<run-id>/ 中对应 V19 验证证据（实施时生成）"
+    ],
+    "acceptance": [
+      "不替代确定性gold，提示注入文本只作数据，费用需授权",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validations": [
+      "V19"
+    ],
+    "contracts_doc": "02-CONTRACTS.md",
+    "benchmark_doc": "09-BENCHMARK.md",
+    "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+    "conditional": "可选 LLM 旁证；需要明确授权和预算。未执行不阻塞确定性评分或本地/语义发布，但不能声称完成 LLM 复核。",
+    "required_for": [
+      "optional-judge"
+    ],
+    "evidence": [
+      {
+        "target_sha": "78ae91eeae6edae6bea29c27f24b251773341c00",
+        "artifact_paths": [
+          "artifacts/checkpoints/p8-next-ten-20261008/release/P8-014-receipt.json"
+        ],
+        "scope": "preparatory engineering only; exact executed script and product identities are recorded in the linked original receipts; no full task or G8 acceptance",
+        "review": "workspace owner implementation and main-agent integration review; original acceptance/dependencies preserved",
+        "rollback_status": "revert this task tooling; preserve original raw evidence and candidate source",
+        "summary": "冻结judge prompt/model、盲化系统名、私有映射与人工意见回收流程，18项控制和实际离线CLI通过；真实LLM评审未执行"
+      }
+    ],
+    "conditional_dependencies": []
+  },
+  "finding": "P8-014 has its own optional-judge authorization/budget condition. Its missing LLM work is not an inherited P8-015 live-semantic gate. Default-local retrieval and sealed holdout evidence cannot be substituted for LLM review and are not blocked by its absence.",
+  "payment_nuance": "The task does not require a paid commercial or network provider specifically. It requires explicitly authorized and budgeted actual LLM judging. An approved frozen local model could in principle satisfy the model side, but no such approved model/execution/provenance is identified here. Ordinary development/Actions authorization is not evidence of that explicit optional-judge authorization.",
+  "hard_dependency": {
+    "id": "P8-013",
+    "status": "in_progress",
+    "not_waived": true
+  },
+  "existing_original_execution": {
+    "receipt_fixed_main_path": "artifacts/checkpoints/p8-next-ten-20261008/release/P8-014-receipt.json",
+    "receipt_created_at": "2026-10-07T17:50:55.684679+00:00",
+    "receipt_base_commit": "3f6cca74c1c9da16cd5eca818c1bce57659d1db0",
+    "controls": [
+      {
+        "command": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+          "/workspace/scratch/ebaceea9b709/codecortex-release/scripts/p8_judge_evidence.py",
+          "prepare",
+          "--plan",
+          "/workspace/scratch/ebaceea9b709/codecortex-release/artifacts/checkpoints/p8-next-ten-20261008/release/controls-01/judge-fixture/plan.json",
+          "--output",
+          "/workspace/scratch/ebaceea9b709/codecortex-release/artifacts/checkpoints/p8-next-ten-20261008/release/controls-01/judge-packet"
+        ],
+        "expected_returncode": 0,
+        "model_calls": 0,
+        "name": "judge-prepare",
+        "network_calls": 0,
+        "release_certified": false,
+        "returncode": 0,
+        "status": "prepared_not_run"
+      },
+      {
+        "command": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+          "/workspace/scratch/ebaceea9b709/codecortex-release/scripts/p8_judge_evidence.py",
+          "reconcile",
+          "--packet",
+          "/workspace/scratch/ebaceea9b709/codecortex-release/artifacts/checkpoints/p8-next-ten-20261008/release/controls-01/judge-packet",
+          "--expected-packet-sha256",
+          "c133ef4f7b83022b8d4e0fe9ea157e6999c4bc8d80cb521c7f2e1544e44f99c7",
+          "--judgments",
+          "/workspace/scratch/ebaceea9b709/codecortex-release/artifacts/checkpoints/p8-next-ten-20261008/release/controls-01/judge-fixture/opinions.json",
+          "--output",
+          "/workspace/scratch/ebaceea9b709/codecortex-release/artifacts/checkpoints/p8-next-ten-20261008/release/controls-01/judge-manual"
+        ],
+        "expected_returncode": 0,
+        "model_calls": 0,
+        "name": "judge-reconcile",
+        "network_calls": 0,
+        "release_certified": false,
+        "returncode": 0,
+        "status": "manual_review_required"
+      }
+    ],
+    "tests": {
+      "elapsed_seconds": 0.266,
+      "errors": 0,
+      "failures": 0,
+      "log": "judge_evidence-tests-02.log",
+      "log_sha256": "2641d1ff48a1af541f7ba92acf96e1a06e0c470a2f561067e26d281538f5ad5a",
+      "passed": true,
+      "path": "scripts/tests/test_p8_judge_evidence.py",
+      "sha256": "6ab3541fdc63d90c3c02f667cbbd79c85ff7bff190ff69a0e63ac2a74ddc6625",
+      "skipped": 0,
+      "suite": "judge_evidence",
+      "tests_run": 18
+    },
+    "network_calls": 0,
+    "model_calls": 0,
+    "actual_judge_execution": "not_run",
+    "remaining_boundaries": [
+      "actual_authorized_model_judgments",
+      "observed_model_revision_and_execution_provenance",
+      "human_dispute_resolution",
+      "unrecognized_identity_or_style_leaks"
+    ]
+  },
+  "current_tool_identity": {
+    "local_path": "/workspace/scratch/bfccb8494ba0/round32-capture-context-admission/guard-view/scripts/p8_judge_evidence.py",
+    "bytes": 20155,
+    "sha256": "30569182753837fe29b390d29acb27328337abbf86e088e8ca3740359c3051ac",
+    "git_blob_computed": "9aa1edb76b0237730a284510957bec9502e5d0e9"
+  },
+  "current_tool_boundaries": [
+    "Exact current tool SHA equals the original executed implementation SHA in the preserved receipt.",
+    "prepare accepts only explicit dev/fixture candidate text, 2-8 systems and 1-64 cases; it is not an approved path for protected holdout.",
+    "prepare freezes model declarations, prompt/dataset/gold hashes and private identity map; prepared_not_run is truthful even when exit is zero.",
+    "reconcile accepts only fixture/provided_unverified opinions and returns manual_review_required with execution_provenance unverified; it neither calls a model nor authenticates observed model revision.",
+    "No component mutates deterministic gold. Fixed packet pin and independent human resolution are required; injected source text is data."
+  ],
+  "V19_interpretation": {
+    "original_row": "检索质量/消融：compat/native分报，真实公开 corpus，hard negatives、holdout、facet/span、macro/micro/CI",
+    "meaning": "Shared validation taxonomy; P8-014 remains the particular optional LLM-dispute-review task. The shared V19 label does not convert all local retrieval/holdout execution into completion of P8-014."
+  },
+  "local_and_holdout_route": {
+    "contract_C14": "Default local sends no network requests. Unconfigured auto equals local; semantic unconfigured must say unavailable.",
+    "benchmark_split": "PR fast path has no model network; real-provider release comparison explicitly requires approval.",
+    "existing_P8_004_status": "done",
+    "existing_fixed_local_evidence": [
+      {
+        "source": "fb772551cff6b4620a6fcdb94c57b78350cebb33",
+        "path": "artifacts/checkpoints/p8-corpus-external-holdout-20261008/holdout/execution-receipt.json",
+        "scope": "Existing once-frozen original holdout history recorded in current P8-004, including its failed quality result; not current-main quality or P8-014 LLM evidence"
+      },
+      {
+        "source": "2cd04485b0e0b23483f64671d56538bbaa47f442",
+        "original_execution_run": 37769636440,
+        "zero_query_replay_run": 37773318110,
+        "path": "artifacts/benchmarks/prospective-temporal-v2/FINAL-REPORT.md",
+        "scope": "Current ledger already records complete original execution/replay with gate_failed/exit1 preserved, no new unseen holdout or current-main quality claim"
+      }
+    ],
+    "read_boundary": "Only ledger evidence metadata was read; no protected case/question/gold bodies were opened."
+  },
+  "comparison_to_round35": {
+    "path": "round35-remaining-work-selection/bounded-work-selection.applyfalse.json",
+    "assessment": "The excluded_paid_optional_judge row is directionally correct on authorization and actual LLM missing. Refine paid to explicitly authorized actual optional judge: paid/live commercial execution is not uniquely mandated. The existing 18 controls should not be repeated or relabeled."
+  },
+  "current_actionable_next_step": {
+    "safe_now": "Preserve an explicit optional-judge not_run disposition plus this exact readiness/missing-evidence inventory. Keep deterministic/local/semantic work independent of this optional absence. This is scope clarification, not a new task completion.",
+    "if_root_selects_014_for_later_execution": "Choose a real already-public DEV dispute packet (not a protected holdout; fixed existing answers/evidence), a fixed model/revision and independent reviewer, an explicit authorization/budget, and observed execution/provenance. Then use the existing prepare/reconcile path without changing gold; record actual original answers and repeated consistency per original protocol.",
+    "existing_entrypoints": [
+      "python3 -B scripts/p8_judge_evidence.py prepare --plan <explicit-dev-plan.json> --output <new-packet-dir>",
+      "python3 -B scripts/p8_judge_evidence.py reconcile --packet <frozen-packet-dir> --expected-packet-sha256 <original-pin> --judgments <original-opinions.json> --output <new-review-dir>"
+    ],
+    "not_ready_to_dispatch": "The verified original concrete packet is a fixture with synthetic opinions. No complete approved real-model packet/run has been established. Do not dispatch the fixture or fabricate opinions to fill the gap.",
+    "no_new_code_defect_identified": true,
+    "why_no_additional_run_now": "Repeating completed offline preparation adds no missing actual LLM evidence; ordinary local retrieval under another task cannot discharge this optional task."
+  },
+  "original_lookup_failure_preserved": "Original target78ae/path receipt lookup returned404; the exact fixed-main path succeeded. No history rewrite or success substituted for the failed lookup.",
+  "execution": {
+    "tests_run": false,
+    "model_calls": 0,
+    "network_provider_calls": 0,
+    "study_dispatches": 0,
+    "holdout_body_reads": 0,
+    "gold_changes": 0,
+    "ref_PR_label_changes": 0,
+    "task_credit_added": 0,
+    "done": 164,
+    "remaining": 28,
+    "session_done": 1
+  },
+  "protocol_excerpts": [
+    {
+      "identity": {
+        "local_path": "/workspace/scratch/bfccb8494ba0/round36-006-and-dependency-scope-review/fixed-main-source/docs/roadmap/code-index-v2/02-CONTRACTS.md",
+        "bytes": 14819,
+        "sha256": "66cca99c35f7f9ff1c9d1a7832ab71adec074058e126b188f6e06aff65adb0ad",
+        "git_blob_computed": "82262dd868ae36b906e57ac10244544af1721d5e"
+      },
+      "ranges": [
+        {
+          "start_line": 89,
+          "end_line": 94,
+          "text": "CodeIndex 短锁内取得 QueryHandle：Arc-owned DB/service/config + repository incarnation + generation。网络调用前释放 RwLock、build gate、读池连接和 SQL transaction。本地 CPU/SQLite 操作使用有界执行器；不能简单在 scoped-thread join 上等待网络，也不为引入网络而重写全部 DB API 为 async。\n\nrequest deadline 为总预算；每 lane/rerank 有子预算，取消向下传播。对无法立刻中断的阻塞工作限制数量并禁止过期结果发布/缓存，不能误把 future drop 当成线程终止。QueryHandle 持有项目资源，活跃查询不因 LRU idle eviction 失效；关闭时有界等待并留下可恢复 outbox。\n\n## C12｜generation 与缓存\n"
+        },
+        {
+          "start_line": 110,
+          "end_line": 124,
+          "text": "排序与集合选择分开：selector 只从已验证候选中选择，不重造相关性分数。任务类型驱动配额：locate 可以集中一个文件；change/trace 可以分配实现/调用/接口/测试预算。path diversity 只是约束之一，不是目标本身。重叠以同源码版本 byte spans 计算，跨文档重复由实体和内容辅助判断。\n\nBudgetPacker 对首项也执行限制；预算包括 metadata、分隔符、出处与 JSON envelope，不只计算正文。token 数未知时同时 enforce bytes 并标 estimate。过大节点选择更小合法 slice/outline/ref，而不是截断序列化 JSON。输出仍为可解析完整对象，含省略数量/原因/继续读取提示和实际 budget 使用。\n\n## C14｜wire 与配置兼容\n\n保留 14 个工具以及现有 search.mode=hybrid/symbol 的语义。新增 retrieval_strategy=local/auto/semantic 等字段需 schema、sanitize、dispatch、handler、status、文档和 stdio E2E 一次闭环。auto 在未配置语义能力时等价 local；显式 semantic 且未配置应返回明确 unavailable，不能伪装完成。\n\n默认不发送网络请求、不创建语义缓存、不启动 LSP。配置字段采用结构化校验，feature 关闭仍能解释 config 状态而非崩溃。废弃字段给迁移诊断，不能长期维护多套相同配置名。\n\n## C15｜性能可归因\n\n每阶段报告 touched/parsed/resolved/written/reconciled 数量，catalog cache hit/compaction、FTS 扫描/解压、SQL calls、候选筛选、预算拒绝和向量复用统计。索引报告是用户触发的返回证据，不引入持续产品遥测数据库。benchmark 独立采集资源与原始结果，见 09-BENCHMARK.md。\n\n## C16｜完成定义"
+        }
+      ]
+    },
+    {
+      "identity": {
+        "local_path": "/workspace/scratch/bfccb8494ba0/round36-006-and-dependency-scope-review/fixed-main-source/docs/roadmap/code-index-v2/06-VALIDATION.md",
+        "bytes": 10172,
+        "sha256": "64a9fde995077f8349edc76ee501825feca6717c6c60ab7c03cc535142016aad",
+        "git_blob_computed": "fcbcf9e9280d41a4e8e138543d2bd217137a2c5e"
+      },
+      "ranges": [
+        {
+          "start_line": 34,
+          "end_line": 44,
+          "text": "| V12 | 选择与预算 | 首块超大、metadata 膨胀、重叠、单文件 locate/多文件 facets、完整 JSON、source freshness | L1–L3 |\n| V13 | schema/epoch | typed write effects、一次 commit 推进、aux不刷内容、rollback、换库 incarnation | L2 |\n| V14 | outbox/publish | claim CAS、过期 lease、删除竞争、两进程、模型切换、artifact-before-manifest、重复 ack | L2 |\n| V15 | provider 验证 | 数量/index/维度/NaN/Inf/zero、429/5xx/auth、timeout、并发/批次/费用上限、fake/live 区分 | L1–L3 |\n| V16 | exact vector/filter | 手算 cosine/top-k、tie、scope 先过滤、删除不返回、bounded memory、不同空间拒混 | L1/L2 |\n| V17 | 恢复与 GC | 每个 crash point、重启/lease、staging换库、cache损坏/删除、GC/publish 竞争、无自动无界收费 | L2/L3 |\n| V18 | MCP/配置兼容 | 14工具不丢失，旧 mode不变，新参数贯穿schema/sanitize/dispatch/status，默认无网络无key可用 | L1–L3 |\n| V19 | 检索质量/消融 | compat/native分报，真实公开 corpus，hard negatives、holdout、facet/span、macro/micro/CI | L3/L4 |\n| V20 | 性能/资源/成本 | 1k–100k，冷建/no-op/body/API/config/batch，C1/4/8/16，RSS进程归属、no best-of、费用复用 | L3/L5 |\n| V21 | 回滚/发行/文档 | 新旧 schema 降级重建，cache不误读，默认/semantic 两包，SDK/MSRV，文档事实漂移检测 | L2/L3/L5 |\n| V22 | 可选增强准入 | ANN 对 exact filtered recall；LSP snapshot/生命周期；rerank heldout收益/成本和失败降级 | L1–L5 |"
+        }
+      ]
+    },
+    {
+      "identity": {
+        "local_path": "/workspace/scratch/bfccb8494ba0/round36-006-and-dependency-scope-review/fixed-main-source/docs/roadmap/code-index-v2/09-BENCHMARK.md",
+        "bytes": 20488,
+        "sha256": "0c8bcbed17ea4e83b1dc55e9828f93a27e2a334a0d0eaa056302944260d0a731",
+        "git_blob_computed": "5ced0c455e7e774a9d95da23187c64dcefc37314"
+      },
+      "ranges": [
+        {
+          "start_line": 126,
+          "end_line": 160,
+          "text": "现有 runner.rs/lib.rs/types.rs/bench.rs 的 legacy corpus/断言保留，逐步适配同一 Results/metrics primitive；不能保留两个不同 nDCG 实现。现有进程内 rmcp dispatch seam 用于快速回归，正式 end-to-end score 使用独立 MCP 子进程，二者标签不同。白盒 DB dump 只用于 canonical oracle/阶段成本诊断，不给 retrieval system 提供 gold 或跳过真实公开接口。\n\n## 5. 输入锁与工件 schema\n\nSuiteManifest 至少锁：engine SHA+binary digest+build profile/features、目标 repo commit、dirty/submodules 状态、corpus/query/gold digest、实际文件 manifest digest、scoring version、adapter/parser version、配置 digest、model revision+encoding space、OS/CPU/RAM/toolchain、随机种子、冷/热定义、timeout/budget、runner version。\n\n每题输入至少：id、repo_id、split、category、language、difficulty、query、query_family、intent、hard_scope、gold answer groups、required evidence/facets、optional graph constraints、mutation profile。用 query_family 把改写/中英文配对一起分配 split，避免泄漏。\n\n每次查询原始结果至少：run_id/case_id/repetition、status、start/end monotonic、latency、raw artifact path/hash、normalized hits/spans、lane status、effective budget、generation/readiness、cost usage/estimated flag、reason。secret 永不落盘，私有源码只在用户授权的本地 evidence dir 保存。\n\n正式 exit code 设计：0=完整且 gates passed；1=有效测量但 gate failed；2=输入锁/配置/协议/基础设施使测量无效；3=用户取消/预算终止（partial artifacts 保留）。schema/parser 失败不能变成“0 命中成功”。超时同时记录产品可用性失败和 deadline-censored latency，不从样本集中删掉。\n\n## 6. 公平比较与 corpus 准入\n\nsuite 先生成两边都使用的 SourceManifest（规范相对路径+bytes hash+大小+纳入原因）。在独立临时 checkout 中应用相同 ignore policy；既不默认上传 private repo，也不把 docs/roadmap、答案文件、benchmark 本身混进被测源码。unsupported 文件/语言需显式列入 capability coverage；公共子集和全能力集分开，不选择性过滤难题。\n\nOCE 的 source uploader 与 CodeCortex scanner 默认规则不相同。报告必须输出 input_diff；若不能对齐，不得直接声称系统 A 比 B 好。关闭/开启 embedding、使用不同模型，都是独立配置档案；在成本和网络条件不等价时保留多轴结果，不用综合排名掩盖条件差异。\n\n不能为了分数写题目关键词词典、gold path boost、仓库特判；测试 corpus 不允许进入生产包。数据集变更与引擎调参分开评审，评分器变更必须重算两边，不能拿新评分与旧报告比较。\n\n## 7. 数据集路线\n\n| 层 | 规划覆盖（目标，不是已完成数量） | 阶段 |\n|---|---|---|\n| D0 | 40 个以内的确定性关键缺陷/契约样例，足够快且可定位 | P0/P1 |\n| D1 | 外部 cc-switch+Flask 兼容集，共 metadata 声明的 200 题；导入前核验 | P0 importer，P1 起连续运行 |\n| D2 | 6 个以上真实仓库，覆盖 Rust/JS/TS/Python/Go 与至少一个 mixed monorepo；初始约 600 个审阅问题 | P0 方法，P2–P5 扩充 |\n| D3 | 100 个以上 mutation sequences，含单操作与多步组合；小型公开夹具可复现 | P0 oracle，P2–P7 |\n| D4 | 1k/5k/10k/50k/100k 文件合成规模，外加真实仓库；同时报告 symbols/chunks/edges/vector count | P0 seed，P8 完整认证 |\n| D5 | held-out repo/module/query-family；中英改写与自然语言零词面重合；不得被开发集反复调参污染 | P0 分割规则，P8 认证 |\n\n保留上游十类：file_exact_match、configuration_lookup、component_location、api_usage、semantic_feature、error_handling、architecture_understanding、cross_language、symbol_location、call_chain。额外 tags 表达 ambiguous-name、reexport、config-only-change、no-answer、stale-index、filter、budget、generated/noisy 文件，避免新增分类互斥冲突。\n\n每题先阅读固定源码、标主/支持答案，再独立复核；必须包含错误但字面更相近的 hard negatives。LLM 可辅助起草、找遗漏和二次审阅，不能同时由同一个系统生成答案又给自己评分。gold 争议进入 quarantine，版本化记录，不为了回归变绿直接删题。若使用 LLM judge，冻结 prompt/model、保存依据和重复一致性，作为旁证而非核心确定性 gate。\n"
+        },
+        {
+          "start_line": 181,
+          "end_line": 190,
+          "text": "固定同 corpus、输入、预算和 seed，配对比较：现状→BM25 修复→软范围修复→模块/增量修复→新 chunker→coverage selector→dense→rerank。每个实验仅改变一组解释得清的因素；chunker 与 embedding 必须先单独 baseline，再合并。保留 lexical-only、graph-off、dense-only、local+dense、selector-off 和 rg baseline。\n\n按 repository/query-family 分层 bootstrap 置信区间，报告 paired per-query delta、macro per repo/category、micro mean、失败样本。不能把同题 100 次重复当 100 个独立检索问题。latency 用独立时间分布，quality 的 stochastic rerank 重复与 query sampling 分开。\n\n门槛在 P0 基线冻结后预注册。建议起始 guardrails：关键确定性正确性 100%；scope/source/版本泄漏 0；goldens scorer 完全一致；质量类平均退化预算 0.01（绝对 nDCG）与 PrimaryTop1 1 个百分点作为评审触发值，而非任意容忍错误；性能退化超过 10% 进入解释/审批，超过 20% 阻断目标 profile，需满足采样/同环境条件。语义能力要求 held-out 语义类收益 CI 下界>0 且 exact 类无实质退化；不预承诺具体加速倍数/分数。小样本 CI 不确定时结论 inconclusive，而非强行 pass。\n\n## 11. CI 档位与输出\n\nPR fast：schema/scorer/locks、关键契约、固定小 mutation、真实 stdio smoke，不联网模型。Nightly：公开真实仓库、10k/50k、随机 mutation seeds、并发、fake 故障与恢复。Release：100k、cold build/MSRV/macOS/Linux、长时 soak、完整 holdout、显式批准的真实 provider 对照。付费/私有源数据 profile 始终人工启用，不因普通 PR 自动发送代码。\n"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,480 @@
+{
+  "official_originals": {
+    "scope": "one official PR metadata and complete merged comments timeline read; no PR/ref/label mutations; no CI or research rerun",
+    "PR": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Action completed."
+        }
+      ],
+      "structuredContent": {
+        "content": "{\"url\":\"https://api.github.com/repos/jyqj/codecortex/pulls/188\",\"id\":4801638234,\"node_id\":\"PR_kwDOSnV9Ys8AAAABHjMvWg\",\"html_url\":\"https://github.com/jyqj/codecortex/pull/188\",\"diff_url\":\"https://github.com/jyqj/codecortex/pull/188.diff\",\"patch_url\":\"https://github.com/jyqj/codecortex/pull/188.patch\",\"issue_url\":\"https://api.github.com/repos/jyqj/codecortex/issues/188\",\"number\":188,\"state\":\"open\",\"locked\":false,\"title\":\"perf(db): apply dependency exclusions before the SQL frontier limit\",\"user\":{\"login\":\"jyqj\",\"id\":174292474,\"node_id\":\"U_kgDOCmN9-g\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/174292474?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/jyqj\",\"html_url\":\"https://github.com/jyqj\",\"followers_url\":\"https://api.github.com/users/jyqj/followers\",\"following_url\":\"https://api.github.com/users/jyqj/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/jyqj/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/jyqj/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/jyqj/subscriptions\",\"organizations_url\":\"https://api.github.com/users/jyqj/orgs\",\"repos_url\":\"https://api.github.com/users/jyqj/repos\",\"events_url\":\"https://api.github.com/users/jyqj/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/jyqj/received_events\",\"type\":\"User\",\"user_view_type\":\"public\",\"site_admin\":false},\"body\":\"<!-- bfcc-round20-g4-actual-main-ci -->\\n## Current validation: G4 has passed the original main CI\\n\\nThe existing [CI run 37947395888, attempt 1](https://github.com/jyqj/codecortex/actions/runs/37947395888) is **completed / success** for G4 `cc177ddc9e6b8180b8d847539787672e7b689a1a`. The `check`, MSRV and security jobs all succeeded. This change is ready for review; the remaining original jobs continue with their own recorded status.\\n\\nThe complete original check log confirms:\\n\\n- All **9 DB resolution-store tests passed**, including both new exclusion controls and the seven existing storage/snapshot controls; none was ignored or filtered.\\n- The **181 source-related tests passed**, and the unchanged v15 CLI reported `passed`, binding actual product P4 `1930b8e3` and independent review R4 `b4ad0852`.\\n- The executed checkout was GitHub's test merge `b7fd33b957c112666ebd3dd3c909b0e6ac035039`, with parents [H, G4]. Its complete tree `26baafefb05e113d9f4bab63716d8e72128208cf` is exactly G4's tree; this is not relabeled as a literal G4 checkout.\\n- The original log is 1,083,469 bytes, SHA-256 `443811e70da67728a38cf4ec8c292d2896cd6ba894551705eb3c93d1a589de2e`.\\n\\nAt the retained check snapshot, 19 checks had succeeded and 6 were still running, with no failures. Later results must be read as actual results. The original G3 formatter failure and its skipped steps remain preserved in the R4 history below.\\n\\nThe change keeps completed paths out of the bounded reverse-dependency SQL result before applying the limit. The known scattered-case Python VM regression remains part of the review; passing the dense-case Rust control does not establish universal speedup or completion of a full scale study. Successful-test output did not print numerical Rust VM counters. The separate failed C3ff scale run keeps its original source, attempt, N and failure.\\n\\n**Original TODO ledger: 163 done / 192 total; 29 remaining. This CI result closes 0 original TODOs.**\\n\\n<details>\\n<summary>Earlier implementation, source review and failure history (preserved)</summary>\\n\\n## Current source and CI repair — 2026-10-09\\n\\nCurrent head is **G4 `cc177ddc9e6b8180b8d847539787672e7b689a1a`**, tree `26baafefb05e113d9f4bab63716d8e72128208cf`. The fixed base remains H `0e6b07c75183da79c5a6679d4c2b66c65f7db663`.\\n\\nThe first actual G3 [CI check](https://github.com/jyqj/codecortex/actions/runs/37942781717) failed at `cargo fmt --all -- --check` with exit 1. Stable rustc 1.99.0 reported three formatting hunks in `crates/cc-db/tests/p2b_resolution_store.rs`; subsequent steps in that job were skipped. The complete original failure remains archived.\\n\\nActual product P4 [1930b8e3](https://github.com/jyqj/codecortex/commit/1930b8e37e24031c3779553e3fc5b95e8e946d50) applies exactly those three hunks. It changes only the test file: the same closure tail expression gains braces, an array and ordinary argument list gain two optional trailing commas, and formatting is expanded. Production SQL, fixture values, assertions and budgets retain the prior G3 bytes. A non-author independently verified the complete 1095 product / 142 validation / 70 BASE-delta domains and actual Git tree.\\n\\nReview R4 [b4ad0852](https://github.com/jyqj/codecortex/tree/b4ad0852fb0f164f89ba194409e2a78578f5413f/artifacts/checkpoints/p8-completed-dependency-exclusion-ci-format-bfcc-20261009) contains the canonical source-only review and a 64-member original-evidence ZIP. G4 then updates only the original two binding files and four identity pins; BASE, FROZEN, historical algorithms, all validation inputs and original workflows are retained.\\n\\n**New G4 CI results are pending after publication; this remains Draft.** The old G3 fmt failure is not erased or turned into a test pass. H's original CI subsequently succeeded on H's own exact checkout; that baseline result does not grant G4 execution credit. The original SQL design-probe limits and sparse-exclusion counterexample below remain applicable.\\n\\nOriginal TODO accounting remains **163 done / 29 remaining; 0 new original TODO completions**. The separate complete-scale study retains its original source, repetitions, phases and budgets.\\n\\n<details>\\n<summary>Previous G3 description and source-only history, preserved</summary>\\n\\n## 问题与改动\\n\\n依赖反查原先先取 `cap + 已完成路径数` 行，再在 Rust 侧排除已完成路径。在已完成路径较多的闭包继续处理阶段，这会把本可由数据库排除的路径重新传到 Rust。\\n\\n本候选在非空排除集合时，用一个 JSON 字符串参数把精确排除集合放到 SQL 的 `LIMIT` 之前。空排除分支保留原 SQL；保留全局有序去重与 `limit + 1` 见证、原 read lease、预算和失效规则。非空分支每批最多 197 keys，加 kind、JSON、LIMIT 共 200 个参数。\\n\\n两个新增集成控制覆盖：\\n- 任意排除集合、跨批次、重复与缺失路径、Unicode、嵌入 NUL，以及零 limit 的精确全局见证；\\n- 密集已完成前缀与原 H 查询算法的输出／SQLite 计数对照。此目标原有七个测试保留，共九个未忽略测试。\\n\\n## 固定来源和审查\\n\\n| 角色 | 提交 |\\n| --- | --- |\\n| 已有固定基准 H | `0e6b07c75183da79c5a6679d4c2b66c65f7db663` |\\n| 原候选 P3 | `9c1605118edcb7e88d211c3f6bd31249ebe36dc7` |\\n| 手工格式延续 P3f | `aac83a8e57d87fa9fe95af16173c68f1dd4fb88e` |\\n| 非作者源码审查 R3 | `4ec7543db94699077fe4075dd4b3606e92482460` |\\n| 本 PR 原 v15 绑定 G3 | `67b7f4ee15a9c9633868b446870fec1358dda3d9` |\\n\\n[完整独立源码审查与 83 件支持原件](https://github.com/jyqj/codecortex/tree/67b7f4ee15a9c9633868b446870fec1358dda3d9/artifacts/checkpoints/p8-dependency-exclusion-bfcc-20261009)。完整域为 **1095 产品输入 /70 BASE 差异 /142 验证输入**。两份原 gate 绑定仅更新原身份常量和对应 registry，原算法、BASE、FROZEN、历史证明、142 验证输入和 CI 选择均保持。\\n\\n本 PR 以已有固定基准分支 `task/p8-final-main-integration-bfcc-20261009` 为 base，使实际 CI 对应已审候选。#180 的并行 head 已进到 `b2a17adc…`，新增 preselect、scale fixture 和诊断 workflow 改动保留在那里；通过候选工程验证后再作精确整合，不把本 PR 结果改标为它的执行。P3 也已精确保留 main d22 合入的 BENCHMARK 文档。\\n\\n## 当前验证边界\\n\\n两名非作者的独立源码审查及实际 P3f/R3/G3 树核验已完成。**Rust、formatter、Clippy、原 v15 和当前候选 CI 尚未运行**；此 Draft PR 由原有 PR 工作流产生真实结果，没有新增 workflow 或 Cloud Codex 任务。\\n\\n格式延续只调整排版与六处语法可选末尾逗号，全部字面量、注释及其他 token 保留；未声称运行 rustfmt。现有 CI 将检查格式、严格 Clippy、全部目标编译，并以原 default regression 运行九项 DB 集成测试。早期步骤失败时，后续步骤仍应记为未运行。\\n\\n既有 Python SQLite 对照仅是设计探针。密集前缀案例减少返回行；**稀疏排除／双 key 案例的 VM callback 从 132988 增到 163001（约 +22.57%）**。这份反例保留，当前没有普遍提速、Rust 实测提速或原五小时规模超时已修复的结论。默认 CI 会捕获成功测试的打印，不能据绿色状态虚构具体 `SqlWork` 数值。\\n\\n## TODO 与原研究\\n\\n本 PR 不关闭原 TODO。原账本仍是 **163 完成 /29 剩余，新增完成 0**。原 Gc8 study 的 100k deadline、aggregate failure、4/150 分片与 41/1500 样本继续保留原 source/run；现有 C3ff 与锁诊断研究分别核收，不跨来源补位或改变原 N／预算。\\n\\n[第 17 轮进度及原失败证据](https://github.com/jyqj/codecortex/tree/a914160ab328c63c02a87e00362beb63c02ecd11/artifacts/checkpoints/p8-round17-progress-bfcc-20261009)。\\n\\n</details>\\n\\n\\n<!-- a217-round35-scoped-sql-performance-review -->\\n### Separate composition review: performance admission held\\n\\nThe independent M7 composition derived from the G3 resolution query, with additional NULL/BINARY preservation and a separate surface query, was not integrated into PR #180. Its complete five-file candidate, static acceptance and subsequent bounded performance counterevidence are preserved at [fixed SQL review checkpoint 80d7979](https://github.com/jyqj/codecortex/tree/80d7979da10ae242ed4706cd04be74c62194261a/artifacts/checkpoints/p8-SQL-exclusion-hold-a217-20261009).\\n\\nFour constructed Python/SQLite cases retained exact output parity, but SQL execute/fetch elapsed time increased. Sparse and multi-batch cases show that the JSON membership structure may be rebuilt for each statement execution, so reduced returned rows or VM counts alone do not establish faster queries. The probe does not time Rust JSON serialization or measure this PR's exact G4 binary; the surface-query case also lies outside this PR's production scope. It is concrete evidence to resolve before treating this strategy as a performance improvement, alongside this PR's original sparse-exclusion VM counterexample.\\n\\nPR #188 remains separately reviewable and Draft while its exact-head CI and performance interpretation are resolved. Its source has not been absorbed by the format-only M7F update of #180. No original TODO or original scale result changes.\\n\\n\\n</details>\",\"created_at\":\"2026-10-09T14:15:07Z\",\"updated_at\":\"2026-10-09T19:15:56Z\",\"closed_at\":null,\"merged_at\":null,\"merge_commit_sha\":\"b7fd33b957c112666ebd3dd3c909b0e6ac035039\",\"assignees\":[],\"requested_reviewers\":[],\"requested_teams\":[],\"labels\":[],\"milestone\":null,\"draft\":true,\"commits_url\":\"https://api.github.com/repos/jyqj/codecortex/pulls/188/commits\",\"review_comments_url\":\"https://api.github.com/repos/jyqj/codecortex/pulls/188/comments\",\"review_comment_url\":\"https://api.github.com/repos/jyqj/codecortex/pulls/comments{/number}\",\"comments_url\":\"https://api.github.com/repos/jyqj/codecortex/issues/188/comments\",\"statuses_url\":\"https://api.github.com/repos/jyqj/codecortex/statuses/cc177ddc9e6b8180b8d847539787672e7b689a1a\",\"head\":{\"label\":\"jyqj:task/p8-dependency-exclusion-bfcc-20261009\",\"ref\":\"task/p8-dependency-exclusion-bfcc-20261009\",\"sha\":\"cc177ddc9e6b8180b8d847539787672e7b689a1a\",\"user\":{\"login\":\"jyqj\",\"id\":174292474,\"node_id\":\"U_kgDOCmN9-g\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/174292474?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/jyqj\",\"html_url\":\"https://github.com/jyqj\",\"followers_url\":\"https://api.github.com/users/jyqj/followers\",\"following_url\":\"https://api.github.com/users/jyqj/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/jyqj/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/jyqj/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/jyqj/subscriptions\",\"organizations_url\":\"https://api.github.com/users/jyqj/orgs\",\"repos_url\":\"https://api.github.com/users/jyqj/repos\",\"events_url\":\"https://api.github.com/users/jyqj/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/jyqj/received_events\",\"type\":\"User\",\"user_view_type\":\"public\",\"site_admin\":false},\"repo\":{\"id\":1249213794,\"node_id\":\"R_kgDOSnV9Yg\",\"name\":\"codecortex\",\"full_name\":\"jyqj/codecortex\",\"private\":false,\"owner\":{\"login\":\"jyqj\",\"id\":174292474,\"node_id\":\"U_kgDOCmN9-g\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/174292474?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/jyqj\",\"html_url\":\"https://github.com/jyqj\",\"followers_url\":\"https://api.github.com/users/jyqj/followers\",\"following_url\":\"https://api.github.com/users/jyqj/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/jyqj/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/jyqj/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/jyqj/subscriptions\",\"organizations_url\":\"https://api.github.com/users/jyqj/orgs\",\"repos_url\":\"https://api.github.com/users/jyqj/repos\",\"events_url\":\"https://api.github.com/users/jyqj/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/jyqj/received_events\",\"type\":\"User\",\"user_view_type\":\"public\",\"site_admin\":false},\"html_url\":\"https://github.com/jyqj/codecortex\",\"description\":null,\"fork\":false,\"url\":\"https://api.github.com/repos/jyqj/codecortex\",\"forks_url\":\"https://api.github.com/repos/jyqj/codecortex/forks\",\"keys_url\":\"https://api.github.com/repos/jyqj/codecortex/keys{/key_id}\",\"collaborators_url\":\"https://api.github.com/repos/jyqj/codecortex/collaborators{/collaborator}\",\"teams_url\":\"https://api.github.com/repos/jyqj/codecortex/teams\",\"hooks_url\":\"https://api.github.com/repos/jyqj/codecortex/hooks\",\"issue_events_url\":\"https://api.github.com/repos/jyqj/codecortex/issues/events{/number}\",\"events_url\":\"https://api.github.com/repos/jyqj/codecortex/events\",\"assignees_url\":\"https://api.github.com/repos/jyqj/codecortex/assignees{/user}\",\"branches_url\":\"https://api.github.com/repos/jyqj/codecortex/branches{/branch}\",\"tags_url\":\"https://api.github.com/repos/jyqj/codecortex/tags\",\"blobs_url\":\"https://api.github.com/repos/jyqj/codecortex/git/blobs{/sha}\",\"git_tags_url\":\"https://api.github.com/repos/jyqj/codecortex/git/tags{/sha}\",\"git_refs_url\":\"https://api.github.com/repos/jyqj/codecortex/git/refs{/sha}\",\"trees_url\":\"https://api.github.com/repos/jyqj/codecortex/git/trees{/sha}\",\"statuses_url\":\"https://api.github.com/repos/jyqj/codecortex/statuses/{sha}\",\"languages_url\":\"https://api.github.com/repos/jyqj/codecortex/languages\",\"stargazers_url\":\"https://api.github.com/repos/jyqj/codecortex/stargazers\",\"contributors_url\":\"https://api.github.com/repos/jyqj/codecortex/contributors\",\"subscribers_url\":\"https://api.github.com/repos/jyqj/codecortex/subscribers\",\"subscription_url\":\"https://api.github.com/repos/jyqj/codecortex/subscription\",\"commits_url\":\"https://api.github.com/repos/jyqj/codecortex/commits{/sha}\",\"git_commits_url\":\"https://api.github.com/repos/jyqj/codecortex/git/commits{/sha}\",\"comments_url\":\"https://api.github.com/repos/jyqj/codecortex/comments{/number}\",\"issue_comment_url\":\"https://api.github.com/repos/jyqj/codecortex/issues/comments{/number}\",\"contents_url\":\"https://api.github.com/repos/jyqj/codecortex/contents/{+path}\",\"compare_url\":\"https://api.github.com/repos/jyqj/codecortex/compare/{base}...{head}\",\"merges_url\":\"https://api.github.com/repos/jyqj/codecortex/merges\",\"archive_url\":\"https://api.github.com/repos/jyqj/codecortex/{archive_format}{/ref}\",\"downloads_url\":\"https://api.github.com/repos/jyqj/codecortex/downloads\",\"issues_url\":\"https://api.github.com/repos/jyqj/codecortex/issues{/number}\",\"pulls_url\":\"https://api.github.com/repos/jyqj/codecortex/pulls{/number}\",\"milestones_url\":\"https://api.github.com/repos/jyqj/codecortex/milestones{/number}\",\"notifications_url\":\"https://api.github.com/repos/jyqj/codecortex/notifications{?since,all,participating}\",\"labels_url\":\"https://api.github.com/repos/jyqj/codecortex/labels{/name}\",\"releases_url\":\"https://api.github.com/repos/jyqj/codecortex/releases{/id}\",\"deployments_url\":\"https://api.github.com/repos/jyqj/codecortex/deployments\",\"created_at\":\"2026-05-25T13:18:05Z\",\"updated_at\":\"2026-10-10T02:24:51Z\",\"pushed_at\":\"2026-10-10T03:00:03Z\",\"git_url\":\"git://github.com/jyqj/codecortex.git\",\"ssh_url\":\"git@github.com:jyqj/codecortex.git\",\"clone_url\":\"https://github.com/jyqj/codecortex.git\",\"svn_url\":\"https://github.com/jyqj/codecortex\",\"homepage\":null,\"size\":2736813,\"stargazers_count\":1,\"watchers_count\":1,\"language\":\"Rust\",\"has_issues\":true,\"has_projects\":true,\"has_downloads\":false,\"has_wiki\":true,\"has_pages\":false,\"has_discussions\":false,\"forks_count\":0,\"mirror_url\":null,\"archived\":false,\"disabled\":false,\"open_issues_count\":9,\"license\":null,\"allow_forking\":true,\"is_template\":false,\"web_commit_signoff_required\":false,\"has_pull_requests\":true,\"pull_request_creation_policy\":\"all\",\"topics\":[],\"visibility\":\"public\",\"forks\":0,\"open_issues\":9,\"watchers\":1,\"default_branch\":\"main\"}},\"base\":{\"label\":\"jyqj:task/p8-final-main-integration-bfcc-20261009\",\"ref\":\"task/p8-final-main-integration-bfcc-20261009\",\"sha\":\"0e6b07c75183da79c5a6679d4c2b66c65f7db663\",\"user\":{\"login\":\"jyqj\",\"id\":174292474,\"node_id\":\"U_kgDOCmN9-g\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/174292474?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/jyqj\",\"html_url\":\"https://github.com/jyqj\",\"followers_url\":\"https://api.github.com/users/jyqj/followers\",\"following_url\":\"https://api.github.com/users/jyqj/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/jyqj/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/jyqj/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/jyqj/subscriptions\",\"organizations_url\":\"https://api.github.com/users/jyqj/orgs\",\"repos_url\":\"https://api.github.com/users/jyqj/repos\",\"events_url\":\"https://api.github.com/users/jyqj/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/jyqj/received_events\",\"type\":\"User\",\"user_view_type\":\"public\",\"site_admin\":false},\"repo\":{\"id\":1249213794,\"node_id\":\"R_kgDOSnV9Yg\",\"name\":\"codecortex\",\"full_name\":\"jyqj/codecortex\",\"private\":false,\"owner\":{\"login\":\"jyqj\",\"id\":174292474,\"node_id\":\"U_kgDOCmN9-g\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/174292474?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/jyqj\",\"html_url\":\"https://github.com/jyqj\",\"followers_url\":\"https://api.github.com/users/jyqj/followers\",\"following_url\":\"https://api.github.com/users/jyqj/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/jyqj/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/jyqj/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/jyqj/subscriptions\",\"organizations_url\":\"https://api.github.com/users/jyqj/orgs\",\"repos_url\":\"https://api.github.com/users/jyqj/repos\",\"events_url\":\"https://api.github.com/users/jyqj/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/jyqj/received_events\",\"type\":\"User\",\"user_view_type\":\"public\",\"site_admin\":false},\"html_url\":\"https://github.com/jyqj/codecortex\",\"description\":null,\"fork\":false,\"url\":\"https://api.github.com/repos/jyqj/codecortex\",\"forks_url\":\"https://api.github.com/repos/jyqj/codecortex/forks\",\"keys_url\":\"https://api.github.com/repos/jyqj/codecortex/keys{/key_id}\",\"collaborators_url\":\"https://api.github.com/repos/jyqj/codecortex/collaborators{/collaborator}\",\"teams_url\":\"https://api.github.com/repos/jyqj/codecortex/teams\",\"hooks_url\":\"https://api.github.com/repos/jyqj/codecortex/hooks\",\"issue_events_url\":\"https://api.github.com/repos/jyqj/codecortex/issues/events{/number}\",\"events_url\":\"https://api.github.com/repos/jyqj/codecortex/events\",\"assignees_url\":\"https://api.github.com/repos/jyqj/codecortex/assignees{/user}\",\"branches_url\":\"https://api.github.com/repos/jyqj/codecortex/branches{/branch}\",\"tags_url\":\"https://api.github.com/repos/jyqj/codecortex/tags\",\"blobs_url\":\"https://api.github.com/repos/jyqj/codecortex/git/blobs{/sha}\",\"git_tags_url\":\"https://api.github.com/repos/jyqj/codecortex/git/tags{/sha}\",\"git_refs_url\":\"https://api.github.com/repos/jyqj/codecortex/git/refs{/sha}\",\"trees_url\":\"https://api.github.com/repos/jyqj/codecortex/git/trees{/sha}\",\"statuses_url\":\"https://api.github.com/repos/jyqj/codecortex/statuses/{sha}\",\"languages_url\":\"https://api.github.com/repos/jyqj/codecortex/languages\",\"stargazers_url\":\"https://api.github.com/repos/jyqj/codecortex/stargazers\",\"contributors_url\":\"https://api.github.com/repos/jyqj/codecortex/contributors\",\"subscribers_url\":\"https://api.github.com/repos/jyqj/codecortex/subscribers\",\"subscription_url\":\"https://api.github.com/repos/jyqj/codecortex/subscription\",\"commits_url\":\"https://api.github.com/repos/jyqj/codecortex/commits{/sha}\",\"git_commits_url\":\"https://api.github.com/repos/jyqj/codecortex/git/commits{/sha}\",\"comments_url\":\"https://api.github.com/repos/jyqj/codecortex/comments{/number}\",\"issue_comment_url\":\"https://api.github.com/repos/jyqj/codecortex/issues/comments{/number}\",\"contents_url\":\"https://api.github.com/repos/jyqj/codecortex/contents/{+path}\",\"compare_url\":\"https://api.github.com/repos/jyqj/codecortex/compare/{base}...{head}\",\"merges_url\":\"https://api.github.com/repos/jyqj/codecortex/merges\",\"archive_url\":\"https://api.github.com/repos/jyqj/codecortex/{archive_format}{/ref}\",\"downloads_url\":\"https://api.github.com/repos/jyqj/codecortex/downloads\",\"issues_url\":\"https://api.github.com/repos/jyqj/codecortex/issues{/number}\",\"pulls_url\":\"https://api.github.com/repos/jyqj/codecortex/pulls{/number}\",\"milestones_url\":\"https://api.github.com/repos/jyqj/codecortex/milestones{/number}\",\"notifications_url\":\"https://api.github.com/repos/jyqj/codecortex/notifications{?since,all,participating}\",\"labels_url\":\"https://api.github.com/repos/jyqj/codecortex/labels{/name}\",\"releases_url\":\"https://api.github.com/repos/jyqj/codecortex/releases{/id}\",\"deployments_url\":\"https://api.github.com/repos/jyqj/codecortex/deployments\",\"created_at\":\"2026-05-25T13:18:05Z\",\"updated_at\":\"2026-10-10T02:24:51Z\",\"pushed_at\":\"2026-10-10T03:00:03Z\",\"git_url\":\"git://github.com/jyqj/codecortex.git\",\"ssh_url\":\"git@github.com:jyqj/codecortex.git\",\"clone_url\":\"https://github.com/jyqj/codecortex.git\",\"svn_url\":\"https://github.com/jyqj/codecortex\",\"homepage\":null,\"size\":2736813,\"stargazers_count\":1,\"watchers_count\":1,\"language\":\"Rust\",\"has_issues\":true,\"has_projects\":true,\"has_downloads\":false,\"has_wiki\":true,\"has_pages\":false,\"has_discussions\":false,\"forks_count\":0,\"mirror_url\":null,\"archived\":false,\"disabled\":false,\"open_issues_count\":9,\"license\":null,\"allow_forking\":true,\"is_template\":false,\"web_commit_signoff_required\":false,\"has_pull_requests\":true,\"pull_request_creation_policy\":\"all\",\"topics\":[],\"visibility\":\"public\",\"forks\":0,\"open_issues\":9,\"watchers\":1,\"default_branch\":\"main\"}},\"_links\":{\"self\":{\"href\":\"https://api.github.com/repos/jyqj/codecortex/pulls/188\"},\"html\":{\"href\":\"https://github.com/jyqj/codecortex/pull/188\"},\"issue\":{\"href\":\"https://api.github.com/repos/jyqj/codecortex/issues/188\"},\"comments\":{\"href\":\"https://api.github.com/repos/jyqj/codecortex/issues/188/comments\"},\"review_comments\":{\"href\":\"https://api.github.com/repos/jyqj/codecortex/pulls/188/comments\"},\"review_comment\":{\"href\":\"https://api.github.com/repos/jyqj/codecortex/pulls/comments{/number}\"},\"commits\":{\"href\":\"https://api.github.com/repos/jyqj/codecortex/pulls/188/commits\"},\"statuses\":{\"href\":\"https://api.github.com/repos/jyqj/codecortex/statuses/cc177ddc9e6b8180b8d847539787672e7b689a1a\"}},\"author_association\":\"OWNER\",\"auto_merge\":null,\"assignee\":null,\"active_lock_reason\":null,\"merged\":false,\"mergeable\":true,\"rebaseable\":false,\"mergeable_state\":\"clean\",\"merged_by\":null,\"comments\":4,\"review_comments\":0,\"maintainer_can_modify\":false,\"commits\":9,\"additions\":31910,\"deletions\":21,\"changed_files\":9}",
+        "title": "188",
+        "modified_date": null,
+        "url": "https://api.github.com/repos/jyqj/codecortex/pulls/188",
+        "display_url": "https://api.github.com/repos/jyqj/codecortex/pulls/188",
+        "display_title": "188",
+        "structuredContent": {
+          "title": "188",
+          "content": "{\"url\":\"https://api.github.com/repos/jyqj/codecortex/pulls/188\",\"id\":4801638234,\"node_id\":\"PR_kwDOSnV9Ys8AAAABHjMvWg\",\"html_url\":\"https://github.com/jyqj/codecortex/pull/188\",\"diff_url\":\"https://github.com/jyqj/codecortex/pull/188.diff\",\"patch_url\":\"https://github.com/jyqj/codecortex/pull/188.patch\",\"issue_url\":\"https://api.github.com/repos/jyqj/codecortex/issues/188\",\"number\":188,\"state\":\"open\",\"locked\":false,\"title\":\"perf(db): apply dependency exclusions before the SQL frontier limit\",\"user\":{\"login\":\"jyqj\",\"id\":174292474,\"node_id\":\"U_kgDOCmN9-g\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/174292474?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/jyqj\",\"html_url\":\"https://github.com/jyqj\",\"followers_url\":\"https://api.github.com/users/jyqj/followers\",\"following_url\":\"https://api.github.com/users/jyqj/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/jyqj/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/jyqj/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/jyqj/subscriptions\",\"organizations_url\":\"https://api.github.com/users/jyqj/orgs\",\"repos_url\":\"https://api.github.com/users/jyqj/repos\",\"events_url\":\"https://api.github.com/users/jyqj/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/jyqj/received_events\",\"type\":\"User\",\"user_view_type\":\"public\",\"site_admin\":false},\"body\":\"<!-- bfcc-round20-g4-actual-main-ci -->\\n## Current validation: G4 has passed the original main CI\\n\\nThe existing [CI run 37947395888, attempt 1](https://github.com/jyqj/codecortex/actions/runs/37947395888) is **completed / success** for G4 `cc177ddc9e6b8180b8d847539787672e7b689a1a`. The `check`, MSRV and security jobs all succeeded. This change is ready for review; the remaining original jobs continue with their own recorded status.\\n\\nThe complete original check log confirms:\\n\\n- All **9 DB resolution-store tests passed**, including both new exclusion controls and the seven existing storage/snapshot controls; none was ignored or filtered.\\n- The **181 source-related tests passed**, and the unchanged v15 CLI reported `passed`, binding actual product P4 `1930b8e3` and independent review R4 `b4ad0852`.\\n- The executed checkout was GitHub's test merge `b7fd33b957c112666ebd3dd3c909b0e6ac035039`, with parents [H, G4]. Its complete tree `26baafefb05e113d9f4bab63716d8e72128208cf` is exactly G4's tree; this is not relabeled as a literal G4 checkout.\\n- The original log is 1,083,469 bytes, SHA-256 `443811e70da67728a38cf4ec8c292d2896cd6ba894551705eb3c93d1a589de2e`.\\n\\nAt the retained check snapshot, 19 checks had succeeded and 6 were still running, with no failures. Later results must be read as actual results. The original G3 formatter failure and its skipped steps remain preserved in the R4 history below.\\n\\nThe change keeps completed paths out of the bounded reverse-dependency SQL result before applying the limit. The known scattered-case Python VM regression remains part of the review; passing the dense-case Rust control does not establish universal speedup or completion of a full scale study. Successful-test output did not print numerical Rust VM counters. The separate failed C3ff scale run keeps its original source, attempt, N and failure.\\n\\n**Original TODO ledger: 163 done / 192 total; 29 remaining. This CI result closes 0 original TODOs.**\\n\\n<details>\\n<summary>Earlier implementation, source review and failure history (preserved)</summary>\\n\\n## Current source and CI repair — 2026-10-09\\n\\nCurrent head is **G4 `cc177ddc9e6b8180b8d847539787672e7b689a1a`**, tree `26baafefb05e113d9f4bab63716d8e72128208cf`. The fixed base remains H `0e6b07c75183da79c5a6679d4c2b66c65f7db663`.\\n\\nThe first actual G3 [CI check](https://github.com/jyqj/codecortex/actions/runs/37942781717) failed at `cargo fmt --all -- --check` with exit 1. Stable rustc 1.99.0 reported three formatting hunks in `crates/cc-db/tests/p2b_resolution_store.rs`; subsequent steps in that job were skipped. The complete original failure remains archived.\\n\\nActual product P4 [1930b8e3](https://github.com/jyqj/codecortex/commit/1930b8e37e24031c3779553e3fc5b95e8e946d50) applies exactly those three hunks. It changes only the test file: the same closure tail expression gains braces, an array and ordinary argument list gain two optional trailing commas, and formatting is expanded. Production SQL, fixture values, assertions and budgets retain the prior G3 bytes. A non-author independently verified the complete 1095 product / 142 validation / 70 BASE-delta domains and actual Git tree.\\n\\nReview R4 [b4ad0852](https://github.com/jyqj/codecortex/tree/b4ad0852fb0f164f89ba194409e2a78578f5413f/artifacts/checkpoints/p8-completed-dependency-exclusion-ci-format-bfcc-20261009) contains the canonical source-only review and a 64-member original-evidence ZIP. G4 then updates only the original two binding files and four identity pins; BASE, FROZEN, historical algorithms, all validation inputs and original workflows are retained.\\n\\n**New G4 CI results are pending after publication; this remains Draft.** The old G3 fmt failure is not erased or turned into a test pass. H's original CI subsequently succeeded on H's own exact checkout; that baseline result does not grant G4 execution credit. The original SQL design-probe limits and sparse-exclusion counterexample below remain applicable.\\n\\nOriginal TODO accounting remains **163 done / 29 remaining; 0 new original TODO completions**. The separate complete-scale study retains its original source, repetitions, phases and budgets.\\n\\n<details>\\n<summary>Previous G3 description and source-only history, preserved</summary>\\n\\n## 问题与改动\\n\\n依赖反查原先先取 `cap + 已完成路径数` 行，再在 Rust 侧排除已完成路径。在已完成路径较多的闭包继续处理阶段，这会把本可由数据库排除的路径重新传到 Rust。\\n\\n本候选在非空排除集合时，用一个 JSON 字符串参数把精确排除集合放到 SQL 的 `LIMIT` 之前。空排除分支保留原 SQL；保留全局有序去重与 `limit + 1` 见证、原 read lease、预算和失效规则。非空分支每批最多 197 keys，加 kind、JSON、LIMIT 共 200 个参数。\\n\\n两个新增集成控制覆盖：\\n- 任意排除集合、跨批次、重复与缺失路径、Unicode、嵌入 NUL，以及零 limit 的精确全局见证；\\n- 密集已完成前缀与原 H 查询算法的输出／SQLite 计数对照。此目标原有七个测试保留，共九个未忽略测试。\\n\\n## 固定来源和审查\\n\\n| 角色 | 提交 |\\n| --- | --- |\\n| 已有固定基准 H | `0e6b07c75183da79c5a6679d4c2b66c65f7db663` |\\n| 原候选 P3 | `9c1605118edcb7e88d211c3f6bd31249ebe36dc7` |\\n| 手工格式延续 P3f | `aac83a8e57d87fa9fe95af16173c68f1dd4fb88e` |\\n| 非作者源码审查 R3 | `4ec7543db94699077fe4075dd4b3606e92482460` |\\n| 本 PR 原 v15 绑定 G3 | `67b7f4ee15a9c9633868b446870fec1358dda3d9` |\\n\\n[完整独立源码审查与 83 件支持原件](https://github.com/jyqj/codecortex/tree/67b7f4ee15a9c9633868b446870fec1358dda3d9/artifacts/checkpoints/p8-dependency-exclusion-bfcc-20261009)。完整域为 **1095 产品输入 /70 BASE 差异 /142 验证输入**。两份原 gate 绑定仅更新原身份常量和对应 registry，原算法、BASE、FROZEN、历史证明、142 验证输入和 CI 选择均保持。\\n\\n本 PR 以已有固定基准分支 `task/p8-final-main-integration-bfcc-20261009` 为 base，使实际 CI 对应已审候选。#180 的并行 head 已进到 `b2a17adc…`，新增 preselect、scale fixture 和诊断 workflow 改动保留在那里；通过候选工程验证后再作精确整合，不把本 PR 结果改标为它的执行。P3 也已精确保留 main d22 合入的 BENCHMARK 文档。\\n\\n## 当前验证边界\\n\\n两名非作者的独立源码审查及实际 P3f/R3/G3 树核验已完成。**Rust、formatter、Clippy、原 v15 和当前候选 CI 尚未运行**；此 Draft PR 由原有 PR 工作流产生真实结果，没有新增 workflow 或 Cloud Codex 任务。\\n\\n格式延续只调整排版与六处语法可选末尾逗号，全部字面量、注释及其他 token 保留；未声称运行 rustfmt。现有 CI 将检查格式、严格 Clippy、全部目标编译，并以原 default regression 运行九项 DB 集成测试。早期步骤失败时，后续步骤仍应记为未运行。\\n\\n既有 Python SQLite 对照仅是设计探针。密集前缀案例减少返回行；**稀疏排除／双 key 案例的 VM callback 从 132988 增到 163001（约 +22.57%）**。这份反例保留，当前没有普遍提速、Rust 实测提速或原五小时规模超时已修复的结论。默认 CI 会捕获成功测试的打印，不能据绿色状态虚构具体 `SqlWork` 数值。\\n\\n## TODO 与原研究\\n\\n本 PR 不关闭原 TODO。原账本仍是 **163 完成 /29 剩余，新增完成 0**。原 Gc8 study 的 100k deadline、aggregate failure、4/150 分片与 41/1500 样本继续保留原 source/run；现有 C3ff 与锁诊断研究分别核收，不跨来源补位或改变原 N／预算。\\n\\n[第 17 轮进度及原失败证据](https://github.com/jyqj/codecortex/tree/a914160ab328c63c02a87e00362beb63c02ecd11/artifacts/checkpoints/p8-round17-progress-bfcc-20261009)。\\n\\n</details>\\n\\n\\n<!-- a217-round35-scoped-sql-performance-review -->\\n### Separate composition review: performance admission held\\n\\nThe independent M7 composition derived from the G3 resolution query, with additional NULL/BINARY preservation and a separate surface query, was not integrated into PR #180. Its complete five-file candidate, static acceptance and subsequent bounded performance counterevidence are preserved at [fixed SQL review checkpoint 80d7979](https://github.com/jyqj/codecortex/tree/80d7979da10ae242ed4706cd04be74c62194261a/artifacts/checkpoints/p8-SQL-exclusion-hold-a217-20261009).\\n\\nFour constructed Python/SQLite cases retained exact output parity, but SQL execute/fetch elapsed time increased. Sparse and multi-batch cases show that the JSON membership structure may be rebuilt for each statement execution, so reduced returned rows or VM counts alone do not establish faster queries. The probe does not time Rust JSON serialization or measure this PR's exact G4 binary; the surface-query case also lies outside this PR's production scope. It is concrete evidence to resolve before treating this strategy as a performance improvement, alongside this PR's original sparse-exclusion VM counterexample.\\n\\nPR #188 remains separately reviewable and Draft while its exact-head CI and performance interpretation are resolved. Its source has not been absorbed by the format-only M7F update of #180. No original TODO or original scale result changes.\\n\\n\\n</details>\",\"created_at\":\"2026-10-09T14:15:07Z\",\"updated_at\":\"2026-10-09T19:15:56Z\",\"closed_at\":null,\"merged_at\":null,\"merge_commit_sha\":\"b7fd33b957c112666ebd3dd3c909b0e6ac035039\",\"assignees\":[],\"requested_reviewers\":[],\"requested_teams\":[],\"labels\":[],\"milestone\":null,\"draft\":true,\"commits_url\":\"https://api.github.com/repos/jyqj/codecortex/pulls/188/commits\",\"review_comments_url\":\"https://api.github.com/repos/jyqj/codecortex/pulls/188/comments\",\"review_comment_url\":\"https://api.github.com/repos/jyqj/codecortex/pulls/comments{/number}\",\"comments_url\":\"https://api.github.com/repos/jyqj/codecortex/issues/188/comments\",\"statuses_url\":\"https://api.github.com/repos/jyqj/codecortex/statuses/cc177ddc9e6b8180b8d847539787672e7b689a1a\",\"head\":{\"label\":\"jyqj:task/p8-dependency-exclusion-bfcc-20261009\",\"ref\":\"task/p8-dependency-exclusion-bfcc-20261009\",\"sha\":\"cc177ddc9e6b8180b8d847539787672e7b689a1a\",\"user\":{\"login\":\"jyqj\",\"id\":174292474,\"node_id\":\"U_kgDOCmN9-g\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/174292474?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/jyqj\",\"html_url\":\"https://github.com/jyqj\",\"followers_url\":\"https://api.github.com/users/jyqj/followers\",\"following_url\":\"https://api.github.com/users/jyqj/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/jyqj/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/jyqj/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/jyqj/subscriptions\",\"organizations_url\":\"https://api.github.com/users/jyqj/orgs\",\"repos_url\":\"https://api.github.com/users/jyqj/repos\",\"events_url\":\"https://api.github.com/users/jyqj/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/jyqj/received_events\",\"type\":\"User\",\"user_view_type\":\"public\",\"site_admin\":false},\"repo\":{\"id\":1249213794,\"node_id\":\"R_kgDOSnV9Yg\",\"name\":\"codecortex\",\"full_name\":\"jyqj/codecortex\",\"private\":false,\"owner\":{\"login\":\"jyqj\",\"id\":174292474,\"node_id\":\"U_kgDOCmN9-g\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/174292474?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/jyqj\",\"html_url\":\"https://github.com/jyqj\",\"followers_url\":\"https://api.github.com/users/jyqj/followers\",\"following_url\":\"https://api.github.com/users/jyqj/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/jyqj/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/jyqj/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/jyqj/subscriptions\",\"organizations_url\":\"https://api.github.com/users/jyqj/orgs\",\"repos_url\":\"https://api.github.com/users/jyqj/repos\",\"events_url\":\"https://api.github.com/users/jyqj/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/jyqj/received_events\",\"type\":\"User\",\"user_view_type\":\"public\",\"site_admin\":false},\"html_url\":\"https://github.com/jyqj/codecortex\",\"description\":null,\"fork\":false,\"url\":\"https://api.github.com/repos/jyqj/codecortex\",\"forks_url\":\"https://api.github.com/repos/jyqj/codecortex/forks\",\"keys_url\":\"https://api.github.com/repos/jyqj/codecortex/keys{/key_id}\",\"collaborators_url\":\"https://api.github.com/repos/jyqj/codecortex/collaborators{/collaborator}\",\"teams_url\":\"https://api.github.com/repos/jyqj/codecortex/teams\",\"hooks_url\":\"https://api.github.com/repos/jyqj/codecortex/hooks\",\"issue_events_url\":\"https://api.github.com/repos/jyqj/codecortex/issues/events{/number}\",\"events_url\":\"https://api.github.com/repos/jyqj/codecortex/events\",\"assignees_url\":\"https://api.github.com/repos/jyqj/codecortex/assignees{/user}\",\"branches_url\":\"https://api.github.com/repos/jyqj/codecortex/branches{/branch}\",\"tags_url\":\"https://api.github.com/repos/jyqj/codecortex/tags\",\"blobs_url\":\"https://api.github.com/repos/jyqj/codecortex/git/blobs{/sha}\",\"git_tags_url\":\"https://api.github.com/repos/jyqj/codecortex/git/tags{/sha}\",\"git_refs_url\":\"https://api.github.com/repos/jyqj/codecortex/git/refs{/sha}\",\"trees_url\":\"https://api.github.com/repos/jyqj/codecortex/git/trees{/sha}\",\"statuses_url\":\"https://api.github.com/repos/jyqj/codecortex/statuses/{sha}\",\"languages_url\":\"https://api.github.com/repos/jyqj/codecortex/languages\",\"stargazers_url\":\"https://api.github.com/repos/jyqj/codecortex/stargazers\",\"contributors_url\":\"https://api.github.com/repos/jyqj/codecortex/contributors\",\"subscribers_url\":\"https://api.github.com/repos/jyqj/codecortex/subscribers\",\"subscription_url\":\"https://api.github.com/repos/jyqj/codecortex/subscription\",\"commits_url\":\"https://api.github.com/repos/jyqj/codecortex/commits{/sha}\",\"git_commits_url\":\"https://api.github.com/repos/jyqj/codecortex/git/commits{/sha}\",\"comments_url\":\"https://api.github.com/repos/jyqj/codecortex/comments{/number}\",\"issue_comment_url\":\"https://api.github.com/repos/jyqj/codecortex/issues/comments{/number}\",\"contents_url\":\"https://api.github.com/repos/jyqj/codecortex/contents/{+path}\",\"compare_url\":\"https://api.github.com/repos/jyqj/codecortex/compare/{base}...{head}\",\"merges_url\":\"https://api.github.com/repos/jyqj/codecortex/merges\",\"archive_url\":\"https://api.github.com/repos/jyqj/codecortex/{archive_format}{/ref}\",\"downloads_url\":\"https://api.github.com/repos/jyqj/codecortex/downloads\",\"issues_url\":\"https://api.github.com/repos/jyqj/codecortex/issues{/number}\",\"pulls_url\":\"https://api.github.com/repos/jyqj/codecortex/pulls{/number}\",\"milestones_url\":\"https://api.github.com/repos/jyqj/codecortex/milestones{/number}\",\"notifications_url\":\"https://api.github.com/repos/jyqj/codecortex/notifications{?since,all,participating}\",\"labels_url\":\"https://api.github.com/repos/jyqj/codecortex/labels{/name}\",\"releases_url\":\"https://api.github.com/repos/jyqj/codecortex/releases{/id}\",\"deployments_url\":\"https://api.github.com/repos/jyqj/codecortex/deployments\",\"created_at\":\"2026-05-25T13:18:05Z\",\"updated_at\":\"2026-10-10T02:24:51Z\",\"pushed_at\":\"2026-10-10T03:00:03Z\",\"git_url\":\"git://github.com/jyqj/codecortex.git\",\"ssh_url\":\"git@github.com:jyqj/codecortex.git\",\"clone_url\":\"https://github.com/jyqj/codecortex.git\",\"svn_url\":\"https://github.com/jyqj/codecortex\",\"homepage\":null,\"size\":2736813,\"stargazers_count\":1,\"watchers_count\":1,\"language\":\"Rust\",\"has_issues\":true,\"has_projects\":true,\"has_downloads\":false,\"has_wiki\":true,\"has_pages\":false,\"has_discussions\":false,\"forks_count\":0,\"mirror_url\":null,\"archived\":false,\"disabled\":false,\"open_issues_count\":9,\"license\":null,\"allow_forking\":true,\"is_template\":false,\"web_commit_signoff_required\":false,\"has_pull_requests\":true,\"pull_request_creation_policy\":\"all\",\"topics\":[],\"visibility\":\"public\",\"forks\":0,\"open_issues\":9,\"watchers\":1,\"default_branch\":\"main\"}},\"base\":{\"label\":\"jyqj:task/p8-final-main-integration-bfcc-20261009\",\"ref\":\"task/p8-final-main-integration-bfcc-20261009\",\"sha\":\"0e6b07c75183da79c5a6679d4c2b66c65f7db663\",\"user\":{\"login\":\"jyqj\",\"id\":174292474,\"node_id\":\"U_kgDOCmN9-g\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/174292474?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/jyqj\",\"html_url\":\"https://github.com/jyqj\",\"followers_url\":\"https://api.github.com/users/jyqj/followers\",\"following_url\":\"https://api.github.com/users/jyqj/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/jyqj/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/jyqj/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/jyqj/subscriptions\",\"organizations_url\":\"https://api.github.com/users/jyqj/orgs\",\"repos_url\":\"https://api.github.com/users/jyqj/repos\",\"events_url\":\"https://api.github.com/users/jyqj/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/jyqj/received_events\",\"type\":\"User\",\"user_view_type\":\"public\",\"site_admin\":false},\"repo\":{\"id\":1249213794,\"node_id\":\"R_kgDOSnV9Yg\",\"name\":\"codecortex\",\"full_name\":\"jyqj/codecortex\",\"private\":false,\"owner\":{\"login\":\"jyqj\",\"id\":174292474,\"node_id\":\"U_kgDOCmN9-g\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/174292474?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/jyqj\",\"html_url\":\"https://github.com/jyqj\",\"followers_url\":\"https://api.github.com/users/jyqj/followers\",\"following_url\":\"https://api.github.com/users/jyqj/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/jyqj/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/jyqj/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/jyqj/subscriptions\",\"organizations_url\":\"https://api.github.com/users/jyqj/orgs\",\"repos_url\":\"https://api.github.com/users/jyqj/repos\",\"events_url\":\"https://api.github.com/users/jyqj/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/jyqj/received_events\",\"type\":\"User\",\"user_view_type\":\"public\",\"site_admin\":false},\"html_url\":\"https://github.com/jyqj/codecortex\",\"description\":null,\"fork\":false,\"url\":\"https://api.github.com/repos/jyqj/codecortex\",\"forks_url\":\"https://api.github.com/repos/jyqj/codecortex/forks\",\"keys_url\":\"https://api.github.com/repos/jyqj/codecortex/keys{/key_id}\",\"collaborators_url\":\"https://api.github.com/repos/jyqj/codecortex/collaborators{/collaborator}\",\"teams_url\":\"https://api.github.com/repos/jyqj/codecortex/teams\",\"hooks_url\":\"https://api.github.com/repos/jyqj/codecortex/hooks\",\"issue_events_url\":\"https://api.github.com/repos/jyqj/codecortex/issues/events{/number}\",\"events_url\":\"https://api.github.com/repos/jyqj/codecortex/events\",\"assignees_url\":\"https://api.github.com/repos/jyqj/codecortex/assignees{/user}\",\"branches_url\":\"https://api.github.com/repos/jyqj/codecortex/branches{/branch}\",\"tags_url\":\"https://api.github.com/repos/jyqj/codecortex/tags\",\"blobs_url\":\"https://api.github.com/repos/jyqj/codecortex/git/blobs{/sha}\",\"git_tags_url\":\"https://api.github.com/repos/jyqj/codecortex/git/tags{/sha}\",\"git_refs_url\":\"https://api.github.com/repos/jyqj/codecortex/git/refs{/sha}\",\"trees_url\":\"https://api.github.com/repos/jyqj/codecortex/git/trees{/sha}\",\"statuses_url\":\"https://api.github.com/repos/jyqj/codecortex/statuses/{sha}\",\"languages_url\":\"https://api.github.com/repos/jyqj/codecortex/languages\",\"stargazers_url\":\"https://api.github.com/repos/jyqj/codecortex/stargazers\",\"contributors_url\":\"https://api.github.com/repos/jyqj/codecortex/contributors\",\"subscribers_url\":\"https://api.github.com/repos/jyqj/codecortex/subscribers\",\"subscription_url\":\"https://api.github.com/repos/jyqj/codecortex/subscription\",\"commits_url\":\"https://api.github.com/repos/jyqj/codecortex/commits{/sha}\",\"git_commits_url\":\"https://api.github.com/repos/jyqj/codecortex/git/commits{/sha}\",\"comments_url\":\"https://api.github.com/repos/jyqj/codecortex/comments{/number}\",\"issue_comment_url\":\"https://api.github.com/repos/jyqj/codecortex/issues/comments{/number}\",\"contents_url\":\"https://api.github.com/repos/jyqj/codecortex/contents/{+path}\",\"compare_url\":\"https://api.github.com/repos/jyqj/codecortex/compare/{base}...{head}\",\"merges_url\":\"https://api.github.com/repos/jyqj/codecortex/merges\",\"archive_url\":\"https://api.github.com/repos/jyqj/codecortex/{archive_format}{/ref}\",\"downloads_url\":\"https://api.github.com/repos/jyqj/codecortex/downloads\",\"issues_url\":\"https://api.github.com/repos/jyqj/codecortex/issues{/number}\",\"pulls_url\":\"https://api.github.com/repos/jyqj/codecortex/pulls{/number}\",\"milestones_url\":\"https://api.github.com/repos/jyqj/codecortex/milestones{/number}\",\"notifications_url\":\"https://api.github.com/repos/jyqj/codecortex/notifications{?since,all,participating}\",\"labels_url\":\"https://api.github.com/repos/jyqj/codecortex/labels{/name}\",\"releases_url\":\"https://api.github.com/repos/jyqj/codecortex/releases{/id}\",\"deployments_url\":\"https://api.github.com/repos/jyqj/codecortex/deployments\",\"created_at\":\"2026-05-25T13:18:05Z\",\"updated_at\":\"2026-10-10T02:24:51Z\",\"pushed_at\":\"2026-10-10T03:00:03Z\",\"git_url\":\"git://github.com/jyqj/codecortex.git\",\"ssh_url\":\"git@github.com:jyqj/codecortex.git\",\"clone_url\":\"https://github.com/jyqj/codecortex.git\",\"svn_url\":\"https://github.com/jyqj/codecortex\",\"homepage\":null,\"size\":2736813,\"stargazers_count\":1,\"watchers_count\":1,\"language\":\"Rust\",\"has_issues\":true,\"has_projects\":true,\"has_downloads\":false,\"has_wiki\":true,\"has_pages\":false,\"has_discussions\":false,\"forks_count\":0,\"mirror_url\":null,\"archived\":false,\"disabled\":false,\"open_issues_count\":9,\"license\":null,\"allow_forking\":true,\"is_template\":false,\"web_commit_signoff_required\":false,\"has_pull_requests\":true,\"pull_request_creation_policy\":\"all\",\"topics\":[],\"visibility\":\"public\",\"forks\":0,\"open_issues\":9,\"watchers\":1,\"default_branch\":\"main\"}},\"_links\":{\"self\":{\"href\":\"https://api.github.com/repos/jyqj/codecortex/pulls/188\"},\"html\":{\"href\":\"https://github.com/jyqj/codecortex/pull/188\"},\"issue\":{\"href\":\"https://api.github.com/repos/jyqj/codecortex/issues/188\"},\"comments\":{\"href\":\"https://api.github.com/repos/jyqj/codecortex/issues/188/comments\"},\"review_comments\":{\"href\":\"https://api.github.com/repos/jyqj/codecortex/pulls/188/comments\"},\"review_comment\":{\"href\":\"https://api.github.com/repos/jyqj/codecortex/pulls/comments{/number}\"},\"commits\":{\"href\":\"https://api.github.com/repos/jyqj/codecortex/pulls/188/commits\"},\"statuses\":{\"href\":\"https://api.github.com/repos/jyqj/codecortex/statuses/cc177ddc9e6b8180b8d847539787672e7b689a1a\"}},\"author_association\":\"OWNER\",\"auto_merge\":null,\"assignee\":null,\"active_lock_reason\":null,\"merged\":false,\"mergeable\":true,\"rebaseable\":false,\"mergeable_state\":\"clean\",\"merged_by\":null,\"comments\":4,\"review_comments\":0,\"maintainer_can_modify\":false,\"commits\":9,\"additions\":31910,\"deletions\":21,\"changed_files\":9}",
+          "display_url": "https://api.github.com/repos/jyqj/codecortex/pulls/188"
+        }
+      },
+      "isError": false
+    },
+    "comments": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Action completed."
+        }
+      ],
+      "structuredContent": {
+        "comments": [
+          {
+            "url": "https://github.com/jyqj/codecortex/pull/188#issuecomment-6084188223",
+            "body": "第36轮对本PR与G3终态失败的独立核已归档：[固定证据](https://github.com/jyqj/codecortex/tree/b27cba9825eb38c7f7330c4a61845a5346f207aa/artifacts/checkpoints/p8-round36-progress-28fe-20261009)。\n\n本PR确实是物质代码候选：非空excluded集合改为JSON参数，并在LIMIT前通过`json_each`执行SQL排除；密集580/600已完成前缀fixture中返回行590→10且VM steps下降，当前p2b 9/9与主CI已有实际成功。\n\n但当前证据**不能把它称为G3 100k失败的修复**：\n\n- G3失败原件没有把5小时deadline归因到该reverse-query路径或高excluded密度。\n- 本PR没有100k release、N30、150-shard或1500-sample结果。\n- 稀疏双key探针保留VM callbacks 132988→163001（约+22.57%）；相关扩展候选还出现wall-time回归，rows/VM下降不能替代elapsed证明。\n- 本PR与当前PR180已分叉；整分支、旧bindings和当前CI都不能移植为PR180组合证据。\n\n最后fresh读取时本PR已被其他协作者切为Ready/Open，26 checks为23 success/0 failure/2 in progress/1 queued；我未覆盖该状态。严格合并意见仍是：在G3失败证据建立因果关联，并完成current-source dense/sparse/multi-batch配对wall+rows+VM+JSON成本后，才考虑窄整合两产品文件并新建P/R/G。当前不合并、不计原TODO。",
+            "user": {
+              "login": "jyqj",
+              "name": "jyqj",
+              "email": null,
+              "avatar_url": "https://avatars.githubusercontent.com/u/174292474?v=4",
+              "id": 174292474
+            },
+            "id": 6084188223,
+            "pull_request_review_id": null,
+            "in_reply_to_id": null,
+            "created_at": "2026-10-09T15:41:18Z",
+            "updated_at": "2026-10-09T15:41:18Z",
+            "review": null,
+            "side": null,
+            "line": null,
+            "start_line": null,
+            "path": null,
+            "body_html": "<p dir=\"auto\">第36轮对本PR与G3终态失败的独立核已归档：<a href=\"https://github.com/jyqj/codecortex/tree/b27cba9825eb38c7f7330c4a61845a5346f207aa/artifacts/checkpoints/p8-round36-progress-28fe-20261009\">固定证据</a>。</p>\n<p dir=\"auto\">本PR确实是物质代码候选：非空excluded集合改为JSON参数，并在LIMIT前通过<code class=\"notranslate\">json_each</code>执行SQL排除；密集580/600已完成前缀fixture中返回行590→10且VM steps下降，当前p2b 9/9与主CI已有实际成功。</p>\n<p dir=\"auto\">但当前证据<strong>不能把它称为G3 100k失败的修复</strong>：</p>\n<ul dir=\"auto\">\n<li>G3失败原件没有把5小时deadline归因到该reverse-query路径或高excluded密度。</li>\n<li>本PR没有100k release、N30、150-shard或1500-sample结果。</li>\n<li>稀疏双key探针保留VM callbacks 132988→163001（约+22.57%）；相关扩展候选还出现wall-time回归，rows/VM下降不能替代elapsed证明。</li>\n<li>本PR与当前PR180已分叉；整分支、旧bindings和当前CI都不能移植为PR180组合证据。</li>\n</ul>\n<p dir=\"auto\">最后fresh读取时本PR已被其他协作者切为Ready/Open，26 checks为23 success/0 failure/2 in progress/1 queued；我未覆盖该状态。严格合并意见仍是：在G3失败证据建立因果关联，并完成current-source dense/sparse/multi-batch配对wall+rows+VM+JSON成本后，才考虑窄整合两产品文件并新建P/R/G。当前不合并、不计原TODO。</p>"
+          },
+          {
+            "url": "https://github.com/jyqj/codecortex/pull/188#issuecomment-6084206127",
+            "body": "补充当前审查边界：本轮已核对 G4 的原主 CI、9 项 DB 测试与原 v15 通过，因此将本 PR 转为 ready for review；**尚未合并或吸收到 #180，性能采纳结论仍开放**。\n\n刚读取到已保留在本 PR body 中的 [80d7979 独立五文件组合审查](https://github.com/jyqj/codecortex/tree/80d7979da10ae242ed4706cd04be74c62194261a/artifacts/checkpoints/p8-SQL-exclusion-hold-a217-20261009)。它报告同类 JSON 排除策略的若干构造场景 execute/fetch 回退，同时明确该组合、surface query、Python 计时不等于当前 G4 Rust 二进制。现在由非作者核对具体原报告和共享查询机制；不会把不同候选的结果直接改标 G4，也不会因为正确性回归通过而忽略这个具体性能风险。\n\n当前 G4 head/base 保持，既有运行继续；原 C3ff 100k deadline failure 和 29 个未完成 TODO 也保持。",
+            "user": {
+              "login": "jyqj",
+              "name": "jyqj",
+              "email": null,
+              "avatar_url": "https://avatars.githubusercontent.com/u/174292474?v=4",
+              "id": 174292474
+            },
+            "id": 6084206127,
+            "pull_request_review_id": null,
+            "in_reply_to_id": null,
+            "created_at": "2026-10-09T15:42:23Z",
+            "updated_at": "2026-10-09T15:42:23Z",
+            "review": null,
+            "side": null,
+            "line": null,
+            "start_line": null,
+            "path": null,
+            "body_html": "<p dir=\"auto\">补充当前审查边界：本轮已核对 G4 的原主 CI、9 项 DB 测试与原 v15 通过，因此将本 PR 转为 ready for review；<strong>尚未合并或吸收到 <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"5774728827\" data-permission-text=\"Title is private\" data-url=\"https://github.com/jyqj/codecortex/issues/180\" data-hovercard-type=\"pull_request\" data-hovercard-url=\"/jyqj/codecortex/pull/180/hovercard\" href=\"https://github.com/jyqj/codecortex/pull/180\">#180</a>，性能采纳结论仍开放</strong>。</p>\n<p dir=\"auto\">刚读取到已保留在本 PR body 中的 <a href=\"https://github.com/jyqj/codecortex/tree/80d7979da10ae242ed4706cd04be74c62194261a/artifacts/checkpoints/p8-SQL-exclusion-hold-a217-20261009\">80d7979 独立五文件组合审查</a>。它报告同类 JSON 排除策略的若干构造场景 execute/fetch 回退，同时明确该组合、surface query、Python 计时不等于当前 G4 Rust 二进制。现在由非作者核对具体原报告和共享查询机制；不会把不同候选的结果直接改标 G4，也不会因为正确性回归通过而忽略这个具体性能风险。</p>\n<p dir=\"auto\">当前 G4 head/base 保持，既有运行继续；原 C3ff 100k deadline failure 和 29 个未完成 TODO 也保持。</p>"
+          },
+          {
+            "url": "https://github.com/jyqj/codecortex/pull/188#issuecomment-6085910767",
+            "body": "第37轮严格性能准入复核：本 PR 当前 G4 `cc177ddc…` 的 26/26 checks 已全部成功，语义/回归控制成立；但管理决定仍为 **KEEP OPEN / HOLD / DO NOT MERGE**。\n\n新 paired 机制证据显示，减少 dense 返回行/VM 并未转化为 elapsed 收益：dense 600/580 为 1.468× 慢，稀疏 2-key 为 93.55× 慢，400-key/3-batch 为 11.19× 慢；且这些 wall 还不含 Rust JSON 序列化/分配。G3 原件的主耗时域是 994 次增量与 8 次 full build、重复 15 表 parity；本 PR 不改变 resume 数、unscoped scan、commit、full control 或 parity，不能称为 G3 五小时 deadline 修复。\n\n当前 main 已是 `23eab8a7…`，本 PR 仍基于旧 integration branch。两个产品文件可在字节层面窄应用，但整 branch、旧 pins/CI 不可移植。若继续，应先避免每次 statement 重建大型 JSON membership，随后在 current-main 产品上给 dense/sparse/multi-batch 做 paired wall/rows/VM，并计入 JSON 序列化和分配成本，再形成 fresh P/R/G。\n\n完整独审：https://github.com/jyqj/codecortex/tree/41548474fe51a80f3c9f27236982730e8a43dc0a/artifacts/checkpoints/p8-round37-progress-28fe-20261009/review/pr188-current-independent-review.json",
+            "user": {
+              "login": "jyqj",
+              "name": "jyqj",
+              "email": null,
+              "avatar_url": "https://avatars.githubusercontent.com/u/174292474?v=4",
+              "id": 174292474
+            },
+            "id": 6085910767,
+            "pull_request_review_id": null,
+            "in_reply_to_id": null,
+            "created_at": "2026-10-09T17:28:31Z",
+            "updated_at": "2026-10-09T17:28:31Z",
+            "review": null,
+            "side": null,
+            "line": null,
+            "start_line": null,
+            "path": null,
+            "body_html": "<p dir=\"auto\">第37轮严格性能准入复核：本 PR 当前 G4 <code class=\"notranslate\">cc177ddc…</code> 的 26/26 checks 已全部成功，语义/回归控制成立；但管理决定仍为 <strong>KEEP OPEN / HOLD / DO NOT MERGE</strong>。</p>\n<p dir=\"auto\">新 paired 机制证据显示，减少 dense 返回行/VM 并未转化为 elapsed 收益：dense 600/580 为 1.468× 慢，稀疏 2-key 为 93.55× 慢，400-key/3-batch 为 11.19× 慢；且这些 wall 还不含 Rust JSON 序列化/分配。G3 原件的主耗时域是 994 次增量与 8 次 full build、重复 15 表 parity；本 PR 不改变 resume 数、unscoped scan、commit、full control 或 parity，不能称为 G3 五小时 deadline 修复。</p>\n<p dir=\"auto\">当前 main 已是 <code class=\"notranslate\">23eab8a7…</code>，本 PR 仍基于旧 integration branch。两个产品文件可在字节层面窄应用，但整 branch、旧 pins/CI 不可移植。若继续，应先避免每次 statement 重建大型 JSON membership，随后在 current-main 产品上给 dense/sparse/multi-batch 做 paired wall/rows/VM，并计入 JSON 序列化和分配成本，再形成 fresh P/R/G。</p>\n<p dir=\"auto\">完整独审：<a href=\"https://github.com/jyqj/codecortex/tree/41548474fe51a80f3c9f27236982730e8a43dc0a/artifacts/checkpoints/p8-round37-progress-28fe-20261009/review/pr188-current-independent-review.json\">https://github.com/jyqj/codecortex/tree/41548474fe51a80f3c9f27236982730e8a43dc0a/artifacts/checkpoints/p8-round37-progress-28fe-20261009/review/pr188-current-independent-review.json</a></p>"
+          },
+          {
+            "url": "https://github.com/jyqj/codecortex/pull/188#issuecomment-6087608757",
+            "body": "PR 管理同步（2b5e，2026-10-10 北京时间）：已按当前 `cc177ddc` 未解决的性能采纳问题将此 PR 转回 Draft。26/26 工程检查成功保留其原范围；已记录的 SQL 配对反例和 sparse VM 增长尚未被等价、代表性的端到端收益证据解决。分支、源码和既有研究均未改变，后续完成性能解释/修正后可再置 Ready。此状态调整不关闭原 TODO；权威计数仍 163/192 完成、29 剩余。",
+            "user": {
+              "login": "jyqj",
+              "name": "jyqj",
+              "email": null,
+              "avatar_url": "https://avatars.githubusercontent.com/u/174292474?v=4",
+              "id": 174292474
+            },
+            "id": 6087608757,
+            "pull_request_review_id": null,
+            "in_reply_to_id": null,
+            "created_at": "2026-10-09T19:15:56Z",
+            "updated_at": "2026-10-09T19:15:56Z",
+            "review": null,
+            "side": null,
+            "line": null,
+            "start_line": null,
+            "path": null,
+            "body_html": "<p dir=\"auto\">PR 管理同步（2b5e，2026-10-10 北京时间）：已按当前 <code class=\"notranslate\">cc177ddc</code> 未解决的性能采纳问题将此 PR 转回 Draft。26/26 工程检查成功保留其原范围；已记录的 SQL 配对反例和 sparse VM 增长尚未被等价、代表性的端到端收益证据解决。分支、源码和既有研究均未改变，后续完成性能解释/修正后可再置 Ready。此状态调整不关闭原 TODO；权威计数仍 163/192 完成、29 剩余。</p>"
+          }
+        ],
+        "url": "https://github.com/jyqj/codecortex/pull/188",
+        "title": "jyqj/codecortex PR #188 comments",
+        "display_url": "https://github.com/jyqj/codecortex/pull/188",
+        "display_title": "jyqj/codecortex PR #188 comments"
+      },
+      "isError": false
+    }
+  },
+  "prior_negative_report_original": {
+    "C8_historical_timing_boundary": {
+      "994_completed_incremental_wall_s": 6680.996511,
+      "dependency_SQL_wall_separately_measured": false,
+      "dependency_rows": 130570693,
+      "dependency_statements": 430770,
+      "dependency_vm_steps": 6209004986,
+      "full_build_dependency_SQL_counters": 0,
+      "full_staging_s_overlapping": 3488.575036,
+      "interpretation": "The SQL counters identify repeated work but not its elapsed share. The enclosing parse phase is not all reverse SQL; phase/boundary groups overlap. Full staging and parity remain separate large costs. No attribution of original deadline failure to this SQL path, and no inference that this proposal repairs it.",
+      "parse_phase_including_reverse_queries_s": 382.882,
+      "phase_record": {
+        "bytes": 4844,
+        "git_blob": "1bcf8feecff8dacf23e4ccb93e4ed6b8450e51d1",
+        "mode": "0o644",
+        "path": "C8-resume-diagnostic/phase-time-attribution-v1.json",
+        "sha256": "93e3ddc6e8079f9340a5995a96a337ee66d88e6c8de2ef02bb72ce8f2d4a4046"
+      },
+      "run": 37902429727,
+      "seven_completed_full_build_wall_s": 4380.8262,
+      "source": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+      "stage_record": {
+        "bytes": 11211,
+        "git_blob": "097caecb76ade107f1dda86d1dcc4e95214bb023",
+        "mode": "0o644",
+        "path": "C8-resume-diagnostic/stage-timing-summary-v1.json",
+        "sha256": "8366a633db5df0fd9cf2779cff0ad1a1bc2cd0b6efbf8a051da716019e1c2f9b"
+      }
+    },
+    "PR188_prior_negative": {
+      "change_percent_rounded": 22.57,
+      "fixture": "author Python SQLite3.53.1; scattered2500 exclusions; two keys; 5000files/10000dependencies",
+      "locally_read_review": {
+        "bytes": 899946,
+        "git_blob": "527000332dc442d68ab957af345aef1cb2331e87",
+        "mode": "0o644",
+        "path": "C8-resume-diagnostic/PR188-overlap/review-527000332dc442d68ab957af345aef1cb2331e87.json",
+        "sha256": "f8384ec7620c1f69be155f0a2c870e9c2fd06ff6de40920d7389c08d03d01080"
+      },
+      "new_callbacks": 163001,
+      "official_review_git_blob": "527000332dc442d68ab957af345aef1cb2331e87",
+      "old_callbacks": 132988,
+      "pointers": [
+        "/acceptance_boundary/counterexample",
+        "/prior_SQL_probe/required_negative_counterexample"
+      ],
+      "scope": "Read from exact published review JSON. Original author probe itself not rerun or downloaded by this review; new local probe has separately recorded different cases."
+    },
+    "admission_recommendation": [
+      "Proceed independently with the exact formatter-only repairs needed by the real failing CI, without SQL source changes or PR188 product parent; retain original failure and the SQL candidate unmodified.",
+      "Do not admit this unconditional JSON strategy as a performance optimization based on reduced returned rows or a dense-only VM control. Local wall regression is concrete enough to require design revision/evidence before that claim; it is not a fabricated failure of the original registered whole-build gate.",
+      "A future bounded alternative could retain old SQL membership filtering and retrieve sorted keyset pages only when exclusions actually consume the frontier witness; this avoids eagerly materializing unrelated E for sparse results. This is a design possibility, not an implemented or approved patch: preserve same read lease/snapshot, NULL error behavior, BINARY membership versus original ORDER/DISTINCT, global cap+1, all-kind/batch union, and work accounting.",
+      "Do not silently add a temporary write table to read_conn or tune an arbitrary threshold to these probes. Any exclusion-set caching/materialization needs an explicit connection lifetime, read-only/concurrency/error and memory contract.",
+      "No additional broad sample matrix is required to reach this hold decision. Existing finite negative and source boundary suffice. Exact Rust compilation/tests remain pending and cannot be inferred from Python parity."
+    ],
+    "candidate_manifest": {
+      "bytes": 5870,
+      "git_blob": "d13186798ecf32f1cdcf2b050e83b153fd0a8c0c",
+      "mode": "0o644",
+      "path": "C8-resume-diagnostic/candidate-M7/candidate-manifest.json",
+      "sha256": "0654c117c743f0bd91a117879d7190c1ff40e81ca714893e2f576d9039f6ab53"
+    },
+    "candidate_manifest_exact_SQL_identity_match": true,
+    "inputs": [
+      {
+        "bytes": 25396,
+        "git_blob": "998608d9c6d07eb4afec0ce7e13c1f85bfc7a441",
+        "path": "p8-lock-observation-G2-recovered-1419/crates/cc-db/src/sql/index_v1.sql",
+        "sha256": "6d7ee2193f388281aeef3dc98b914f0fa6f9478dda90833bf41f6bc12350cd06"
+      },
+      {
+        "bytes": 10939,
+        "git_blob": "97d3d9519fe10ed7cd30b9783164348998c02abc",
+        "path": "C8-resume-diagnostic/M6-source/crates/cc-db/src/resolution_dependency_store.rs",
+        "sha256": "c37a7c44ed1aa5c2897fcb387eee5fb1007a60cb53c0de4abc6488dafde9ebbf"
+      },
+      {
+        "bytes": 8957,
+        "git_blob": "d0fa4c622876197bbb8c14b7d94f0d8ab3e1f318",
+        "path": "C8-resume-diagnostic/M6-source/crates/cc-db/src/public_surface_store.rs",
+        "sha256": "76d8f7bb89f99abf5cbb4b75e0ccb486720e187e9b46014b5bccde439bdb95e5"
+      },
+      {
+        "bytes": 12078,
+        "git_blob": "c195a0993845c03bba5100003d83c9f6170122d6",
+        "path": "C8-resume-diagnostic/candidate-M7/crates/cc-db/src/resolution_dependency_store.rs",
+        "sha256": "3121f9e5681b209eb4fdf01ec412f60f844f8d3bdbbc706488a14e28f4d4fcb3"
+      },
+      {
+        "bytes": 9700,
+        "git_blob": "bab1b4f7c129b7181694dfb75a77825a49a8086e",
+        "path": "C8-resume-diagnostic/candidate-M7/crates/cc-db/src/public_surface_store.rs",
+        "sha256": "0c69da1bf9549f199a551b859dbb49bd18d47165e9d05fb46af96665168e058e"
+      }
+    ],
+    "measurement_boundary": [
+      "Exactly four finite scenarios and twenty alternating observations; cached statements warmed once; same in-memory database/schema/indexes for each old/candidate pair.",
+      "Wall fields wrap SQLite execute plus full fetch. They exclude JSON serialization, Rust allocation/BTreeSet costs and native filesystem/locking. A separate Python boundary includes the Python set/filter/global-cap emulation; this is not a Rust measurement.",
+      "Progress-handler period=1 VM callback counts were measured in a separate pass with wall callback disabled. Counts are Python SQLite VM callbacks, not native Rust StatementStatus.",
+      "Exact canonical queried table definitions and all their original indexes are extracted from the recorded schema; only these four tables are materialized; foreign keys remain OFF because parent files are not queried. No writes occur during paired query timing.",
+      "The sparse 10000 exclusions are real distinct strings unrelated to returned dependents, a constructed valid membership case. This establishes a possible regression, not its frequency in the original C8 corpus.",
+      "All old/candidate results preserve the same global sorted distinct cap output in these cases. This is not a replacement for the broader original semantic tests.",
+      "Twenty observations are a bounded local design check, not an N30 registered study or confidence-interval/performance gate. Ratios cannot be applied to original whole-build wall time or the 20% acceptance gate."
+    ],
+    "no_mutations": {
+      "native_measurements": true,
+      "original_artifacts": true,
+      "product_or_test_source": true,
+      "refs": true
+    },
+    "observed_execution": {
+      "actual_exit_code": 0,
+      "command": "python3 -B C8-resume-diagnostic/runtime-agent-sql-cost-review/probe.py",
+      "original_result": {
+        "bytes": 625473,
+        "git_blob": "b5ae0a26afcde7033338f4b1be7dbaa870b75c88",
+        "mode": "0o644",
+        "path": "C8-resume-diagnostic/runtime-agent-sql-cost-review/probe-result.json",
+        "sha256": "f00edb0c0c932a0514e5a27321411858fca53148457aed82462743919a483816"
+      },
+      "python": "3.12.14",
+      "script": {
+        "bytes": 8867,
+        "git_blob": "f1fcbb603934a84313b1261928ad7035d87350da",
+        "mode": "0o644",
+        "path": "C8-resume-diagnostic/runtime-agent-sql-cost-review/probe.py",
+        "sha256": "8fc0f9b69c50d6f19be2c01edbcdd1bc209dadfe6ba07ea977eda68b6097519f"
+      },
+      "sqlite": "3.53.1",
+      "tool_wall_seconds": 1.07123449
+    },
+    "probe_summary": [
+      {
+        "candidate_to_old_query_wall_ratio": 1.4678475521304293,
+        "candidate_to_old_vm_ratio": 0.9633384017570535,
+        "cap": 10,
+        "excluded_count": 580,
+        "excluded_json_bytes": 9281,
+        "family": "resolution",
+        "keys": 1,
+        "name": "dense_prefix_600_rows_580_excluded",
+        "output": [
+          "src/f00580.py",
+          "src/f00581.py",
+          "src/f00582.py",
+          "src/f00583.py",
+          "src/f00584.py",
+          "src/f00585.py",
+          "src/f00586.py",
+          "src/f00587.py",
+          "src/f00588.py",
+          "src/f00589.py"
+        ],
+        "output_parity": true,
+        "variants": {
+          "candidate": {
+            "boundary_median_ns": 272333.0,
+            "query_fetch_median_ns": 268655.0,
+            "returned_rows": 10,
+            "statements": 1,
+            "vm_progress_callbacks": 11404
+          },
+          "old": {
+            "boundary_median_ns": 207337.5,
+            "query_fetch_median_ns": 183026.5,
+            "returned_rows": 590,
+            "statements": 1,
+            "vm_progress_callbacks": 11838
+          }
+        }
+      },
+      {
+        "candidate_to_old_query_wall_ratio": 93.54671839637892,
+        "candidate_to_old_vm_ratio": 468.6542056074766,
+        "cap": 2,
+        "excluded_count": 10000,
+        "excluded_json_bytes": 200001,
+        "family": "resolution",
+        "keys": 2,
+        "name": "sparse_two_keys_10000_unrelated_excluded",
+        "output": [
+          "src/f00000.py",
+          "src/f00001.py"
+        ],
+        "output_parity": true,
+        "variants": {
+          "candidate": {
+            "boundary_median_ns": 2322456.5,
+            "query_fetch_median_ns": 2314720.0,
+            "returned_rows": 2,
+            "statements": 1,
+            "vm_progress_callbacks": 50146
+          },
+          "old": {
+            "boundary_median_ns": 26787.0,
+            "query_fetch_median_ns": 24744.0,
+            "returned_rows": 2,
+            "statements": 1,
+            "vm_progress_callbacks": 107
+          }
+        }
+      },
+      {
+        "candidate_to_old_query_wall_ratio": 11.186430537040934,
+        "candidate_to_old_vm_ratio": 11.131660577652168,
+        "cap": 2,
+        "excluded_count": 10000,
+        "excluded_json_bytes": 200001,
+        "family": "resolution",
+        "keys": 400,
+        "name": "sparse_400_keys_three_batches_10000_unrelated_excluded",
+        "output": [
+          "src/f00000.py",
+          "src/f00001.py"
+        ],
+        "output_parity": true,
+        "variants": {
+          "candidate": {
+            "boundary_median_ns": 8638251.0,
+            "query_fetch_median_ns": 8609770.5,
+            "returned_rows": 6,
+            "statements": 3,
+            "vm_progress_callbacks": 161487
+          },
+          "old": {
+            "boundary_median_ns": 881034.5,
+            "query_fetch_median_ns": 769662.0,
+            "returned_rows": 400,
+            "statements": 3,
+            "vm_progress_callbacks": 14507
+          }
+        }
+      },
+      {
+        "candidate_to_old_query_wall_ratio": 12.710213641499479,
+        "candidate_to_old_vm_ratio": 11.325597733180338,
+        "cap": 2,
+        "excluded_count": 10000,
+        "excluded_json_bytes": 200001,
+        "family": "surface",
+        "keys": 400,
+        "name": "surface_400_roots_three_tables_10000_unrelated_excluded",
+        "output": [
+          "src/f00000.py",
+          "src/f00001.py"
+        ],
+        "output_parity": true,
+        "variants": {
+          "candidate": {
+            "boundary_median_ns": 21279248.5,
+            "query_fetch_median_ns": 21210213.5,
+            "returned_rows": 18,
+            "statements": 9,
+            "vm_progress_callbacks": 483637
+          },
+          "old": {
+            "boundary_median_ns": 1934635.0,
+            "query_fetch_median_ns": 1668753.5,
+            "returned_rows": 1200,
+            "statements": 9,
+            "vm_progress_callbacks": 42703
+          }
+        }
+      }
+    ],
+    "reviewed_at_utc": "2026-10-09T14:58:20.402224+00:00",
+    "reviewer": "/root/runtime_closeout",
+    "schema": "M7-SQL-exclusion-performance-risk-scoped-review-v1",
+    "scope": "Independent source/cost review and four finite Python SQLite constructed scenarios, not Rust compilation, current-source P8 acceptance, or original 100k rerun.",
+    "source_before_after_equal": true,
+    "static_cost_findings": [
+      {
+        "finding": "Borrowing one Rust JSON string removes explicit per-statement Rust clone, but SQLite still receives it for each statement execution. The matching-row NOT IN subquery builds an ephemeral membership index via json_each; EXPLAIN contains Once/OpenEphemeral/VFilter/IdxInsert/VNext. Once applies within that execution, not across cached statement resets.",
+        "paths": [
+          "crates/cc-db/src/resolution_dependency_store.rs:129",
+          "crates/cc-db/src/resolution_dependency_store.rs:143",
+          "crates/cc-db/src/resolution_dependency_store.rs:151",
+          "crates/cc-db/src/public_surface_store.rs:69",
+          "crates/cc-db/src/public_surface_store.rs:87",
+          "crates/cc-db/src/public_surface_store.rs:92"
+        ]
+      },
+      {
+        "finding": "For B statement executions that reach the exclusion expression and E exclusions, exclusion-list traversal can recur B times (approximately B*E value visits, plus ephemeral index work and parsing). Resolution has per-kind 197-key batches; surface has three table statements per 198-root batch. Completely empty matching statements may skip lazy subquery construction, so this is not claimed as unconditional work for no-hit batches."
+      },
+      {
+        "finding": "Resolution deduplicates exclusions before JSON. Surface serializes its passed slice, but the actual reconcile caller forms that slice from state.completed, a set; the current caller therefore has no duplicate-expansion issue. Public arbitrary duplicate inputs are not asserted to be the original workload."
+      },
+      {
+        "finding": "Changing 198 to 197 (resolution) or 199 to 198 (surface) may add batches at boundaries. The present 400-key/root cases use three batches on both sides, so their large regression is not explained by extra statement count."
+      },
+      {
+        "finding": "The canonical dense 600/580 construction reduces returned rows and VM count yet increased measured query wall here. Thus rows or one positive VmStep assertion cannot establish a speedup."
+      }
+    ],
+    "task_accounting": {
+      "done": 163,
+      "formal_completion": false,
+      "newly_completed": 0,
+      "remaining": 29
+    },
+    "verdict": "block_unconditional_SQL_optimization_admission_this_round; retain_semantic_candidate_and_format_only_repair"
+  },
+  "prior_no_small_fix_boundary_original": {
+    "schema": "PR188-no-small-safe-adoption-fix-v1",
+    "original_source_blob": "6a875ce6ef7b82aa4bdc3183a59e7887c227825f",
+    "current_main_read_pool_blob": "f29aac1e787c60d86db46fbbdc10b4cf5103fa39",
+    "conclusion": "No already established small semantics-preserving patch resolves the performance HOLD. Stop further design expansion in this review.",
+    "observed_facts": [
+      "JSON already serialized once per call; moving it out of inner loop is not a new fix.",
+      "Read pool enforces query_only=ON; a TEMP-table population would cross current read-only boundary.",
+      "A MATERIALIZED CTE inside each batch remains statement-local, not call-global.",
+      "Consolidating into one SQL statement could reduce repeat membership for multiple batches, but changes batching/error-observation and has not been implemented/reviewed. It also cannot by itself remove the adverse one-statement dense and sparse cases."
+    ],
+    "existing_probe": {
+      "checkpoint": "80d7979da10ae242ed4706cd04be74c62194261a",
+      "archive_path": "artifacts/checkpoints/p8-SQL-exclusion-hold-a217-20261009/SQL-hold-evidence.tar.gz",
+      "archive_git": "ed9926ae31c28ed892b6e10640783941d4f60149",
+      "member": "sql-cost/probe.py",
+      "member_sha256": "8fc0f9b69c50d6f19be2c01edbcdd1bc209dadfe6ba07ea977eda68b6097519f",
+      "entry": "python3 probe.py after explicitly restoring its five fixed source inputs; original script embeds another host's ROOT. No portable CLI arguments and no exact-G4 Rust cost entry.",
+      "scope": "Four constructed Python SQLite cases,20 alternating observations, execute/fetch and Python boundary only; JSON serialization and plan construction outside timer. M7 source includes extra NULL/BINARY and surface query; not exact G4. Read here only; never executed."
+    },
+    "existing_Rust_controls": {
+      "target": "cargo test --locked -p cc-db --test p2b_resolution_store",
+      "new_named": [
+        "dependency_exclusion_preserves_exact_global_frontier_and_zero_limit_witness",
+        "dependency_exclusion_avoids_returning_completed_prefix_and_reduces_dense_case_sql_work"
+      ],
+      "coverage": "Arbitrary/scattered/duplicate/missing/Unicode/NUL paths;410 events across kinds/batches;limits0/1/3/200/usizeMAX;epoch equality;empty path exact old SQL work;dense600/580 compares reference outputs,returned rows,relative VM.",
+      "limits": "Ordinary correctness/VM controls, no paired wall or total JSON allocation cost; --nocapture does not create missing wall measurement."
+    },
+    "design_only_not_authorized_or_implemented": "A one-statement read-only all-(kind,key) join plus one excluded set materialization is a possible design topic, not an accepted minimal fix; cross-batch output/error semantics, missing/sparse cost and total setup require review. No new code produced.",
+    "parent_direction": "Stop188 expansion; keep HOLD and prioritize already archived190 equal-lifetime candidate recovery.",
+    "operations": {
+      "production_run": false,
+      "test_run": false,
+      "study_run": false,
+      "product_edit": false
+    }
+  },
+  "report_file": {
+    "path": "/workspace/scratch/bfccb8494ba0/round36-PR188-experiment-closure-review/independent-closure-scope-review.json",
+    "bytes": 10896,
+    "sha256": "ba530c8fe52e2558b6f314df985058306b47faddc261c0287be59e739279083d",
+    "git_blob": "8037451233a0fca94b659136cb2e8c3ff6053257"
+  },
+  "source_scope": "Only PR188; prior review originals are preserved in full without re-executing their probe."
+}

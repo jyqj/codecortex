@@ -1,0 +1,186 @@
+{
+  "schema": "p8_018_original_baseline_script_applicability_v1",
+  "recorded_at_utc": "2026-10-10T03:01:04.732231+00:00",
+  "reviewer": "/root/todo_audit",
+  "apply_now": false,
+  "fixed_main": {
+    "commit": "b9b089bb4eae072affe9326681d4980eae15fd84",
+    "tree": "6461938788665701cfa4fa095a064a3a404ec492",
+    "parents": [
+      "30a6dff579c88593c1762db244eacbe6ee95cef9",
+      "9cc6bf49f6dd81e4069a8004eed49addba0ab79b"
+    ],
+    "message": "Merge pull request #200 from jyqj/task/p8-100k-diagnostic-capture-bfcc-20261010\n\nci(eval): retain original progress during an independent 100k diagnostic",
+    "same_tree_existing_view": "9cc6bf49f6dd81e4069a8004eed49addba0ab79b",
+    "source_identity_scope": "whole Git tree identity, not a new script execution"
+  },
+  "task": {
+    "id": "P8-018",
+    "title": "文档事实与安装契约同步",
+    "status": "in_progress",
+    "depends_on": [
+      "P8-017"
+    ],
+    "steps": [
+      "从schema/capabilities生成可核查事实",
+      "更新安装/故障/默认离线说明"
+    ],
+    "acceptance": [
+      "文档表数/schema/工具数不再漂移，设计与已实现标识分开",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validations": [
+      "V18",
+      "V21"
+    ]
+  },
+  "task_source": {
+    "path": "/workspace/scratch/bfccb8494ba0/round32-capture-context-admission/guard-view/docs/roadmap/code-index-v2/tasks.json",
+    "bytes": 879341,
+    "sha256": "e0a612bb4d42f63be01c17e77ff627db3581200275fbfa9e60679399e90877c6",
+    "git_blob": "adb44ee70a4c129bfb443d4ecf678fb934c8ea6b"
+  },
+  "AGENTS": {
+    "root_file_official_result": "404 NOT_FOUND at exact fixed main",
+    "tracked_ancestor_paths_checked": [
+      "AGENTS.md",
+      "scripts/AGENTS.md",
+      "docs/AGENTS.md",
+      "docs/roadmap/AGENTS.md",
+      "docs/roadmap/code-index-v2/AGENTS.md"
+    ],
+    "tracked_matches": [],
+    "taskcwd_AGENTS_exists": false,
+    "scope": "Relevant Git-tree ancestors only; no nonexistent AGENTS requirement or waiver inferred."
+  },
+  "inputs": [
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round36-P8-018-baseline-script-applicability/fixed-main-originals/CONTRIBUTING.md",
+      "bytes": 3565,
+      "sha256": "a832246f555c6418f3071c335a09200f6cbc8e8155095d5cad342badd7c33780",
+      "git_blob": "e70d34871f78f394578a6e4273df75dd92afa35f"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round36-P8-018-baseline-script-applicability/fixed-main-originals/scripts/update-doc-baselines.sh",
+      "bytes": 3571,
+      "sha256": "04d63124fc8405610c91fb4a591e17e2dd06ce1f20cf995123263b12a4b0b59c",
+      "git_blob": "e33fa140e9a6e5461f77cb66e633ec4ba38d2700"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round36-P8-018-baseline-script-applicability/fixed-main-originals/docs/TEST_PLAN.md",
+      "bytes": 9133,
+      "sha256": "8f2a388ebf48a4f47562919e7dfa236d2363bc51376de32628d1516c31b7f11d",
+      "git_blob": "c86e4628c8fb3d94385a2fe5c5ecbef8f4b1dc2c"
+    }
+  ],
+  "applicability": {
+    "contributing_lines": [
+      81,
+      82
+    ],
+    "contributing_exact_text": "文档里的可核对数字（测试数、语料数、schema 版本等）改动后运行 scripts/update-doc-baselines.sh 核对 docs/TEST_PLAN.md 的基线。",
+    "decision": "Applicable under the broad literal numeric-change convention; the examples are not stated to be exhaustive.",
+    "specific_PR198_change": "BENCHMARK oracle table-list count14→15;14MCP tools and TEST_PLAN baseline figures unchanged.",
+    "test_plan_context": "The same fixed TEST_PLAN explicitly labels1258passed/15ignored and crate table as historical, retains ENOSPC and partial scopes, and says refresh only after actual complete workspace execution. Its final line describes rerunning this script after test/corpus count changes. This narrower purpose does not itself grant an exception to CONTRIBUTING.",
+    "covers_oracle_15_table_fact": false,
+    "original_task_boundary": "P8-018 asks correct declared facts/install/offline docs plus relevant regression and original dependencies. It does not explicitly add this script as a uniform release/150-cohort hard gate. No accepted component evidence is erased.",
+    "exception_or_waiver_receipt": null,
+    "actual_prior_handling": "Root directly reviewed TABLES/mutation-case source and approved exact PR198 three-doc merge; this is neither the script executing nor an explicit waiver.",
+    "prior_publication_bridge_git": "7108a17fab7a7589652896ef654e0383d8cbef30"
+  },
+  "script_input_and_behavior": {
+    "invocation": "scripts/update-doc-baselines.sh",
+    "run_from": "real isolated Git worktree at the fixed commit; its git rev-parse selects the repository root",
+    "interpreter": "/usr/bin/env bash; set -euo pipefail",
+    "direct_source_reads": [
+      "crates/cc-db/src/index_migrate.rs",
+      "crates/cc-server/src/mcp.rs",
+      "crates/cc-eval/corpus/*.toml filename inventory",
+      "crates/cc-index/src/framework_resolvers/mod.rs",
+      "docs/TEST_PLAN.md"
+    ],
+    "original_subprocess": "cargo test --workspace --all-targets",
+    "original_command_line": 15,
+    "workspace_count": 8,
+    "tests_scope": "All default-feature workspace targets, ordinary ignored tests remain ignored; not the bounded selected-semantic CI invocation. No --release, --offline, --locked, timeout or dry-run argument is supplied by this script.",
+    "outputs": "stdout schema/tool/resolver/test/corpus numbers and per-binary counts; DRIFT lines for four comparisons",
+    "actual_comparisons": [
+      "cc-db passed count",
+      "total passed",
+      "total ignored",
+      "corpus count"
+    ],
+    "only_printed_not_compared": [
+      "schema version",
+      "MCP tool count",
+      "resolver count"
+    ],
+    "oracle_table_list_not_read": true,
+    "automatic_document_edits": false,
+    "DRIFT_exit_boundary": "DRIFT=1 only affects printed report. No exit \"$DRIFT\" is present; successful process exit alone does not establish zero drift.",
+    "failure_boundary": "A nonzero cargo status terminates this set-e script before derived counts; cargo output is captured in TEST_OUTPUT and not printed by an explicit error handler. Retain outer stdout/stderr/exit rather than infer test completeness.",
+    "potential_side_effects": [
+      "Cargo compilation/test outputs under target or caller CARGO_TARGET_DIR",
+      "Cargo dependency cache and registry/network access if resolution/fetch is needed; no offline guarantee",
+      "Cargo.lock may require resolution/update because --locked is absent; retain before/after diff",
+      "ordinary test temporary databases/processes/files according to existing tests; no blanket promise of filesystem purity"
+    ],
+    "no_direct_writes": [
+      "docs/TEST_PLAN.md",
+      "task ledger",
+      "git refs",
+      "PRs",
+      "workflow dispatch"
+    ],
+    "declared_MSRV": "1.95"
+  },
+  "actual_execution_preflight": {
+    "status": "blocked_missing_toolchain_not_run",
+    "cargo_on_PATH": null,
+    "rustc_on_PATH": null,
+    "rustup_on_PATH": null,
+    "rustfmt_on_PATH": null,
+    "available_shell_and_text_utilities": true,
+    "existing_source_view_is_sparse": true,
+    "TEST_PLAN_in_existing_view_before_this_review": false,
+    "TEST_PLAN_exact_bytes_recovered_to_own_review_directory": true,
+    "complete_workspace_test_fixture_closure": "not asserted or materialized; not needed to demonstrate the missing compiler/toolchain blocker",
+    "dependency_cache_readiness": "unknown; not probed because no cargo/rustc exists",
+    "original_script_executions": 0,
+    "original_script_exit_code": null,
+    "cargo_test_executions": 0,
+    "reason_not_forcing_a_fake_run": "A guaranteed command-not-found or incomplete sparse-input failure is not a normal baseline execution. Root authorized a real run only if existing execution conditions permit it."
+  },
+  "minimal_next_action": {
+    "action": "When an already authorized environment with Rust>=1.95, Cargo and exact workspace inputs/dependencies is available, run the unmodified script once from an isolated fixed-source Git worktree and preserve complete outer stdout/stderr/exit and before/after changes.",
+    "command": "scripts/update-doc-baselines.sh",
+    "must_not_substitute": [
+      "fake cargo",
+      "previous libtest totals",
+      "p8_facts --check",
+      "selected-target CI output",
+      "prebuilt ELF",
+      "narrowed cargo arguments described as the original script"
+    ],
+    "retain_existing_historical_baseline": true,
+    "script_fix_or_docs_waiver_created": false,
+    "toolchain_install_or_new_runner_requested": false
+  },
+  "current_decision": "Process-convention execution remains blocked/not_run; no successful receipt or exemption claimed. No necessary document edit is proposed to make the convention disappear.",
+  "operations": {
+    "new_API_reads": 5,
+    "Actions_downloads": 0,
+    "product_or_tests": 0,
+    "original_validators": 0,
+    "source_modifications": 0,
+    "task_status_modifications": 0,
+    "ref_PR_label_changes": 0,
+    "studies_started": 0
+  },
+  "counts": {
+    "done": 164,
+    "remaining": 28,
+    "session_new_done": 1,
+    "round_new_done": 0
+  }
+}

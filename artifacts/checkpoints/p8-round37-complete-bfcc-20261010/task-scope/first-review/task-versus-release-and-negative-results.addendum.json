@@ -1,0 +1,462 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/execution_recon",
+  "created_at_utc": "2026-10-10T03:04:58.474207+00:00",
+  "review_kind": "bounded_original_definition_and_retained_evidence_interpretation_not_task_acceptance",
+  "fixed_source": {
+    "commit": "b9b089bb4eae072affe9326681d4980eae15fd84",
+    "tree": "6461938788665701cfa4fa095a064a3a404ec492",
+    "same_complete_tree_as": "9cc6bf49f6dd81e4069a8004eed49addba0ab79b",
+    "ledger_git_blob": "adb44ee70a4c129bfb443d4ecf678fb934c8ea6b"
+  },
+  "append_only_relation": {
+    "prior_findings": {
+      "path": "/workspace/scratch/bfccb8494ba0/round36-006-and-dependency-scope-review/findings.md",
+      "bytes": 5400,
+      "sha256": "3ad31198790d2492049c60b2fdf77b8ae66c301d7c94837334a294f4d2a381e7",
+      "git_blob": "d95037e1ef7b497ba94d4bd7ee67e146d6f8f3bd"
+    },
+    "prior_review": {
+      "path": "/workspace/scratch/bfccb8494ba0/round36-006-and-dependency-scope-review/review.json",
+      "bytes": 13548,
+      "sha256": "33b538c569ed08e614c613da6f454fdec01c5f063874a1fe239905848a0e192b",
+      "git_blob": "14639e91b679e12b14e76e17f991ba3d14f8fdf2"
+    },
+    "prior_bytes_unchanged": true,
+    "clarification": "本补充区分任务层级与发布层级。旧稿“若以当前完整矩阵作为验收研究”是所选路径条件，不能读成任何006任务完成都必须等待150。原apply-false模板记录准备中的完整研究路径，不是不可修改的任务定义。"
+  },
+  "conclusions": {
+    "universal_150_positive_requirement_in_task006": false,
+    "registered_complete_study_150_requirement_unchanged": true,
+    "every_100k_update_must_succeed_within_5h_as_universal_task_gate": false,
+    "n1_descriptive_task_report_interpretation": "有条件允许。若同一固定source/build的五个预登记rep0真实完成九阶段、完整phase计数、闭包后原full parity、1k原五fanout及相关既有V07回归，原006文本没有再要求这份描述性工作结果须达到N30。可以按实际每个规模/阶段N=1、fanout每点N=1验收任务工作；计划本身仍N30，不能把原研究重标N1。此为从任务字段与发布门分离作出的解释，原文没有一句直接写“006允许N1”。",
+    "n1_not_licensed_claims": [
+      "完整150槽/1500样本聚合passed",
+      "每层N30已齐",
+      "稳定p95/p99或统计置信区间充分",
+      "跨host混合均值/纯规模因果曲线",
+      "速度改善或满足性能阈值",
+      "G8/P8-020发布通过"
+    ],
+    "negative_result_report_interpretation": "负结果和incomplete可作为工作任务的真实测量结果；原006第一acceptance直接要求未完成有显式status。它不是每个端点必须为正的普遍技术门。但只列失败清单不能自动done：必须覆盖任务要回答的更新/闭包/归因问题，保留源和实际边界，未执行项仍not_run，未知原因仍unknown，不能把缺证的正确性或业务覆盖称passed。",
+    "current_task_acceptance_granted": false,
+    "current_reason": "当前同源full cohort只有1k/5k/10k/50k各rep0已原函数接受；100k仍未形成完整接受或可归因的实际终态容量边界。旧G8/GW4负结果必须保留，但存在旧oracle适用性或输出未知，不能把它们迁移成当前9cc6结果；独立diagnostic只有已保全前缀，不能补成cohort样本。不是因通用定义硬编码150而拒绝任务完成。",
+    "hypothetical_five_complete_rep0_then_145_running": "在完整源/原验证/回归适用性实际审阅成立时，可将006工作任务与N=1描述性结果准确闭合，同时当前150研究、其聚合器以及G8/P8-020仍open；不改N/预算/源，不取消/重跑/混样，不将145未完成称已执行。",
+    "current_state_change": false,
+    "hard_dependencies_are_not_scheduling_only": true
+  },
+  "exact_original_tasks": {
+    "P8-006": {
+      "title": "增量规模与fanout曲线",
+      "status": "in_progress",
+      "depends_on": [
+        "P7-020",
+        "P8-001",
+        "P8-005"
+      ],
+      "steps": [
+        "测no-op/body/API/config/batch和超预算闭包",
+        "输出各phase计数"
+      ],
+      "acceptance": [
+        "时间可归因且闭包完成后full parity，未完成有显式status",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V07",
+        "V20"
+      ],
+      "contracts_doc": "02-CONTRACTS.md",
+      "benchmark_doc": "09-BENCHMARK.md"
+    },
+    "P8-020": {
+      "title": "P8发布评审与遗留关闭",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-001",
+        "P8-002",
+        "P8-003",
+        "P8-004",
+        "P8-005",
+        "P8-006",
+        "P8-007",
+        "P8-008",
+        "P8-009",
+        "P8-010",
+        "P8-011",
+        "P8-012",
+        "P8-013",
+        "P8-016",
+        "P8-017",
+        "P8-018",
+        "P8-019"
+      ],
+      "steps": [
+        "G8按local/semantic能力分别审核",
+        "汇总风险、回滚和后续决策"
+      ],
+      "acceptance": [
+        "本次选择发布范围内blocker为0，其他证据不足明确列出",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V18",
+        "V19",
+        "V20",
+        "V21"
+      ],
+      "contracts_doc": "02-CONTRACTS.md",
+      "benchmark_doc": "09-BENCHMARK.md"
+    }
+  },
+  "original_rule_map": [
+    {
+      "path": "docs/roadmap/code-index-v2/tasks.json",
+      "lines": [
+        12145,
+        12178
+      ],
+      "selector": "tasks[id=P8-006].steps/acceptance/validations",
+      "meaning": "更新类型/超预算闭包、phase计数、时间归因、完成后full parity、未完成显式status和旧回归；无固定150/1500/N30或所有容量5h成功字段。"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/tasks.json",
+      "lines": [
+        13287,
+        13335
+      ],
+      "selector": "tasks[id=P8-020]",
+      "meaning": "G8按发布能力审核、风险/回滚，发布范围blocker为0；任务006并不等于整个G8。"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+      "lines": [
+        3,
+        15,
+        29,
+        42,
+        58,
+        61,
+        65,
+        67
+      ],
+      "meaning": "Vxx是验证包而非所有未来场景认证；V07/V20最低场景无Cartesian或N30；G8明确全量release profile；硬正确性不能抵消，统计数据不足不能自动性能passed。"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "lines": [
+        154,
+        163,
+        165,
+        167,
+        171,
+        173,
+        183,
+        185,
+        189
+      ],
+      "meaning": "范围1k–100k，A连续/B每checkpointfull，batch四档；query-profile重复与尾延迟规则不能删除，亦不能无证扩成所有006描述性索引cell的永久N30。N1不是统计性能门通过。"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/P8-SCALE.md",
+      "lines": [
+        3,
+        29,
+        45,
+        47,
+        59,
+        61,
+        149,
+        150,
+        151,
+        152,
+        153,
+        154,
+        156,
+        217,
+        218,
+        243,
+        250,
+        251,
+        252,
+        253,
+        254,
+        255,
+        256,
+        261,
+        262,
+        263,
+        264,
+        265,
+        267,
+        268,
+        269,
+        270,
+        272,
+        273,
+        274,
+        275
+      ],
+      "meaning": "工具release及当前注册总体仍要求N30与完整150。五个rep0是预先规定的完整阶段首片；描述这些已存在的确定前缀不是事后挑快片，但不获得完整矩阵认证。不同host不混环境统计。"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/02-CONTRACTS.md",
+      "lines": [
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        120,
+        121,
+        122
+      ],
+      "meaning": "持久化incomplete frontier/恢复basis和分phase计数，不能静默 stale；不规定所有端点都须在同一预算内成功。"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/tasks.json",
+      "lines": [
+        13865
+      ],
+      "meaning": "depends_on明确硬集成依赖。"
+    },
+    {
+      "path": "scripts/code_index_plan.py",
+      "lines": [
+        47,
+        48,
+        49,
+        50,
+        51,
+        52
+      ],
+      "meaning": "done必须有evidence且硬依赖均done，非仅排程。"
+    },
+    {
+      "path": "scripts/verify_historical_integrations_v2.py",
+      "lines": [
+        28,
+        192,
+        193,
+        194,
+        195,
+        196,
+        197,
+        198,
+        199,
+        200,
+        201,
+        202
+      ],
+      "meaning": "只允许status/evidence/implementation_notes进度变化，不能改acceptance/deps等定义。"
+    }
+  ],
+  "clause_to_retained_evidence": [
+    {
+      "clause": "测no-op/body/API/config/batch和超预算闭包",
+      "evidence": "当前9cc6同run四规模rep0各九阶段完整；1k原fanout1/4/16/64/128完整，其中16/64/128真实first incomplete后2/8/16 builds闭合。",
+      "gap": "100k当前cohort未接受；诊断body仍只有前缀。旧G8 batch100 stage未完成，batch1000未进入；旧GW4缺100k native raw。",
+      "classification": "当前已测业务范围与尚未形成的当前大规模端点，不是自动要求所有150都正。"
+    },
+    {
+      "clause": "输出各phase计数",
+      "evidence": "四新片原validate_shard已接受完整IndexReport/phase输入；原G8完整结束build也有实际计数，可在其旧source下描述。",
+      "gap": "不可为尚未emitted、未执行或丢失的phase补0或推断。",
+      "classification": "原记录可观测性/实际覆盖；只缺当前未完成事件不能伪造统计。"
+    },
+    {
+      "clause": "时间可归因",
+      "evidence": "原生产记录分别保留incremental/full/oracle wall和IndexReport阶段；当前冷parity921.742980s与no-op1623.147962s的两记录比较只支持字段差异/相等，不能解释根因。",
+      "gap": "未记录的IO/cache/逐SQL/进程树峰值等不可补造；时间归因是测量边界可分，不强加必须证明所有成本的因果机制。",
+      "classification": "测量边界与unknown声明，不新增根因完备门。"
+    },
+    {
+      "clause": "闭包完成后full parity",
+      "evidence": "当前四片所有原checkpoint全十五表原谓词接受；fanout后truth/full canonical接受。",
+      "gap": "不能用digest相同代替原比较，不能为当前100k未结束stage给parity信用；旧G8 witness/旧GW4 inherited资源兼容问题不可迁移。",
+      "classification": "原硬正确性/适用性要求，不要求中间incomplete也假装完成。"
+    },
+    {
+      "clause": "未完成有显式status",
+      "evidence": "旧G8 deadline_exceeded/exit3，旧GW4官方failure但native原因未知；当前cohort100k尚未完成、独立diagnostic只有原prefix。",
+      "gap": "不能把真实unknown runner失败改称OOM/5h超时，也不能把运行中当前100k当已证容量上限。",
+      "classification": "允许负结果作为证据；显式状态本身并不把未测业务转成通过。"
+    },
+    {
+      "clause": "相关旧功能回归通过",
+      "evidence": "PR200原main38012386309/check114095050041 success；实际checkout1e14b7ad8d097da0000e18597da0316143de919c的完整tree等9cc6及固定b9。closeout38012386295/114095050109 success；原细分/ignored保持review原范围。",
+      "gap": "本复核只引用已接受原review，不重跑，也不把工程回归当100k或统计性能样本。V07广义组件按已有语义control的实际适用范围引用，不要求为文字澄清重造测试。",
+      "classification": "既有工程证据可适用，研究统计不是其替代物。"
+    },
+    {
+      "clause": "没有证据的项标not_run/blocked而非done",
+      "evidence": "未完整的currentstudy/fullrelease仍open，原失败按source分列；不池化旧源计数。",
+      "gap": "不能将N1描述性工作done写成所有V20场景/所有未来source/完整release已认证。",
+      "classification": "任务声明准确性与完整release边界。"
+    }
+  ],
+  "source_separated_observation": [
+    {
+      "source": "9cc6bf49f6dd81e4069a8004eed49addba0ab79b",
+      "run": 38013753078,
+      "attempt": 1,
+      "accepted_shards": 4,
+      "registered_shards": 150,
+      "accepted_observations": 41,
+      "registered_observations": 1500,
+      "accepted_slots": [
+        [
+          1000,
+          0
+        ],
+        [
+          5000,
+          0
+        ],
+        [
+          10000,
+          0
+        ],
+        [
+          50000,
+          0
+        ]
+      ],
+      "complete_aggregate": false,
+      "current_100k_terminal": "not established by retained accepted intake"
+    },
+    {
+      "source": "9cc6bf49f6dd81e4069a8004eed49addba0ab79b",
+      "run": 38012409915,
+      "attempt": 1,
+      "study": "independent diagnostic",
+      "latest_accepted_prefix": 4,
+      "cohort_credit": 0,
+      "scope": "Cold/no-op complete emitted parity and body partial frontier; raw prefix acceptance is not original semantic inspect_raw completion or native EOF."
+    },
+    {
+      "source": "4fe927488d5cb7f26bd27c7624745fb1b6ca202b",
+      "run": 37962416564,
+      "attempt": 1,
+      "status": "deadline_exceeded, original native exit3",
+      "completed_stage_frontier": "batch10",
+      "batch100": "both builds ended; stage/parity completion not emitted",
+      "batch1000": "not entered in retained raw",
+      "old_accepted_shards": 4,
+      "old_accepted_observations": 41,
+      "current_source_execution_credit": 0,
+      "oracle_compatibility": "Old witness source predates dual-spool restoration; failure retained independently."
+    },
+    {
+      "source": "008f1ec0ae16b9b6aff9f20d033b17b2219168f8",
+      "run": 37982220020,
+      "attempt": 1,
+      "status": "official failure, no 100k measurement ZIP/native report",
+      "native_cause": null,
+      "old_accepted_shards": 4,
+      "old_accepted_observations": 41,
+      "current_source_execution_credit": 0
+    }
+  ],
+  "counterfactual_five_rep0_acceptance": {
+    "is_observed_now": false,
+    "unchanged_registration": "150 slots/1500 observations, repetition_count30; preflight rep0 slots retain original identity and remain in cohort.",
+    "descriptive_observation_count_if_all_complete": 50,
+    "descriptive_N": "one observed value per capacity/main-stage cell and one per fanout point, not a new N1 registration",
+    "must_retain": [
+      "All five predeclared slots, none selected by fast timing",
+      "exact same source/build/plan, individual actual environments and full raw",
+      "original phase, closure, full parity and independent configuration/fanout truth receipts",
+      "actual phase and whole-call timing scopes; unavailable fields explicit",
+      "relevant accepted current/applicable regressions; explicit narrow claim-to-V07/V20 mapping",
+      "remaining145 and originalaggregate state remain open; all earlier failures source-separated"
+    ],
+    "possible_task_disposition": "A reviewed N1 descriptive work-result can satisfy original006 without asserting the G8 release statistical gate. The general task definition need not be edited.",
+    "not_authorized_here": "No status/evidence edit, new study, reduced N, cancellation, aggregator bypass or release decision performed."
+  },
+  "retained_evidence_identities": [
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round34-full-cohort-first-two-shards/independent-first-two-shards-review.json",
+      "bytes": 14545,
+      "sha256": "c4c7e5b8f00e936af032cf2985a3a518f3e561ba43a53c3d184346ae1b2fd753",
+      "git_blob": "27aa5faf091ef500c30e6b5d630c58a26f4fb5ba"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round34-full-cohort-third-shard/independent-third-shard-review.json",
+      "bytes": 5845,
+      "sha256": "e740b6aa596a74d4fef9e849affdfd3d02cc30e389228c906c6698f0265b2273",
+      "git_blob": "613a418a178a9a11d63247088ed4b91a9e25e4fd"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round36-full-cohort-fourth-shard/independent-fourth-shard-review.json",
+      "bytes": 11365,
+      "sha256": "82852611f4c56a13532bb7cb0222205adcc75e06aa85f4f63ed4450ad15baff6",
+      "git_blob": "f24820113d77c649c778f68943a8c36a20531588"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round36-full-cohort-fourth-shard/cohort-progress-accepted-four.json",
+      "bytes": 3205,
+      "sha256": "29a42a83862b87cc83688141aec3a52f2853d9718a7deda193e5ce3cea7eb184",
+      "git_blob": "371bd3bb09e602d6f61b29fb87fc43684f6c71fb"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round34-PR200-original-CI-independent-review/independent-terminal-log-review.json",
+      "bytes": 38770,
+      "sha256": "688747a8f78765eaadc9792f622717cd9c95409802fc89d0c3e13c834f5fe572",
+      "git_blob": "78ac902a240ddc2eccc7099aa5cd35dd26247ddf"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round35-PR200-soak-independent-review/independent-soak-engineering-review.json",
+      "bytes": 29621,
+      "sha256": "3afebab1a9c8fdcdb0b762df70f8767c9d0ecd114f6bfddf2f941275dca38105",
+      "git_blob": "df9ac2ad2595eb823ad30c31952deeb5b5f516fe"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round28-G8-100k-original-failure/independent-failed-shard-intake-review.json",
+      "bytes": 13067,
+      "sha256": "0be16af8e46ac1b44c28d59ab9e99f1207b117e27e034ed8bb07aaa1ff35ca1f",
+      "git_blob": "c94c541490cded859858c9bf030683904ca6bf10"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round28-G8-100k-phase-diagnostic/diagnostic.json",
+      "bytes": 64850,
+      "sha256": "e0c75292d0bbb77d069473b79dc440338107bd2d82a92c1a8bf0931d208f9d99",
+      "git_blob": "8d217ae4d3e251dfedea1ff1e437f1b7eda856ce"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round31-GW4-independent-terminal-boundary/independent-terminal-boundary-review.json",
+      "bytes": 20432,
+      "sha256": "22535af9d9e25b136f0c3f474b4a471eb30900679af158af9270951eefa240d6",
+      "git_blob": "a550ad61b92bc62b97424af2bcf534d2ef1f38da"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round32-dependent-closeout-recovery/future-nine-task-application.applyfalse.json",
+      "bytes": 23712,
+      "sha256": "59225491756c5d0c9263798eabfe3cf4ef7e5e73d8a20532f93586e2db945603",
+      "git_blob": "cda11e87c03780f92d5587097f2f8195986579ee"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round33-full-wide-cohort-bound-registration/006-acceptance-to-expected-cohort-evidence.applyfalse.json",
+      "bytes": 5259,
+      "sha256": "5ed3dda2165d40ff37f0a2dfdc5cc9c6a7278d269757a896964e1e599e6d33bf",
+      "git_blob": "75335bc35296b79583bd8c454b1745073eacec10"
+    }
+  ],
+  "execution_boundary": {
+    "read_only_sources_and_existing_reports": true,
+    "original_validator_calls": 0,
+    "product_or_measurement_calls": 0,
+    "study_zip_reads": 0,
+    "network_calls_in_this_addendum": 0,
+    "refs_PR_labels_changes": 0,
+    "original_tasks_changed": false,
+    "applied_pending_template": false
+  },
+  "ledger_unchanged": {
+    "done": 164,
+    "total": 192,
+    "remaining": 28
+  }
+}

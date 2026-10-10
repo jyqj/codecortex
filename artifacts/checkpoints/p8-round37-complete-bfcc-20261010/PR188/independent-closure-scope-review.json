@@ -1,0 +1,175 @@
+{
+  "schema": "PR188-current-experiment-closure-scope-review-v1",
+  "reviewer": "/root/pr_triage",
+  "reviewed_at": "2026-10-10T03:01:59.137632+00:00",
+  "status": "recommendation_only_no_PR_action",
+  "actual_metadata": {
+    "number": 188,
+    "state": "open",
+    "draft": true,
+    "merged": false,
+    "updated_at": "2026-10-09T19:15:56Z",
+    "title": "perf(db): apply dependency exclusions before the SQL frontier limit"
+  },
+  "head": "cc177ddc9e6b8180b8d847539787672e7b689a1a",
+  "base": "0e6b07c75183da79c5a6679d4c2b66c65f7db663",
+  "head_unchanged_from_prior_review": true,
+  "complete_comments_count": 4,
+  "inline_or_formal_reviews_returned": 0,
+  "explicit_latest_boundaries": [
+    {
+      "comment_id": 6085910767,
+      "date": "2026-10-09T17:28:31Z",
+      "original_excerpt": "KEEP OPEN / HOLD / DO NOT MERGE",
+      "meaning": "Existing management decision retains this candidate; not an author withdrawal or an adopted/superseded decision."
+    },
+    {
+      "comment_id": 6087608757,
+      "date": "2026-10-09T19:15:56Z",
+      "original_excerpt": "后续完成性能解释/修正后可再置 Ready。",
+      "meaning": "Conditional possibility of renewed review; no named new patch, scheduled run, owner-specific deliverable or deadline is promised."
+    }
+  ],
+  "body_boundaries": {
+    "latest_substantive_section": "Separate composition review: performance admission held",
+    "exact_excerpt": "PR #188 remains separately reviewable and Draft while its exact-head CI and performance interpretation are resolved.",
+    "scope": "Separate M7 five-file composition was not integrated into PR180; its Python/surface-query costs are not exact G4 Rust evidence. Earlier ready/pending CI paragraphs remain historical.",
+    "stale_accounting_not_current": "Body/comments retain old163/29 counts; current known164/28 is not altered by this review."
+  },
+  "implementation_vs_experiment": {
+    "unique_production_path": "crates/cc-db/src/resolution_dependency_store.rs",
+    "unique_G4_blob": "6a875ce6ef7b82aa4bdc3183a59e7887c227825f",
+    "associated_test_path": "crates/cc-db/tests/p2b_resolution_store.rs",
+    "main_reference": "Root has already independently established main b9b089bb4eae072affe9326681d4980eae15fd84 complete tree equals fixedG9cc6 tree6461938788665701cfa4fa095a064a3a404ec492; no new main API read here.",
+    "main_leaf": {
+      "path": "/workspace/scratch/bfccb8494ba0/round32-capture-context-admission/guard-view/crates/cc-db/src/resolution_dependency_store.rs",
+      "bytes": 10939,
+      "sha256": "c37a7c44ed1aa5c2897fcb387eee5fb1007a60cb53c0de4abc6488dafde9ebbf",
+      "git_blob": "97d3d9519fe10ed7cd30b9783164348998c02abc"
+    },
+    "current_main_contains_json_each": false,
+    "conclusion": "The JSON exclusion-before-LIMIT production change is not adopted. Do not close this as merged or superseded by PR195/199/200."
+  },
+  "existing_evidence": {
+    "exact_G4_historical_engineering": "Nine DB resolution-store tests and original main/v15 passed; latest recorded review says26/26 checks. This task did not refetch logs or award new execution credit.",
+    "original_sparse_VM": {
+      "change_percent_rounded": 22.57,
+      "fixture": "author Python SQLite3.53.1; scattered2500 exclusions; two keys; 5000files/10000dependencies",
+      "locally_read_review": {
+        "bytes": 899946,
+        "git_blob": "527000332dc442d68ab957af345aef1cb2331e87",
+        "mode": "0o644",
+        "path": "C8-resume-diagnostic/PR188-overlap/review-527000332dc442d68ab957af345aef1cb2331e87.json",
+        "sha256": "f8384ec7620c1f69be155f0a2c870e9c2fd06ff6de40920d7389c08d03d01080"
+      },
+      "new_callbacks": 163001,
+      "official_review_git_blob": "527000332dc442d68ab957af345aef1cb2331e87",
+      "old_callbacks": 132988,
+      "pointers": [
+        "/acceptance_boundary/counterexample",
+        "/prior_SQL_probe/required_negative_counterexample"
+      ],
+      "scope": "Read from exact published review JSON. Original author probe itself not rerun or downloaded by this review; new local probe has separately recorded different cases."
+    },
+    "separate_M7_ratios": [
+      {
+        "name": "dense_prefix_600_rows_580_excluded",
+        "candidate_to_old_query_wall_ratio": 1.4678475521304293,
+        "output_parity": true
+      },
+      {
+        "name": "sparse_two_keys_10000_unrelated_excluded",
+        "candidate_to_old_query_wall_ratio": 93.54671839637892,
+        "output_parity": true
+      },
+      {
+        "name": "sparse_400_keys_three_batches_10000_unrelated_excluded",
+        "candidate_to_old_query_wall_ratio": 11.186430537040934,
+        "output_parity": true
+      },
+      {
+        "name": "surface_400_roots_three_tables_10000_unrelated_excluded",
+        "candidate_to_old_query_wall_ratio": 12.710213641499479,
+        "output_parity": true
+      }
+    ],
+    "measurement_limits": [
+      "Exactly four finite scenarios and twenty alternating observations; cached statements warmed once; same in-memory database/schema/indexes for each old/candidate pair.",
+      "Wall fields wrap SQLite execute plus full fetch. They exclude JSON serialization, Rust allocation/BTreeSet costs and native filesystem/locking. A separate Python boundary includes the Python set/filter/global-cap emulation; this is not a Rust measurement.",
+      "Progress-handler period=1 VM callback counts were measured in a separate pass with wall callback disabled. Counts are Python SQLite VM callbacks, not native Rust StatementStatus.",
+      "Exact canonical queried table definitions and all their original indexes are extracted from the recorded schema; only these four tables are materialized; foreign keys remain OFF because parent files are not queried. No writes occur during paired query timing.",
+      "The sparse 10000 exclusions are real distinct strings unrelated to returned dependents, a constructed valid membership case. This establishes a possible regression, not its frequency in the original C8 corpus.",
+      "All old/candidate results preserve the same global sorted distinct cap output in these cases. This is not a replacement for the broader original semantic tests.",
+      "Twenty observations are a bounded local design check, not an N30 registered study or confidence-interval/performance gate. Ratios cannot be applied to original whole-build wall time or the 20% acceptance gate."
+    ],
+    "fixed_archive": {
+      "checkpoint": "80d7979da10ae242ed4706cd04be74c62194261a",
+      "archive_path": "artifacts/checkpoints/p8-SQL-exclusion-hold-a217-20261009/SQL-hold-evidence.tar.gz",
+      "archive_git": "ed9926ae31c28ed892b6e10640783941d4f60149",
+      "member": "sql-cost/probe.py",
+      "member_sha256": "8fc0f9b69c50d6f19be2c01edbcdd1bc209dadfe6ba07ea977eda68b6097519f",
+      "entry": "python3 probe.py after explicitly restoring its five fixed source inputs; original script embeds another host's ROOT. No portable CLI arguments and no exact-G4 Rust cost entry.",
+      "scope": "Four constructed Python SQLite cases,20 alternating observations, execute/fetch and Python boundary only; JSON serialization and plan construction outside timer. M7 source includes extra NULL/BINARY and surface query; not exact G4. Read here only; never executed."
+    }
+  },
+  "no_certified_minimal_patch": [
+    "JSON already serialized once per call; moving it out of inner loop is not a new fix.",
+    "Read pool enforces query_only=ON; a TEMP-table population would cross current read-only boundary.",
+    "A MATERIALIZED CTE inside each batch remains statement-local, not call-global.",
+    "Consolidating into one SQL statement could reduce repeat membership for multiple batches, but changes batching/error-observation and has not been implemented/reviewed. It also cannot by itself remove the adverse one-statement dense and sparse cases."
+  ],
+  "unique_obligations": {
+    "already_committed_new_patch_or_run_found": false,
+    "conditional_future_adoption_work": [
+      "Read-only and same-lifetime design which avoids/justifies per-statement exclusion membership work while preserving exact outputs/limits/errors.",
+      "If re-proposed as an optimization, exact-current-source bounded dense/sparse/multi-batch total cost evidence including JSON setup; preserve negatives."
+    ],
+    "not_mandatory_to_close_an_unadopted_experiment": [
+      "No additional N30/full150 study is needed merely to record a non-adoption management decision.",
+      "Do not run or invent a density threshold solely to make this old candidate adoptable."
+    ],
+    "current_record_has_final_non_adoption_or_supersession_decision": false
+  },
+  "recommendation": {
+    "default_on_existing_record": "Keep Draft/HOLD: no pre-existing decision supports labeling it withdrawn, adopted or superseded, and the latest explicit management decision says keep open.",
+    "available_root_decision": "Root may explicitly decide not to continue this exact unconditional JSON experiment and close it unmerged while preserving branch/source/tests/negative evidence. This would be a new non-adoption management decision, not an inferred author intention or a performance gate failure of G4 Rust.",
+    "preferred_close_reason_if_root_chooses": "Current experiment not selected for adoption; exact G4 engineering correctness retained, performance benefit unestablished with concrete related negative evidence; future redesigned read-only alternatives may use a new independently reviewed source.",
+    "do_not_claim": [
+      "All possible exclusion strategies rejected",
+      "G4 Rust slowed by the exact M7 Python ratios",
+      "Original 100k deadline caused or fixed by this query",
+      "Product was merged/superseded",
+      "Original TODO completed"
+    ]
+  },
+  "source_locators": [
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round29-three-performance-holds/188-original-scoped-performance-risk-review.json",
+      "bytes": 14600,
+      "sha256": "dfb506509ccb7792a7f670a7215077f51f5bf31303b548b05f34e2880e5f14df",
+      "git_blob": "cb7cb350f40c12384f32641117cae805fd5f03b9"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round29-three-performance-holds/PR188-final-boundary-and-original-entry.json",
+      "bytes": 3032,
+      "sha256": "7ce1b7e06b73131a2839ad98c8469b4c6cdb7fac31fab81c318a7aab5427d637",
+      "git_blob": "93e5168e805952d1cea601ab2948b32fa3907a13"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round36-PR188-experiment-closure-review/official-PR188-metadata-and-comments.json",
+      "bytes": 63668,
+      "sha256": "62097bcd86317270347dc316d07c7885ee6bd7d9980ba426b41a93e85c5111b4",
+      "git_blob": "fecdc04969359246c503b1ccc0ad97d679f8a118"
+    }
+  ],
+  "operations": {
+    "metadata_reads": 2,
+    "Actions_downloads": 0,
+    "tests": 0,
+    "probes": 0,
+    "study_runs": 0,
+    "PR_mutations": 0,
+    "new_acceptance_gates": 0,
+    "TODO_credit": 0
+  }
+}

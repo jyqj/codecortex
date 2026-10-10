@@ -1,0 +1,155 @@
+{
+  "schema": "codecortex.p8.scale_acceptance_review.v1",
+  "round": 49,
+  "checked_at": "2026-10-10T03:32:30.665Z",
+  "repository": "jyqj/codecortex",
+  "policy": {
+    "read_only": true,
+    "dispatched": false,
+    "rerun": false,
+    "cancelled": false,
+    "pooled_or_relabelled": false
+  },
+  "target_task": {
+    "id": "P8-006",
+    "status": "in_progress",
+    "title": "增量规模与fanout曲线",
+    "validations": [
+      "V07",
+      "V20"
+    ],
+    "acceptance": [
+      "时间可归因且闭包完成后full parity，未完成有显式status",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "tasks_blob": "adb44ee70a4c129bfb443d4ecf678fb934c8ea6b"
+  },
+  "studies": [
+    {
+      "run_id": 38013753078,
+      "source": "9cc6bf49f6dd81e4069a8004eed49addba0ab79b",
+      "profile": "scale_wide_dirty_v1",
+      "run_status": "in_progress",
+      "run_conclusion": null,
+      "attempt": 1,
+      "total_jobs": 6,
+      "build": {
+        "job_id": 114099388607,
+        "status": "completed",
+        "conclusion": "success"
+      },
+      "preflight": {
+        "successful": [
+          {
+            "scale": 1000,
+            "job_id": 114100438947,
+            "artifact_id": 11655068379,
+            "artifact_digest": "sha256:955fbe772b309790977ba858b396ea373559d87c1b73c3d3e973d2542484ff0d"
+          },
+          {
+            "scale": 5000,
+            "job_id": 114100438895,
+            "artifact_id": 11655148761,
+            "artifact_digest": "sha256:cb94225f6f3a8a5a75d1072540de9bf12c08d2f7b3249a6e78d3bc95d5c3c71f"
+          },
+          {
+            "scale": 10000,
+            "job_id": 114100438873,
+            "artifact_id": 11655269053,
+            "artifact_digest": "sha256:41919dd2253f2a3cad5b75d7abc7be89aec10b2667dcceba308b1e5ea8238bf2"
+          },
+          {
+            "scale": 50000,
+            "job_id": 114100438890,
+            "artifact_id": 11657735385,
+            "artifact_digest": "sha256:575d13e2303aae7755ceec6f3f15a1a04760216baa4de73a5db8bdc47121d376"
+          }
+        ],
+        "running": {
+          "scale": 100000,
+          "job_id": 114100438875,
+          "status": "in_progress",
+          "step_number": 7,
+          "step_name": "Execute all phases for this registered single-repetition capacity slice",
+          "shard_artifact": null
+        }
+      },
+      "successful_shards": 4,
+      "registered_shards": 150,
+      "full_150_shards": false,
+      "full_1500_composite_observations": false,
+      "measure_jobs_instantiated": 0,
+      "aggregate_job": null,
+      "matrix_artifact": null,
+      "assessment": "not acceptable for P8-006 completion; 100k is non-terminal, the remaining 145 measurement shards have not materialized, and no aggregate/matrix exists"
+    },
+    {
+      "run_id": 37962416564,
+      "source": "4fe927488d5cb7f26bd27c7624745fb1b6ca202b",
+      "profile": "scale_capacity_v1",
+      "dirty_budget": 200,
+      "run_status": "completed",
+      "run_conclusion": "failure",
+      "preflight_100k": {
+        "job_id": 113930880282,
+        "conclusion": "failure"
+      },
+      "aggregate": {
+        "job_id": 114049278015,
+        "conclusion": "failure",
+        "artifact_id": 11647916837,
+        "artifact_digest": "sha256:c53a9aec823f9d4448f56c117a017e467ed9092647182be281681291de16d9c6"
+      },
+      "measure": {
+        "job_id": 114049279306,
+        "conclusion": "skipped"
+      },
+      "successful_shards": 4,
+      "registered_shards": 150,
+      "previously_accepted_composite_observations": 41,
+      "required_composite_observations": 1500,
+      "full_150_shards": false,
+      "full_1500_composite_observations": false,
+      "assessment": "terminal failure; remains original dirty200 counterevidence and cannot be repaired by another source/profile"
+    },
+    {
+      "run_id": 37982220020,
+      "source": "008f1ec0ae16b9b6aff9f20d033b17b2219168f8",
+      "profile": "scale_wide_dirty_v1",
+      "dirty_budget": 4096,
+      "run_status": "completed",
+      "run_conclusion": "failure",
+      "preflight_100k": {
+        "job_id": 114000097090,
+        "conclusion": "failure",
+        "successful_shard_artifact": null
+      },
+      "aggregate": {
+        "job_id": 114077867196,
+        "conclusion": "failure",
+        "artifact_id": 11651413055,
+        "artifact_digest": "sha256:1a442892700c45cebaaa4108fa04c5d84a533f34b8686530861672abb565a4e4"
+      },
+      "measure": {
+        "job_id": 114077867756,
+        "conclusion": "skipped"
+      },
+      "successful_shards": 4,
+      "registered_shards": 150,
+      "full_150_shards": false,
+      "full_1500_composite_observations": false,
+      "assessment": "terminal failure; source differs from both dirty200 and current full-wide run, so no pooling or relabelling is valid"
+    }
+  ],
+  "gate_decision": {
+    "source_profile_identity_preserved": true,
+    "capacity_100k_terminal_success": false,
+    "successful_shards_150_of_150": false,
+    "composite_observations_1500_complete": false,
+    "full_aggregate_success": false,
+    "phase_attribution_and_full_parity_complete": false,
+    "fanout_totality_complete": false,
+    "p8_006_done": false,
+    "reason": "Run 38013753078 is still executing 100k rep0 and has only four successful preflight shards; the two prior runs remain terminal failures. No study has 150/150 successful shards, 1500 complete observations, or a successful aggregate. Cross-source/profile pooling is prohibited."
+  }
+}

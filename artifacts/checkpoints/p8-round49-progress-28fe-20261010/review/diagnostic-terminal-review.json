@@ -1,0 +1,103 @@
+{
+  "schema": "codecortex-p8-independent-diagnostic-reception-review-v1",
+  "reviewed_at_utc": "2026-10-10T03:32:30.799Z",
+  "reviewer_scope": "read-only independent reception of existing run; no dispatch, rerun, cancel, merge, or task-status mutation",
+  "repository": "jyqj/codecortex",
+  "run": {
+    "id": 38012409915,
+    "attempt": 1,
+    "source_sha": "9cc6bf49f6dd81e4069a8004eed49addba0ab79b",
+    "status": "in_progress",
+    "conclusion": null,
+    "build_job": {
+      "id": 114095124901,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    "diagnose_job": {
+      "id": 114096992369,
+      "status": "in_progress",
+      "conclusion": null,
+      "current_step": "Freeze original byte prefix at interval 9 of 20"
+    }
+  },
+  "newly_received_checkpoints": [
+    {
+      "index": 6,
+      "artifact_id": 11657318324,
+      "zip_bytes": 133903,
+      "zip_sha256": "e87aa1a25aeb8d02f818bd1c450be2c0fde3008c9088b0643f40037a4f6e08ae",
+      "zip_crc": "pass",
+      "chunk": {
+        "start": 13992488,
+        "end": 14674260,
+        "bytes": 681772,
+        "sha256": "6199ddb2aa35866c43aa00aa012945e9b82151e20a6d01b37bc937a108b06a9d"
+      }
+    },
+    {
+      "index": 7,
+      "artifact_id": 11658151472,
+      "zip_bytes": 61771,
+      "zip_sha256": "428368d66bc8850fed73486e80a1c61d3c097564877ff4e542762330424e02f3",
+      "zip_crc": "pass",
+      "chunk": {
+        "start": 14674260,
+        "end": 14714549,
+        "bytes": 40289,
+        "sha256": "7b938c68af041991492ad098233bcae60d8f0384b3a472b929e0a5353f55b031"
+      }
+    }
+  ],
+  "captured_prefix": {
+    "source": "shard/native/raw.jsonl",
+    "continuous_range": [
+      0,
+      14714549
+    ],
+    "capture_faults": [],
+    "native_EOF_claimed": false,
+    "supervisor_terminal_observed": false,
+    "lost_runner_tail": "bytes after last successful acknowledged artifact are unknown, not zero"
+  },
+  "new_stage_facts": {
+    "body": {
+      "full_control_wall_us": 922132074,
+      "incremental_builds": 24,
+      "incremental_wall_us": 517867898,
+      "parity_wall_us": 1104713606,
+      "stage_complete": true,
+      "full_complete": true,
+      "parity_status": "equal",
+      "parity_equal": true,
+      "scratch_peak_bytes": 5984497664,
+      "independent_config_fact_passed": true
+    },
+    "api_partial": {
+      "completed_incremental_builds": 9,
+      "incremental_wall_us_sum": 299005102,
+      "budget_exceeded_builds": 8,
+      "final_observed_build": {
+        "index": 8,
+        "dirty_propagation": "normal",
+        "resolution_status": "ready"
+      },
+      "last_completed_files_before_ready": 32769,
+      "largest_observed_pid_rss_bytes": 9110126592,
+      "full_control_started_at_native_us": 7193331205,
+      "full_control_completion_observed": false
+    }
+  },
+  "missing_terminal_evidence": [
+    "supervisor terminal record",
+    "driver/native exit code",
+    "native EOF",
+    "terminal shard.json",
+    "measurement_complete",
+    "observer-after identity closure"
+  ],
+  "acceptance_decision": {
+    "p8_006_completion_credit": false,
+    "reason": "single diagnostic 100k rep0 remains nonterminal, skip_fanout diagnostic scope cannot satisfy the original 150-shard/1500-composite cohort or aggregate acceptance, and source/profile identities must not be pooled or relabelled"
+  }
+}

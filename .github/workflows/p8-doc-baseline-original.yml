@@ -1,0 +1,137 @@
+name: P8 original documentation baseline command
+
+on:
+  push:
+    branches: [task/p8-doc-baseline-original-bfcc-20261010]
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  original_baseline:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/task/p8-doc-baseline-original-bfcc-20261010'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      CARGO_TERM_COLOR: never
+      CARGO_INCREMENTAL: '0'
+      CARGO_PROFILE_DEV_DEBUG: '0'
+      CARGO_PROFILE_TEST_DEBUG: '0'
+      CARGO_BUILD_JOBS: '2'
+    steps:
+      - name: Retain the actual workflow source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: workflow-source
+          sparse-checkout: .github/workflows/p8-doc-baseline-original.yml
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+      - name: Checkout the fixed documentation and product source
+        uses: actions/checkout@v4
+        with:
+          ref: b9b089bb4eae072affe9326681d4980eae15fd84
+          path: source
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@1.95.0
+      - name: Prepare isolated command receipts
+        env:
+          WORKFLOW_REF: ${{ github.workflow_ref }}
+          WORKFLOW_SHA: ${{ github.workflow_sha }}
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib, subprocess
+          root = pathlib.Path(os.environ['GITHUB_WORKSPACE']) / 'source'
+          out = pathlib.Path(os.environ['RUNNER_TEMP']) / 'p8-doc-baseline-original'
+          out.mkdir(exist_ok=False)
+          target = pathlib.Path(os.environ['RUNNER_TEMP']) / 'p8-doc-baseline-original-target'
+          script = root / 'scripts/update-doc-baselines.sh'
+          expected = 'b9b089bb4eae072affe9326681d4980eae15fd84'
+          head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip()
+          assert head == expected, (head, expected)
+          assert hashlib.sha256(script.read_bytes()).hexdigest() == '04d63124fc8405610c91fb4a591e17e2dd06ce1f20cf995123263b12a4b0b59c'
+          workflow = pathlib.Path(os.environ['GITHUB_WORKSPACE']) / 'workflow-source/.github/workflows/p8-doc-baseline-original.yml'
+          (out / 'executed-workflow.yml').write_bytes(workflow.read_bytes())
+          (out / 'original-update-doc-baselines.sh').write_bytes(script.read_bytes())
+          metadata = {key: os.environ.get(key) for key in ('GITHUB_REPOSITORY', 'GITHUB_SHA', 'GITHUB_REF', 'GITHUB_EVENT_NAME', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT', 'GITHUB_JOB', 'WORKFLOW_REF', 'WORKFLOW_SHA')}
+          metadata.update(source_head=head, workflow_sha256=hashlib.sha256(workflow.read_bytes()).hexdigest(), script_sha256=hashlib.sha256(script.read_bytes()).hexdigest(), command=['./scripts/update-doc-baselines.sh'], cargo_command_as_written=['cargo', 'test', '--workspace', '--all-targets'], cargo_target_dir=str(target), artifact_scope='original command output and source changes; not a new task acceptance gate')
+          (out / 'registration.json').write_text(json.dumps(metadata, indent=2) + '\n')
+          for name, argv in [('rustc', ['rustc', '-Vv']), ('cargo', ['cargo', '-V']), ('git', ['git', '--version'])]:
+              result = subprocess.run(argv, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+              (out / (name + '.stdout')).write_bytes(result.stdout)
+              (out / (name + '.stderr')).write_bytes(result.stderr)
+              (out / (name + '.exit')).write_text(str(result.returncode) + '\n')
+          with open(os.environ['GITHUB_ENV'], 'a') as stream:
+              stream.write('BASELINE_RECEIPTS=' + str(out) + '\n')
+              stream.write('CARGO_TARGET_DIR=' + str(target) + '\n')
+          PY
+      - name: Run the unchanged baseline script exactly once
+        working-directory: source
+        run: |
+          python3 - <<'PY'
+          import datetime, hashlib, json, os, pathlib, subprocess, sys, time
+          root = pathlib.Path.cwd()
+          out = pathlib.Path(os.environ['BASELINE_RECEIPTS'])
+          scope = ['crates', 'Cargo.toml', 'Cargo.lock', 'scripts/update-doc-baselines.sh', 'docs/TEST_PLAN.md']
+          def snapshot(tag):
+              (out / ('Cargo.lock.' + tag)).write_bytes((root / 'Cargo.lock').read_bytes())
+              commands = {
+                  'head': ['git', 'rev-parse', 'HEAD'],
+                  'tree': ['git', 'rev-parse', 'HEAD^{tree}'],
+                  'index': ['git', 'ls-files', '-s'],
+                  'tracked-status': ['git', 'status', '--porcelain=v1', '--untracked-files=no'],
+                  'source-diff': ['git', 'diff', '--binary', '--no-ext-diff', 'HEAD', '--'] + scope,
+                  'lock-diff': ['git', 'diff', '--binary', '--no-ext-diff', 'HEAD', '--', 'Cargo.lock'],
+              }
+              for name, argv in commands.items():
+                  result = subprocess.run(argv, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                  (out / (tag + '-' + name + '.stdout')).write_bytes(result.stdout)
+                  (out / (tag + '-' + name + '.stderr')).write_bytes(result.stderr)
+                  (out / (tag + '-' + name + '.exit')).write_text(str(result.returncode) + '\n')
+              (out / (tag + '-file-hashes.json')).write_text(json.dumps({p: hashlib.sha256((root / p).read_bytes()).hexdigest() for p in ('Cargo.lock', 'scripts/update-doc-baselines.sh', 'docs/TEST_PLAN.md')}, indent=2) + '\n')
+          snapshot('before')
+          started = datetime.datetime.now(datetime.timezone.utc).isoformat()
+          tick = time.monotonic()
+          receipt = {'argv': ['./scripts/update-doc-baselines.sh'], 'cwd': str(root), 'started_at': started, 'returncode': None, 'completed_at': None, 'wall_seconds': None}
+          (out / 'command-started.json').write_text(json.dumps(receipt, indent=2) + '\n')
+          with (out / 'command.stdout').open('xb') as stdout, (out / 'command.stderr').open('xb') as stderr:
+              process = subprocess.Popen(receipt['argv'], cwd=root, stdout=stdout, stderr=stderr)
+              receipt['pid'] = process.pid
+              (out / 'command-started.json').write_text(json.dumps(receipt, indent=2) + '\n')
+              code = process.wait()
+          receipt.update(returncode=code, terminating_signal=-code if code < 0 else None, completed_at=datetime.datetime.now(datetime.timezone.utc).isoformat(), wall_seconds=time.monotonic()-tick)
+          receipt['stdout_sha256'] = hashlib.sha256((out / 'command.stdout').read_bytes()).hexdigest()
+          receipt['stderr_sha256'] = hashlib.sha256((out / 'command.stderr').read_bytes()).hexdigest()
+          receipt['drift_lines_emitted'] = [line for line in (out / 'command.stdout').read_text(errors='replace').splitlines() if line.startswith('DRIFT:')]
+          receipt['limitations'] = ['The unmodified script captures Cargo output internally. On Cargo failure, set -e can terminate before that output is printed; the outer output is complete only for bytes actually emitted by the script.', 'DRIFT=1 does not force a nonzero script exit.', 'Missing command-terminal.json after cancellation or runner loss leaves outcome unknown.']
+          (out / 'command-terminal.json').write_text(json.dumps(receipt, indent=2) + '\n')
+          snapshot('after')
+          sys.exit(code if code >= 0 else 128-code)
+          PY
+      - name: Retain source state even after a command failure
+        if: always()
+        working-directory: source
+        run: |
+          out="$RUNNER_TEMP/p8-doc-baseline-original"
+          mkdir -p "$out"
+          git status --porcelain=v1 --untracked-files=no > "$out/final-tracked-status.txt"
+          git diff --binary --no-ext-diff HEAD -- crates Cargo.toml Cargo.lock scripts/update-doc-baselines.sh docs/TEST_PLAN.md > "$out/final-source.diff"
+          if [ -f Cargo.lock ]; then cp Cargo.lock "$out/Cargo.lock.final"; fi
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib
+          out = pathlib.Path(os.environ['RUNNER_TEMP']) / 'p8-doc-baseline-original'
+          rows = [{'path': p.name, 'bytes': p.stat().st_size, 'sha256': hashlib.sha256(p.read_bytes()).hexdigest()} for p in sorted(out.iterdir()) if p.is_file() and p.name != 'files.json']
+          (out / 'files.json').write_text(json.dumps(rows, indent=2) + '\n')
+          PY
+      - name: Upload original command receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-doc-baseline-original-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-doc-baseline-original/
+          if-no-files-found: error
+          retention-days: 30

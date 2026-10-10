@@ -1,0 +1,668 @@
+name: P8 independent isolated-profile measurements
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [labeled]
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: never
+  CARGO_INCREMENTAL: "0"
+  CARGO_BUILD_JOBS: "2"
+  RUSTFLAGS: ""
+
+jobs:
+  build:
+    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'p8-profile-run'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/artifacts/
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.95.0
+      - name: Compile and bind one immutable release executable
+        run: |
+          python3 scripts/p8_profile_matrix.py build \
+            --root "$GITHUB_WORKSPACE" --output "$RUNNER_TEMP/p8-profile-build" \
+            --target-directory "$RUNNER_TEMP/p8-profile-cargo" \
+            --run-id "$GITHUB_RUN_ID" --attempt "$GITHUB_RUN_ATTEMPT"
+      - name: Preserve original build, binary and source receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-profile-build-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-profile-build
+          if-no-files-found: error
+
+  measure_no_op:
+    needs: [build]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    env:
+      MUTATION_PROFILE: no_op
+      FANOUT_ARGUMENT: ""
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        scale: [100000, 50000, 10000, 5000, 1000]
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/artifacts/
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.95.0
+      - uses: actions/download-artifact@v4
+        with:
+          name: p8-profile-build-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-profile-build
+      - name: Observe and prepare the registered capacity on this disposable hosted VM
+        env:
+          SCALE: ${{ matrix.scale }}
+          SHARD: ${{ matrix.shard }}
+          P8_EXPECTED_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}
+          P8_CAPACITY_PREPARE_ALLOWED: ${{ github.repository == 'jyqj/codecortex' && runner.environment == 'github-hosted' && runner.os == 'Linux' }}
+        run: |
+          python3 scripts/p8_runner_capacity.py --scale "$SCALE" \
+            --output "$RUNNER_TEMP/p8-profile-capacity-no_op-$SCALE-$SHARD" --prepare-ephemeral
+      - name: Preserve capacity observations and any unsuccessful preparation
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-profile-capacity-no_op-${{ matrix.scale }}-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-profile-capacity-no_op-${{ matrix.scale }}-${{ matrix.shard }}
+          if-no-files-found: error
+      - name: Execute one fresh profile with complete setup and parity inside its deadline
+        env:
+          SCALE: ${{ matrix.scale }}
+          SHARD: ${{ matrix.shard }}
+        run: |
+          chmod +x "$RUNNER_TEMP/p8-profile-build/native-build/p8-scale"
+          python3 scripts/p8_profile_matrix.py run --root "$GITHUB_WORKSPACE" \
+            --build "$RUNNER_TEMP/p8-profile-build" \
+            --scale "$SCALE" --shard-index "$SHARD" \
+            --mutation-profile "$MUTATION_PROFILE" $FANOUT_ARGUMENT \
+            --run-id "$GITHUB_RUN_ID" --attempt "$GITHUB_RUN_ATTEMPT" \
+            --output "$RUNNER_TEMP/p8-profile-shard-no_op-$SCALE-$SHARD"
+      - name: Preserve original shard including unsuccessful measurements
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-profile-shard-no_op-${{ matrix.scale }}-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-profile-shard-no_op-${{ matrix.scale }}-${{ matrix.shard }}
+          if-no-files-found: error
+
+  measure_body:
+    needs: [build, measure_no_op]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    env:
+      MUTATION_PROFILE: body
+      FANOUT_ARGUMENT: ""
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        scale: [100000, 50000, 10000, 5000, 1000]
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/artifacts/
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.95.0
+      - uses: actions/download-artifact@v4
+        with:
+          name: p8-profile-build-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-profile-build
+      - name: Observe and prepare the registered capacity on this disposable hosted VM
+        env:
+          SCALE: ${{ matrix.scale }}
+          SHARD: ${{ matrix.shard }}
+          P8_EXPECTED_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}
+          P8_CAPACITY_PREPARE_ALLOWED: ${{ github.repository == 'jyqj/codecortex' && runner.environment == 'github-hosted' && runner.os == 'Linux' }}
+        run: |
+          python3 scripts/p8_runner_capacity.py --scale "$SCALE" \
+            --output "$RUNNER_TEMP/p8-profile-capacity-body-$SCALE-$SHARD" --prepare-ephemeral
+      - name: Preserve capacity observations and any unsuccessful preparation
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-profile-capacity-body-${{ matrix.scale }}-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-profile-capacity-body-${{ matrix.scale }}-${{ matrix.shard }}
+          if-no-files-found: error
+      - name: Execute one fresh profile with complete setup and parity inside its deadline
+        env:
+          SCALE: ${{ matrix.scale }}
+          SHARD: ${{ matrix.shard }}
+        run: |
+          chmod +x "$RUNNER_TEMP/p8-profile-build/native-build/p8-scale"
+          python3 scripts/p8_profile_matrix.py run --root "$GITHUB_WORKSPACE" \
+            --build "$RUNNER_TEMP/p8-profile-build" \
+            --scale "$SCALE" --shard-index "$SHARD" \
+            --mutation-profile "$MUTATION_PROFILE" $FANOUT_ARGUMENT \
+            --run-id "$GITHUB_RUN_ID" --attempt "$GITHUB_RUN_ATTEMPT" \
+            --output "$RUNNER_TEMP/p8-profile-shard-body-$SCALE-$SHARD"
+      - name: Preserve original shard including unsuccessful measurements
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-profile-shard-body-${{ matrix.scale }}-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-profile-shard-body-${{ matrix.scale }}-${{ matrix.shard }}
+          if-no-files-found: error
+
+  measure_api:
+    needs: [build, measure_body]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    env:
+      MUTATION_PROFILE: api
+      FANOUT_ARGUMENT: ""
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        scale: [100000, 50000, 10000, 5000, 1000]
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/artifacts/
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.95.0
+      - uses: actions/download-artifact@v4
+        with:
+          name: p8-profile-build-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-profile-build
+      - name: Observe and prepare the registered capacity on this disposable hosted VM
+        env:
+          SCALE: ${{ matrix.scale }}
+          SHARD: ${{ matrix.shard }}
+          P8_EXPECTED_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}
+          P8_CAPACITY_PREPARE_ALLOWED: ${{ github.repository == 'jyqj/codecortex' && runner.environment == 'github-hosted' && runner.os == 'Linux' }}
+        run: |
+          python3 scripts/p8_runner_capacity.py --scale "$SCALE" \
+            --output "$RUNNER_TEMP/p8-profile-capacity-api-$SCALE-$SHARD" --prepare-ephemeral
+      - name: Preserve capacity observations and any unsuccessful preparation
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-profile-capacity-api-${{ matrix.scale }}-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-profile-capacity-api-${{ matrix.scale }}-${{ matrix.shard }}
+          if-no-files-found: error
+      - name: Execute one fresh profile with complete setup and parity inside its deadline
+        env:
+          SCALE: ${{ matrix.scale }}
+          SHARD: ${{ matrix.shard }}
+        run: |
+          chmod +x "$RUNNER_TEMP/p8-profile-build/native-build/p8-scale"
+          python3 scripts/p8_profile_matrix.py run --root "$GITHUB_WORKSPACE" \
+            --build "$RUNNER_TEMP/p8-profile-build" \
+            --scale "$SCALE" --shard-index "$SHARD" \
+            --mutation-profile "$MUTATION_PROFILE" $FANOUT_ARGUMENT \
+            --run-id "$GITHUB_RUN_ID" --attempt "$GITHUB_RUN_ATTEMPT" \
+            --output "$RUNNER_TEMP/p8-profile-shard-api-$SCALE-$SHARD"
+      - name: Preserve original shard including unsuccessful measurements
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-profile-shard-api-${{ matrix.scale }}-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-profile-shard-api-${{ matrix.scale }}-${{ matrix.shard }}
+          if-no-files-found: error
+
+  measure_config:
+    needs: [build, measure_api]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    env:
+      MUTATION_PROFILE: config
+      FANOUT_ARGUMENT: ""
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        scale: [100000, 50000, 10000, 5000, 1000]
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/artifacts/
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.95.0
+      - uses: actions/download-artifact@v4
+        with:
+          name: p8-profile-build-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-profile-build
+      - name: Observe and prepare the registered capacity on this disposable hosted VM
+        env:
+          SCALE: ${{ matrix.scale }}
+          SHARD: ${{ matrix.shard }}
+          P8_EXPECTED_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}
+          P8_CAPACITY_PREPARE_ALLOWED: ${{ github.repository == 'jyqj/codecortex' && runner.environment == 'github-hosted' && runner.os == 'Linux' }}
+        run: |
+          python3 scripts/p8_runner_capacity.py --scale "$SCALE" \
+            --output "$RUNNER_TEMP/p8-profile-capacity-config-$SCALE-$SHARD" --prepare-ephemeral
+      - name: Preserve capacity observations and any unsuccessful preparation
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-profile-capacity-config-${{ matrix.scale }}-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-profile-capacity-config-${{ matrix.scale }}-${{ matrix.shard }}
+          if-no-files-found: error
+      - name: Execute one fresh profile with complete setup and parity inside its deadline
+        env:
+          SCALE: ${{ matrix.scale }}
+          SHARD: ${{ matrix.shard }}
+        run: |
+          chmod +x "$RUNNER_TEMP/p8-profile-build/native-build/p8-scale"
+          python3 scripts/p8_profile_matrix.py run --root "$GITHUB_WORKSPACE" \
+            --build "$RUNNER_TEMP/p8-profile-build" \
+            --scale "$SCALE" --shard-index "$SHARD" \
+            --mutation-profile "$MUTATION_PROFILE" $FANOUT_ARGUMENT \
+            --run-id "$GITHUB_RUN_ID" --attempt "$GITHUB_RUN_ATTEMPT" \
+            --output "$RUNNER_TEMP/p8-profile-shard-config-$SCALE-$SHARD"
+      - name: Preserve original shard including unsuccessful measurements
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-profile-shard-config-${{ matrix.scale }}-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-profile-shard-config-${{ matrix.scale }}-${{ matrix.shard }}
+          if-no-files-found: error
+
+  measure_batch_1:
+    needs: [build, measure_config]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    env:
+      MUTATION_PROFILE: batch_1
+      FANOUT_ARGUMENT: ""
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        scale: [100000, 50000, 10000, 5000, 1000]
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/artifacts/
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.95.0
+      - uses: actions/download-artifact@v4
+        with:
+          name: p8-profile-build-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-profile-build
+      - name: Observe and prepare the registered capacity on this disposable hosted VM
+        env:
+          SCALE: ${{ matrix.scale }}
+          SHARD: ${{ matrix.shard }}
+          P8_EXPECTED_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}
+          P8_CAPACITY_PREPARE_ALLOWED: ${{ github.repository == 'jyqj/codecortex' && runner.environment == 'github-hosted' && runner.os == 'Linux' }}
+        run: |
+          python3 scripts/p8_runner_capacity.py --scale "$SCALE" \
+            --output "$RUNNER_TEMP/p8-profile-capacity-batch_1-$SCALE-$SHARD" --prepare-ephemeral
+      - name: Preserve capacity observations and any unsuccessful preparation
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-profile-capacity-batch_1-${{ matrix.scale }}-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-profile-capacity-batch_1-${{ matrix.scale }}-${{ matrix.shard }}
+          if-no-files-found: error
+      - name: Execute one fresh profile with complete setup and parity inside its deadline
+        env:
+          SCALE: ${{ matrix.scale }}
+          SHARD: ${{ matrix.shard }}
+        run: |
+          chmod +x "$RUNNER_TEMP/p8-profile-build/native-build/p8-scale"
+          python3 scripts/p8_profile_matrix.py run --root "$GITHUB_WORKSPACE" \
+            --build "$RUNNER_TEMP/p8-profile-build" \
+            --scale "$SCALE" --shard-index "$SHARD" \
+            --mutation-profile "$MUTATION_PROFILE" $FANOUT_ARGUMENT \
+            --run-id "$GITHUB_RUN_ID" --attempt "$GITHUB_RUN_ATTEMPT" \
+            --output "$RUNNER_TEMP/p8-profile-shard-batch_1-$SCALE-$SHARD"
+      - name: Preserve original shard including unsuccessful measurements
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-profile-shard-batch_1-${{ matrix.scale }}-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-profile-shard-batch_1-${{ matrix.scale }}-${{ matrix.shard }}
+          if-no-files-found: error
+
+  measure_batch_10:
+    needs: [build, measure_batch_1]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    env:
+      MUTATION_PROFILE: batch_10
+      FANOUT_ARGUMENT: ""
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        scale: [100000, 50000, 10000, 5000, 1000]
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/artifacts/
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.95.0
+      - uses: actions/download-artifact@v4
+        with:
+          name: p8-profile-build-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-profile-build
+      - name: Observe and prepare the registered capacity on this disposable hosted VM
+        env:
+          SCALE: ${{ matrix.scale }}
+          SHARD: ${{ matrix.shard }}
+          P8_EXPECTED_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}
+          P8_CAPACITY_PREPARE_ALLOWED: ${{ github.repository == 'jyqj/codecortex' && runner.environment == 'github-hosted' && runner.os == 'Linux' }}
+        run: |
+          python3 scripts/p8_runner_capacity.py --scale "$SCALE" \
+            --output "$RUNNER_TEMP/p8-profile-capacity-batch_10-$SCALE-$SHARD" --prepare-ephemeral
+      - name: Preserve capacity observations and any unsuccessful preparation
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-profile-capacity-batch_10-${{ matrix.scale }}-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-profile-capacity-batch_10-${{ matrix.scale }}-${{ matrix.shard }}
+          if-no-files-found: error
+      - name: Execute one fresh profile with complete setup and parity inside its deadline
+        env:
+          SCALE: ${{ matrix.scale }}
+          SHARD: ${{ matrix.shard }}
+        run: |
+          chmod +x "$RUNNER_TEMP/p8-profile-build/native-build/p8-scale"
+          python3 scripts/p8_profile_matrix.py run --root "$GITHUB_WORKSPACE" \
+            --build "$RUNNER_TEMP/p8-profile-build" \
+            --scale "$SCALE" --shard-index "$SHARD" \
+            --mutation-profile "$MUTATION_PROFILE" $FANOUT_ARGUMENT \
+            --run-id "$GITHUB_RUN_ID" --attempt "$GITHUB_RUN_ATTEMPT" \
+            --output "$RUNNER_TEMP/p8-profile-shard-batch_10-$SCALE-$SHARD"
+      - name: Preserve original shard including unsuccessful measurements
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-profile-shard-batch_10-${{ matrix.scale }}-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-profile-shard-batch_10-${{ matrix.scale }}-${{ matrix.shard }}
+          if-no-files-found: error
+
+  measure_batch_100:
+    needs: [build, measure_batch_10]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    env:
+      MUTATION_PROFILE: batch_100
+      FANOUT_ARGUMENT: ""
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        scale: [100000, 50000, 10000, 5000, 1000]
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/artifacts/
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.95.0
+      - uses: actions/download-artifact@v4
+        with:
+          name: p8-profile-build-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-profile-build
+      - name: Observe and prepare the registered capacity on this disposable hosted VM
+        env:
+          SCALE: ${{ matrix.scale }}
+          SHARD: ${{ matrix.shard }}
+          P8_EXPECTED_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}
+          P8_CAPACITY_PREPARE_ALLOWED: ${{ github.repository == 'jyqj/codecortex' && runner.environment == 'github-hosted' && runner.os == 'Linux' }}
+        run: |
+          python3 scripts/p8_runner_capacity.py --scale "$SCALE" \
+            --output "$RUNNER_TEMP/p8-profile-capacity-batch_100-$SCALE-$SHARD" --prepare-ephemeral
+      - name: Preserve capacity observations and any unsuccessful preparation
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-profile-capacity-batch_100-${{ matrix.scale }}-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-profile-capacity-batch_100-${{ matrix.scale }}-${{ matrix.shard }}
+          if-no-files-found: error
+      - name: Execute one fresh profile with complete setup and parity inside its deadline
+        env:
+          SCALE: ${{ matrix.scale }}
+          SHARD: ${{ matrix.shard }}
+        run: |
+          chmod +x "$RUNNER_TEMP/p8-profile-build/native-build/p8-scale"
+          python3 scripts/p8_profile_matrix.py run --root "$GITHUB_WORKSPACE" \
+            --build "$RUNNER_TEMP/p8-profile-build" \
+            --scale "$SCALE" --shard-index "$SHARD" \
+            --mutation-profile "$MUTATION_PROFILE" $FANOUT_ARGUMENT \
+            --run-id "$GITHUB_RUN_ID" --attempt "$GITHUB_RUN_ATTEMPT" \
+            --output "$RUNNER_TEMP/p8-profile-shard-batch_100-$SCALE-$SHARD"
+      - name: Preserve original shard including unsuccessful measurements
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-profile-shard-batch_100-${{ matrix.scale }}-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-profile-shard-batch_100-${{ matrix.scale }}-${{ matrix.shard }}
+          if-no-files-found: error
+
+  measure_batch_1000:
+    needs: [build, measure_batch_100]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    env:
+      MUTATION_PROFILE: batch_1000
+      FANOUT_ARGUMENT: ""
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        scale: [100000, 50000, 10000, 5000, 1000]
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/artifacts/
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.95.0
+      - uses: actions/download-artifact@v4
+        with:
+          name: p8-profile-build-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-profile-build
+      - name: Observe and prepare the registered capacity on this disposable hosted VM
+        env:
+          SCALE: ${{ matrix.scale }}
+          SHARD: ${{ matrix.shard }}
+          P8_EXPECTED_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}
+          P8_CAPACITY_PREPARE_ALLOWED: ${{ github.repository == 'jyqj/codecortex' && runner.environment == 'github-hosted' && runner.os == 'Linux' }}
+        run: |
+          python3 scripts/p8_runner_capacity.py --scale "$SCALE" \
+            --output "$RUNNER_TEMP/p8-profile-capacity-batch_1000-$SCALE-$SHARD" --prepare-ephemeral
+      - name: Preserve capacity observations and any unsuccessful preparation
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-profile-capacity-batch_1000-${{ matrix.scale }}-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-profile-capacity-batch_1000-${{ matrix.scale }}-${{ matrix.shard }}
+          if-no-files-found: error
+      - name: Execute one fresh profile with complete setup and parity inside its deadline
+        env:
+          SCALE: ${{ matrix.scale }}
+          SHARD: ${{ matrix.shard }}
+        run: |
+          chmod +x "$RUNNER_TEMP/p8-profile-build/native-build/p8-scale"
+          python3 scripts/p8_profile_matrix.py run --root "$GITHUB_WORKSPACE" \
+            --build "$RUNNER_TEMP/p8-profile-build" \
+            --scale "$SCALE" --shard-index "$SHARD" \
+            --mutation-profile "$MUTATION_PROFILE" $FANOUT_ARGUMENT \
+            --run-id "$GITHUB_RUN_ID" --attempt "$GITHUB_RUN_ATTEMPT" \
+            --output "$RUNNER_TEMP/p8-profile-shard-batch_1000-$SCALE-$SHARD"
+      - name: Preserve original shard including unsuccessful measurements
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-profile-shard-batch_1000-${{ matrix.scale }}-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-profile-shard-batch_1000-${{ matrix.scale }}-${{ matrix.shard }}
+          if-no-files-found: error
+
+  measure_fanout:
+    needs: [build, measure_batch_1000]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    env:
+      MUTATION_PROFILE: fanout
+      FANOUT_ARGUMENT: --profile-fanout ${{ matrix.fanout }}
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        fanout: [1, 4, 16, 64, 128]
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/artifacts/
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.95.0
+      - uses: actions/download-artifact@v4
+        with:
+          name: p8-profile-build-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-profile-build
+      - name: Observe and prepare the registered capacity on this disposable hosted VM
+        env:
+          SCALE: "1000"
+          FANOUT: ${{ matrix.fanout }}
+          SHARD: ${{ matrix.shard }}
+          P8_EXPECTED_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}
+          P8_CAPACITY_PREPARE_ALLOWED: ${{ github.repository == 'jyqj/codecortex' && runner.environment == 'github-hosted' && runner.os == 'Linux' }}
+        run: |
+          python3 scripts/p8_runner_capacity.py --scale "$SCALE" \
+            --output "$RUNNER_TEMP/p8-profile-capacity-fanout-$FANOUT-$SHARD" --prepare-ephemeral
+      - name: Preserve capacity observations and any unsuccessful preparation
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-profile-capacity-fanout-${{ matrix.fanout }}-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-profile-capacity-fanout-${{ matrix.fanout }}-${{ matrix.shard }}
+          if-no-files-found: error
+      - name: Execute one fresh profile with complete setup and parity inside its deadline
+        env:
+          SCALE: "1000"
+          FANOUT: ${{ matrix.fanout }}
+          SHARD: ${{ matrix.shard }}
+        run: |
+          chmod +x "$RUNNER_TEMP/p8-profile-build/native-build/p8-scale"
+          python3 scripts/p8_profile_matrix.py run --root "$GITHUB_WORKSPACE" \
+            --build "$RUNNER_TEMP/p8-profile-build" \
+            --scale "$SCALE" --shard-index "$SHARD" \
+            --mutation-profile "$MUTATION_PROFILE" $FANOUT_ARGUMENT \
+            --run-id "$GITHUB_RUN_ID" --attempt "$GITHUB_RUN_ATTEMPT" \
+            --output "$RUNNER_TEMP/p8-profile-shard-fanout-$FANOUT-$SHARD"
+      - name: Preserve original shard including unsuccessful measurements
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-profile-shard-fanout-${{ matrix.fanout }}-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-profile-shard-fanout-${{ matrix.fanout }}-${{ matrix.shard }}
+          if-no-files-found: error
+
+  aggregate:
+    if: always() && needs.build.result == 'success'
+    needs: [build, measure_no_op, measure_body, measure_api, measure_config, measure_batch_1, measure_batch_10, measure_batch_100, measure_batch_1000, measure_fanout]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/artifacts/
+      - uses: actions/download-artifact@v4
+        with:
+          name: p8-profile-build-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-profile-build
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: p8-profile-shard-*-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-profile-shards
+      - name: Replay every raw record and reject missing or incompatible cells
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import os, pathlib, sys
+          sys.path.insert(0, 'scripts')
+          import p8_profile_matrix as matrix
+          root = pathlib.Path(os.environ['RUNNER_TEMP'])
+          binary = root / 'p8-profile-build/native-build/p8-scale'
+          if binary.exists():
+              binary.chmod(0o755)
+          inputs = sorted((root / 'p8-profile-shards').glob('p8-profile-shard-*'))
+          result = matrix.aggregate(root / 'p8-profile-build', inputs, root / 'p8-profile-matrix')
+          print({key: result.get(key) for key in ('status', 'error', 'sample_count')})
+          sys.exit(0 if result.get('passed') is True else 1)
+          PY
+      - name: Preserve raw-only matrix review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-profile-matrix-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/p8-profile-matrix
+          if-no-files-found: error

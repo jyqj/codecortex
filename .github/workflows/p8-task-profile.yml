@@ -1,0 +1,678 @@
+name: P8 complete descriptive task profile measurements
+'on':
+  workflow_dispatch: null
+  pull_request:
+    types:
+    - labeled
+permissions:
+  contents: read
+env:
+  CARGO_TERM_COLOR: never
+  CARGO_INCREMENTAL: '0'
+  CARGO_BUILD_JOBS: '2'
+  RUSTFLAGS: ''
+jobs:
+  build:
+    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'p8-task-profile-run'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.pull_request.head.sha || github.sha }}
+        sparse-checkout-cone-mode: false
+        sparse-checkout: |
+          /*
+          !/artifacts/
+    - uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: 1.95.0
+    - name: Compile and bind the task executable and exact 45-cell registry
+      run: |
+        python3 scripts/p8_task_profile_matrix.py build \
+          --root "$GITHUB_WORKSPACE" --output "$RUNNER_TEMP/p8-task-build" \
+          --target-directory "$RUNNER_TEMP/p8-task-cargo" \
+          --run-id "$GITHUB_RUN_ID" --attempt "$GITHUB_RUN_ATTEMPT"
+    - name: Validate all 45 release-mode plans without executing a measurement
+      run: |
+        cargo test --release -p cc-eval --test p8_scale --locked \
+          --target-dir "$RUNNER_TEMP/p8-task-cargo" \
+          task_descriptive_scope_is_explicit_n1_without_weakening_old_n30 -- --exact
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: p8-task-build-${{ github.run_id }}-${{ github.run_attempt }}
+        path: ${{ runner.temp }}/p8-task-build
+        if-no-files-found: error
+      name: Preserve original build, binary, registry and unsuccessful preparation
+  measure:
+    needs:
+    - build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        include:
+        - cell: no_op-100000
+          profile: no_op
+          scale: 100000
+          fanout: ''
+        - cell: no_op-50000
+          profile: no_op
+          scale: 50000
+          fanout: ''
+        - cell: no_op-10000
+          profile: no_op
+          scale: 10000
+          fanout: ''
+        - cell: no_op-5000
+          profile: no_op
+          scale: 5000
+          fanout: ''
+        - cell: no_op-1000
+          profile: no_op
+          scale: 1000
+          fanout: ''
+        - cell: body-100000
+          profile: body
+          scale: 100000
+          fanout: ''
+        - cell: body-50000
+          profile: body
+          scale: 50000
+          fanout: ''
+        - cell: body-10000
+          profile: body
+          scale: 10000
+          fanout: ''
+        - cell: body-5000
+          profile: body
+          scale: 5000
+          fanout: ''
+        - cell: body-1000
+          profile: body
+          scale: 1000
+          fanout: ''
+        - cell: api-100000
+          profile: api
+          scale: 100000
+          fanout: ''
+        - cell: api-50000
+          profile: api
+          scale: 50000
+          fanout: ''
+        - cell: api-10000
+          profile: api
+          scale: 10000
+          fanout: ''
+        - cell: api-5000
+          profile: api
+          scale: 5000
+          fanout: ''
+        - cell: api-1000
+          profile: api
+          scale: 1000
+          fanout: ''
+        - cell: config-100000
+          profile: config
+          scale: 100000
+          fanout: ''
+        - cell: config-50000
+          profile: config
+          scale: 50000
+          fanout: ''
+        - cell: config-10000
+          profile: config
+          scale: 10000
+          fanout: ''
+        - cell: config-5000
+          profile: config
+          scale: 5000
+          fanout: ''
+        - cell: config-1000
+          profile: config
+          scale: 1000
+          fanout: ''
+        - cell: batch_1-100000
+          profile: batch_1
+          scale: 100000
+          fanout: ''
+        - cell: batch_1-50000
+          profile: batch_1
+          scale: 50000
+          fanout: ''
+        - cell: batch_1-10000
+          profile: batch_1
+          scale: 10000
+          fanout: ''
+        - cell: batch_1-5000
+          profile: batch_1
+          scale: 5000
+          fanout: ''
+        - cell: batch_1-1000
+          profile: batch_1
+          scale: 1000
+          fanout: ''
+        - cell: batch_10-100000
+          profile: batch_10
+          scale: 100000
+          fanout: ''
+        - cell: batch_10-50000
+          profile: batch_10
+          scale: 50000
+          fanout: ''
+        - cell: batch_10-10000
+          profile: batch_10
+          scale: 10000
+          fanout: ''
+        - cell: batch_10-5000
+          profile: batch_10
+          scale: 5000
+          fanout: ''
+        - cell: batch_10-1000
+          profile: batch_10
+          scale: 1000
+          fanout: ''
+        - cell: batch_100-100000
+          profile: batch_100
+          scale: 100000
+          fanout: ''
+        - cell: batch_100-50000
+          profile: batch_100
+          scale: 50000
+          fanout: ''
+        - cell: batch_100-10000
+          profile: batch_100
+          scale: 10000
+          fanout: ''
+        - cell: batch_100-5000
+          profile: batch_100
+          scale: 5000
+          fanout: ''
+        - cell: batch_100-1000
+          profile: batch_100
+          scale: 1000
+          fanout: ''
+        - cell: batch_1000-100000
+          profile: batch_1000
+          scale: 100000
+          fanout: ''
+        - cell: batch_1000-50000
+          profile: batch_1000
+          scale: 50000
+          fanout: ''
+        - cell: batch_1000-10000
+          profile: batch_1000
+          scale: 10000
+          fanout: ''
+        - cell: batch_1000-5000
+          profile: batch_1000
+          scale: 5000
+          fanout: ''
+        - cell: batch_1000-1000
+          profile: batch_1000
+          scale: 1000
+          fanout: ''
+        - cell: fanout-1
+          profile: fanout
+          scale: 1000
+          fanout: 1
+        - cell: fanout-4
+          profile: fanout
+          scale: 1000
+          fanout: 4
+        - cell: fanout-16
+          profile: fanout
+          scale: 1000
+          fanout: 16
+        - cell: fanout-64
+          profile: fanout
+          scale: 1000
+          fanout: 64
+        - cell: fanout-128
+          profile: fanout
+          scale: 1000
+          fanout: 128
+    env:
+      P8_TASK_CELL: ${{ matrix.cell }}
+      P8_TASK_PROFILE: ${{ matrix.profile }}
+      P8_TASK_SCALE: ${{ matrix.scale }}
+      P8_TASK_FANOUT: ${{ matrix.fanout }}
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.pull_request.head.sha || github.sha }}
+        sparse-checkout-cone-mode: false
+        sparse-checkout: |
+          /*
+          !/artifacts/
+    - uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: 1.95.0
+    - uses: actions/download-artifact@v4
+      with:
+        path: ${{ runner.temp }}/p8-task-build
+        name: p8-task-build-${{ github.run_id }}-${{ github.run_attempt }}
+    - name: Prepare original registered capacity on the disposable hosted VM
+      env:
+        P8_EXPECTED_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}
+        P8_CAPACITY_PREPARE_ALLOWED: ${{ github.repository == 'jyqj/codecortex' && runner.environment == 'github-hosted' &&
+          runner.os == 'Linux' }}
+      run: |
+        python3 scripts/p8_runner_capacity.py --scale "$P8_TASK_SCALE" \
+          --output "$RUNNER_TEMP/p8-task-capacity-$P8_TASK_CELL" --prepare-ephemeral
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: p8-task-capacity-${{ matrix.cell }}-${{ github.run_id }}-${{ github.run_attempt }}
+        path: ${{ runner.temp }}/p8-task-capacity-${{ matrix.cell }}
+        if-no-files-found: error
+      name: Preserve original capacity observations
+    - name: Launch one exact fresh task cell with setup and parity inside its native deadline
+      id: launch
+      env:
+        P8_EXPECTED_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}
+      run: |
+        chmod +x "$RUNNER_TEMP/p8-task-build/native-build/p8-scale"
+        extra=()
+        if [[ "$P8_TASK_PROFILE" == "fanout" ]]; then
+          extra=(--fanout "$P8_TASK_FANOUT")
+        fi
+        python3 scripts/p8_task_profile_capture.py launch \
+          --root "$GITHUB_WORKSPACE" --build "$RUNNER_TEMP/p8-task-build" \
+          --directory "$RUNNER_TEMP/p8-task-cell-$P8_TASK_CELL" \
+          --expected-source "$P8_EXPECTED_SOURCE" \
+          --run-id "$GITHUB_RUN_ID" --attempt "$GITHUB_RUN_ATTEMPT" \
+          --mutation-profile "$P8_TASK_PROFILE" --scale "$P8_TASK_SCALE" "${extra[@]}"
+    - name: Freeze original byte prefix at absolute interval 1 of 20
+      id: freeze_00
+      if: always() && steps.launch.outcome == 'success'
+      run: |
+        python3 scripts/p8_task_profile_capture.py checkpoint \
+          --directory "$RUNNER_TEMP/p8-task-cell-$P8_TASK_CELL" --index 0
+    - uses: actions/upload-artifact@v4
+      if: always() && steps.freeze_00.outputs.ready == 'true'
+      with:
+        name: p8-task-progress-${{ matrix.cell }}-${{ github.run_id }}-${{ github.run_attempt }}-00
+        path: ${{ steps.freeze_00.outputs.bundle }}
+        if-no-files-found: error
+      id: upload_00
+    - name: Freeze original byte prefix at absolute interval 2 of 20
+      id: freeze_01
+      if: always() && steps.launch.outcome == 'success'
+      run: |
+        python3 scripts/p8_task_profile_capture.py checkpoint \
+          --directory "$RUNNER_TEMP/p8-task-cell-$P8_TASK_CELL" --index 1
+      env:
+        PREVIOUS_ARTIFACT_ID: ${{ steps.upload_00.outputs.artifact-id }}
+        PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_00.outputs.artifact-digest }}
+    - uses: actions/upload-artifact@v4
+      if: always() && steps.freeze_01.outputs.ready == 'true'
+      with:
+        name: p8-task-progress-${{ matrix.cell }}-${{ github.run_id }}-${{ github.run_attempt }}-01
+        path: ${{ steps.freeze_01.outputs.bundle }}
+        if-no-files-found: error
+      id: upload_01
+    - name: Freeze original byte prefix at absolute interval 3 of 20
+      id: freeze_02
+      if: always() && steps.launch.outcome == 'success'
+      run: |
+        python3 scripts/p8_task_profile_capture.py checkpoint \
+          --directory "$RUNNER_TEMP/p8-task-cell-$P8_TASK_CELL" --index 2
+      env:
+        PREVIOUS_ARTIFACT_ID: ${{ steps.upload_01.outputs.artifact-id }}
+        PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_01.outputs.artifact-digest }}
+    - uses: actions/upload-artifact@v4
+      if: always() && steps.freeze_02.outputs.ready == 'true'
+      with:
+        name: p8-task-progress-${{ matrix.cell }}-${{ github.run_id }}-${{ github.run_attempt }}-02
+        path: ${{ steps.freeze_02.outputs.bundle }}
+        if-no-files-found: error
+      id: upload_02
+    - name: Freeze original byte prefix at absolute interval 4 of 20
+      id: freeze_03
+      if: always() && steps.launch.outcome == 'success'
+      run: |
+        python3 scripts/p8_task_profile_capture.py checkpoint \
+          --directory "$RUNNER_TEMP/p8-task-cell-$P8_TASK_CELL" --index 3
+      env:
+        PREVIOUS_ARTIFACT_ID: ${{ steps.upload_02.outputs.artifact-id }}
+        PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_02.outputs.artifact-digest }}
+    - uses: actions/upload-artifact@v4
+      if: always() && steps.freeze_03.outputs.ready == 'true'
+      with:
+        name: p8-task-progress-${{ matrix.cell }}-${{ github.run_id }}-${{ github.run_attempt }}-03
+        path: ${{ steps.freeze_03.outputs.bundle }}
+        if-no-files-found: error
+      id: upload_03
+    - name: Freeze original byte prefix at absolute interval 5 of 20
+      id: freeze_04
+      if: always() && steps.launch.outcome == 'success'
+      run: |
+        python3 scripts/p8_task_profile_capture.py checkpoint \
+          --directory "$RUNNER_TEMP/p8-task-cell-$P8_TASK_CELL" --index 4
+      env:
+        PREVIOUS_ARTIFACT_ID: ${{ steps.upload_03.outputs.artifact-id }}
+        PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_03.outputs.artifact-digest }}
+    - uses: actions/upload-artifact@v4
+      if: always() && steps.freeze_04.outputs.ready == 'true'
+      with:
+        name: p8-task-progress-${{ matrix.cell }}-${{ github.run_id }}-${{ github.run_attempt }}-04
+        path: ${{ steps.freeze_04.outputs.bundle }}
+        if-no-files-found: error
+      id: upload_04
+    - name: Freeze original byte prefix at absolute interval 6 of 20
+      id: freeze_05
+      if: always() && steps.launch.outcome == 'success'
+      run: |
+        python3 scripts/p8_task_profile_capture.py checkpoint \
+          --directory "$RUNNER_TEMP/p8-task-cell-$P8_TASK_CELL" --index 5
+      env:
+        PREVIOUS_ARTIFACT_ID: ${{ steps.upload_04.outputs.artifact-id }}
+        PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_04.outputs.artifact-digest }}
+    - uses: actions/upload-artifact@v4
+      if: always() && steps.freeze_05.outputs.ready == 'true'
+      with:
+        name: p8-task-progress-${{ matrix.cell }}-${{ github.run_id }}-${{ github.run_attempt }}-05
+        path: ${{ steps.freeze_05.outputs.bundle }}
+        if-no-files-found: error
+      id: upload_05
+    - name: Freeze original byte prefix at absolute interval 7 of 20
+      id: freeze_06
+      if: always() && steps.launch.outcome == 'success'
+      run: |
+        python3 scripts/p8_task_profile_capture.py checkpoint \
+          --directory "$RUNNER_TEMP/p8-task-cell-$P8_TASK_CELL" --index 6
+      env:
+        PREVIOUS_ARTIFACT_ID: ${{ steps.upload_05.outputs.artifact-id }}
+        PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_05.outputs.artifact-digest }}
+    - uses: actions/upload-artifact@v4
+      if: always() && steps.freeze_06.outputs.ready == 'true'
+      with:
+        name: p8-task-progress-${{ matrix.cell }}-${{ github.run_id }}-${{ github.run_attempt }}-06
+        path: ${{ steps.freeze_06.outputs.bundle }}
+        if-no-files-found: error
+      id: upload_06
+    - name: Freeze original byte prefix at absolute interval 8 of 20
+      id: freeze_07
+      if: always() && steps.launch.outcome == 'success'
+      run: |
+        python3 scripts/p8_task_profile_capture.py checkpoint \
+          --directory "$RUNNER_TEMP/p8-task-cell-$P8_TASK_CELL" --index 7
+      env:
+        PREVIOUS_ARTIFACT_ID: ${{ steps.upload_06.outputs.artifact-id }}
+        PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_06.outputs.artifact-digest }}
+    - uses: actions/upload-artifact@v4
+      if: always() && steps.freeze_07.outputs.ready == 'true'
+      with:
+        name: p8-task-progress-${{ matrix.cell }}-${{ github.run_id }}-${{ github.run_attempt }}-07
+        path: ${{ steps.freeze_07.outputs.bundle }}
+        if-no-files-found: error
+      id: upload_07
+    - name: Freeze original byte prefix at absolute interval 9 of 20
+      id: freeze_08
+      if: always() && steps.launch.outcome == 'success'
+      run: |
+        python3 scripts/p8_task_profile_capture.py checkpoint \
+          --directory "$RUNNER_TEMP/p8-task-cell-$P8_TASK_CELL" --index 8
+      env:
+        PREVIOUS_ARTIFACT_ID: ${{ steps.upload_07.outputs.artifact-id }}
+        PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_07.outputs.artifact-digest }}
+    - uses: actions/upload-artifact@v4
+      if: always() && steps.freeze_08.outputs.ready == 'true'
+      with:
+        name: p8-task-progress-${{ matrix.cell }}-${{ github.run_id }}-${{ github.run_attempt }}-08
+        path: ${{ steps.freeze_08.outputs.bundle }}
+        if-no-files-found: error
+      id: upload_08
+    - name: Freeze original byte prefix at absolute interval 10 of 20
+      id: freeze_09
+      if: always() && steps.launch.outcome == 'success'
+      run: |
+        python3 scripts/p8_task_profile_capture.py checkpoint \
+          --directory "$RUNNER_TEMP/p8-task-cell-$P8_TASK_CELL" --index 9
+      env:
+        PREVIOUS_ARTIFACT_ID: ${{ steps.upload_08.outputs.artifact-id }}
+        PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_08.outputs.artifact-digest }}
+    - uses: actions/upload-artifact@v4
+      if: always() && steps.freeze_09.outputs.ready == 'true'
+      with:
+        name: p8-task-progress-${{ matrix.cell }}-${{ github.run_id }}-${{ github.run_attempt }}-09
+        path: ${{ steps.freeze_09.outputs.bundle }}
+        if-no-files-found: error
+      id: upload_09
+    - name: Freeze original byte prefix at absolute interval 11 of 20
+      id: freeze_10
+      if: always() && steps.launch.outcome == 'success'
+      run: |
+        python3 scripts/p8_task_profile_capture.py checkpoint \
+          --directory "$RUNNER_TEMP/p8-task-cell-$P8_TASK_CELL" --index 10
+      env:
+        PREVIOUS_ARTIFACT_ID: ${{ steps.upload_09.outputs.artifact-id }}
+        PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_09.outputs.artifact-digest }}
+    - uses: actions/upload-artifact@v4
+      if: always() && steps.freeze_10.outputs.ready == 'true'
+      with:
+        name: p8-task-progress-${{ matrix.cell }}-${{ github.run_id }}-${{ github.run_attempt }}-10
+        path: ${{ steps.freeze_10.outputs.bundle }}
+        if-no-files-found: error
+      id: upload_10
+    - name: Freeze original byte prefix at absolute interval 12 of 20
+      id: freeze_11
+      if: always() && steps.launch.outcome == 'success'
+      run: |
+        python3 scripts/p8_task_profile_capture.py checkpoint \
+          --directory "$RUNNER_TEMP/p8-task-cell-$P8_TASK_CELL" --index 11
+      env:
+        PREVIOUS_ARTIFACT_ID: ${{ steps.upload_10.outputs.artifact-id }}
+        PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_10.outputs.artifact-digest }}
+    - uses: actions/upload-artifact@v4
+      if: always() && steps.freeze_11.outputs.ready == 'true'
+      with:
+        name: p8-task-progress-${{ matrix.cell }}-${{ github.run_id }}-${{ github.run_attempt }}-11
+        path: ${{ steps.freeze_11.outputs.bundle }}
+        if-no-files-found: error
+      id: upload_11
+    - name: Freeze original byte prefix at absolute interval 13 of 20
+      id: freeze_12
+      if: always() && steps.launch.outcome == 'success'
+      run: |
+        python3 scripts/p8_task_profile_capture.py checkpoint \
+          --directory "$RUNNER_TEMP/p8-task-cell-$P8_TASK_CELL" --index 12
+      env:
+        PREVIOUS_ARTIFACT_ID: ${{ steps.upload_11.outputs.artifact-id }}
+        PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_11.outputs.artifact-digest }}
+    - uses: actions/upload-artifact@v4
+      if: always() && steps.freeze_12.outputs.ready == 'true'
+      with:
+        name: p8-task-progress-${{ matrix.cell }}-${{ github.run_id }}-${{ github.run_attempt }}-12
+        path: ${{ steps.freeze_12.outputs.bundle }}
+        if-no-files-found: error
+      id: upload_12
+    - name: Freeze original byte prefix at absolute interval 14 of 20
+      id: freeze_13
+      if: always() && steps.launch.outcome == 'success'
+      run: |
+        python3 scripts/p8_task_profile_capture.py checkpoint \
+          --directory "$RUNNER_TEMP/p8-task-cell-$P8_TASK_CELL" --index 13
+      env:
+        PREVIOUS_ARTIFACT_ID: ${{ steps.upload_12.outputs.artifact-id }}
+        PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_12.outputs.artifact-digest }}
+    - uses: actions/upload-artifact@v4
+      if: always() && steps.freeze_13.outputs.ready == 'true'
+      with:
+        name: p8-task-progress-${{ matrix.cell }}-${{ github.run_id }}-${{ github.run_attempt }}-13
+        path: ${{ steps.freeze_13.outputs.bundle }}
+        if-no-files-found: error
+      id: upload_13
+    - name: Freeze original byte prefix at absolute interval 15 of 20
+      id: freeze_14
+      if: always() && steps.launch.outcome == 'success'
+      run: |
+        python3 scripts/p8_task_profile_capture.py checkpoint \
+          --directory "$RUNNER_TEMP/p8-task-cell-$P8_TASK_CELL" --index 14
+      env:
+        PREVIOUS_ARTIFACT_ID: ${{ steps.upload_13.outputs.artifact-id }}
+        PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_13.outputs.artifact-digest }}
+    - uses: actions/upload-artifact@v4
+      if: always() && steps.freeze_14.outputs.ready == 'true'
+      with:
+        name: p8-task-progress-${{ matrix.cell }}-${{ github.run_id }}-${{ github.run_attempt }}-14
+        path: ${{ steps.freeze_14.outputs.bundle }}
+        if-no-files-found: error
+      id: upload_14
+    - name: Freeze original byte prefix at absolute interval 16 of 20
+      id: freeze_15
+      if: always() && steps.launch.outcome == 'success'
+      run: |
+        python3 scripts/p8_task_profile_capture.py checkpoint \
+          --directory "$RUNNER_TEMP/p8-task-cell-$P8_TASK_CELL" --index 15
+      env:
+        PREVIOUS_ARTIFACT_ID: ${{ steps.upload_14.outputs.artifact-id }}
+        PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_14.outputs.artifact-digest }}
+    - uses: actions/upload-artifact@v4
+      if: always() && steps.freeze_15.outputs.ready == 'true'
+      with:
+        name: p8-task-progress-${{ matrix.cell }}-${{ github.run_id }}-${{ github.run_attempt }}-15
+        path: ${{ steps.freeze_15.outputs.bundle }}
+        if-no-files-found: error
+      id: upload_15
+    - name: Freeze original byte prefix at absolute interval 17 of 20
+      id: freeze_16
+      if: always() && steps.launch.outcome == 'success'
+      run: |
+        python3 scripts/p8_task_profile_capture.py checkpoint \
+          --directory "$RUNNER_TEMP/p8-task-cell-$P8_TASK_CELL" --index 16
+      env:
+        PREVIOUS_ARTIFACT_ID: ${{ steps.upload_15.outputs.artifact-id }}
+        PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_15.outputs.artifact-digest }}
+    - uses: actions/upload-artifact@v4
+      if: always() && steps.freeze_16.outputs.ready == 'true'
+      with:
+        name: p8-task-progress-${{ matrix.cell }}-${{ github.run_id }}-${{ github.run_attempt }}-16
+        path: ${{ steps.freeze_16.outputs.bundle }}
+        if-no-files-found: error
+      id: upload_16
+    - name: Freeze original byte prefix at absolute interval 18 of 20
+      id: freeze_17
+      if: always() && steps.launch.outcome == 'success'
+      run: |
+        python3 scripts/p8_task_profile_capture.py checkpoint \
+          --directory "$RUNNER_TEMP/p8-task-cell-$P8_TASK_CELL" --index 17
+      env:
+        PREVIOUS_ARTIFACT_ID: ${{ steps.upload_16.outputs.artifact-id }}
+        PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_16.outputs.artifact-digest }}
+    - uses: actions/upload-artifact@v4
+      if: always() && steps.freeze_17.outputs.ready == 'true'
+      with:
+        name: p8-task-progress-${{ matrix.cell }}-${{ github.run_id }}-${{ github.run_attempt }}-17
+        path: ${{ steps.freeze_17.outputs.bundle }}
+        if-no-files-found: error
+      id: upload_17
+    - name: Freeze original byte prefix at absolute interval 19 of 20
+      id: freeze_18
+      if: always() && steps.launch.outcome == 'success'
+      run: |
+        python3 scripts/p8_task_profile_capture.py checkpoint \
+          --directory "$RUNNER_TEMP/p8-task-cell-$P8_TASK_CELL" --index 18
+      env:
+        PREVIOUS_ARTIFACT_ID: ${{ steps.upload_17.outputs.artifact-id }}
+        PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_17.outputs.artifact-digest }}
+    - uses: actions/upload-artifact@v4
+      if: always() && steps.freeze_18.outputs.ready == 'true'
+      with:
+        name: p8-task-progress-${{ matrix.cell }}-${{ github.run_id }}-${{ github.run_attempt }}-18
+        path: ${{ steps.freeze_18.outputs.bundle }}
+        if-no-files-found: error
+      id: upload_18
+    - name: Freeze original byte prefix at absolute interval 20 of 20
+      id: freeze_19
+      if: always() && steps.launch.outcome == 'success'
+      run: |
+        python3 scripts/p8_task_profile_capture.py checkpoint \
+          --directory "$RUNNER_TEMP/p8-task-cell-$P8_TASK_CELL" --index 19
+      env:
+        PREVIOUS_ARTIFACT_ID: ${{ steps.upload_18.outputs.artifact-id }}
+        PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_18.outputs.artifact-digest }}
+    - uses: actions/upload-artifact@v4
+      if: always() && steps.freeze_19.outputs.ready == 'true'
+      with:
+        name: p8-task-progress-${{ matrix.cell }}-${{ github.run_id }}-${{ github.run_attempt }}-19
+        path: ${{ steps.freeze_19.outputs.bundle }}
+        if-no-files-found: error
+      id: upload_19
+    - name: Preserve final or interrupted task diagnostic boundary
+      id: finish
+      if: always() && steps.launch.outcome == 'success'
+      env:
+        PREVIOUS_ARTIFACT_ID: ${{ steps.upload_19.outputs.artifact-id }}
+        PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_19.outputs.artifact-digest }}
+      run: |
+        python3 scripts/p8_task_profile_capture.py finish \
+          --directory "$RUNNER_TEMP/p8-task-cell-$P8_TASK_CELL" --index 20
+    - uses: actions/upload-artifact@v4
+      if: always() && steps.finish.outputs.ready == 'true'
+      with:
+        name: p8-task-progress-${{ matrix.cell }}-${{ github.run_id }}-${{ github.run_attempt }}-final
+        path: ${{ steps.finish.outputs.bundle }}
+        if-no-files-found: error
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: p8-task-shard-${{ matrix.cell }}-${{ github.run_id }}-${{ github.run_attempt }}
+        path: ${{ runner.temp }}/p8-task-cell-${{ matrix.cell }}/shard
+        if-no-files-found: error
+      name: Preserve the complete task shard separately from diagnostic prefixes
+    - name: Return actual task driver and native outcome
+      if: always() && steps.launch.outcome == 'success'
+      run: |
+        python3 scripts/p8_task_profile_capture.py verdict \
+          --directory "$RUNNER_TEMP/p8-task-cell-$P8_TASK_CELL"
+  aggregate:
+    if: always() && needs.build.result == 'success'
+    needs:
+    - build
+    - measure
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.pull_request.head.sha || github.sha }}
+        sparse-checkout-cone-mode: false
+        sparse-checkout: |
+          /*
+          !/artifacts/
+    - uses: actions/download-artifact@v4
+      with:
+        path: ${{ runner.temp }}/p8-task-build
+        name: p8-task-build-${{ github.run_id }}-${{ github.run_attempt }}
+    - uses: actions/download-artifact@v4
+      with:
+        path: ${{ runner.temp }}/p8-task-shards
+        pattern: p8-task-shard-*-${{ github.run_id }}-${{ github.run_attempt }}
+    - name: Validate all 45 cells and retain every failed or missing result
+      if: always()
+      run: |
+        python3 - <<'PY'
+        import os, pathlib, sys
+        sys.path.insert(0, 'scripts')
+        import p8_task_profile_matrix as matrix
+        root = pathlib.Path(os.environ['RUNNER_TEMP'])
+        binary = root / 'p8-task-build/native-build/p8-scale'
+        if binary.exists():
+            binary.chmod(0o755)
+        inputs = sorted((root / 'p8-task-shards').glob('p8-task-shard-*'))
+        result = matrix.aggregate(root / 'p8-task-build', inputs, root / 'p8-task-matrix')
+        print({key: result.get(key) for key in ('status', 'error', 'sample_count', 'cell_count')})
+        sys.exit(0 if result.get('passed') is True else 1)
+        PY
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: p8-task-matrix-${{ github.run_id }}-${{ github.run_attempt }}
+        path: ${{ runner.temp }}/p8-task-matrix
+        if-no-files-found: error
+      name: Preserve task review including failure

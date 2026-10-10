@@ -49,6 +49,10 @@ pub enum CapacityProfile {
 pub enum StageScope {
     #[serde(rename = "cold_only_v1")]
     ColdOnlyV1,
+    #[serde(rename = "profile_isolated_v1")]
+    ProfileIsolatedV1,
+    #[serde(rename = "profile_task_descriptive_v1")]
+    ProfileTaskDescriptiveV1,
 }
 
 /// Identity of the separate cold study, bound into both native plan and raw header.
@@ -58,6 +62,28 @@ pub struct ColdStudy {
     pub run_id: String,
     pub run_attempt: u32,
 }
+
+/// A separately registered, fresh-history P8-006 cell. This is not a slice
+/// of the original all-stage five-hour worker population.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ProfileStudy {
+    pub run_id: String,
+    pub run_attempt: u32,
+    pub mutation_profile: String,
+    pub fanout: Option<usize>,
+}
+
+pub const MUTATION_PROFILES: [&str; 8] = [
+    "no_op",
+    "body",
+    "api",
+    "config",
+    "batch_1",
+    "batch_10",
+    "batch_100",
+    "batch_1000",
+];
 
 /// A disjoint slice of the registered repetition population. A successful
 /// slice is never evidence that the omitted repetitions or scales ran.
@@ -79,6 +105,8 @@ pub struct ScalePlan {
     pub stage_scope: Option<StageScope>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub cold_study: Option<ColdStudy>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub profile_study: Option<ProfileStudy>,
     pub files: Vec<usize>,
     pub seed: u64,
     pub repetitions: usize,
@@ -102,6 +130,7 @@ impl Default for ScalePlan {
             capacity_profile: None,
             stage_scope: None,
             cold_study: None,
+            profile_study: None,
             files: vec![60],
             seed: 0x00c0_ffee,
             repetitions: 1,
@@ -169,16 +198,36 @@ impl ScalePlan {
                 "scale_wide_dirty_v1 requires release, one scale, one repetition per shard, dirty budget 4096 and resume budget 1024; fanout keeps 8/128",
             ));
         }
+        // This separate task protocol never changes the registered N30 study.
+        // Its release cells are explicitly N1 and retain every work/resource bound.
+        if self.stage_scope == Some(StageScope::ProfileTaskDescriptiveV1)
+            && (self.profile != Profile::Release
+                || self.capacity_profile != Some(CapacityProfile::ScaleCapacityV1)
+                || self.files.len() != 1
+                || self.files.iter().any(|n| !RELEASE_SCALES.contains(n))
+                || self.repetitions != 1
+                || self.shard.is_none_or(|s| s.index != 0 || s.count != 1)
+                || self.seed != 0x00c0_ffee
+                || self.deadline_ms != 18_000_000
+                || self.max_output_bytes != 512 * 1024 * 1024
+                || self.batch_sizes != [1, 10, 100, 1000]
+                || self.fanouts != [1, 4, 16, 64, 128])
+        {
+            return Err(invalid(
+                "profile_task_descriptive_v1 requires a release N1 cell at shard 0/1 with the fixed seed, scales, capacity and original budgets",
+            ));
+        }
         if self.profile == Profile::Release
             && (cfg!(debug_assertions)
-                || self.repetitions < 30
+                || (self.repetitions < 30
+                    && self.stage_scope != Some(StageScope::ProfileTaskDescriptiveV1))
                 || self.files.iter().any(|n| !RELEASE_SCALES.contains(n)))
         {
             return Err(invalid(
                 "release measurement requires a release eval build, >=30 repetitions, and explicit canonical scales; this does not grant release certification",
             ));
         }
-        if self.stage_scope.is_some() != self.cold_study.is_some()
+        if (self.stage_scope == Some(StageScope::ColdOnlyV1)) != self.cold_study.is_some()
             || self.cold_study.as_ref().is_some_and(|study| {
                 study.run_id.is_empty()
                     || !study.run_id.bytes().all(|b| b.is_ascii_digit())
@@ -190,7 +239,7 @@ impl ScalePlan {
                 "cold study identity must accompany only the explicit cold scope",
             ));
         }
-        if self.stage_scope.is_some()
+        if self.stage_scope == Some(StageScope::ColdOnlyV1)
             && (!self.skip_fanout
                 || self.shard.is_none()
                 || (self.profile == Profile::Release
@@ -205,6 +254,47 @@ impl ScalePlan {
             return Err(invalid(
                 "cold_only_v1 requires an explicit shard without fanout; release keeps the fixed seed, N30, capacity and original time/output/work budgets",
             ));
+        }
+        if matches!(
+            self.stage_scope,
+            Some(StageScope::ProfileIsolatedV1 | StageScope::ProfileTaskDescriptiveV1)
+        ) != self.profile_study.is_some()
+        {
+            return Err(invalid(
+                "isolated profile identity requires its own explicit scope",
+            ));
+        }
+        if let Some(study) = &self.profile_study {
+            let fanout = study.mutation_profile == "fanout";
+            if study.run_id.is_empty()
+                || !study.run_id.bytes().all(|b| b.is_ascii_digit())
+                || study.run_id.parse::<u64>().map_or(true, |id| id == 0)
+                || study.run_attempt == 0
+                || self.files.len() != 1
+                || self.shard.is_none_or(|s| s.count != self.repetitions)
+                || self.skip_fanout == fanout
+                || (!fanout
+                    && (!MUTATION_PROFILES.contains(&study.mutation_profile.as_str())
+                        || study.fanout.is_some()))
+                || (fanout
+                    && (!study
+                        .fanout
+                        .is_some_and(|n| [1, 4, 16, 64, 128].contains(&n))
+                        || self.files != [1000]))
+                || (self.profile == Profile::Release
+                    && (self.capacity_profile != Some(CapacityProfile::ScaleCapacityV1)
+                        || (self.stage_scope == Some(StageScope::ProfileIsolatedV1)
+                            && self.repetitions != 30)
+                        || self.seed != 0x00c0_ffee
+                        || self.deadline_ms != 18_000_000
+                        || self.max_output_bytes != 512 * 1024 * 1024
+                        || self.batch_sizes != [1, 10, 100, 1000]
+                        || self.fanouts != [1, 4, 16, 64, 128]))
+            {
+                return Err(invalid(
+                    "invalid isolated profile, fanout, identity or fixed release population/budget",
+                ));
+            }
         }
         Ok(())
     }
@@ -308,7 +398,9 @@ pub fn run_supervised(plan: &ScalePlan, out: &Path, binary: &Path) -> Result<Val
     // The supervisor owns all fixture directories, including those allocated
     // by the existing mutation runner; a deadline cannot orphan 100k trees.
     let workspace = tempfile::tempdir()?;
-    let cold_temporary_environment = (plan.stage_scope == Some(StageScope::ColdOnlyV1))
+    let cold_temporary_environment = plan
+        .stage_scope
+        .is_some()
         .then(|| json!({"parent_root":std::env::temp_dir(),"worker_root":workspace.path()}));
     let mut command = Command::new(binary);
     command
@@ -470,7 +562,12 @@ pub fn run_supervised(plan: &ScalePlan, out: &Path, binary: &Path) -> Result<Val
         "deadline_scope":"entire child lifetime and stderr drain, including generation, indexing, parity and evidence; parent polling interval 10ms"
     });
     if let Some(environment) = cold_temporary_environment {
-        result["cold_temporary_environment"] = environment;
+        let key = if plan.profile_study.is_some() {
+            "profile_temporary_environment"
+        } else {
+            "cold_temporary_environment"
+        };
+        result[key] = environment;
     }
     control_json(&out.join("report.json"), &result)?;
     Ok(result)
@@ -880,6 +977,14 @@ fn scale_sample(
         ("config".to_owned(), 1),
     ];
     stages.extend(plan.batch_sizes.iter().map(|&n| (format!("batch_{n}"), n)));
+    if let Some(study) = &plan.profile_study {
+        stages.retain(|(stage, _)| stage == &study.mutation_profile);
+        if stages.len() != 1 {
+            return Err(invalid(
+                "isolated scale cell must execute exactly one registered mutation",
+            ));
+        }
+    }
     for (stage, requested) in stages {
         let label = format!("{prefix}/{stage}");
         let mut ops = Vec::new();
@@ -981,7 +1086,7 @@ fn scale_sample(
         let fact = config_fact(
             a.path(),
             &config_files[2],
-            if stage == "config" || stage.starts_with("batch_") {
+            if stage == "config" || (plan.profile_study.is_none() && stage.starts_with("batch_")) {
                 &config_files[1]
             } else {
                 &config_files[0]
@@ -1056,10 +1161,15 @@ fn worker_measure(plan: &ScalePlan, raw: &mut Raw) -> Result<Value> {
         "semantic":"disabled","release_certification":"not_run","tail_latency_estimate":Value::Null,
         "shard_only":plan.shard.is_some(),"registered_repetitions":plan.repetitions,"executed_repetition_range":plan.repetition_range()?,
         "statistics":"all repetitions retained; no best-of selection, speedup, stable p95/p99 or independent-sample quality inference"});
-    if plan.stage_scope == Some(StageScope::ColdOnlyV1) {
+    if plan.stage_scope.is_some() {
         let seed_cap = std::env::var("CODECORTEX_SEED_CACHE_MAX_SYMBOLS");
         let parsed = seed_cap.as_ref().ok().and_then(|v| v.parse::<usize>().ok());
-        started["cold_environment"] = json!({
+        let key = if plan.profile_study.is_some() {
+            "profile_environment"
+        } else {
+            "cold_environment"
+        };
+        started[key] = json!({
             "seed_cache_max_symbols": {
                 "raw": seed_cap.as_ref().ok(),
                 "read_status": match &seed_cap {
@@ -1082,18 +1192,32 @@ fn worker_measure(plan: &ScalePlan, raw: &mut Raw) -> Result<Value> {
     }
     raw.emit(started)?;
     let mut summaries = Vec::new();
-    for &files in &plan.files {
+    for &files in plan.files.iter().filter(|_| {
+        plan.profile_study
+            .as_ref()
+            .is_none_or(|s| s.mutation_profile != "fanout")
+    }) {
         for repetition in plan.repetition_range()? {
             summaries.extend(scale_sample(plan, files, repetition, raw)?);
         }
     }
-    for &fanout in plan.fanouts.iter().filter(|_| !plan.skip_fanout) {
+    for &fanout in plan.fanouts.iter().filter(|&&n| {
+        !plan.skip_fanout
+            && plan
+                .profile_study
+                .as_ref()
+                .is_none_or(|s| s.fanout == Some(n))
+    }) {
         for repetition in plan.repetition_range()? {
             let (dirty_budget, max_resume_builds) = plan.fanout_budgets();
             let case = fanout_case(fanout, plan.seed, dirty_budget, max_resume_builds)?;
             raw.emit(json!({"event":"fanout_started","fanout":fanout,"repetition":repetition,"case":case}))?;
             let started = Instant::now();
-            let result = mutation_case::evaluate(&case)?;
+            let result = if plan.profile_study.is_some() {
+                mutation_case::evaluate_with_initial_evidence(&case)?
+            } else {
+                mutation_case::evaluate(&case)?
+            };
             let passed = result["passed"] == true;
             let first_incomplete = result
                 .pointer("/checkpoints/0/reports/0/resolution_freshness/complete")
@@ -1111,7 +1235,11 @@ fn worker_measure(plan: &ScalePlan, raw: &mut Raw) -> Result<Value> {
             raw.emit(json!({"event":"fanout_finished","fanout":fanout,"fixture_files":case.initial.len(),"repetition":repetition,
                 "wall_us":replay_wall_us,"incremental_engine_elapsed_ms":elapsed_ms,"incremental_builds":builds,
                 "result":result,"passed":passed,"first_build_incomplete":first_incomplete,
-                "measurement_scope":"whole fixture replay wall time; incremental phase counts/timings are the original reports; full rebuild timing is unavailable"}))?;
+                "measurement_scope":if plan.profile_study.is_some() {
+                    "whole fixture replay includes fresh setup and initial/final parity; incremental and full-control timings are retained original reports"
+                } else {
+                    "whole fixture replay wall time; incremental phase counts/timings are the original reports; full rebuild timing is unavailable"
+                }}))?;
             summaries.push(json!({"stage":"fanout","fanout":fanout,"repetition":repetition,"passed":passed,"first_build_incomplete":first_incomplete,
                 "fanout_replay_wall_us":replay_wall_us,"incremental_engine_elapsed_ms":elapsed_ms,"incremental_builds":builds}));
         }

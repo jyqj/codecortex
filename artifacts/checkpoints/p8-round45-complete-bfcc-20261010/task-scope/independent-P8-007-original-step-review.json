@@ -1,0 +1,614 @@
+{
+  "schema": "p8-007-original-step-bounded-readonly-review-v1",
+  "reviewer": "/root/execution_recon",
+  "status": "accepted_existing_source_scoped_step_coverage_dependency_still_open",
+  "apply_now": false,
+  "scope": "Read original task clauses and already accepted small Git-backed runtime reports and indices; no new measurement, validator, statistics, ZIP/CRC replay, Actions download, task mutation or ref update.",
+  "original_task": {
+    "id": "P8-007",
+    "title": "多并发与混合负载",
+    "status": "in_progress",
+    "depends_on": [
+      "P8-006"
+    ],
+    "steps": [
+      "C1/4/8/16 mixed read/build/backfill",
+      "记录offered load和排队"
+    ],
+    "acceptance": [
+      "无死锁饥饿，吞吐不能隐藏timeout与尾部",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "validations": [
+      "V11",
+      "V20"
+    ],
+    "contracts_doc": "02-CONTRACTS.md",
+    "benchmark_doc": "09-BENCHMARK.md"
+  },
+  "definition_locations": {
+    "tasks": "docs/roadmap/code-index-v2/tasks.json:12233; steps 12249-12252; acceptance 12258-12261; original evidence 12294-12335",
+    "benchmark": "docs/roadmap/code-index-v2/09-BENCHMARK.md:171 separates semantic backfill from other profiles; :175 requires mixed reads/builds at C1/4/8/16 and offered load/queue/service/end-to-end/errors/timeouts/DB-lock/worker observations; :189 distinguishes fake tests and explicitly approved real providers.",
+    "validation": "docs/roadmap/code-index-v2/06-VALIDATION.md:33 V11 and :42 V20; no requirement found here that backfill and all 900 mixed operations must share a single process or raw stream."
+  },
+  "original_source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+  "original_run": 37890757030,
+  "mixed_four_cells": [
+    {
+      "configured_concurrency": 1,
+      "observed_maximum": 1,
+      "artifact_id": 11598875346,
+      "operations": {
+        "build": 300,
+        "read": 600
+      },
+      "offered_operations": 900,
+      "read_build_overlap": false,
+      "observed_work_ns": 449502370493,
+      "original_validator_exit": 0,
+      "original_report_member": "replay-output/review-runtime/runtime-11598875346-review-v2.json",
+      "original_report_sha256": "6b382ea86591c7eb8a1bf8018b03e39632fb777871198bdfc5bed653a70bd85f",
+      "original_statistics": {
+        "actual_recorded_exit_code": 0,
+        "artifact_id": 11598875346,
+        "both_original_outputs_byte_equal": true,
+        "bytes": 46058,
+        "original_plan_raw_arguments": true,
+        "sha256": "6db5c42c9cdf311cc0ecc87861605a362bef2ac62fcd69f5dc09947fae5325e9"
+      }
+    },
+    {
+      "configured_concurrency": 4,
+      "observed_maximum": 4,
+      "artifact_id": 11598690899,
+      "operations": {
+        "build": 300,
+        "read": 600
+      },
+      "offered_operations": 900,
+      "read_build_overlap": true,
+      "observed_work_ns": 448012394598,
+      "original_validator_exit": 0,
+      "original_report_member": "replay-output/review-runtime/runtime-11598690899-review-v2.json",
+      "original_report_sha256": "9280d4c8a2ad86c0d04c3fba46d3eef62b5b586328b7927bab883b1f54505ee8",
+      "original_statistics": {
+        "actual_recorded_exit_code": 0,
+        "artifact_id": 11598690899,
+        "both_original_outputs_byte_equal": true,
+        "bytes": 46192,
+        "original_plan_raw_arguments": true,
+        "sha256": "8031b14e27337cec852eba520943a23f10277e0eb75d2025a6d669375e709f8c"
+      }
+    },
+    {
+      "configured_concurrency": 8,
+      "observed_maximum": 7,
+      "artifact_id": 11598815621,
+      "operations": {
+        "build": 300,
+        "read": 600
+      },
+      "offered_operations": 900,
+      "read_build_overlap": true,
+      "observed_work_ns": 448015606240,
+      "original_validator_exit": 0,
+      "original_report_member": "replay-output/review-runtime/runtime-11598815621-review-v2.json",
+      "original_report_sha256": "e851e1ff2eebc11c53826d823c96acb7f0b11f1c3e392e42d2c436b50e035206",
+      "original_statistics": {
+        "actual_recorded_exit_code": 0,
+        "artifact_id": 11598815621,
+        "both_original_outputs_byte_equal": true,
+        "bytes": 46296,
+        "original_plan_raw_arguments": true,
+        "sha256": "f2f3681b4492c3677897230928e1d8dfbb704cd2f680114e8f4827081359671a"
+      }
+    },
+    {
+      "configured_concurrency": 16,
+      "observed_maximum": 12,
+      "artifact_id": 11598543621,
+      "operations": {
+        "build": 300,
+        "read": 600
+      },
+      "offered_operations": 900,
+      "read_build_overlap": true,
+      "observed_work_ns": 448014323441,
+      "original_validator_exit": 0,
+      "original_report_member": "replay-output/review-runtime/runtime-11598543621-review-v2.json",
+      "original_report_sha256": "4f0c5714238b4d61a7cd543c79720dfc99c36a7b908793b2aebe2eacef0f7172",
+      "original_statistics": {
+        "actual_recorded_exit_code": 0,
+        "artifact_id": 11598543621,
+        "both_original_outputs_byte_equal": true,
+        "bytes": 46450,
+        "original_plan_raw_arguments": true,
+        "sha256": "d1f88ab75b95326f5de0791dbb19fe2d1e0a2213942e81ba96b2258a4dd0b9a1"
+      }
+    }
+  ],
+  "backfill": {
+    "same_source_as_mixed": true,
+    "same_workflow_run_as_mixed": true,
+    "same_case_artifact_as_mixed": false,
+    "same_process_as_mixed": null,
+    "same_process_claim": "Not established and not claimed; separate backfill artifact/cases.",
+    "artifact_id": 11597519732,
+    "whole_zip_bytes": 7831523,
+    "whole_zip_sha256": "2c16ee9e6e3ca7bb28844473b478b5bbe1b1f2596805713696f40cee854b7359",
+    "original_report_member": "replay-output/review-runtime/backfill-11597519732-review.json",
+    "original_report_sha256": "ee15e5c4847a1b0fa0754272d9ef9bc148d3e90e734bd936d17144562f0e2c91",
+    "case_dimensions": {
+      "seeds": [
+        7,
+        19,
+        43
+      ],
+      "phase": [
+        "quiet",
+        "held"
+      ],
+      "configured_concurrency": [
+        1,
+        4,
+        8,
+        16
+      ],
+      "requests_per_cell": 32
+    },
+    "cells": 24,
+    "requests": 768,
+    "provider_scope": "fake provider; real runtime worker contention, not a live or paid-provider study",
+    "original_per_seed_outcomes": [
+      {
+        "final_queue": {
+          "attempt_count": 55,
+          "claimed": 0,
+          "pending": 0,
+          "published": 25,
+          "total": 77,
+          "uncovered": 0
+        },
+        "max_provider_active": 4,
+        "new_provider_calls": 25,
+        "old_held_input_publications": 0,
+        "seed": 7,
+        "switch_and_drain_us": 60159,
+        "write_delete_us": 9715
+      },
+      {
+        "final_queue": {
+          "attempt_count": 55,
+          "claimed": 0,
+          "pending": 0,
+          "published": 25,
+          "total": 77,
+          "uncovered": 0
+        },
+        "max_provider_active": 4,
+        "new_provider_calls": 25,
+        "old_held_input_publications": 0,
+        "seed": 19,
+        "switch_and_drain_us": 58251,
+        "write_delete_us": 9725
+      },
+      {
+        "final_queue": {
+          "attempt_count": 55,
+          "claimed": 0,
+          "pending": 0,
+          "published": 25,
+          "total": 77,
+          "uncovered": 0
+        },
+        "max_provider_active": 4,
+        "new_provider_calls": 25,
+        "old_held_input_publications": 0,
+        "seed": 43,
+        "switch_and_drain_us": 55698,
+        "write_delete_us": 9279
+      }
+    ],
+    "original_case_table": [
+      {
+        "concurrency": 1,
+        "max_us": 4750,
+        "n": 32,
+        "p50_us": 732,
+        "p95_us": 772,
+        "p99_us": 4750,
+        "phase": "quiet",
+        "seed": 7
+      },
+      {
+        "concurrency": 4,
+        "max_us": 2622,
+        "n": 32,
+        "p50_us": 2138,
+        "p95_us": 2586,
+        "p99_us": 2622,
+        "phase": "quiet",
+        "seed": 7
+      },
+      {
+        "concurrency": 8,
+        "max_us": 4333,
+        "n": 32,
+        "p50_us": 2749,
+        "p95_us": 4311,
+        "p99_us": 4333,
+        "phase": "quiet",
+        "seed": 7
+      },
+      {
+        "concurrency": 16,
+        "max_us": 7922,
+        "n": 32,
+        "p50_us": 5348,
+        "p95_us": 7814,
+        "p99_us": 7922,
+        "phase": "quiet",
+        "seed": 7
+      },
+      {
+        "concurrency": 1,
+        "max_us": 3786,
+        "n": 32,
+        "p50_us": 746,
+        "p95_us": 780,
+        "p99_us": 3786,
+        "phase": "held",
+        "seed": 7
+      },
+      {
+        "concurrency": 4,
+        "max_us": 2387,
+        "n": 32,
+        "p50_us": 2032,
+        "p95_us": 2271,
+        "p99_us": 2387,
+        "phase": "held",
+        "seed": 7
+      },
+      {
+        "concurrency": 8,
+        "max_us": 4249,
+        "n": 32,
+        "p50_us": 2912,
+        "p95_us": 4240,
+        "p99_us": 4249,
+        "phase": "held",
+        "seed": 7
+      },
+      {
+        "concurrency": 16,
+        "max_us": 8687,
+        "n": 32,
+        "p50_us": 5033,
+        "p95_us": 8628,
+        "p99_us": 8687,
+        "phase": "held",
+        "seed": 7
+      },
+      {
+        "concurrency": 1,
+        "max_us": 4121,
+        "n": 32,
+        "p50_us": 754,
+        "p95_us": 828,
+        "p99_us": 4121,
+        "phase": "quiet",
+        "seed": 19
+      },
+      {
+        "concurrency": 4,
+        "max_us": 2302,
+        "n": 32,
+        "p50_us": 2020,
+        "p95_us": 2298,
+        "p99_us": 2302,
+        "phase": "quiet",
+        "seed": 19
+      },
+      {
+        "concurrency": 8,
+        "max_us": 4288,
+        "n": 32,
+        "p50_us": 2986,
+        "p95_us": 4269,
+        "p99_us": 4288,
+        "phase": "quiet",
+        "seed": 19
+      },
+      {
+        "concurrency": 16,
+        "max_us": 8451,
+        "n": 32,
+        "p50_us": 4961,
+        "p95_us": 8259,
+        "p99_us": 8451,
+        "phase": "quiet",
+        "seed": 19
+      },
+      {
+        "concurrency": 1,
+        "max_us": 3782,
+        "n": 32,
+        "p50_us": 759,
+        "p95_us": 823,
+        "p99_us": 3782,
+        "phase": "held",
+        "seed": 19
+      },
+      {
+        "concurrency": 4,
+        "max_us": 2414,
+        "n": 32,
+        "p50_us": 2061,
+        "p95_us": 2307,
+        "p99_us": 2414,
+        "phase": "held",
+        "seed": 19
+      },
+      {
+        "concurrency": 8,
+        "max_us": 4385,
+        "n": 32,
+        "p50_us": 3274,
+        "p95_us": 4252,
+        "p99_us": 4385,
+        "phase": "held",
+        "seed": 19
+      },
+      {
+        "concurrency": 16,
+        "max_us": 8265,
+        "n": 32,
+        "p50_us": 5305,
+        "p95_us": 8257,
+        "p99_us": 8265,
+        "phase": "held",
+        "seed": 19
+      },
+      {
+        "concurrency": 1,
+        "max_us": 3975,
+        "n": 32,
+        "p50_us": 749,
+        "p95_us": 805,
+        "p99_us": 3975,
+        "phase": "quiet",
+        "seed": 43
+      },
+      {
+        "concurrency": 4,
+        "max_us": 2577,
+        "n": 32,
+        "p50_us": 2061,
+        "p95_us": 2540,
+        "p99_us": 2577,
+        "phase": "quiet",
+        "seed": 43
+      },
+      {
+        "concurrency": 8,
+        "max_us": 4469,
+        "n": 32,
+        "p50_us": 2902,
+        "p95_us": 4317,
+        "p99_us": 4469,
+        "phase": "quiet",
+        "seed": 43
+      },
+      {
+        "concurrency": 16,
+        "max_us": 8275,
+        "n": 32,
+        "p50_us": 5025,
+        "p95_us": 8229,
+        "p99_us": 8275,
+        "phase": "quiet",
+        "seed": 43
+      },
+      {
+        "concurrency": 1,
+        "max_us": 3796,
+        "n": 32,
+        "p50_us": 726,
+        "p95_us": 833,
+        "p99_us": 3796,
+        "phase": "held",
+        "seed": 43
+      },
+      {
+        "concurrency": 4,
+        "max_us": 2299,
+        "n": 32,
+        "p50_us": 2024,
+        "p95_us": 2220,
+        "p99_us": 2299,
+        "phase": "held",
+        "seed": 43
+      },
+      {
+        "concurrency": 8,
+        "max_us": 4384,
+        "n": 32,
+        "p50_us": 2900,
+        "p95_us": 4352,
+        "p99_us": 4384,
+        "phase": "held",
+        "seed": 43
+      },
+      {
+        "concurrency": 16,
+        "max_us": 8313,
+        "n": 32,
+        "p50_us": 4838,
+        "p95_us": 8267,
+        "p99_us": 8313,
+        "phase": "held",
+        "seed": 43
+      }
+    ],
+    "new_statistics_performed": false,
+    "interpretation": "All 24 cells have retained request distributions. Each seed observed four active provider workers, zero old held-input publications, and final pending/claimed/uncovered all zero. Existing original assertions/receipts, not a newly manufactured held-after snapshot, provide the boundary proof. N32 cell quantiles are original descriptive outputs; no stable p99/SLA/CI claim.",
+    "attribution_fields_retained_in_original_task_correction": [
+      "single_read_pool_checkout_us",
+      "read_statement_us",
+      "writer_acquire_and_rollback_us"
+    ],
+    "attribution_limit": "writer_acquire_and_rollback_us includes BEGIN IMMEDIATE and ROLLBACK work; it is not isolated blocked time. This review does not remeasure these fields."
+  },
+  "clause_mapping": [
+    {
+      "clause": "C1/4/8/16 mixed read/build/backfill",
+      "finding": "covered_by_existing_source_scoped_components",
+      "basis": "Four original mixed read/build cells plus same-source/same-run quiet/held fake-backfill cells at all four configured concurrency levels. The backfill component is actual execution, not not_run. Observed mixed peaks are 1/4/7/12 rather than pretending saturation at 1/4/8/16.",
+      "scope_interpretation": "Task shorthand includes all three kinds; benchmark section 9 explicitly describes mixed reads/builds and separately lists semantic backfill. Existing evidence covers these distinct cases without a new requirement for one tri-modal dataset. This does not prove three-way simultaneous operation in one process."
+    },
+    {
+      "clause": "记录offered load和排队",
+      "finding": "covered_with_original_capture_layer_limits",
+      "basis": "Task original evidence records 900 offered requests per mixed cell and complete terminal/timing/queue/error/tail accounting; fixed original statistics byte identities are listed above. Accepted task correction retains client timings plus backfill DB/worker observations.",
+      "not_claimed": "No new per-RPC unique binding, production-backend queue/service decomposition, pure lock wait, or continuous occupancy. The original operation rows lacked RPC IDs and were reconciled as complete multisets."
+    },
+    {
+      "clause": "无死锁饥饿，吞吐不能隐藏timeout与尾部",
+      "finding": "accepted_in_observed_runs_not_universal_proof",
+      "basis": "Original validators/statistics passed with full operation denominators and 15-table endpoints. Backfill held work drained and all pending/claimed/uncovered counters reached zero. No omitted failure/timeout tail is manufactured as a success; this audit does not invent missing numeric timeout counts.",
+      "not_claimed": "No theorem of absence of starvation in every workload; no saturation, live-provider performance, stable tail/SLA or cross-source causal comparison."
+    },
+    {
+      "clause": "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。",
+      "finding": "existing_original_regression_bridge_retained",
+      "basis": "Original task evidence binds CI run37890756949 actual checkout d53ea0be17a53d1354ee1d6f0a111c5e588e91f5 to G275 non-artifact roots and records 3281 Rust passes/132 ignored/636 Python methods. This audit reuses that accepted bridge, does not rerun CI or relabel ignored tests as passed.",
+      "remaining": "P8-006 is still the explicit task dependency; no task-state change is authorized or made."
+    }
+  ],
+  "draft_relationship": {
+    "path": "/workspace/scratch/bfccb8494ba0/round43-final-nine-application/nine-task-application.bound-G2.applyfalse.json",
+    "apply_now": false,
+    "draft_remaining_original_own_scope_actions": [],
+    "finding": "No newly evidenced original-step gap found. The candidate should retain or explicitly append the directly resolvable G275 source/run evidence below rather than leaving the reader to infer exact backfill case coverage from the Gc8 umbrella summary.",
+    "gc8_and_old_db_G2": "Gc8 c8be5afa/run37901930897 and old DB-observation G2 4d18dcdb/run37930392164 remain separate historical components. Their draft identities are not reassigned to G275 or current f97c. Their archive-internal report blobs were not successfully retrieved as standalone Git blobs here.",
+    "old_db_G2_draft_only_cells": [
+      {
+        "actual_call_peak": 1,
+        "artifact_id": 11623110311,
+        "configured_C": 1,
+        "job_id": 113835779540,
+        "original_operations": 900
+      },
+      {
+        "actual_call_peak": 4,
+        "artifact_id": 11620977433,
+        "configured_C": 4,
+        "job_id": 113835779486,
+        "original_operations": 900
+      },
+      {
+        "actual_call_peak": 7,
+        "artifact_id": 11621010611,
+        "configured_C": 8,
+        "job_id": 113835779454,
+        "original_operations": 900
+      },
+      {
+        "actual_call_peak": 12,
+        "artifact_id": 11623006495,
+        "configured_C": 16,
+        "job_id": 113835779541,
+        "original_operations": 900
+      }
+    ],
+    "no_new_latest_head_requirement": true
+  },
+  "durable_originals": {
+    "commit": "cd92ce4b931e770994770ba3dba6fd0a47a505ea",
+    "independent_runtime_review": {
+      "repository_path": "artifacts/checkpoints/p8-round19-evidence-20261009/runtime/independent-original-evidence-review.json",
+      "path": "/workspace/scratch/bfccb8494ba0/round45-original-step-scope-review/recovered/runtime-original-review.json",
+      "bytes": 8932,
+      "sha256": "70555637e16e51c9538a683e71f90691371ef5d33162503e3da8ccbd126404ff",
+      "git_blob": "528fed03d56fab5506c6182a48e42c2e3fd3bd48"
+    },
+    "safe_manifest": {
+      "repository_path": "artifacts/checkpoints/p8-round19-evidence-20261009/runtime/safe-text-delivery-manifest.json",
+      "path": "/workspace/scratch/bfccb8494ba0/round45-P8-007-original-step-review/recovered/safe-text-delivery-manifest.json",
+      "bytes": 49262,
+      "sha256": "292ae8e3f920825f1eee52a9a711d11be5062785c8652293e438c54e2eef99ed",
+      "git_blob": "d551874abafec383274bc3824b5a5b102c85ede5"
+    },
+    "source_binding": {
+      "all_current_input_bytes_match": true,
+      "all_observer_bytes_and_git_blobs_match": true,
+      "input_count": 1089,
+      "manifest_sha256": "593cf443fc914998dd2cb5a30c3caf180eb8d0d7a398a86e4624e3df2ca65e83",
+      "observer_count": 9,
+      "observer_manifest_sha256": "ca48939e0647dba2f12e9f26ab0bc88860219ddb304574b6386e5d47b8945064",
+      "source_before_after_equal": true
+    },
+    "original_no_new_execution_scope": "Read-only independent original ZIP/member/expanded custody, existing consumer execution and exact output checks; no validator, statistics binary, product or Cargo reexecuted."
+  },
+  "local_input_identities": [
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round43-final-nine-application/recovered/tasks.original.json",
+      "bytes": 879341,
+      "sha256": "e0a612bb4d42f63be01c17e77ff627db3581200275fbfa9e60679399e90877c6",
+      "git_blob": "adb44ee70a4c129bfb443d4ecf678fb934c8ea6b"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round43-final-nine-application/nine-task-application.bound-G2.applyfalse.json",
+      "bytes": 79315,
+      "sha256": "184189180fa438f19143c7460454ea650fce576f9190bc5363bc8d4437134e57",
+      "git_blob": "f22f03f876bbb03ccd3d3f0bf24fcb6f5fceb059"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round43-final-nine-application/recovered/09-BENCHMARK.md",
+      "bytes": 20488,
+      "sha256": "0c8bcbed17ea4e83b1dc55e9828f93a27e2a334a0d0eaa056302944260d0a731",
+      "git_blob": "5ced0c455e7e774a9d95da23187c64dcefc37314"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round43-final-nine-application/recovered/06-VALIDATION.md",
+      "bytes": 10172,
+      "sha256": "64a9fde995077f8349edc76ee501825feca6717c6c60ab7c03cc535142016aad",
+      "git_blob": "fcbcf9e9280d41a4e8e138543d2bd217137a2c5e"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round45-original-step-scope-review/recovered/runtime-original-review.json",
+      "bytes": 8932,
+      "sha256": "70555637e16e51c9538a683e71f90691371ef5d33162503e3da8ccbd126404ff",
+      "git_blob": "528fed03d56fab5506c6182a48e42c2e3fd3bd48"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round45-P8-007-original-step-review/recovered/safe-text-delivery-manifest.json",
+      "bytes": 49262,
+      "sha256": "292ae8e3f920825f1eee52a9a711d11be5062785c8652293e438c54e2eef99ed",
+      "git_blob": "d551874abafec383274bc3824b5a5b102c85ede5"
+    }
+  ],
+  "retrieval_limits": [
+    {
+      "requested_blob": "3659a482b5bfe3ac7b2d96bfaeb4c0713fac5056",
+      "actual": "404 NOT_FOUND; no retry or old ZIP download; preserved local response"
+    },
+    {
+      "requested_blob": "28bec97e3603ed0beee4ae17971f1873557d4ea4",
+      "actual": "404 NOT_FOUND; no retry or old ZIP download; preserved local response"
+    },
+    {
+      "requested_path": "runtime/complete-offline-reception.json",
+      "actual": "Git file tool returned sha ce1278f0c96548399c84ebe9bc86000e3753b04e with empty content; body not used as proof. Existing independent review and exact safe manifest provide the reviewed evidence."
+    }
+  ],
+  "conclusion": "P8-007 has concrete accepted own-scope evidence for all named concurrency/backfill/offered-load steps, within the preserved fake-provider and observed-run limits. Separate case artifacts do not create an additional original-scope execution gap. P8-006 and formal dependency/application remain open; this report neither marks P8-007 done nor broadens V11/V20 release certification.",
+  "mutations": {
+    "product": false,
+    "task_status": false,
+    "definitions": false,
+    "refs": false,
+    "study": false
+  }
+}

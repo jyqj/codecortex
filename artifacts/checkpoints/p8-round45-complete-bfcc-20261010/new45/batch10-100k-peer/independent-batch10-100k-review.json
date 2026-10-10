@@ -1,0 +1,1416 @@
+{
+  "schema": "independent-original-batch10-100k-whole-acceptance-v1",
+  "reviewer": "/root/pr_triage",
+  "created_at": "2026-10-10T06:33:14.912900+00:00",
+  "source": "f97c5068d056969705e8387ba1f37d83847f5bee",
+  "run_id": 38026411200,
+  "attempt": 1,
+  "result": "accepted_scoped_one_registered_batch10_100k_cell",
+  "new_cells": 1,
+  "new_records": 2,
+  "roles": [
+    "setup",
+    "batch_10 mutation"
+  ],
+  "cumulative": {
+    "cells": 40,
+    "expected_cells": 45,
+    "records": 75,
+    "expected_records": 85,
+    "setup": 35,
+    "mutation": 35,
+    "fanout": 5,
+    "cold_curve_selected_setup": 5,
+    "cold_curve_selected_scales": [
+      1000,
+      5000,
+      10000,
+      50000,
+      100000
+    ]
+  },
+  "remaining": {
+    "cells": 5,
+    "records": 10,
+    "population": "body/api/config/batch_100/batch_1000 at100k"
+  },
+  "cold_subset_boundary": "The no_op setup from the separately accepted prior cell supplies the fifth cold point. This batch_10 setup remains retained but does not replace or add a sixth cold point. All original failed continuous studies remain failed/incomplete and are never pooled.",
+  "artifact": {
+    "id": 11661199841,
+    "node_id": "MDg6QXJ0aWZhY3QxMTY2MTE5OTg0MQ==",
+    "name": "p8-task-shard-batch_10-100000-38026411200-1",
+    "size_in_bytes": 4731367,
+    "url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11661199841",
+    "archive_download_url": "https://api.github.com/repos/jyqj/codecortex/actions/artifacts/11661199841/zip",
+    "expired": false,
+    "digest": "sha256:da5a1b1f3a05bb2cd8321e5f1cee8d49367c422817ca44cb566470c80894f886",
+    "created_at": "2026-10-10T06:24:12Z",
+    "updated_at": "2026-10-10T06:24:12Z",
+    "expires_at": "2027-01-08T05:07:02Z",
+    "workflow_run": {
+      "id": 38026411200,
+      "repository_id": 1249213794,
+      "head_repository_id": 1249213794,
+      "head_branch": "task/p8-task-profile-and-borrowed-cursor-bfcc-20261010",
+      "head_sha": "f97c5068d056969705e8387ba1f37d83847f5bee"
+    }
+  },
+  "whole_zip_identity_from_original_receiver": {
+    "bytes": 4731367,
+    "sha256": "da5a1b1f3a05bb2cd8321e5f1cee8d49367c422817ca44cb566470c80894f886",
+    "git_blob": "b88d22f8844371df826be080ac5ec3f6c79482e7"
+  },
+  "producer": {
+    "id": 114139258135,
+    "run_id": 38026411200,
+    "workflow_name": "P8 complete descriptive task profile measurements",
+    "head_branch": "task/p8-task-profile-and-borrowed-cursor-bfcc-20261010",
+    "run_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/38026411200",
+    "run_attempt": 1,
+    "node_id": "CR_kwDOSnV9Ys8AAAAakzrdFw",
+    "head_sha": "f97c5068d056969705e8387ba1f37d83847f5bee",
+    "url": "https://api.github.com/repos/jyqj/codecortex/actions/jobs/114139258135",
+    "html_url": "https://github.com/jyqj/codecortex/actions/runs/38026411200/job/114139258135",
+    "status": "completed",
+    "conclusion": "success",
+    "created_at": "2026-10-10T05:14:00Z",
+    "started_at": "2026-10-10T05:31:19Z",
+    "completed_at": "2026-10-10T06:24:14Z",
+    "name": "measure (batch_10-100000, batch_10, 100000)",
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1,
+        "started_at": "2026-10-10T05:31:19Z",
+        "completed_at": "2026-10-10T05:31:21Z"
+      },
+      {
+        "name": "Run actions/checkout@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2,
+        "started_at": "2026-10-10T05:31:21Z",
+        "completed_at": "2026-10-10T05:31:24Z"
+      },
+      {
+        "name": "Run dtolnay/rust-toolchain@stable",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3,
+        "started_at": "2026-10-10T05:31:24Z",
+        "completed_at": "2026-10-10T05:31:33Z"
+      },
+      {
+        "name": "Run actions/download-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 4,
+        "started_at": "2026-10-10T05:31:33Z",
+        "completed_at": "2026-10-10T05:31:34Z"
+      },
+      {
+        "name": "Prepare original registered capacity on the disposable hosted VM",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 5,
+        "started_at": "2026-10-10T05:31:34Z",
+        "completed_at": "2026-10-10T05:31:34Z"
+      },
+      {
+        "name": "Preserve original capacity observations",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 6,
+        "started_at": "2026-10-10T05:31:34Z",
+        "completed_at": "2026-10-10T05:31:34Z"
+      },
+      {
+        "name": "Launch one exact fresh task cell with setup and parity inside its native deadline",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 7,
+        "started_at": "2026-10-10T05:31:34Z",
+        "completed_at": "2026-10-10T05:31:34Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 1 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 8,
+        "started_at": "2026-10-10T05:31:34Z",
+        "completed_at": "2026-10-10T05:46:34Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 9,
+        "started_at": "2026-10-10T05:46:34Z",
+        "completed_at": "2026-10-10T05:46:36Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 2 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 10,
+        "started_at": "2026-10-10T05:46:36Z",
+        "completed_at": "2026-10-10T06:01:35Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 11,
+        "started_at": "2026-10-10T06:01:35Z",
+        "completed_at": "2026-10-10T06:01:36Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 3 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 12,
+        "started_at": "2026-10-10T06:01:36Z",
+        "completed_at": "2026-10-10T06:16:34Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 13,
+        "started_at": "2026-10-10T06:16:34Z",
+        "completed_at": "2026-10-10T06:16:35Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 4 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 14,
+        "started_at": "2026-10-10T06:16:35Z",
+        "completed_at": "2026-10-10T06:23:57Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 15,
+        "started_at": "2026-10-10T06:23:57Z",
+        "completed_at": "2026-10-10T06:23:58Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 5 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 16,
+        "started_at": "2026-10-10T06:23:58Z",
+        "completed_at": "2026-10-10T06:23:58Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 17,
+        "started_at": "2026-10-10T06:23:58Z",
+        "completed_at": "2026-10-10T06:23:59Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 6 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 18,
+        "started_at": "2026-10-10T06:23:59Z",
+        "completed_at": "2026-10-10T06:23:59Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 19,
+        "started_at": "2026-10-10T06:23:59Z",
+        "completed_at": "2026-10-10T06:24:00Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 7 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 20,
+        "started_at": "2026-10-10T06:24:00Z",
+        "completed_at": "2026-10-10T06:24:00Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 21,
+        "started_at": "2026-10-10T06:24:00Z",
+        "completed_at": "2026-10-10T06:24:00Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 8 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 22,
+        "started_at": "2026-10-10T06:24:00Z",
+        "completed_at": "2026-10-10T06:24:00Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 23,
+        "started_at": "2026-10-10T06:24:00Z",
+        "completed_at": "2026-10-10T06:24:01Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 9 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 24,
+        "started_at": "2026-10-10T06:24:01Z",
+        "completed_at": "2026-10-10T06:24:01Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 25,
+        "started_at": "2026-10-10T06:24:01Z",
+        "completed_at": "2026-10-10T06:24:02Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 10 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 26,
+        "started_at": "2026-10-10T06:24:02Z",
+        "completed_at": "2026-10-10T06:24:02Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 27,
+        "started_at": "2026-10-10T06:24:02Z",
+        "completed_at": "2026-10-10T06:24:03Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 11 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 28,
+        "started_at": "2026-10-10T06:24:03Z",
+        "completed_at": "2026-10-10T06:24:03Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 29,
+        "started_at": "2026-10-10T06:24:03Z",
+        "completed_at": "2026-10-10T06:24:03Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 12 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 30,
+        "started_at": "2026-10-10T06:24:03Z",
+        "completed_at": "2026-10-10T06:24:04Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 31,
+        "started_at": "2026-10-10T06:24:04Z",
+        "completed_at": "2026-10-10T06:24:04Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 13 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 32,
+        "started_at": "2026-10-10T06:24:04Z",
+        "completed_at": "2026-10-10T06:24:04Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 33,
+        "started_at": "2026-10-10T06:24:04Z",
+        "completed_at": "2026-10-10T06:24:05Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 14 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 34,
+        "started_at": "2026-10-10T06:24:05Z",
+        "completed_at": "2026-10-10T06:24:05Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 35,
+        "started_at": "2026-10-10T06:24:05Z",
+        "completed_at": "2026-10-10T06:24:06Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 15 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 36,
+        "started_at": "2026-10-10T06:24:06Z",
+        "completed_at": "2026-10-10T06:24:06Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 37,
+        "started_at": "2026-10-10T06:24:06Z",
+        "completed_at": "2026-10-10T06:24:07Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 16 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 38,
+        "started_at": "2026-10-10T06:24:07Z",
+        "completed_at": "2026-10-10T06:24:07Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 39,
+        "started_at": "2026-10-10T06:24:07Z",
+        "completed_at": "2026-10-10T06:24:07Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 17 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 40,
+        "started_at": "2026-10-10T06:24:07Z",
+        "completed_at": "2026-10-10T06:24:07Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 41,
+        "started_at": "2026-10-10T06:24:07Z",
+        "completed_at": "2026-10-10T06:24:08Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 18 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 42,
+        "started_at": "2026-10-10T06:24:08Z",
+        "completed_at": "2026-10-10T06:24:08Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 43,
+        "started_at": "2026-10-10T06:24:08Z",
+        "completed_at": "2026-10-10T06:24:09Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 19 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 44,
+        "started_at": "2026-10-10T06:24:09Z",
+        "completed_at": "2026-10-10T06:24:09Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 45,
+        "started_at": "2026-10-10T06:24:09Z",
+        "completed_at": "2026-10-10T06:24:10Z"
+      },
+      {
+        "name": "Freeze original byte prefix at absolute interval 20 of 20",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 46,
+        "started_at": "2026-10-10T06:24:10Z",
+        "completed_at": "2026-10-10T06:24:10Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 47,
+        "started_at": "2026-10-10T06:24:10Z",
+        "completed_at": "2026-10-10T06:24:10Z"
+      },
+      {
+        "name": "Preserve final or interrupted task diagnostic boundary",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 48,
+        "started_at": "2026-10-10T06:24:10Z",
+        "completed_at": "2026-10-10T06:24:10Z"
+      },
+      {
+        "name": "Run actions/upload-artifact@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 49,
+        "started_at": "2026-10-10T06:24:10Z",
+        "completed_at": "2026-10-10T06:24:11Z"
+      },
+      {
+        "name": "Preserve the complete task shard separately from diagnostic prefixes",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 50,
+        "started_at": "2026-10-10T06:24:11Z",
+        "completed_at": "2026-10-10T06:24:12Z"
+      },
+      {
+        "name": "Return actual task driver and native outcome",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 51,
+        "started_at": "2026-10-10T06:24:12Z",
+        "completed_at": "2026-10-10T06:24:12Z"
+      },
+      {
+        "name": "Post Run actions/checkout@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 102,
+        "started_at": "2026-10-10T06:24:12Z",
+        "completed_at": "2026-10-10T06:24:13Z"
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 103,
+        "started_at": "2026-10-10T06:24:13Z",
+        "completed_at": "2026-10-10T06:24:13Z"
+      }
+    ],
+    "check_run_url": "https://api.github.com/repos/jyqj/codecortex/check-runs/114139258135",
+    "labels": [
+      "ubuntu-24.04"
+    ],
+    "runner_id": 1000007337,
+    "runner_name": "GitHub Actions 1000007337",
+    "runner_group_id": 0,
+    "runner_group_name": "GitHub Actions"
+  },
+  "official_pagination_limit": "Individual exact-name artifact query; not a full population enumeration. Original input retains the actual lookup metadata.",
+  "original_validator_execution": {
+    "argv": [
+      "python3",
+      "-B",
+      "/workspace/scratch/bfccb8494ba0/round45-batch10-100k-original-intake/validate-one-original-shard.py",
+      "/workspace/scratch/bfccb8494ba0/round45-batch10-100k-original-intake/batch_10-100000-0/input.json"
+    ],
+    "cwd": "/workspace/scratch/bfccb8494ba0",
+    "started_at_utc": "2026-10-10T06:30:45.639190+00:00",
+    "completed_at_utc": "2026-10-10T06:30:46.717665+00:00",
+    "wall_seconds": 1.0784897420016932,
+    "exit_code": 0,
+    "child_invocations": 1,
+    "retry_count": 0,
+    "original_validate_shard_calls": 1,
+    "validate_build_calls": 0,
+    "measurement_or_compile_calls": 0,
+    "custody_faults": [],
+    "stdout": {
+      "bytes": 11212,
+      "sha256": "2fc3f8fda22a3d961168bbf65a8bbbfb5ddf695a975a279b392ef2e81ecf1d40"
+    },
+    "stderr": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "successful_return_matches_captured_stdout": true,
+    "native_validator_outcome_distinct_from_custody": true
+  },
+  "original_hash_utility_calls": 2,
+  "validate_build_reexecuted": false,
+  "stdio_two_copies_return_receipt_equal": true,
+  "source_build_and_shard_before_after_equal": true,
+  "registry_sha256": "b0a22aefd5964c1287f5496abbd5b2b22ae8a4c485714cb826fee8a4477acd78",
+  "task_build_receipt_sha256": "5b3f02a114fd68355916a4d94ec3b2c65a5895371e2bbdd97d24077598e50aab",
+  "binary_blake3": "96e4c329cafb9f0a61928cdc3c64e003782547d3489e66cfa614fdbab2eb884d",
+  "binary_sha256": "7c5a98dceeca5e9f3ba1101b81be5338e5815df0eaa09253fe55c124b8b89fcf",
+  "observer": {
+    "inputs": {
+      ".github/workflows/p8-task-profile.yml": "747d85f5905fd8b81b62283af18f696843fa4e6b29849e4972acdeee998266d9",
+      "docs/roadmap/code-index-v2/P8-TASK-PROFILE-DESCRIPTIVE.md": "95d2739ecb8e6b78aff44399c4160a4fe38ce453ac9f51085cd23a4edf794c9b",
+      "docs/roadmap/code-index-v2/p8-profile-task-descriptive-v1.json": "e1e724201b6dbf98fbca378df613b3ccb5b877e58125dbc578238167d062dba6",
+      "scripts/p7_build_identity.py": "5003305105464936edf8f444fc0b93cd14a5d5f074dc650f16de2259e86f1cc5",
+      "scripts/p8_runner_capacity.py": "2e37954df30b153ad82b49a5841a977451288c1730d03bfd2d0d7a2ace412939",
+      "scripts/p8_scale_diagnostic_capture.py": "d8080720506a6d89294a26878710db228e9d763b48bcfe69c1e9fdb717260caf",
+      "scripts/p8_scale_matrix.py": "b2c195d35034544b11caf436da631404b177699e7fa7a50dd46338864b8184de",
+      "scripts/p8_task_profile_capture.py": "31c5e63eba46b7c2c73593941ec358c64cd0a3feeed82d49b1403b4c0c8c6662",
+      "scripts/p8_task_profile_matrix.py": "8a3b7bad9448f56263bad49da1df7def16bfddaacaa1769abe97e710c73e776c",
+      "scripts/tests/test_p8_task_profile_capture.py": "cb0dddb4fc3b3e46de86e89bbaad470893819139dfc833ec74fb6e60fbc58c86",
+      "scripts/tests/test_p8_task_profile_matrix.py": "2841885f08d176a366dfc7a0e5e155e3e7e0bee8690d38b467fc600e401ca3e8"
+    },
+    "manifest_sha256": "b9b318b52309ae2db8e3b182c23b0d8887416cb63efe21ae0cbfe51c0d764c09",
+    "source_commit": "f97c5068d056969705e8387ba1f37d83847f5bee"
+  },
+  "plan": {
+    "batch_sizes": [
+      1,
+      10,
+      100,
+      1000
+    ],
+    "capacity_profile": "scale_capacity_v1",
+    "deadline_ms": 18000000,
+    "dirty_budget": 200,
+    "fanouts": [
+      1,
+      4,
+      16,
+      64,
+      128
+    ],
+    "files": [
+      100000
+    ],
+    "max_output_bytes": 536870912,
+    "max_resume_builds": 1024,
+    "profile": "release",
+    "profile_study": {
+      "fanout": null,
+      "mutation_profile": "batch_10",
+      "run_attempt": 1,
+      "run_id": "38026411200"
+    },
+    "repetitions": 1,
+    "schema_version": 1,
+    "seed": 12648430,
+    "shard": {
+      "count": 1,
+      "index": 0
+    },
+    "skip_fanout": true,
+    "stage_scope": "profile_task_descriptive_v1"
+  },
+  "native_report": {
+    "deadline_scope": "entire child lifetime and stderr drain, including generation, indexing, parity and evidence; parent polling interval 10ms",
+    "executed_repetition_range": {
+      "end": 1,
+      "start": 0
+    },
+    "exit_code": 0,
+    "fixture_cleanup": {
+      "elapsed_ms": 0,
+      "error": null
+    },
+    "full_100k_certification": "not_run",
+    "max_output_bytes": 536870912,
+    "plan_digest": "d040a821f266f1a9384639f66cbe735868666c8fad4d6b571619fdf8c39c461f",
+    "profile": "release",
+    "profile_temporary_environment": {
+      "parent_root": "/home/runner/work/_temp/p8-task-cell-batch_10-100000/shard",
+      "worker_root": "/home/runner/work/_temp/p8-task-cell-batch_10-100000/shard/.tmpZF6ktd"
+    },
+    "raw_digest": "3c1601acfd33a1d302337a9409054bbe45f1f4d42cf6993999b28fed1e34a05d",
+    "registered_repetitions": 1,
+    "release_certification": "not_run",
+    "release_prerequisites": "P7-020/P8-001/P8-004 and source/binary release lock are separate gates",
+    "schema_version": 1,
+    "shard_only": true,
+    "status": "measurement_complete",
+    "stderr_complete": true,
+    "summary": {
+      "executed_repetition_range": {
+        "end": 1,
+        "start": 0
+      },
+      "full_100k_certification": "not_run",
+      "groups": [
+        {
+          "failed_or_not_compared": 0,
+          "first_build_incomplete_samples": 0,
+          "group": "scale-100000/batch_10",
+          "incremental_engine_elapsed_ms_sum_across_resumes": {
+            "max": 7258,
+            "mean": 7258.0,
+            "min": 7258,
+            "n": 1
+          },
+          "outer_incremental_us_including_evidence": {
+            "max": 7322305,
+            "mean": 7322305.0,
+            "min": 7322305,
+            "n": 1
+          },
+          "passed": 1,
+          "samples": 1,
+          "whole_fanout_fixture_replay_us": {
+            "max": null,
+            "mean": null,
+            "min": null,
+            "n": 0
+          }
+        },
+        {
+          "failed_or_not_compared": 0,
+          "first_build_incomplete_samples": 0,
+          "group": "scale-100000/cold",
+          "incremental_engine_elapsed_ms_sum_across_resumes": {
+            "max": null,
+            "mean": null,
+            "min": null,
+            "n": 0
+          },
+          "outer_incremental_us_including_evidence": {
+            "max": null,
+            "mean": null,
+            "min": null,
+            "n": 0
+          },
+          "passed": 1,
+          "samples": 1,
+          "whole_fanout_fixture_replay_us": {
+            "max": null,
+            "mean": null,
+            "min": null,
+            "n": 0
+          }
+        }
+      ],
+      "not_selected_scales": [
+        1000,
+        5000,
+        10000,
+        50000
+      ],
+      "oracle_row_limit_unchanged": 100000,
+      "passed": true,
+      "prerequisite_gates": "not_evaluated",
+      "raw_bytes": 13918363,
+      "registered_repetitions": 1,
+      "release_certification": "not_run",
+      "sample_count": 2,
+      "schema_version": 1,
+      "shard_only": true,
+      "stable_tail_latency": "not_established",
+      "stage_scope": "profile_task_descriptive_v1"
+    },
+    "wall_ms": 3140813,
+    "worker_binary_digest_after": "96e4c329cafb9f0a61928cdc3c64e003782547d3489e66cfa614fdbab2eb884d",
+    "worker_binary_digest_before": "96e4c329cafb9f0a61928cdc3c64e003782547d3489e66cfa614fdbab2eb884d",
+    "worker_binary_unchanged": true,
+    "worker_exit_code": 0,
+    "worker_pid": 2280
+  },
+  "engine": {
+    "arch": "x86_64",
+    "binary_digest": "96e4c329cafb9f0a61928cdc3c64e003782547d3489e66cfa614fdbab2eb884d",
+    "binary_source_binding": "recorded build receipt required; path/HEAD alone do not prove binding",
+    "cargo_lock_digest": "80eec6d3576cbaea45eda03729087f233cdd945f87aecb98e3b5e8f8755cd476",
+    "cpu_parallelism": 4,
+    "dirty_observed": "?? scripts/__pycache__/p7_build_identity.cpython-312.pyc\n?? scripts/__pycache__/p8_scale_diagnostic_capture.cpython-312.pyc\n?? scripts/__pycache__/p8_scale_matrix.cpython-312.pyc",
+    "engine_head_observed": "f97c5068d056969705e8387ba1f37d83847f5bee",
+    "eval_debug_assertions": false,
+    "eval_version": "1.0.0",
+    "hardware": null,
+    "os": "linux",
+    "rustc": "rustc 1.95.0 (59807616e 2026-04-14)",
+    "rustflags": "",
+    "sdkroot": null,
+    "source_files_digest": "6902077f32c11c48f8ab322369c6844dad8173bba21ed66c8476fab7bbed6058",
+    "tracked_diff_digest": "af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262"
+  },
+  "environment": {
+    "cpu_count": 4,
+    "cpu_model": "AMD EPYC 9V74 80-Core Processor",
+    "host": "runnervmmprz5",
+    "machine": "x86_64",
+    "release": "6.17.0-1022-azure",
+    "rustflags": "",
+    "system": "Linux"
+  },
+  "profile_environment": {
+    "runtime_environment": {
+      "CARGO_ENCODED_RUSTFLAGS": null,
+      "RUSTFLAGS": "",
+      "TEMP": "/home/runner/work/_temp/p8-task-cell-batch_10-100000/shard/.tmpZF6ktd",
+      "TMP": "/home/runner/work/_temp/p8-task-cell-batch_10-100000/shard/.tmpZF6ktd",
+      "TMPDIR": "/home/runner/work/_temp/p8-task-cell-batch_10-100000/shard/.tmpZF6ktd"
+    },
+    "scope": "observed inputs; no cache, capacity or engine-setting override",
+    "seed_cache_max_symbols": {
+      "effective": 500000,
+      "parsed_usize": null,
+      "raw": null,
+      "read_status": "absent"
+    }
+  },
+  "measurement_environment": {
+    "CARGO_ENCODED_RUSTFLAGS": null,
+    "CODECORTEX_SEED_CACHE_MAX_SYMBOLS": null,
+    "RUSTFLAGS": "",
+    "TEMP": "/home/runner/work/_temp/p8-task-cell-batch_10-100000/shard",
+    "TMP": "/home/runner/work/_temp/p8-task-cell-batch_10-100000/shard",
+    "TMPDIR": "/home/runner/work/_temp/p8-task-cell-batch_10-100000/shard"
+  },
+  "resource_snapshots": {
+    "scale-100000/repetition-0/cold_incremental": {
+      "process_snapshot": {
+        "cpu_system_ns": 59140000000,
+        "cpu_system_raw": 5914,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 234100000000,
+        "cpu_user_raw": 23410,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2280,
+        "resident_bytes": 5455257600,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 15,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/cold_full_control": {
+      "process_snapshot": {
+        "cpu_system_ns": 110900000000,
+        "cpu_system_raw": 11090,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 481570000000,
+        "cpu_user_raw": 48157,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2280,
+        "resident_bytes": 5217320960,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 15,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/batch_10/incremental-0": {
+      "process_snapshot": {
+        "cpu_system_ns": 224550000000,
+        "cpu_system_raw": 22455,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 637860000000,
+        "cpu_user_raw": 63786,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2280,
+        "resident_bytes": 5916987392,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 16,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    },
+    "scale-100000/repetition-0/batch_10/full_control": {
+      "process_snapshot": {
+        "cpu_system_ns": 283710000000,
+        "cpu_system_raw": 28371,
+        "cpu_time_unit": "linux_proc_stat_clock_ticks",
+        "cpu_user_ns": 880890000000,
+        "cpu_user_raw": 88089,
+        "kernel_release": "6.17.0-1022-azure",
+        "pid": 2280,
+        "resident_bytes": 6294188032,
+        "resident_method": "Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree",
+        "threads": 15,
+        "timebase_denom": 100,
+        "timebase_numer": 1000000000
+      },
+      "resource_scope": "single worker including in-process MCP; snapshot, not peak or process-tree proof"
+    }
+  },
+  "measurements": [
+    {
+      "group": "scale-100000/cold",
+      "sample": "scale-100000/repetition-0",
+      "engine_ms": 427632,
+      "index_wall_us": 427764896,
+      "full_control_ms": 581877,
+      "parity_wall_us": 709092170,
+      "counts": {
+        "chunks": 636136,
+        "edges": {
+          "call_edges": 490200,
+          "semantic_edges": 598136,
+          "test_edges": 0
+        },
+        "files": 100000,
+        "index_db_with_wal_shm_bytes": 6883169672,
+        "symbols": 556137,
+        "tables": {
+          "call_edges": 490200,
+          "chunks": 636136,
+          "dispatch_sites": 0,
+          "document_manifest": 636136,
+          "files": 100000,
+          "imports": 66047,
+          "public_surfaces": 100000,
+          "resolution_dependencies": 1918691,
+          "resolution_frontier": 0,
+          "resolution_manifests": 100000,
+          "routes": 8000,
+          "semantic_edges": 598136,
+          "symbol_refs": 1444510,
+          "symbols": 556137,
+          "test_edges": 0
+        },
+        "vectors": {
+          "count": null,
+          "reason": "semantic explicitly disabled; no provider installed",
+          "state": "disabled"
+        }
+      },
+      "build_timing": {
+        "prepare_us": 396161816,
+        "commit_write_us": 12106122,
+        "postprocess_compute_us": 4736890,
+        "postprocess_apply_us": 8929665,
+        "between_stages_us": 5707069,
+        "total_us": 427641564,
+        "prepare_snapshot_us": 1284692,
+        "full_staging_us": 357918763
+      },
+      "full_control_build_timing": {
+        "prepare_us": 504464538,
+        "commit_write_us": 12650082,
+        "postprocess_compute_us": 5464940,
+        "postprocess_apply_us": 11489697,
+        "between_stages_us": 47819437,
+        "total_us": 581888697,
+        "prepare_snapshot_us": 1233387,
+        "full_staging_us": 456494760
+      },
+      "phases": {
+        "analysis_ms": 374,
+        "parse_ms": 21143,
+        "postprocess_ms": 13281,
+        "resolve_ms": 12834,
+        "scan_diff_ms": 2971,
+        "write_ms": 12086
+      }
+    },
+    {
+      "group": "scale-100000/batch_10",
+      "sample": "scale-100000/repetition-0",
+      "engine_ms": 7258,
+      "index_wall_us": 7322054,
+      "outer_incremental_wall_us": 7322305,
+      "full_control_ms": 521451,
+      "parity_wall_us": 836807889,
+      "builds": 1,
+      "build_timing": {
+        "prepare_us": 4283658,
+        "commit_write_us": 2633768,
+        "postprocess_compute_us": 332219,
+        "postprocess_apply_us": 38562,
+        "between_stages_us": 8610,
+        "total_us": 7296820,
+        "prepare_snapshot_us": 329,
+        "full_staging_us": null
+      },
+      "full_control_build_timing": {
+        "prepare_us": 489531645,
+        "commit_write_us": 15335749,
+        "postprocess_compute_us": 4307928,
+        "postprocess_apply_us": 7927903,
+        "between_stages_us": 4411264,
+        "total_us": 521514492,
+        "prepare_snapshot_us": 1389155,
+        "full_staging_us": 398244630
+      },
+      "phases": {
+        "scan_diff_ms": 1299,
+        "parse_ms": 43,
+        "resolve_ms": 2940,
+        "write_ms": 810,
+        "postprocess_ms": 0,
+        "analysis_ms": 332
+      }
+    }
+  ],
+  "phase_count_mapping": [
+    {
+      "line": 4,
+      "label": "scale-100000/repetition-0/cold_incremental",
+      "full": true,
+      "start_us": 13272665,
+      "end_us": 441037561,
+      "wall_us": 427764896,
+      "report_fields": {
+        "build_timing": {
+          "between_stages_us": 5707069,
+          "commit_write_us": 12106122,
+          "full_staging_us": 357918763,
+          "postprocess_apply_us": 8929665,
+          "postprocess_compute_us": 4736890,
+          "prepare_snapshot_us": 1284692,
+          "prepare_us": 396161816,
+          "schema_version": 1,
+          "total_us": 427641564
+        },
+        "chunks_total": 636136,
+        "dirty_plan": {
+          "dependency_sql": {
+            "fullscan_steps": 0,
+            "rows": 0,
+            "sorts": 0,
+            "statements": 0,
+            "vm_steps": 0
+          },
+          "file_budget": 0,
+          "parsed_files": 100000,
+          "reasons": [],
+          "rebased": false,
+          "resumed": false,
+          "selected_dependents": 0
+        },
+        "document_changes": {
+          "files_projected": 100000,
+          "removed": 0,
+          "render_failed": 0,
+          "reusable_inputs": 0,
+          "unchanged": 0,
+          "upserted": 636136
+        },
+        "elapsed_ms": 427632,
+        "files_added": 100000,
+        "files_parsed": 100000,
+        "files_removed": 0,
+        "files_scanned": 100000,
+        "files_skipped": 0,
+        "files_updated": 0,
+        "parse_errors": [],
+        "phase_timing": {
+          "analysis_ms": 374,
+          "parse_ms": 21143,
+          "postprocess_ms": 13281,
+          "resolve_ms": 12834,
+          "scan_diff_ms": 2971,
+          "write_ms": 12086
+        },
+        "resolution_freshness": {
+          "basis_epoch": null,
+          "complete": true,
+          "completed_files": 0,
+          "index_epoch": 6,
+          "reason": null,
+          "retry": null,
+          "root_count": 0,
+          "scope": "observed_resolution_invalidations",
+          "status": "ready"
+        },
+        "symbols_total": 556137,
+        "used_parallel_parse": true
+      },
+      "project_model_list_values_summarized": {
+        "catalog_files": 100000,
+        "changed_configs": {
+          "array_count": 32001,
+          "canonical_sha256": "7a5ac8dd10c046c41d8681c82fa88d39a3a3239c92c47e4ba9641dac16dfe872"
+        },
+        "config_inputs": 1,
+        "config_parse_cache_hits": 0,
+        "config_reads": 1,
+        "config_root_probes": 73504,
+        "config_roots": 1,
+        "diagnostics": {
+          "array_count": 0,
+          "canonical_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "go_fact_cache_hits": 0,
+        "go_source_reads": 0,
+        "input_digest": "27edb7c3c8af5534b45cdc32c92eab7ee767bf5676b5e09cddb198b5c29730d8",
+        "inventory_source": "shared_walk",
+        "modes": {
+          "array_count": 1,
+          "canonical_sha256": "a83e5b296b23df2a437d761a9ce3fb30a53e9e0ef52d335d7852805fd1c1c39f"
+        },
+        "rust_fact_cache_hits": 0,
+        "rust_source_reads": 0,
+        "version": 3
+      }
+    },
+    {
+      "line": 6,
+      "label": "scale-100000/repetition-0/cold_full_control",
+      "full": true,
+      "start_us": 441039975,
+      "end_us": 1023124329,
+      "wall_us": 582084354,
+      "report_fields": {
+        "build_timing": {
+          "between_stages_us": 47819437,
+          "commit_write_us": 12650082,
+          "full_staging_us": 456494760,
+          "postprocess_apply_us": 11489697,
+          "postprocess_compute_us": 5464940,
+          "prepare_snapshot_us": 1233387,
+          "prepare_us": 504464538,
+          "schema_version": 1,
+          "total_us": 581888697
+        },
+        "chunks_total": 636136,
+        "dirty_plan": {
+          "dependency_sql": {
+            "fullscan_steps": 0,
+            "rows": 0,
+            "sorts": 0,
+            "statements": 0,
+            "vm_steps": 0
+          },
+          "file_budget": 0,
+          "parsed_files": 100000,
+          "reasons": [],
+          "rebased": false,
+          "resumed": false,
+          "selected_dependents": 0
+        },
+        "document_changes": {
+          "files_projected": 100000,
+          "removed": 0,
+          "render_failed": 0,
+          "reusable_inputs": 0,
+          "unchanged": 0,
+          "upserted": 636136
+        },
+        "elapsed_ms": 581877,
+        "files_added": 100000,
+        "files_parsed": 100000,
+        "files_removed": 0,
+        "files_scanned": 100000,
+        "files_skipped": 0,
+        "files_updated": 0,
+        "parse_errors": [],
+        "phase_timing": {
+          "analysis_ms": 888,
+          "parse_ms": 22270,
+          "postprocess_ms": 16054,
+          "resolve_ms": 13141,
+          "scan_diff_ms": 11314,
+          "write_ms": 12640
+        },
+        "resolution_freshness": {
+          "basis_epoch": null,
+          "complete": true,
+          "completed_files": 0,
+          "index_epoch": 6,
+          "reason": null,
+          "retry": null,
+          "root_count": 0,
+          "scope": "observed_resolution_invalidations",
+          "status": "ready"
+        },
+        "symbols_total": 556137,
+        "used_parallel_parse": true
+      },
+      "project_model_list_values_summarized": {
+        "catalog_files": 100000,
+        "changed_configs": {
+          "array_count": 32001,
+          "canonical_sha256": "7a5ac8dd10c046c41d8681c82fa88d39a3a3239c92c47e4ba9641dac16dfe872"
+        },
+        "config_inputs": 1,
+        "config_parse_cache_hits": 0,
+        "config_reads": 1,
+        "config_root_probes": 73504,
+        "config_roots": 1,
+        "diagnostics": {
+          "array_count": 0,
+          "canonical_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "go_fact_cache_hits": 0,
+        "go_source_reads": 0,
+        "input_digest": "27edb7c3c8af5534b45cdc32c92eab7ee767bf5676b5e09cddb198b5c29730d8",
+        "inventory_source": "shared_walk",
+        "modes": {
+          "array_count": 1,
+          "canonical_sha256": "a83e5b296b23df2a437d761a9ce3fb30a53e9e0ef52d335d7852805fd1c1c39f"
+        },
+        "rust_fact_cache_hits": 0,
+        "rust_source_reads": 0,
+        "version": 3
+      }
+    },
+    {
+      "line": 10,
+      "label": "scale-100000/repetition-0/batch_10/incremental-0",
+      "full": false,
+      "start_us": 1732229816,
+      "end_us": 1739551870,
+      "wall_us": 7322054,
+      "report_fields": {
+        "build_timing": {
+          "between_stages_us": 8610,
+          "commit_write_us": 2633768,
+          "full_staging_us": null,
+          "postprocess_apply_us": 38562,
+          "postprocess_compute_us": 332219,
+          "prepare_snapshot_us": 329,
+          "prepare_us": 4283658,
+          "schema_version": 1,
+          "total_us": 7296820
+        },
+        "chunks_total": 90,
+        "dirty_plan": {
+          "dependency_sql": {
+            "fullscan_steps": 0,
+            "rows": 0,
+            "sorts": 0,
+            "statements": 0,
+            "vm_steps": 0
+          },
+          "file_budget": 200,
+          "parsed_files": 10,
+          "reasons": [
+            "body"
+          ],
+          "rebased": false,
+          "resumed": false,
+          "selected_dependents": 0
+        },
+        "dirty_propagation": "normal",
+        "document_changes": {
+          "files_projected": 10,
+          "removed": 10,
+          "render_failed": 0,
+          "reusable_inputs": 70,
+          "unchanged": 0,
+          "upserted": 90
+        },
+        "elapsed_ms": 7258,
+        "files_added": 0,
+        "files_parsed": 10,
+        "files_removed": 0,
+        "files_scanned": 100000,
+        "files_skipped": 99990,
+        "files_updated": 10,
+        "parse_errors": [],
+        "phase_timing": {
+          "analysis_ms": 332,
+          "parse_ms": 43,
+          "postprocess_ms": 0,
+          "resolve_ms": 2940,
+          "scan_diff_ms": 1299,
+          "write_ms": 810
+        },
+        "resolution_freshness": {
+          "basis_epoch": null,
+          "complete": true,
+          "completed_files": 0,
+          "index_epoch": 9,
+          "reason": null,
+          "retry": null,
+          "root_count": 0,
+          "scope": "observed_resolution_invalidations",
+          "status": "ready"
+        },
+        "symbols_total": 81,
+        "used_parallel_parse": false
+      },
+      "project_model_list_values_summarized": {
+        "catalog_files": 100000,
+        "changed_configs": {
+          "array_count": 0,
+          "canonical_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "config_inputs": 1,
+        "config_parse_cache_hits": 1,
+        "config_reads": 1,
+        "config_root_probes": 73504,
+        "config_roots": 1,
+        "diagnostics": {
+          "array_count": 0,
+          "canonical_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "go_fact_cache_hits": 0,
+        "go_source_reads": 0,
+        "input_digest": "27edb7c3c8af5534b45cdc32c92eab7ee767bf5676b5e09cddb198b5c29730d8",
+        "inventory_source": "shared_walk",
+        "modes": {
+          "array_count": 1,
+          "canonical_sha256": "a83e5b296b23df2a437d761a9ce3fb30a53e9e0ef52d335d7852805fd1c1c39f"
+        },
+        "rust_fact_cache_hits": 32000,
+        "rust_source_reads": 0,
+        "version": 3
+      }
+    },
+    {
+      "line": 12,
+      "label": "scale-100000/repetition-0/batch_10/full_control",
+      "full": true,
+      "start_us": 1739552122,
+      "end_us": 2261195246,
+      "wall_us": 521643124,
+      "report_fields": {
+        "build_timing": {
+          "between_stages_us": 4411264,
+          "commit_write_us": 15335749,
+          "full_staging_us": 398244630,
+          "postprocess_apply_us": 7927903,
+          "postprocess_compute_us": 4307928,
+          "prepare_snapshot_us": 1389155,
+          "prepare_us": 489531645,
+          "schema_version": 1,
+          "total_us": 521514492
+        },
+        "chunks_total": 636146,
+        "dirty_plan": {
+          "dependency_sql": {
+            "fullscan_steps": 0,
+            "rows": 0,
+            "sorts": 0,
+            "statements": 0,
+            "vm_steps": 0
+          },
+          "file_budget": 0,
+          "parsed_files": 100000,
+          "reasons": [],
+          "rebased": false,
+          "resumed": false,
+          "selected_dependents": 0
+        },
+        "document_changes": {
+          "files_projected": 100000,
+          "removed": 10,
+          "render_failed": 0,
+          "reusable_inputs": 636126,
+          "unchanged": 636056,
+          "upserted": 90
+        },
+        "elapsed_ms": 521451,
+        "files_added": 100000,
+        "files_parsed": 100000,
+        "files_removed": 0,
+        "files_scanned": 100000,
+        "files_skipped": 0,
+        "files_updated": 0,
+        "parse_errors": [],
+        "phase_timing": {
+          "analysis_ms": 639,
+          "parse_ms": 44690,
+          "postprocess_ms": 11532,
+          "resolve_ms": 35625,
+          "scan_diff_ms": 9571,
+          "write_ms": 15316
+        },
+        "resolution_freshness": {
+          "basis_epoch": null,
+          "complete": true,
+          "completed_files": 0,
+          "index_epoch": 12,
+          "reason": null,
+          "retry": null,
+          "root_count": 0,
+          "scope": "observed_resolution_invalidations",
+          "status": "ready"
+        },
+        "symbols_total": 556137,
+        "used_parallel_parse": true
+      },
+      "project_model_list_values_summarized": {
+        "catalog_files": 100000,
+        "changed_configs": {
+          "array_count": 32001,
+          "canonical_sha256": "7a5ac8dd10c046c41d8681c82fa88d39a3a3239c92c47e4ba9641dac16dfe872"
+        },
+        "config_inputs": 1,
+        "config_parse_cache_hits": 0,
+        "config_reads": 1,
+        "config_root_probes": 73504,
+        "config_roots": 1,
+        "diagnostics": {
+          "array_count": 0,
+          "canonical_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "go_fact_cache_hits": 0,
+        "go_source_reads": 0,
+        "input_digest": "27edb7c3c8af5534b45cdc32c92eab7ee767bf5676b5e09cddb198b5c29730d8",
+        "inventory_source": "shared_walk",
+        "modes": {
+          "array_count": 1,
+          "canonical_sha256": "a83e5b296b23df2a437d761a9ce3fb30a53e9e0ef52d335d7852805fd1c1c39f"
+        },
+        "rust_fact_cache_hits": 0,
+        "rust_source_reads": 0,
+        "version": 3
+      }
+    }
+  ],
+  "raw_event_counts": {
+    "run_started": 1,
+    "input": 1,
+    "build_started": 4,
+    "build_finished": 4,
+    "cold_parity": 1,
+    "mutation": 1,
+    "stage_finished": 1
+  },
+  "raw_identity": {
+    "bytes": 13918363,
+    "sha256": "5f2da4802400f83101ba9da2549a3ba48167563e6f2fd0747931cdb9b5f2c53c",
+    "original_report_blake3": "3c1601acfd33a1d302337a9409054bbe45f1f4d42cf6993999b28fed1e34a05d"
+  },
+  "typed_parity": {
+    "observations": 2,
+    "tables_each": 15,
+    "equal_table_observations": 30,
+    "initial_raw_line": 7,
+    "final_raw_line": 13,
+    "different_rows": 0,
+    "reported_no_op_unchanged_flag": true,
+    "initial_and_final_full_control_complete": true,
+    "batch_10_builds": 1,
+    "first_build_incomplete": false,
+    "initial_and_final_capacity_profile": "scale_capacity_v1",
+    "canonical_bytes_initial_final": [
+      10302684584,
+      10302751888
+    ],
+    "scratch_peak_bytes_initial_final": [
+      5984387072,
+      5984342016
+    ]
+  },
+  "limits": [
+    "N1, one environment and fixed source/build. No stable tail, confidence interval, all100k/full-study or release claim.",
+    "Raw reports retain semantic vectors disabled/countnull, untracked Python caches, PID-only resource snapshots, observed seed-cache max500000 and hardware identity; no fabricated peak or clean host.",
+    "Timing scopes differ: engine elapsed_ms, detailed total_us, enclosing wall_us, parity_wall_us and native child wall_ms. Nested full_staging/prepare_snapshot are not added again.",
+    "Whole payload and producer completion are proven for this slot; concurrent artifact enumeration is not a final complete population index.",
+    "Original aggregate has not been executed or accepted by this peer; no task status updated."
+  ],
+  "peer_execution": {
+    "read_only_original_returns_and_new_raw": true,
+    "CRC_ZIP_ELF_original_validator_or_product_calls": 0,
+    "old_raw_or_ZIP_reads": 0,
+    "Actions_downloads": 0
+  },
+  "task_credit": 0,
+  "reader_attempt_history": {
+    "attempt01": "Pure independent new-slot receipt/raw reader; no original validator, ELF, CRC, ZIP or product operation.",
+    "preseal_summary_correction": {
+      "original_draft_sha256": "5fbde223fb94c3ab6f30de71e157916924467f1693c35e46b247fff13e17933a",
+      "reason": "Broad label adaptation altered the remaining-population label string and missed its old 6/12 counts. Independent evidence checks and cumulative 40/75 were correct. This correction changes derived summary metadata only; original reader, draft, receipt and source/raw are preserved.",
+      "new_raw_reads": 0,
+      "original_function_reexecutions": 0
+    }
+  }
+}

@@ -1,0 +1,485 @@
+{
+  "schema": "original-P8-011-exact-case-and-merged-main-eight-scope-addendum-v1",
+  "reviewer": "/root/pr_triage",
+  "created_at": "2026-10-10T06:20:07.250912+00:00",
+  "apply_now": false,
+  "conclusion": "no_uncovered_original_five_fault_step_identified_after_exact_original_case_mapping; original_sources_limits_dependencies_preserved",
+  "actual_main": {
+    "commit": "0da9a2800d2b3112d584a8bad4f79785e01162a9",
+    "tree": "39a053ae49b486764751a570d164e7cd41d7ff29",
+    "parents": [
+      "b9b089bb4eae072affe9326681d4980eae15fd84",
+      "f97c5068d056969705e8387ba1f37d83847f5bee"
+    ],
+    "merged_PR": 201,
+    "merged_at": "2026-10-10T06:05:09Z"
+  },
+  "main_identity_bridge": {
+    "actual_git_blob": "08aa3635f4a6572fef3bbf2bd82cba1ad527d80c",
+    "meaning": "Exact merged main tree equals G2; nine definitions/dependencies unchanged. Existing executions retain G2 producer identity."
+  },
+  "original_task": {
+    "id": "P8-011",
+    "steps": [
+      "kill进程/网络断开/缓存损坏/数据库忙/换库",
+      "保持raw故障工件"
+    ],
+    "acceptance": [
+      "没有假ready或删除复活，恢复与费用影响清楚",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "harddeps": [
+      "P7-020",
+      "P8-007",
+      "P8-010"
+    ],
+    "ledger_blob": "adb44ee70a4c129bfb443d4ecf678fb934c8ea6b"
+  },
+  "source_of_exact_names": {
+    "source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+    "run": 37890757129,
+    "artifact": 11597639035,
+    "commit": "cd92ce4b931e770994770ba3dba6fd0a47a505ea",
+    "repository_path": "artifacts/checkpoints/p8-round19-evidence-20261009/recovery/root-independent-original-evidence-review.json",
+    "root_review_identity": {
+      "path": "round45-original-step-scope-review/recovered/recovery-original-review.json",
+      "bytes": 13050,
+      "sha256": "6412e056d858561fff73030ae80d293cd766e77c71727b1676099cd739cbaa73",
+      "git_blob": "3e2ff9d7d556c0bfed9f252eade3d189544bb4f3"
+    },
+    "original_author_receipt": {
+      "path": "round45-original-step-scope-review/recovered/recovery-original-author-receipt.json",
+      "bytes": 10774,
+      "sha256": "15dc573e247c2b2bc00e511d4ac3a668d8b5a9f25498972d10eec8b3a4ef594c",
+      "git_blob": "4704801d577640d617f4533160b96f4fa68c036b"
+    },
+    "original_auditor_read_not_executed": {
+      "path": "round45-original-step-scope-review/recovered/original-retained-recovery-auditor.py",
+      "bytes": 20970,
+      "sha256": "ae01b32d396eee3297136537693263fae5c08a176e102abf14d55e6fe548122f",
+      "git_blob": "a9f42ff0a794486679a6be441b282a14b3c63966"
+    }
+  },
+  "local_report_unchanged": {
+    "full_matrix_supplements_local_not_run": true,
+    "not_run_in_local_profile": [
+      "transaction_internal_crash_points",
+      "active_provider_network_disconnect",
+      "active_semantic_cache_corruption",
+      "concurrent_database_replacement"
+    ],
+    "passed": [
+      "kill_restart",
+      "database_busy",
+      "deleted_source"
+    ]
+  },
+  "precise_not_run_interpretation": {
+    "not_run_means": "Not executed by that limited local profile; never relabel its3passed/4not_run as7passed.",
+    "none_of_the_four_is_excused_merely_as_live_provider_not_applicable": true,
+    "separate_executions_cover_them": [
+      "transaction_internal_crash_points: separate original12+15 SIGKILL cases",
+      "network/cache/replacement: separate3seed active end-to-end cases"
+    ],
+    "live_or_paid_cost_boundary": "Paid provider charges remain null. Owned loopback HTTP calls and recovery-call counts were observed; physical power loss, vendor outages and release certification were not claimed."
+  },
+  "step_mapping": [
+    {
+      "original_step": "kill进程",
+      "local_case": "kill_restart",
+      "local_status": "passed",
+      "additional_cases": [
+        "transaction_internal_crash_points",
+        "isolated_sigkill_reopen_replay_preparation",
+        "independently_observed_sigkill_boundaries",
+        "index_db_rebuild::fault_tests::owned_process_kill_between_sidecar_cleanup_rename_and_reopen_preserves_database"
+      ],
+      "actual_evidence": "Local actual kill/restart; 12+15 separate SIGKILL cases, signal9/integrity ok; uncommitted rollback; other points three no-op replays/final epoch1; reopen provider calls1 at claimed/response, otherwise0.",
+      "auditor_lines": [
+        137,
+        164
+      ],
+      "missing_required_step": null
+    },
+    {
+      "original_step": "网络断开",
+      "local_case": "active_provider_network_disconnect",
+      "local_status": "not_run",
+      "additional_cases": [
+        "active_provider_network_disconnect"
+      ],
+      "actual_evidence": "All3 active seeds executed owned loopback HTTP disconnect; each6 HTTP requests/1 disconnect. Before semantic backfilling+dense partial; after recovery semantic ready. This is actual local HTTP transport failure, not a live-provider billing claim.",
+      "auditor_lines": [
+        225,
+        246
+      ],
+      "missing_required_step": null
+    },
+    {
+      "original_step": "缓存损坏",
+      "local_case": "active_semantic_cache_corruption",
+      "local_status": "not_run",
+      "additional_cases": [
+        "active_semantic_cache_corruption",
+        "active_cache_reader_rejects_unknown_format",
+        "meta_tampering_is_detected_as_corrupt",
+        "different_spaces_never_cross_hit",
+        "namespaces_are_isolated"
+      ],
+      "actual_evidence": "All3 active seeds: corrupt lane partial, complete false, semantic_artifact_unavailable; restored complete, additional provider requests0. Unknown format999 rejected partial then restored complete. Three exact cache Rust controls passed separately.",
+      "auditor_lines": [
+        137,
+        152,
+        234,
+        239
+      ],
+      "missing_required_step": null
+    },
+    {
+      "original_step": "数据库忙",
+      "local_case": "database_busy",
+      "local_status": "passed",
+      "additional_cases": [
+        "index_db_rebuild::fault_tests::writer_mutex_spans_rename_reopen_and_connection_installation"
+      ],
+      "actual_evidence": "Original accepted local real SQLite busy/release receipt; distinct exact writer mutex test passed. Do not substitute the mutex test for the local busy exercise.",
+      "auditor_lines": [
+        137,
+        152,
+        257,
+        263
+      ],
+      "missing_required_step": null
+    },
+    {
+      "original_step": "换库",
+      "local_case": "concurrent_database_replacement",
+      "local_status": "not_run",
+      "additional_cases": [
+        "concurrent_database_replacement",
+        "index_db_rebuild::fault_tests::writer_mutex_spans_rename_reopen_and_connection_installation"
+      ],
+      "actual_evidence": "All3 active seeds: held query pins>0, incarnation changes, swapped state is not ready, settled ready, one persisted manifest, deleted source absent. Actual historical25->24->25->original backup is a distinct corroborating scope, not a tagged release.",
+      "auditor_lines": [
+        240,
+        246
+      ],
+      "missing_required_step": null
+    },
+    {
+      "original_step": "保持raw故障工件",
+      "local_case": null,
+      "local_status": null,
+      "additional_cases": [],
+      "actual_evidence": "Original immutable499-member recovery artifact, bound exact products/observer/source, original command/stdout/stderr and fault results. Original receiver/root review accepted custody; this read-only review does not reopen or revalidate its ZIP.",
+      "auditor_lines": null,
+      "missing_required_step": null
+    }
+  ],
+  "all_seven_exact_original_Rust_controls": [
+    {
+      "executable_sha256": "bc15dc71073980e15c21d72bbcd5e9be5deb5bca46173158c40f7c376759cb4a",
+      "exit": 0,
+      "test": "isolated_sigkill_reopen_replay_preparation"
+    },
+    {
+      "executable_sha256": "5a70d6af0d02502150210f9c97233bd2627d395c40baaea0975bb565f7f3e767",
+      "exit": 0,
+      "test": "independently_observed_sigkill_boundaries"
+    },
+    {
+      "executable_sha256": "637a44b302464f6d2ef34fa9376604c135bb0999de84e599a79bab3439324dde",
+      "exit": 0,
+      "test": "index_db_rebuild::fault_tests::owned_process_kill_between_sidecar_cleanup_rename_and_reopen_preserves_database"
+    },
+    {
+      "executable_sha256": "637a44b302464f6d2ef34fa9376604c135bb0999de84e599a79bab3439324dde",
+      "exit": 0,
+      "test": "index_db_rebuild::fault_tests::writer_mutex_spans_rename_reopen_and_connection_installation"
+    },
+    {
+      "executable_sha256": "5a9b3fbd776327b5f7966526bf85c1666f9ad416d7184c75d2e10c9ddaf1d7a8",
+      "exit": 0,
+      "test": "meta_tampering_is_detected_as_corrupt"
+    },
+    {
+      "executable_sha256": "5a9b3fbd776327b5f7966526bf85c1666f9ad416d7184c75d2e10c9ddaf1d7a8",
+      "exit": 0,
+      "test": "different_spaces_never_cross_hit"
+    },
+    {
+      "executable_sha256": "5a9b3fbd776327b5f7966526bf85c1666f9ad416d7184c75d2e10c9ddaf1d7a8",
+      "exit": 0,
+      "test": "namespaces_are_isolated"
+    }
+  ],
+  "original_crash_matrices": {
+    "p7-crash-raw": {
+      "cases": 12,
+      "points": [
+        "uncommitted",
+        "claimed",
+        "artifact",
+        "published"
+      ],
+      "results_sha256": "b1d6d1aa348aadbcb3fc9841f944a528c48dbe9d43e67c39fe44a86d95a2f9b7",
+      "seeds": [
+        17,
+        29,
+        43
+      ]
+    },
+    "independent-crash-raw": {
+      "cases": 15,
+      "points": [
+        "uncommitted",
+        "claimed",
+        "response",
+        "artifact",
+        "published"
+      ],
+      "results_sha256": "751bcb831f2cf7ebb1e1b49546d82f639a149de5af819f3229dc2f7d13fdcf19",
+      "seeds": [
+        101,
+        211,
+        307
+      ]
+    }
+  },
+  "original_active_seeds": [
+    {
+      "cases": [
+        "active_provider_network_disconnect",
+        "active_semantic_cache_corruption",
+        "active_cache_reader_rejects_unknown_format",
+        "concurrent_database_replacement"
+      ],
+      "event_counts": {
+        "database_read_only": 2,
+        "http_disconnect": 1,
+        "http_request": 6,
+        "http_response": 5,
+        "mcp_request": 44,
+        "mcp_response": 44,
+        "product_exit": 2,
+        "spawn": 2
+      },
+      "events": 106,
+      "paid_cost": null,
+      "provider_requests": 6,
+      "seed": 223
+    },
+    {
+      "cases": [
+        "active_provider_network_disconnect",
+        "active_semantic_cache_corruption",
+        "active_cache_reader_rejects_unknown_format",
+        "concurrent_database_replacement"
+      ],
+      "event_counts": {
+        "database_read_only": 2,
+        "http_disconnect": 1,
+        "http_request": 6,
+        "http_response": 5,
+        "mcp_request": 42,
+        "mcp_response": 42,
+        "product_exit": 2,
+        "spawn": 2
+      },
+      "events": 102,
+      "paid_cost": null,
+      "provider_requests": 6,
+      "seed": 227
+    },
+    {
+      "cases": [
+        "active_provider_network_disconnect",
+        "active_semantic_cache_corruption",
+        "active_cache_reader_rejects_unknown_format",
+        "concurrent_database_replacement"
+      ],
+      "event_counts": {
+        "database_read_only": 2,
+        "http_disconnect": 1,
+        "http_request": 6,
+        "http_response": 5,
+        "mcp_request": 43,
+        "mcp_response": 43,
+        "product_exit": 2,
+        "spawn": 2
+      },
+      "events": 104,
+      "paid_cost": null,
+      "provider_requests": 6,
+      "seed": 229
+    }
+  ],
+  "current_G2_regression_corroboration": {
+    "job": 114135224079,
+    "run": 38025451919,
+    "log": {
+      "path": "round42-new45-study/114135224079-original-main.log",
+      "bytes": 1098463,
+      "sha256": "19dd6cb83ed8e7a9bfb93d9b3ba8b05465a6bffabf69824c381e5c2dfd042354",
+      "git_blob": "b42f2f685f4f2caaaa0497db6706399d9f89d998"
+    },
+    "actual_checkout": {
+      "sha": "9c4f29f5b290bfcd60375bc1c1c7a194b5099eae",
+      "line": 190,
+      "parents": [
+        "b9b089bb4eae072affe9326681d4980eae15fd84",
+        "f97c5068d056969705e8387ba1f37d83847f5bee"
+      ],
+      "tree": "39a053ae49b486764751a570d164e7cd41d7ff29",
+      "evidence": "Actual checkout from this log; exact parents/tree reused from previously accepted official 05:10 bridge, immutable report ba71a59e609fdd31e73f20b304257ddfca89aae5 and support90e1acc5019ad32746af663573aeac35fe2a1a38. No new tree fetch."
+    },
+    "exact_five_observations": [
+      {
+        "line": 871,
+        "name": "index_db_rebuild::fault_tests::owned_process_kill_between_sidecar_cleanup_rename_and_reopen_preserves_database",
+        "original": "2026-10-10T05:00:29.3594567Z test index_db_rebuild::fault_tests::owned_process_kill_between_sidecar_cleanup_rename_and_reopen_preserves_database ... ok",
+        "result": "ok"
+      },
+      {
+        "line": 873,
+        "name": "index_db_rebuild::fault_tests::writer_mutex_spans_rename_reopen_and_connection_installation",
+        "original": "2026-10-10T05:00:29.4790661Z test index_db_rebuild::fault_tests::writer_mutex_spans_rename_reopen_and_connection_installation ... ok",
+        "result": "ok"
+      },
+      {
+        "line": 5155,
+        "name": "different_spaces_never_cross_hit",
+        "original": "2026-10-10T05:05:04.3615299Z test different_spaces_never_cross_hit ... ok",
+        "result": "ok"
+      },
+      {
+        "line": 5161,
+        "name": "namespaces_are_isolated",
+        "original": "2026-10-10T05:05:04.3687277Z test namespaces_are_isolated ... ok",
+        "result": "ok"
+      },
+      {
+        "line": 5165,
+        "name": "meta_tampering_is_detected_as_corrupt",
+        "original": "2026-10-10T05:05:04.3713783Z test meta_tampering_is_detected_as_corrupt ... ok",
+        "result": "ok"
+      }
+    ],
+    "other_two_original_crash_controls_in_this_selected_main_scan": "not observed; do not claim a current rerun from their historical pass",
+    "scope": "Current main engineering regressions corroborate applicability; historical active full fault exercise remains G275, not relabelled as G2/main."
+  },
+  "eight_scope_source_applicability": {
+    "official_b9_to_G2_metadata_git": "c8ec8aad984ef58a1c62774d0d6a009065961bfe",
+    "total_changed_paths": 33,
+    "shared_changes": [
+      "oracle/streaming.rs borrowed sorted cursor: accepted source review preserves complete dual spool, 15 tables, duplicates, Value semantics, original budgets and A-before-B error order; three new methods each pass in default and eval-http. No speedup claim.",
+      "mutation_case.rs and p8_scale native/CLI shared helpers: isolated descriptive scope is explicit; accepted review preserves old default/full/cold/wide/isolated-N30 behavior; p8_scale22 methods pass in both main configurations. New45 results remain a separate study.",
+      "No index preparation/reconciliation/freshness production changes, query runner/statistics/resource sampler, semantic lifecycle/cache, migration or failure-gate implementation changes in the bounded b9-to-G2 official file list."
+    ],
+    "direct_old_eight_scope_changes": [],
+    "admission_and_source_review": {
+      "original_main": "b9b089bb4eae072affe9326681d4980eae15fd84",
+      "actual_source": "f97c5068d056969705e8387ba1f37d83847f5bee",
+      "tree": "39a053ae49b486764751a570d164e7cd41d7ff29",
+      "product_P": "3481da0baf46bf510580951a4f5fbc9cb2255ae5",
+      "review_R": "533e900cf83900f726e92835956137356081861f",
+      "canonical": {
+        "git_blob": "f9965c6df16bcf1665655f2d951db99d0258e5d3",
+        "commit": "533e900cf83900f726e92835956137356081861f",
+        "path": "artifacts/checkpoints/p8-task-profile-format-fix-bfcc-20261010/independent-source-review.json"
+      },
+      "combination_peer": {
+        "git_blob": "8adf965b33663cb72c138d3db69dce58142df0a7",
+        "commit": "a5158fd0b255fc51d57ce68bd7cae3b7346e8ff9"
+      },
+      "borrowed_cursor_peer": {
+        "git_blob": "da856258714effb3addab7f5c61c0e49d27a7895",
+        "commit": "a5158fd0b255fc51d57ce68bd7cae3b7346e8ff9"
+      },
+      "main_regression_peer": {
+        "git_blob": "a1c7594462f7d33ea7ebcb8998a46d0e3163086a",
+        "commit": "3f5928a6acf8172fb04e0c7f5474846b45a0dd20",
+        "path": "artifacts/checkpoints/p8-round42-complete-bfcc-20261010/PR201-main-terminal/independent-main-terminal-review.json"
+      },
+      "original_main_log": {
+        "path": "/workspace/scratch/bfccb8494ba0/round42-new45-study/114135224079-original-main.log",
+        "bytes": 1098463,
+        "sha256": "19dd6cb83ed8e7a9bfb93d9b3ba8b05465a6bffabf69824c381e5c2dfd042354",
+        "git_blob": "b42f2f685f4f2caaaa0497db6706399d9f89d998",
+        "contains_original_BOM": true
+      },
+      "actual_CI_checkout": {
+        "sha": "9c4f29f5b290bfcd60375bc1c1c7a194b5099eae",
+        "line": 190,
+        "parents": [
+          "b9b089bb4eae072affe9326681d4980eae15fd84",
+          "f97c5068d056969705e8387ba1f37d83847f5bee"
+        ],
+        "tree": "39a053ae49b486764751a570d164e7cd41d7ff29",
+        "evidence": "Actual checkout from this log; exact parents/tree reused from previously accepted official 05:10 bridge, immutable report ba71a59e609fdd31e73f20b304257ddfca89aae5 and support90e1acc5019ad32746af663573aeac35fe2a1a38. No new tree fetch."
+      },
+      "scope": "The old eight runs keep their original source and execution identities. Current source reviews plus actual G2-tree engineering regression provide applicability evidence, not a claim to rerun old mixed/platform/rollback/soak measurements on G2."
+    },
+    "no_new_scope_changes_from_G2_to_main": true,
+    "no_whole_current_source_rerun_claim": true
+  },
+  "eight_task_ids": [
+    "P8-007",
+    "P8-008",
+    "P8-009",
+    "P8-010",
+    "P8-011",
+    "P8-012",
+    "P8-013",
+    "P8-016"
+  ],
+  "P8_007_owner": "/root/execution_recon independently maps mixed/backfill original workload and concurrency; this report does not replace that peer.",
+  "preserved_scope": [
+    "Actual retained products use dev profile; cannot replace G8 full release-profile validation.",
+    "Actual unmodified public source revision 277/schema24 is not a tagged release; original task text does not require a tagged release pair.",
+    "The actual pair sequence is G25 -> old24 -> G25 -> original G25 backup; 24 is established from the old binary source and actual rebuild, not a fabricated preceding run.",
+    "Paid-provider cost remains null; all enabled network faults use owned loopback fake provider. No paid/live or physical-device/power-loss claim.",
+    "P8-011 dependencies P7-020/P8-007/P8-010 and P8-016 dependencies P7-020/P8-012/P8-013 remain separate; old-functional full CI and G8 are not certified by this artifact.",
+    "No product or Cargo was executed by this author reception; large binaries were streamed from retained ZIP for exact SHA and size, not omitted."
+  ],
+  "remaining_final_acceptance": {
+    "research_as_of_existing_0601_receipts": {
+      "accepted_cells": 37,
+      "total_cells": 45,
+      "accepted_records": 69,
+      "total_records": 85,
+      "pending_cells": 8,
+      "pending_records": 16,
+      "pending_population": "all8 profiles at100k",
+      "cold_points_accepted": 4,
+      "cold_points_total": 5
+    },
+    "needs_actual_originals": [
+      "remaining8 complete whole records with original producer outcomes",
+      "original Actions aggregate/full log and complete45 population/custody",
+      "independent clause-by-clause P8-006 decision using original contract",
+      "per-ID dependency/accepted-scope decision before any task write"
+    ],
+    "not_new_requirements": [
+      "no new blanket eight-task rerun",
+      "no extra150/N30 gate for this registered N1 task route",
+      "no repeat original fault exercise solely because local subset retains4not_run"
+    ],
+    "tasks_modified": false,
+    "TODO_credit": 0
+  },
+  "retrieval_and_execution_boundary": {
+    "Git_immutable_small_reports_read": true,
+    "Actions_downloads": 0,
+    "old_ZIP_open_CRC": 0,
+    "product_or_Rust_or_original_auditor_execution": 0,
+    "local_targeted_reader_only": true,
+    "computed_Gc8_review_blob_404_preserved": "original-responses/computed-runtime-blob-404-original.json",
+    "local_G275_ls_tree": {
+      "exit_code": 128,
+      "reason": "old tree metadata not materialized; NoLazy prevented implicit fetch",
+      "inference": "No exact whole G275-to-main byte equality claimed."
+    },
+    "missing_local_closeout_path": "Targeted rg returned2 because prior closeout log path absent; present main matched5 methods. No repeat download or fabricated two-crash current result."
+  }
+}

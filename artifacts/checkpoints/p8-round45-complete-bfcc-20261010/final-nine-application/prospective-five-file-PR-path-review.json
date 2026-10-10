@@ -1,0 +1,281 @@
+{
+  "schema": "prospective-five-progress-doc-PR-v15-and-CI-path-review-v1",
+  "apply_now": false,
+  "reviewer": "/root/todo_audit",
+  "current_main": "0da9a2800d2b3112d584a8bad4f79785e01162a9",
+  "same_tree_source": "f97c5068d056969705e8387ba1f37d83847f5bee",
+  "tree": "39a053ae49b486764751a570d164e7cd41d7ff29",
+  "five_allowed_changed_paths": [
+    "README.md",
+    "docs/roadmap/code-index-v2/tasks.json",
+    "docs/roadmap/code-index-v2/05-TODO.md",
+    "docs/roadmap/code-index-v2/README.md",
+    "docs/roadmap/code-index-v2/08-HANDOFF.md"
+  ],
+  "verdict": "no_new_P_R_G_or_registry_rebinding_for_exact_five_progress_files",
+  "pin_disposition": {
+    "product_source": "3481da0baf46bf510580951a4f5fbc9cb2255ae5",
+    "review_source": "533e900cf83900f726e92835956137356081861f",
+    "guard_blob": "8dddb85f5d09e6fa9543f8ab0cce9ea9e06050d2",
+    "registry_blob": "550263e844b8ff2577a7ca0f81a61db401f0e5bb",
+    "unchanged": true,
+    "complete_inputs": 1096,
+    "BASE_delta": 80,
+    "validation_inputs": 157,
+    "five_paths_in_any_of_three_maps": false
+  },
+  "rule_basis": [
+    {
+      "file": "scripts/verify_reviewed_source_v15.py",
+      "git_blob": "8dddb85f5d09e6fa9543f8ab0cce9ea9e06050d2",
+      "lines": "18-41,98-130,141-202,229-240",
+      "finding": "Product domain crates/Cargo, validation domain scripts/.github/workflows/tests/source_integrity; docs five are outside all three actual registry maps. Current HEAD need not equal PRODUCT: exact product/validation bytes and review are fixed."
+    },
+    {
+      "file": "scripts/v15_historical_context.py",
+      "git_blob": "f7e68c27ce4d728a2e637e34fe863f74c25d485d",
+      "lines": "21-40,114-127,152-157",
+      "finding": "Historical BASE and explicit/registry protected records remain immutable. Same helper/blob and fixed BASE as the accepted PR197 five-path review; no new current history-record allowlist invented."
+    },
+    {
+      "file": "scripts/verify_historical_integrations_v2.py",
+      "git_blob": "24b068c0e17ac3b49f98e8fb57843d3286ce264a",
+      "lines": "28-30,183-217,295-315",
+      "finding": "TASK_PROGRESS permits exactly status/evidence/implementation_notes. PLAN_PROGRESS permits status/current_phase/next_task/last_implementation_date/execution_note. All other task/plan values, inventory, id order stay frozen; normal code_index_plan checker is invoked and business evidence acceptance is explicitly not granted."
+    },
+    {
+      "file": "scripts/code_index_plan.py",
+      "git_blob": "378ff47434a67a78dd1194b1fdf15dffda3fbfc3",
+      "lines": "197-224",
+      "finding": "--write produces four views from tasks; no-argument check validates them. tasks status/evidence/dependencies/navigation must first be correctly edited with approved real facts."
+    }
+  ],
+  "PR197_precedent": {
+    "review_git_blob": "77db45eb277c0ec2c5de4daaab67a1a8e5ab0576",
+    "actual_docs_bridge_git_blob": "2d47ba7dc1d2465156b62c25431214efac5044af",
+    "actual_docs_commit": "746181eb0efcecd87e9e174bbefedc96acaca7cb",
+    "parent": "51138c236cf2ed47858e2306f9c7bfd3600aaef9",
+    "exact_same_five_paths": true,
+    "registry_rebind_required": false,
+    "old_actual_generator_exits": [
+      0,
+      0
+    ],
+    "source_role": "Historical precedent only, not a future PR execution result; its five after-blobs are the present original five inputs. Current validation domain has grown to157 but the five docs still do not enter it."
+  },
+  "prospective_CI": {
+    "event": "New ordinary pull_request opened/synchronize/reopened with exactly these five doc changes, no study labels or dispatch",
+    "ordinary_workflows": [
+      {
+        "workflow": "ci.yml",
+        "jobs": [
+          "check",
+          "msrv",
+          "security"
+        ],
+        "expanded_jobs": 3
+      },
+      {
+        "workflow": "p7-engineering.yml",
+        "jobs": [
+          "engineering"
+        ],
+        "expanded_jobs": 1
+      },
+      {
+        "workflow": "p7-closeout.yml",
+        "jobs": [
+          "closeout",
+          "mechanism",
+          "offline(default)",
+          "offline(semantic)"
+        ],
+        "expanded_jobs": 4
+      },
+      {
+        "workflow": "p8-lifecycle.yml",
+        "jobs": [
+          "lifecycle"
+        ],
+        "expanded_jobs": 1
+      },
+      {
+        "workflow": "p8-platform.yml",
+        "jobs": [
+          "actual recovery and rollback matrix",
+          "2platform x 2toolchain x 2package cold-build cells",
+          "all eight platform cells"
+        ],
+        "expanded_jobs": 10
+      }
+    ],
+    "expanded_ordinary_job_count": 19,
+    "paths_filtered_not_triggered": [
+      {
+        "workflow": "p8-gates.yml",
+        "jobs": 1,
+        "reason": "pull_request.paths matches product/Cargo/listed gate scripts/workflow; none of five progress docs match."
+      },
+      {
+        "workflow": "p8-runtime.yml",
+        "jobs": 6,
+        "reason": "pull_request.paths matches product/Cargo/runtime and related scripts/workflow; none of five progress docs match. No fresh mixed C1/4/8/16, one-hour soak or fake_backfill is implied by this docs PR."
+      }
+    ],
+    "study_workflows": "p8-scale,wide,cold,profile,task-profile and100k-diagnostic only workflow_dispatch or matching labeled event. Ordinary docs PR does not retrigger existing cohorts. db-lock uses its exact branch/create/dispatch; surface controls its exact push branch. No triggers requested.",
+    "original_main_check_commands_relevant": [
+      "python3 scripts/code_index_plan.py",
+      "python3 scripts/p8_facts.py --check",
+      "python3 scripts/verify_reviewed_source_v15.py --source-version p8-completion-source-20261009-v15",
+      "python3 scripts/verify_historical_integrations_v2.py"
+    ],
+    "other_ordinary_steps": "Original formatter/Clippy/default/MSRV/security, P7 and platform/lifecycle workloads remain dictated by unchanged workflows; no alteration or extra workflow for this preparation.",
+    "required_status_caveat": "19 is the source-derived automatic job expansion, not a newly imposed acceptance denominator. Branch-protection/ruleset administration was not queried and no claim is made to enumerate externally configured required contexts. Future actual PR checks and existing merge rules remain authoritative."
+  },
+  "minimal_path": [
+    "After real45/85+original Actions aggregate+formal006 and original dependency decisions, apply approved tasks-only progress patch in the actual-main isolated view.",
+    "Run original code_index_plan --write and no-argument check once each, retaining receipts.",
+    "Review exact five-file diff and preserved other183/raw definitions/deps/history. Keep scripts/guards/registries and all source/protocol unchanged.",
+    "Commit ordinary docs progress change and create normal PR against fresh main; original CI handles admission. No synthetic new P/R/G chain, no study label, no duplicate measurement or forced runtime-path run."
+  ],
+  "non_execution_boundary": {
+    "v15_executed": false,
+    "generator_executed": false,
+    "tests_or_workloads_executed": false,
+    "Actions_downloads": false,
+    "task_state_changed": false,
+    "ref_or_PR_mutations": false
+  },
+  "bounded_lookup_notes": [
+    "A prior computed historical-registry-paths blob b40644dcb3227d76a3d82b3fd8aa28f79b50827b returned404 once and was not retried; no fabricated contents. Exact already-published PR197 review+bridge and unchanged historical-helper/BASE provide the five-path historical-protection precedent.",
+    "Local NoLazy ls-tree of fixed historical BASE returned128 because that selected source cache lacks its commit; no fetch/guard run was substituted."
+  ],
+  "sources": [
+    {
+      "path": "scripts/verify_reviewed_source_v15.py",
+      "git_blob": "8dddb85f5d09e6fa9543f8ab0cce9ea9e06050d2",
+      "bytes": 11094,
+      "sha256": "504575b1ee0db7aecbc6d75eee4a9875fb5482cf4286cd9bd0ef21a2353f63fc"
+    },
+    {
+      "path": "scripts/reviewed-source-registry-v15.json",
+      "git_blob": "550263e844b8ff2577a7ca0f81a61db401f0e5bb",
+      "bytes": 183121,
+      "sha256": "cce1f24ebccdf007117004b7d7e9cec8377fdb8aa106e33d379e0c5b9d95354f"
+    },
+    {
+      "path": "scripts/v15_historical_context.py",
+      "git_blob": "f7e68c27ce4d728a2e637e34fe863f74c25d485d",
+      "bytes": 8682,
+      "sha256": "efeeaf55f570b94d80da3f79fea9ca55f439cfc94e02f9dd73fc2b12be5f2a20"
+    },
+    {
+      "path": "scripts/verify_historical_integrations_v2.py",
+      "git_blob": "24b068c0e17ac3b49f98e8fb57843d3286ce264a",
+      "bytes": 16896,
+      "sha256": "bdf0713772d3514614b4916854c425c1183d31212c1ff115205431bed0f01288"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "git_blob": "8c7325eb88b791f909e72c4b6c79b417185e4386",
+      "bytes": 11046,
+      "sha256": "7e659bc2f8cf1565238b2903864639a2e4bfc0887721d9482f128f6e83b81914"
+    },
+    {
+      "path": ".github/workflows/p7-closeout.yml",
+      "git_blob": "356e1abbb1d7eee729af9effbc23d143328fd76c",
+      "bytes": 21396,
+      "sha256": "4b9c1056ac229627075e9187f8b823abde451c2ce6cd2ae68933ff73d55e5cc8"
+    },
+    {
+      "path": ".github/workflows/p7-engineering.yml",
+      "git_blob": "f99933edf0bd03c0d9fa5ba520ed94dfbbd49e12",
+      "bytes": 5428,
+      "sha256": "4e71be09a1090bd3e74eae46b9b0c78bb88a0ed245e5db453e45293c2be345f3"
+    },
+    {
+      "path": ".github/workflows/p8-gates.yml",
+      "git_blob": "91c3f8fc631c01bbcd326ec17c74f83a75f28d34",
+      "bytes": 1255,
+      "sha256": "4cdea43584221217acc7b33b2489b91b7dc4e6f02cfb5e42330b0d64c9cc65ca"
+    },
+    {
+      "path": ".github/workflows/p8-lifecycle.yml",
+      "git_blob": "577ba891ec1eb56da364087c1ad180045185f61c",
+      "bytes": 5387,
+      "sha256": "1c29a376003afd380c09f75e3ab17569449aa3b83cb45a637866e14aebb083ec"
+    },
+    {
+      "path": ".github/workflows/p8-platform.yml",
+      "git_blob": "795ae46324c451cb8736c77c19229f285783eec8",
+      "bytes": 6812,
+      "sha256": "9f1bc4bd1cf715836987332906d4c72f85bd835652bfe196de56a9f1945a0ff4"
+    },
+    {
+      "path": ".github/workflows/p8-runtime.yml",
+      "git_blob": "ad73ee803df6936c2750b3e1045bc397e5d154f3",
+      "bytes": 5782,
+      "sha256": "82e39dadd5557d800450ead6cf1d861e382283447af2fd35eb4c952d7897c09f"
+    },
+    {
+      "path": "history/PR197-final-five-doc-review.json",
+      "git_blob": "77db45eb277c0ec2c5de4daaab67a1a8e5ab0576",
+      "bytes": 12233,
+      "sha256": "82178277bba70e269a32b38616e8c1c01c58b2352c9b4c0ec343f66680a6e7c7"
+    },
+    {
+      "path": "history/PR197-actual-docs-source-bridge.json",
+      "git_blob": "2d47ba7dc1d2465156b62c25431214efac5044af",
+      "bytes": 1615,
+      "sha256": "a9de04b065efca7e441df61af669e760ea7136fd3ce5023a875290ed9ccfec00"
+    },
+    {
+      "path": ".github/workflows/p8-cold.yml",
+      "git_blob": "12af60f35e1555cfde812b3b6f7f63bf94cba9b8",
+      "bytes": 8819,
+      "sha256": "6103586e6ad83a962b548a8685e00096ab7862cd6e788d951a2097daebce3da6"
+    },
+    {
+      "path": ".github/workflows/p8-db-lock-observation.yml",
+      "git_blob": "be748aa8c8ee902661fa81bc1be3683a508e9d27",
+      "bytes": 5547,
+      "sha256": "1d600566ca809039f90f27e858491c5d4b18cdaeffd4caa85acdac43f299603a"
+    },
+    {
+      "path": ".github/workflows/p8-profile.yml",
+      "git_blob": "d1bc4ce9f9be397b7b1673b4996fea41cc4f8566",
+      "bytes": 30744,
+      "sha256": "fcbaecc807b5eb7de70a5e42d42293f3eb6688c447c07264c2193528586a5681"
+    },
+    {
+      "path": ".github/workflows/p8-scale-100k-diagnostic.yml",
+      "git_blob": "56f8901136e48e06788aefef2413e6e83d4ce106",
+      "bytes": 23664,
+      "sha256": "4333fe7a904df1fc00cde611469c76e714c3fb41944a4269f37c88a8d290d994"
+    },
+    {
+      "path": ".github/workflows/p8-scale-wide-dirty.yml",
+      "git_blob": "7fa4723860df70178ce6ed58cd305acaa7c76069",
+      "bytes": 9544,
+      "sha256": "6a85b4d0a3e93c2ec77f49b7804d1320510cdaa457673c701846a70c21f830a9"
+    },
+    {
+      "path": ".github/workflows/p8-scale.yml",
+      "git_blob": "74f1b64ed447ef24da584f1c1f8d090d2fa1e03e",
+      "bytes": 8621,
+      "sha256": "4258476dd37d8af223aaa7ad45d7c97d7298be1ba4ec5ffd9af9949785ed8f3d"
+    },
+    {
+      "path": ".github/workflows/p8-surface-window-controls.yml",
+      "git_blob": "34a96f91e550313659cd598ce3466b82bfc310d8",
+      "bytes": 12090,
+      "sha256": "f27250c1c66238aa2b60b7ff53c013611198e8653227851c76311f2efa56ed0a"
+    },
+    {
+      "path": ".github/workflows/p8-task-profile.yml",
+      "git_blob": "a99772d3d4ed4ba716f38041eed9d59313013ddd",
+      "bytes": 27188,
+      "sha256": "747d85f5905fd8b81b62283af18f696843fa4e6b29849e4972acdeee998266d9"
+    }
+  ]
+}

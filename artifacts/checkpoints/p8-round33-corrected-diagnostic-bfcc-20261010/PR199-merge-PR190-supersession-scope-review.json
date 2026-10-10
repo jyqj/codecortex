@@ -1,0 +1,548 @@
+{
+  "schema": "PR199-engineering-merge-and-PR190-supersession-preparation-v1",
+  "created_utc": "2026-10-10T01:18:21.501261+00:00",
+  "reviewer": "/root/pr_triage",
+  "apply_now": false,
+  "actual_merge": null,
+  "source": {
+    "PR199": 199,
+    "G": "4786c1457b47c5baf4c09d32b96048795e863111",
+    "product": "2b6e9ebf2baeb8102df72d09360700e23487f870",
+    "R": "ca10314fbc5a4ffa28ada5b7c1097c1091b48aa4",
+    "known_base": "09d4454fa45455dc5a8bfdfec67e31bb7ed162c7",
+    "donor_PR190_head": "f6750cad0df45af4ec2dddc456e76cc188f3a35a"
+  },
+  "latest_status_scope": {
+    "owner": "/root",
+    "observed_at": "2026-10-10T01:11:49Z",
+    "total_checks": 28,
+    "success": 25,
+    "conditional_skips": 2,
+    "running": 1,
+    "failures": 0,
+    "remaining_job": 114082032045,
+    "remaining_run": 38008269646,
+    "soak_step_started_at": "2026-10-10T00:24:40Z",
+    "this_review_made_new_official_status_requests": false,
+    "status_must_be_refreshed_by_owner_before_merge": true
+  },
+  "accepted_existing_evidence": {
+    "main_review_git": "aa198e0b08685de49d81745be023ddfd0d7ae35b",
+    "main_original_log_git": "37a142e0338f21104f06931b731a9f3e21daf6ba",
+    "closeout_review_git": "952d9b6f96b6fb10d1441398d29a874a6d43e0e5",
+    "closeout_original_log_git": "e9c4003615f8af33330bfb149f829096a27b6703",
+    "published_checkpoint": "77252df4208b9679a99ad3d018d864c4d05cda41",
+    "main_borrowed_controls": "Four unique methods; each passed in default workspace and eval-http contexts. Both probes remain ignored in both contexts.",
+    "main_checkout": {
+      "commit": "d51e4d4ad298b2f883225fd847c5fe213cc53bc7",
+      "kind": "PR test merge",
+      "raw_proof": [
+        {
+          "line": 165,
+          "text": "HEAD is now at d51e4d4a Merge 4786c1457b47c5baf4c09d32b96048795e863111 into 09d4454fa45455dc5a8bfdfec67e31bb7ed162c7"
+        },
+        {
+          "line": 166,
+          "text": "##[endgroup]"
+        },
+        {
+          "line": 167,
+          "text": "[command]/usr/bin/git log -1 --format=%H"
+        },
+        {
+          "line": 168,
+          "text": "d51e4d4ad298b2f883225fd847c5fe213cc53bc7"
+        }
+      ],
+      "tree": "6518a5b317683a24ded3a69b027da6a04b8c996c",
+      "ordered_parents": [
+        "09d4454fa45455dc5a8bfdfec67e31bb7ed162c7",
+        "4786c1457b47c5baf4c09d32b96048795e863111"
+      ],
+      "whole_tree_equals_G": true,
+      "basis": "Already retrieved official merge commit plus original root bridge; reused without API request. This is not a direct G checkout."
+    },
+    "source_admission": {
+      "original_command_block": [
+        {
+          "line": 5281,
+          "text": "# Read-only AST comparator object; never check out or run its driver."
+        },
+        {
+          "line": 5282,
+          "text": "git fetch --no-tags origin da8b618cbf8b67683c6b16880419089f7159c15e"
+        },
+        {
+          "line": 5283,
+          "text": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/resource_harness -v"
+        },
+        {
+          "line": 5284,
+          "text": "python3 scripts/code_index_plan.py"
+        },
+        {
+          "line": 5285,
+          "text": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s scripts/tests -p 'test_p8_*.py' -v"
+        },
+        {
+          "line": 5286,
+          "text": "python3 scripts/p8_facts.py --check"
+        },
+        {
+          "line": 5287,
+          "text": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/source_integrity -v"
+        },
+        {
+          "line": 5288,
+          "text": "python3 scripts/verify_reviewed_source_v15.py --source-version p8-completion-source-20261009-v15"
+        },
+        {
+          "line": 5289,
+          "text": "python3 scripts/verify_historical_integrations_v2.py"
+        }
+      ],
+      "actual_v15_stdout": {
+        "line": 6007,
+        "result": {
+          "schema_version": 10,
+          "source_version": "p8-completion-source-20261009-v15",
+          "previous_source_version": "p8-oracle-compat-source-20261008-v14",
+          "base_source": "7354db236c9d9850a75f31672697ae9eab44565e",
+          "product_source": "2b6e9ebf2baeb8102df72d09360700e23487f870",
+          "review_source": "ca10314fbc5a4ffa28ada5b7c1097c1091b48aa4",
+          "scope": "independently_reviewed_source_and_validation_inputs",
+          "runtime_and_quality_claims": "require_separate_execution_evidence",
+          "status": "passed",
+          "complete_inputs": 1096,
+          "executed_previous_proof": "p8-oracle-compat-source-20261008-v14"
+        }
+      },
+      "task_plan_stdout_records": [
+        {
+          "line": 5351,
+          "result": {
+            "status": "passed",
+            "task_count": 192,
+            "states": {
+              "done": 164,
+              "blocked": 1,
+              "in_progress": 15,
+              "todo": 12
+            },
+            "task_sha256": "e0a612bb4d42f63be01c17e77ff627db3581200275fbfa9e60679399e90877c6",
+            "views": 4
+          }
+        },
+        {
+          "line": 6016,
+          "result": {
+            "status": "passed",
+            "task_count": 192,
+            "states": {
+              "done": 164,
+              "blocked": 1,
+              "in_progress": 15,
+              "todo": 12
+            },
+            "task_sha256": "e0a612bb4d42f63be01c17e77ff627db3581200275fbfa9e60679399e90877c6",
+            "views": 4
+          }
+        },
+        {
+          "line": 9628,
+          "result": {
+            "status": "passed",
+            "task_count": 192,
+            "states": {
+              "done": 164,
+              "blocked": 1,
+              "in_progress": 15,
+              "todo": 12
+            },
+            "task_sha256": "e0a612bb4d42f63be01c17e77ff627db3581200275fbfa9e60679399e90877c6",
+            "views": 4
+          }
+        }
+      ],
+      "source_integrity_181_tests": {
+        "line": 6004,
+        "text": "Ran 181 tests in 395.704s",
+        "next_nonblank": [
+          {
+            "line": 6006,
+            "text": "OK"
+          },
+          {
+            "line": 6007,
+            "text": "{\"schema_version\": 10, \"source_version\": \"p8-completion-source-20261009-v15\", \"previous_source_version\": \"p8-oracle-compat-source-20261008-v14\", \"base_source\": \"7354db236c9d9850a75f31672697ae9eab44565e\", \"product_source\": \"2b6e9ebf2baeb8102df72d09360700e23487f870\", \"review_source\": \"ca10314fbc5a4ffa28ada5b7c1097c1091b48aa4\", \"scope\": \"independently_reviewed_source_and_validation_inputs\", \"runtime_and_quality_claims\": \"require_separate_execution_evidence\", \"status\": \"passed\", \"complete_inputs\": 1096, \"executed_previous_proof\": \"p8-oracle-compat-source-20261008-v14\"}"
+          },
+          {
+            "line": 6008,
+            "text": "From https://github.com/jyqj/codecortex"
+          }
+        ]
+      },
+      "historical_integrations_stdout": {
+        "line": 6017,
+        "result": {
+          "V19": "open",
+          "current_plan_check": "passed",
+          "current_task_sha256": "e0a612bb4d42f63be01c17e77ff627db3581200275fbfa9e60679399e90877c6",
+          "e3_imported_files": 58,
+          "e3_inputs": 708,
+          "e3_integration": "88f2cf099c8b81f3acef485fd5ac9b01c63ce790",
+          "e3_source": "e3c04fed903c4d0e3c26b5d7cf0e055a6f7c5207",
+          "evidence_content_acceptance": "not_granted_by_this_verifier",
+          "fault_runtime_tests": "not_run",
+          "full_P7": "open",
+          "legacy_files_unchanged": 9,
+          "packing_evidence_files": 246,
+          "packing_inputs": 731,
+          "packing_integration": "37dd042eaa1209a86e0cafdcd92ae77e036e76f5",
+          "packing_source": "90858afae647a513537bf118932a7ba5020ee98b",
+          "quality_and_100k": "not_inherited",
+          "schema_version": 2,
+          "scope": "historical_integrity_and_current_task_definitions_only",
+          "state_changes_since_baseline": [
+            {
+              "baseline": "todo",
+              "current": "done",
+              "task_id": "P7-011"
+            },
+            {
+              "baseline": "todo",
+              "current": "done",
+              "task_id": "P7-012"
+            },
+            {
+              "baseline": "todo",
+              "current": "done",
+              "task_id": "P7-013"
+            },
+            {
+              "baseline": "in_progress",
+              "current": "done",
+              "task_id": "P7-014"
+            },
+            {
+              "baseline": "todo",
+              "current": "done",
+              "task_id": "P7-015"
+            },
+            {
+              "baseline": "todo",
+              "current": "done",
+              "task_id": "P7-016"
+            },
+            {
+              "baseline": "todo",
+              "current": "done",
+              "task_id": "P7-017"
+            },
+            {
+              "baseline": "todo",
+              "current": "blocked",
+              "task_id": "P7-018"
+            },
+            {
+              "baseline": "todo",
+              "current": "done",
+              "task_id": "P7-019"
+            },
+            {
+              "baseline": "todo",
+              "current": "done",
+              "task_id": "P7-020"
+            },
+            {
+              "baseline": "todo",
+              "current": "done",
+              "task_id": "P8-001"
+            },
+            {
+              "baseline": "todo",
+              "current": "done",
+              "task_id": "P8-002"
+            },
+            {
+              "baseline": "todo",
+              "current": "done",
+              "task_id": "P8-003"
+            },
+            {
+              "baseline": "todo",
+              "current": "done",
+              "task_id": "P8-004"
+            },
+            {
+              "baseline": "todo",
+              "current": "done",
+              "task_id": "P8-005"
+            },
+            {
+              "baseline": "todo",
+              "current": "in_progress",
+              "task_id": "P8-006"
+            },
+            {
+              "baseline": "todo",
+              "current": "in_progress",
+              "task_id": "P8-007"
+            },
+            {
+              "baseline": "todo",
+              "current": "in_progress",
+              "task_id": "P8-008"
+            },
+            {
+              "baseline": "todo",
+              "current": "in_progress",
+              "task_id": "P8-009"
+            },
+            {
+              "baseline": "todo",
+              "current": "in_progress",
+              "task_id": "P8-010"
+            },
+            {
+              "baseline": "todo",
+              "current": "in_progress",
+              "task_id": "P8-011"
+            },
+            {
+              "baseline": "todo",
+              "current": "in_progress",
+              "task_id": "P8-012"
+            },
+            {
+              "baseline": "todo",
+              "current": "in_progress",
+              "task_id": "P8-013"
+            },
+            {
+              "baseline": "todo",
+              "current": "in_progress",
+              "task_id": "P8-014"
+            },
+            {
+              "baseline": "todo",
+              "current": "in_progress",
+              "task_id": "P8-015"
+            },
+            {
+              "baseline": "todo",
+              "current": "in_progress",
+              "task_id": "P8-016"
+            },
+            {
+              "baseline": "todo",
+              "current": "in_progress",
+              "task_id": "P8-017"
+            },
+            {
+              "baseline": "todo",
+              "current": "in_progress",
+              "task_id": "P8-018"
+            },
+            {
+              "baseline": "todo",
+              "current": "in_progress",
+              "task_id": "P8-019"
+            },
+            {
+              "baseline": "todo",
+              "current": "in_progress",
+              "task_id": "P8-020"
+            }
+          ],
+          "status": "passed",
+          "task_count": 192,
+          "task_definition_base": "6d02d77f018a5965a6f289b0b43558ed4b9f8322",
+          "task_definition_base_sha256": "cc453fe700a01dd756d35e543d2ceae1f0b748bf97e9542ba0519767f5359ccc",
+          "verifier_version": "historical-integrations-v2"
+        }
+      },
+      "boundary": "Observed passed stdout and official successful fail-on-error steps establish actual original command completion; no separate integer-exit JSON was emitted for each command. No fabricated raw per-command exit receipts."
+    },
+    "closeout_checkout": {
+      "kind": "direct head checkout",
+      "commit": "4786c1457b47c5baf4c09d32b96048795e863111",
+      "proof": [
+        {
+          "line": 190,
+          "text": "HEAD is now at 4786c145 guard: bind borrowed oracle and V18 barrier integration review"
+        },
+        {
+          "line": 191,
+          "text": "##[endgroup]"
+        },
+        {
+          "line": 192,
+          "text": "[command]/usr/bin/git log -1 --format=%H"
+        },
+        {
+          "line": 193,
+          "text": "4786c1457b47c5baf4c09d32b96048795e863111"
+        }
+      ],
+      "not_test_merge": "d51e4d4ad298b2f883225fd847c5fe213cc53bc7"
+    },
+    "V18": "Default8/semantic9/semantic-http12 passed with overlapping identities; repaired ready_publication method passed in semantic-http. Not 29 unique tests."
+  },
+  "remaining_soak_original_contract": {
+    "workflow_path": ".github/workflows/p8-runtime.yml",
+    "workflow_lines": [
+      73,
+      122
+    ],
+    "driver_path": "scripts/p8_runtime.py",
+    "driver_lines": [
+      822,
+      857,
+      986,
+      1008,
+      1029
+    ],
+    "source_checkout": "Actual PR head G4786 by workflow explicit ref, must match terminal log.",
+    "argv_parameters": {
+      "profile": "soak",
+      "concurrency": 4,
+      "operations": 3601,
+      "files": 1000,
+      "interval_ms": 1000
+    },
+    "required_existing_steps": [
+      "Original receipt negative controls",
+      "Exact release product/oracle/statistics producer",
+      "One-hour actual workload exits0",
+      "Retained runtime/build verify exits0",
+      "Original always-upload succeeds"
+    ],
+    "original_workload_assertions": [
+      "Complete offered/terminal IDs and all3601 successful outcomes",
+      "Actual offered span >=3600 seconds",
+      "Original RSS trend and interval coverage pass",
+      "Actual catalog compaction and at least two branch switches",
+      "Original cache invalidation/refill/hit evidence",
+      "Original parity/build/source/hash and artifact sealing checks"
+    ],
+    "verify_caveat": "verify returns0 for intact failed observations too; terminal workload success and passed_observation must be checked separately. A verify0 line alone is insufficient.",
+    "sufficient_engineering_evidence_scope": "Original complete successful job log with exact source/build/workload/verify/upload plus final current-head check results; this is producer-verified engineering regression evidence, not an independent local replay of every raw artifact or a new performance study.",
+    "no_extra_consumer_gate": "This workflow/source requires producer retention and verification, not another consumer download/re-extraction of the same ~50MB artifact. A second150-shard study is not a stated engineering merge gate here.",
+    "whole_scope_limit": "No new artifact acceptance, independent ELF rehash, full raw replay or P8 task completion is claimed by this merge preparation."
+  },
+  "merge_recommendation": "When root observes successful final soak and the complete accepted current-head checks, verifies current head/base/mergeability and no unresolved blocker, this reviewed engineering change may be merged. Do not carry forward stale source or status if head/base changed. Existing server branch-protection policy was not freshly fetched in this read-only local task; no bypass is recommended.",
+  "donor_supersession": {
+    "eligible_only_after_actual_PR199_merge": true,
+    "exact_adopted_file": "crates/cc-eval/src/benchmark/oracle.rs",
+    "exact_blob": "9936bdda7293d2f27a296a6d24419bb3f2e00f7a",
+    "includes": [
+      "Borrowed production serialization",
+      "Four correctness regressions",
+      "Both ignored diagnostic probes"
+    ],
+    "mainline_preserved_streaming_blob": "70394ba06bf714bce1af64a9b9c400f0e0584a46",
+    "separate_fixture_correction_blob": "fafaa3923be8bc2e84fbd020f99c9e9593ac2bdb",
+    "not_imported_as_main_integration": [
+      "Donor diagnostic workflows",
+      "Donor P/R/G binding lineage",
+      "Donor historical benchmark artifacts; retained at original immutable locations"
+    ],
+    "fresh_donor_head_check_required_before_closure": true,
+    "do_not_mark_donor_as_merged": true,
+    "keep_branch_and_all_runs": true
+  },
+  "preserved_donor_evidence": {
+    "failed_closeout_run": 38004132959,
+    "failed_closeout_job": 114068898390,
+    "failed_closeout_original_log_git": "3efadf710a054e2beda886cdd29938639145e94b",
+    "failure_scope": "V18 fixture pending assertion; remains a real old-source failure despite new-source corrected success.",
+    "microprobe_source": {
+      "G": "f6750cad0df45af4ec2dddc456e76cc188f3a35a",
+      "tree": "4d49ddd5e61b9b32f2677a9966c3326c336aec0e",
+      "run_id": 38004163561,
+      "run_attempt": 1,
+      "job_id": 114068994672,
+      "artifact_id": 11650632746
+    },
+    "microprobe_verdict_git": "c86bfcdbde71616d9847a9620ba915d0dc03e200",
+    "paired_distribution_analysis_git": "d05a0255d2ae5a08bc2ae4c3c2e851db53b6315a",
+    "pairs": 100,
+    "cases": 5,
+    "rows_per_case": 256,
+    "slower_pairs_preserved": 5,
+    "scope": "Limited constructed-case mechanism support only; no full100k/currentmain/end-to-end/task-completion claim."
+  },
+  "source_files_read": [
+    {
+      "repository_path": "crates/cc-eval/src/benchmark/oracle.rs",
+      "path": "/workspace/scratch/bfccb8494ba0/round30-PR190-main-admission/guard-view/crates/cc-eval/src/benchmark/oracle.rs",
+      "bytes": 37632,
+      "sha256": "b4175911e4bad1669afcaaab68385de89821045d71181b38ef8db478e76811b2",
+      "git_blob": "9936bdda7293d2f27a296a6d24419bb3f2e00f7a"
+    },
+    {
+      "repository_path": "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+      "path": "/workspace/scratch/bfccb8494ba0/round30-PR190-main-admission/guard-view/crates/cc-eval/src/benchmark/oracle/streaming.rs",
+      "bytes": 30271,
+      "sha256": "fadf2722a56132022ff47487bb151384277c9d217bf2e64c85da40b9bfc8b7f0",
+      "git_blob": "70394ba06bf714bce1af64a9b9c400f0e0584a46"
+    },
+    {
+      "repository_path": "crates/cc-server/tests/p7_v18_parameter_contract.rs",
+      "path": "/workspace/scratch/bfccb8494ba0/round30-PR190-main-admission/guard-view/crates/cc-server/tests/p7_v18_parameter_contract.rs",
+      "bytes": 43132,
+      "sha256": "844b44aa487c68bba309b56135e5da28cfa8a7e15544b57e362a83eeee577061",
+      "git_blob": "fafaa3923be8bc2e84fbd020f99c9e9593ac2bdb"
+    },
+    {
+      "repository_path": ".github/workflows/p8-runtime.yml",
+      "path": "/workspace/scratch/bfccb8494ba0/round30-PR190-main-admission/guard-view/.github/workflows/p8-runtime.yml",
+      "bytes": 5782,
+      "sha256": "82e39dadd5557d800450ead6cf1d861e382283447af2fd35eb4c952d7897c09f",
+      "git_blob": "ad73ee803df6936c2750b3e1045bc397e5d154f3"
+    },
+    {
+      "repository_path": "scripts/p8_runtime.py",
+      "path": "/workspace/scratch/bfccb8494ba0/round30-PR190-main-admission/guard-view/scripts/p8_runtime.py",
+      "bytes": 61672,
+      "sha256": "4b47808208702e9d5b20fbb95499e6b9973265b82f491bfc1288ca91f62cb14b",
+      "git_blob": "d8b24c6c1d21d6c80118b4f9ca49f17ff809a401"
+    },
+    {
+      "repository_path": ".github/workflows/p8-scale.yml",
+      "path": "/workspace/scratch/bfccb8494ba0/round30-PR190-main-admission/guard-view/.github/workflows/p8-scale.yml",
+      "bytes": 8621,
+      "sha256": "4258476dd37d8af223aaa7ad45d7c97d7298be1ba4ec5ffd9af9949785ed8f3d",
+      "git_blob": "74f1b64ed447ef24da584f1c1f8d090d2fa1e03e"
+    },
+    {
+      "repository_path": ".github/workflows/p8-scale-wide-dirty.yml",
+      "path": "/workspace/scratch/bfccb8494ba0/round30-PR190-main-admission/guard-view/.github/workflows/p8-scale-wide-dirty.yml",
+      "bytes": 9544,
+      "sha256": "6a85b4d0a3e93c2ec77f49b7804d1320510cdaa457673c701846a70c21f830a9",
+      "git_blob": "7fa4723860df70178ce6ed58cd305acaa7c76069"
+    }
+  ],
+  "bounded_local_read_failure": {
+    "attempt": "git diff --raw known-main09d... G4786 in selected guard-view",
+    "git_exit_code": 128,
+    "wrapper_exit_code": 1,
+    "stderr": "fatal: bad object 09d4454fa45455dc5a8bfdfec67e31bb7ed162c7",
+    "reason_boundary": "Exact main commit object not present in this selected local view. No lazy fetch/retry/hydration performed. Reused already retained official main-to-P1 compare and previously accepted exact P2/R/G bridge instead; not a product/CI failure."
+  },
+  "draft_close_comment": "Superseded by the mainline integration in #199 after its verified merge into main at {{ACTUAL_PR199_MERGE_SHA}}.\n\nThe integrated production change is `crates/cc-eval/src/benchmark/oracle.rs` at exact blob `9936bdda7293d2f27a296a6d24419bb3f2e00f7a`, taken unchanged from this PR's `f6750cad0df45af4ec2dddc456e76cc188f3a35a` source. This includes the borrowed serialization mechanism, four correctness regressions, and both ignored cost probes. #199 preserves the current mainline dual-spool resource/error semantics and separately adds the V18 test synchronization correction at blob `fafaa3923be8bc2e84fbd020f99c9e9593ac2bdb`.\n\n#199's own source admission and normal CI provide the integration evidence. Its main log executes each of the four correctness methods in the default workspace and eval-http contexts; that is four unique methods, not eight. Its closeout log passes the repaired V18 semantic-http target with 12 tests. The final soak and complete current-head checks are recorded with the merge evidence.\n\nThis closes the superseded donor proposal; it does not mark #190 itself as merged or turn its old CI into a pass. The `f6750c…` closeout failure (run `38004132959`, job `114068898390`, original log blob `3efadf710a054e2beda886cdd29938639145e94b`) remains part of the history. The finite equal-lifetime diagnostic also keeps its original source and result: run `38004163561`, 100 pairs across five constructed 256-row cases, including all five slower pairs. It supports that limited mechanism assessment, not a full-100k, current-main, end-to-end, or task-completion claim.\n\nThe donor branch, diagnostic workflows, original runs, old failure, and archived evidence remain available. No branch deletion, run cancellation, replay, or new study is part of this closure. Original TODO completion counts are unchanged by this PR-management action.\n",
+  "draft_body_addendum": "Supersession status: pending the verified merge of #199 into main. #199 carries this PR's exact borrowed-oracle production file (`9936bdda7293d2f27a296a6d24419bb3f2e00f7a`) on the current mainline, plus the separately reviewed V18 fixture synchronization fix. After #199 is actually merged and this donor head is freshly checked, this PR may be closed as superseded; #190 itself must not be described as merged. Preserve all previous review history, the `f6750c…` failed closeout, both old and equal-lifetime diagnostics, their original source identities and limitations, and the donor branch. This administrative closure provides no additional performance, scale-sample, release, or original TODO credit.\n",
+  "actions": {
+    "new_API_poll": false,
+    "download": false,
+    "product_or_test_execution": false,
+    "ref_PR_comment_label_mutation": false,
+    "task_credit": 0,
+    "new_gate": false
+  },
+  "post_reader_editorial_finalization": {
+    "at": "2026-10-10T01:19:09.735259+00:00",
+    "change": "Removed a drafting-only instruction sentence from the unposted close-comment text. Source findings, gates and evidence claims remain exactly as read; no source/test/status read repeated."
+  }
+}

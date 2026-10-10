@@ -1,0 +1,83 @@
+{
+  "files": [
+    {
+      "bytes": 29653,
+      "git_blob": "759d4c91a0f28a0457467867e229ecdc490a48e6",
+      "path": "/workspace/scratch/bfccb8494ba0/round32-100k-diagnostic-intake-preparation/read-original-diagnostic.py",
+      "sha256": "ae7945e5f7150b350ae856a1fd22d7ad92e157c74ae73c8ab3e3799a857bca23"
+    },
+    {
+      "bytes": 3213,
+      "git_blob": "0f074dd3bb74e5cf313064e110244b62814f3b87",
+      "path": "/workspace/scratch/bfccb8494ba0/round32-100k-diagnostic-intake-preparation/call-original-validator-once.py",
+      "sha256": "adca44a11784871edfc526888f5420f14bc7fd1a653a0f1183ebf7983e6cd16e"
+    },
+    {
+      "bytes": 149741,
+      "git_blob": "003b75df7687d7992a692c6841c5753bcfe1b1cc",
+      "path": "/workspace/scratch/bfccb8494ba0/round32-100k-diagnostic-intake-preparation/binding.template.json",
+      "sha256": "fac09ed1772ffc1e8d9a73437c4b2047778e9da202f6999fca483cd0f3cbf00b"
+    },
+    {
+      "bytes": 795,
+      "git_blob": "9f7355ed294d0f378a0426c62477355faa4ef351",
+      "path": "/workspace/scratch/bfccb8494ba0/round32-100k-diagnostic-intake-preparation/artifacts-index.template.json",
+      "sha256": "0951afaaaefa3412e51d2ed1ee0b2800379148b2c3f9e857a4919b115f4d1594"
+    },
+    {
+      "bytes": 8465,
+      "git_blob": "9101b4427f8df264a13d8fa255eb1aed6bed01f9",
+      "path": "/workspace/scratch/bfccb8494ba0/round32-100k-diagnostic-intake-preparation/INTAKE-CONTRACT.md",
+      "sha256": "686710f2d59033e077ac80b7e535e58236881f568c453cbdc970f7c659677cdf"
+    },
+    {
+      "bytes": 1872,
+      "git_blob": "b9fa3618f0dc414eb68364e43e8bddac540286a9",
+      "path": "/workspace/scratch/bfccb8494ba0/round32-100k-diagnostic-intake-preparation/static-preparation.json",
+      "sha256": "00de2ba03d1eff88923f4ea6e0c365ef5cea3428e4365f84aece6f6f57fce3d3"
+    }
+  ],
+  "findings": [
+    {
+      "conclusion": "Checkpoint ZIP root manifest/chunks and final artifact common-root paths shard/, checkpoints/20/, top-level configuration/observer/supervisor/driver/wrapper paths match the unchanged workflow upload layout. Reader locates the declared manifest prefix and original final relative paths without renaming evidence.",
+      "topic": "Real namespaces and ZIP paths"
+    },
+    {
+      "conclusion": "The original wrapper emits the 19-element command checked by the reader, with exact root, 100000/0/30/N30/wide profile. Build receipt/source hashes bind original producer; source-dependent interpreter/build/output host paths are not guessed.",
+      "topic": "Configuration argv"
+    },
+    {
+      "conclusion": "Local claimed ACK prefixes are independently recomputed. A supplied older artifact must match ACK index, manifest SHA, included chunks and wholeZIP digest; absent older artifact remains unverified. Actual received last artifact supplies custody without needing a later local ACK.",
+      "topic": "ACK versus custody"
+    },
+    {
+      "conclusion": "All ZIP members are streamed for CRC and SHA; fixed interval bytes and overlapping conflicts checked. Partial metadata JSON remains unknown. Prefixes never imply EOF; shorter final originals are explicitly flagged. Missing checkpoints can conceal faults, so no-fault-observed does not mean full custody.",
+      "topic": "Bytes and incompleteness"
+    },
+    {
+      "conclusion": "Driver/signal/native reports remain separate; success claims require matching supplied reports but original semantic validator is explicitly not run. Capture faults report partial custody independently of native failure/success. No sample or TODO credit.",
+      "topic": "Native outcome separation"
+    },
+    {
+      "conclusion": "Separate explicit caller verifies fixed helper/driver hashes and imports exact paths, then invokes only the selected original function. validate_build hash-helper execution is clearly disclosed. The reader itself executes no ELF and never substitutes its own checks for original predicates.",
+      "topic": "Original validation adapter"
+    }
+  ],
+  "new_context_fix_effect": "Only workflow path initialization changed. Capture file/schema/command/ACK/native semantics unchanged. No reader modification requested.",
+  "reader_author": "/root/execution_recon",
+  "recorded_at_utc": "2026-10-10T01:09:28.143465+00:00",
+  "remaining_TODOs": 28,
+  "reviewer": "/root/todo_audit",
+  "schema": "independent_diagnostic_intake_static_review_v1",
+  "scope": "Static read only; no import, reader execution, original validator, ELF, CRC, artifact download, or product control performed.",
+  "source_binding_boundary": {
+    "new_G": null,
+    "new_R": "5c53bb909efef3fb842b5fbc39a45dec4054ba40",
+    "new_source_P": "aa8c86b168290e6133040072613aae8240d5b1f6",
+    "original_template_G": "bcc3ada39603d5dfa0a902d7e188f1a86accafca",
+    "original_template_retained": true,
+    "required_before_real_intake": "Create a new bound copy with actual final G/tree/P/R/canonical and workflow observer56f890/4333fe..., then actual run/attempt/event. Unchanged reader/helper and old template remain original bytes. The old push/jobs0 compile failure is separate historical evidence, not this diagnostic run."
+  },
+  "unresolved_format_blockers": [],
+  "verdict": "accepted_scoped_static_pending_actual_source_binding"
+}

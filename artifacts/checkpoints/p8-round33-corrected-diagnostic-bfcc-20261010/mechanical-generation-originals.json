@@ -1,0 +1,85 @@
+{
+  "schema": "capture-context-actual-R-generated-two-bindings-originals-v1",
+  "actual_P": "aa8c86b168290e6133040072613aae8240d5b1f6",
+  "actual_R": "5c53bb909efef3fb842b5fbc39a45dec4054ba40",
+  "actual_G": null,
+  "expected_G_tree": "6461938788665701cfa4fa095a064a3a404ec492",
+  "canonical_immutable_git_blob": "fc5cc74177c8112157d81ec6a8e359e7cdf69f0b",
+  "before_bindings": {
+    "registry": "688b7ac15e094de43bd70b2542d73dbec839c491",
+    "guard": "69431daa77c760002cbe8cd52ab9bb669c52c4bb"
+  },
+  "after_bindings": [
+    {
+      "path": "scripts/reviewed-source-registry-v15.json",
+      "bytes": 181985,
+      "sha256": "60366eeca14c1729d4b7d76432d44a0c2d83a25cd46d7acb32ee72adabe47a76",
+      "git_blob": "23f756f94b0a1b807c4593ec70287ef9cf05d36a"
+    },
+    {
+      "path": "scripts/verify_reviewed_source_v15.py",
+      "bytes": 11103,
+      "sha256": "962d25a6b7e00c275a030e8881b95776bf2a4e0be56a10527c375c129b146a30",
+      "git_blob": "2044e76992e3c6d3047c39d937663cb5c8a53dd5"
+    }
+  ],
+  "original_files": [
+    {
+      "path": "generate-installed-R-bindings.py",
+      "bytes": 6561,
+      "sha256": "fbddb0f99bce6df73985cc3001bc5e84f34b1d0202ccac40d0d3807441c358e4",
+      "git_blob": "33202d79385d8da356e0e591fe6bc4795c7478ae",
+      "text": "#!/usr/bin/env python3\n\"\"\"Mechanical bindings for an actual reviewed capture-only source; no CLI execution.\"\"\"\nimport copy,hashlib,json,pathlib,re\nROOT=pathlib.Path(__file__).resolve().parent\nSEED_G='bcc3ada39603d5dfa0a902d7e188f1a86accafca'\nFIELDS={'product_source','review_source','review_sha256','validation_inputs'}\ndef load(name):return json.loads((ROOT/name).read_text())\ndef sha(raw):return hashlib.sha256(raw).hexdigest()\ndef blob(raw):return hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\\0'+raw).hexdigest()\ndef tree(entries):\n    ordered=sorted(entries,key=lambda e:(e['path']+('/' if e['type']=='tree' else '')).encode())\n    raw=b''.join((('40000' if e['type']=='tree' else e['mode'])+' '+e['path']).encode()+b'\\0'+bytes.fromhex(e['sha']) for e in ordered)\n    return hashlib.sha1(b'tree '+str(len(raw)).encode()+b'\\0'+raw).hexdigest()\ndef write(name,data):\n    f=ROOT/name;f.parent.mkdir(exist_ok=True,parents=True)\n    with f.open('xb') as stream:stream.write(data)\ndef main():\n    cfg=load('actual-R-binding-input.json')\n    P,R=cfg['product'],cfg['review'];assert all(re.fullmatch('[0-9a-f]{40}',v) for v in [P,R])\n    changed_validation=set(cfg['changed_validation_paths'])\n    assert changed_validation=={'.github/workflows/p8-scale-100k-diagnostic.yml'}\n    pc=load('official/actual-P-commit.json');pd=load('official/actual-P-compare.json')\n    assert pc['sha']==P and [x['sha'] for x in pc['parents']]==[SEED_G]\n    assert pd['base_commit']['sha']==SEED_G and pd['merge_base_commit']['sha']==SEED_G\n    assert len(pd['files'])==1 and {x['filename'] for x in pd['files']}==changed_validation\n    assert all(x['status']=='modified' for x in pd['files'])\n    rc=load('official/actual-R-commit.json');rd=load('official/actual-R-compare.json')\n    assert rc['sha']==R and [x['sha'] for x in rc['parents']]==[P]\n    assert len(rd['files'])==len(cfg['installed_artifact_paths'])\n    assert {x['filename'] for x in rd['files']}==set(cfg['installed_artifact_paths']) and all(x['status']=='added' for x in rd['files'])\n    raw=(ROOT/'independent-source-review.json').read_bytes();review=json.loads(raw)\n    assert review['source']==P and review['source_tree']==pc['tree']['sha']\n    assert review['review_path']==cfg['review_path'] and review['unresolved_blockers']==[] and review['verdict']=='accepted_scoped'\n    assert review['independent_reviewers'] and all(isinstance(x,str) and x.strip() for x in review['independent_reviewers'])\n    assert blob(raw)==cfg['canonical_git_blob']==next(x['sha'] for x in rd['files'] if x['filename']==cfg['review_path'])\n    seed=load('seed-Gbcc3-registry.json')\n    assert review['base']==seed['base_source'] and review['scope']==seed['scope']\n    assert review['complete_inputs']==seed['complete_inputs'] and review['paths']==seed['delta']\n    assert set(review['validation_inputs'])==set(seed['validation_inputs'])\n    assert {p for p,h in seed['validation_inputs'].items() if review['validation_inputs'][p]!=h}==changed_validation\n    inventory=review['actual_input_mode_blob_inventory']\n    assert set(inventory)==set(review['complete_inputs'])|set(review['validation_inputs'])\n    for path,h in {**review['complete_inputs'],**review['validation_inputs']}.items():\n        row=inventory[path];assert row['type']=='blob' and row['mode'] in ['100644','100755'] and row['sha256']==h,path\n    for change in pd['files']:assert inventory[change['filename']]['sha']==change['sha']\n    registry=copy.deepcopy(seed)\n    registry.update(product_source=P,review_source=R,review_sha256=sha(raw),validation_inputs=review['validation_inputs'])\n    changed={k for k in seed if seed[k]!=registry[k]};assert changed==FIELDS and set(seed)==set(registry)\n    rr=(json.dumps(registry,ensure_ascii=False,indent=2,sort_keys=True)+'\\n').encode()\n    before=(ROOT/'seed-Gbcc3-guard.py').read_text();after=before;old={}\n    pins={'PRODUCT':P,'REVIEW':R,'REVIEW_PATH':cfg['review_path'],'REGISTRY_SHA256':sha(rr)}\n    for key,value in pins.items():\n        pattern='^'+key+r' = \"([^\"]+)\"$';values=re.findall(pattern,after,re.M);assert len(values)==1;old[key]=values[0]\n        after,n=re.subn(pattern,lambda m:key+' = \"'+value+'\"',after,flags=re.M);assert n==1\n    restored=after\n    for key,value in old.items():restored,n=re.subn('^'+key+r' = \"([^\"]+)\"$',lambda m:key+' = \"'+value+'\"',restored,flags=re.M);assert n==1\n    assert restored==before\n    gr=after.encode();rt=load('official/actual-R-root-tree.json');st=load('official/actual-R-scripts-tree.json')\n    assert not rt['truncated'] and not st['truncated']\n    assert tree(rt['tree'])==rt['sha']==rc['tree']['sha']\n    assert tree(st['tree'])==st['sha']==next(x['sha'] for x in rt['tree'] if x['path']=='scripts')\n    for name,local in [('reviewed-source-registry-v15.json','seed-Gbcc3-registry.json'),('verify_reviewed_source_v15.py','seed-Gbcc3-guard.py')]:\n        assert next(x['sha'] for x in st['tree'] if x['path']==name)==blob((ROOT/local).read_bytes())\n    payloads={'scripts/reviewed-source-registry-v15.json':rr,'scripts/verify_reviewed_source_v15.py':gr};elements=[]\n    for path,data in payloads.items():\n        write('generated/'+path,data);elements.append(dict(path=path,mode='100644',type='blob',sha=blob(data)))\n    scripts=copy.deepcopy(st['tree'])\n    for e in elements:next(x for x in scripts if x['path']==e['path'].split('/')[-1])['sha']=e['sha']\n    root=copy.deepcopy(rt['tree']);next(x for x in root if x['path']=='scripts')['sha']=tree(scripts)\n    report=dict(schema='capture-context-fix-actual-R-binding-generation-v1',parent_source=SEED_G,source=P,review=R,actual_G=None,expected_G_tree=tree(root),expected_G_parent=R,registry_changed_fields=sorted(changed),guard_changed_pins=pins,all_other_guard_bytes_unchanged=True,complete_product_and_BASE_delta_unchanged=True,all_other_validation_unchanged=True,changed_validation_paths=sorted(changed_validation),counts=dict(product=len(review['complete_inputs']),BASE_delta=len(review['paths']),validation=len(review['validation_inputs']),inventory=len(inventory)),files=[dict(path=p,bytes=len(b),sha256=sha(b),git_blob=blob(b)) for p,b in payloads.items()],execution_boundary='Mechanical binding generation only. No source CLI, Rust, product or scale execution.')\n    write('generation-manifest.json',(json.dumps(report,indent=2)+'\\n').encode())\n    write('two-binding-create-tree-request.json',(json.dumps(dict(repository_full_name='jyqj/codecortex',base_tree_sha=rt['sha'],tree_elements=elements),indent=2)+'\\n').encode())\n    print(json.dumps(report,sort_keys=True))\nif __name__=='__main__':main()\n"
+    },
+    {
+      "path": "actual-R-binding-input.json",
+      "bytes": 656,
+      "sha256": "761747ec8030498ff1bf3de3abe3b001d8eb15dbdeb6569afeba2e3f02b73563",
+      "git_blob": "a134df009e1b9e23f598434a7732cf879259cfb3",
+      "text": "{\n  \"product\": \"aa8c86b168290e6133040072613aae8240d5b1f6\",\n  \"review\": \"5c53bb909efef3fb842b5fbc39a45dec4054ba40\",\n  \"changed_validation_paths\": [\n    \".github/workflows/p8-scale-100k-diagnostic.yml\"\n  ],\n  \"installed_artifact_paths\": [\n    \"artifacts/checkpoints/p8-100k-diagnostic-workflow-context-bfcc-20261010/independent-source-review.json\",\n    \"artifacts/checkpoints/p8-100k-diagnostic-workflow-context-bfcc-20261010/independent-source-originals.json\"\n  ],\n  \"review_path\": \"artifacts/checkpoints/p8-100k-diagnostic-workflow-context-bfcc-20261010/independent-source-review.json\",\n  \"canonical_git_blob\": \"fc5cc74177c8112157d81ec6a8e359e7cdf69f0b\"\n}\n"
+    },
+    {
+      "path": "generation-manifest.json",
+      "bytes": 1822,
+      "sha256": "74e769a90a15b1d7c8c8693d8f65c60136e5f0180a653a3a2bead0fa1b130827",
+      "git_blob": "9e5a50bea16e217b40f5cb061b6a0e438568ae3c",
+      "text": "{\n  \"schema\": \"capture-context-fix-actual-R-binding-generation-v1\",\n  \"parent_source\": \"bcc3ada39603d5dfa0a902d7e188f1a86accafca\",\n  \"source\": \"aa8c86b168290e6133040072613aae8240d5b1f6\",\n  \"review\": \"5c53bb909efef3fb842b5fbc39a45dec4054ba40\",\n  \"actual_G\": null,\n  \"expected_G_tree\": \"6461938788665701cfa4fa095a064a3a404ec492\",\n  \"expected_G_parent\": \"5c53bb909efef3fb842b5fbc39a45dec4054ba40\",\n  \"registry_changed_fields\": [\n    \"product_source\",\n    \"review_sha256\",\n    \"review_source\",\n    \"validation_inputs\"\n  ],\n  \"guard_changed_pins\": {\n    \"PRODUCT\": \"aa8c86b168290e6133040072613aae8240d5b1f6\",\n    \"REVIEW\": \"5c53bb909efef3fb842b5fbc39a45dec4054ba40\",\n    \"REVIEW_PATH\": \"artifacts/checkpoints/p8-100k-diagnostic-workflow-context-bfcc-20261010/independent-source-review.json\",\n    \"REGISTRY_SHA256\": \"60366eeca14c1729d4b7d76432d44a0c2d83a25cd46d7acb32ee72adabe47a76\"\n  },\n  \"all_other_guard_bytes_unchanged\": true,\n  \"complete_product_and_BASE_delta_unchanged\": true,\n  \"all_other_validation_unchanged\": true,\n  \"changed_validation_paths\": [\n    \".github/workflows/p8-scale-100k-diagnostic.yml\"\n  ],\n  \"counts\": {\n    \"product\": 1096,\n    \"BASE_delta\": 79,\n    \"validation\": 149,\n    \"inventory\": 1245\n  },\n  \"files\": [\n    {\n      \"path\": \"scripts/reviewed-source-registry-v15.json\",\n      \"bytes\": 181985,\n      \"sha256\": \"60366eeca14c1729d4b7d76432d44a0c2d83a25cd46d7acb32ee72adabe47a76\",\n      \"git_blob\": \"23f756f94b0a1b807c4593ec70287ef9cf05d36a\"\n    },\n    {\n      \"path\": \"scripts/verify_reviewed_source_v15.py\",\n      \"bytes\": 11103,\n      \"sha256\": \"962d25a6b7e00c275a030e8881b95776bf2a4e0be56a10527c375c129b146a30\",\n      \"git_blob\": \"2044e76992e3c6d3047c39d937663cb5c8a53dd5\"\n    }\n  ],\n  \"execution_boundary\": \"Mechanical binding generation only. No source CLI, Rust, product or scale execution.\"\n}\n"
+    },
+    {
+      "path": "generation-receipt.json",
+      "bytes": 410,
+      "sha256": "d774bf0b4bf9bbf731c46040c602c88b12bbf313dd02b936a6f275ef66a85b95",
+      "git_blob": "646f033025dd09e1ee4e3ad1d3d4d8383cbb51ea",
+      "text": "{\n  \"argv\": [\n    \"python3\",\n    \"-B\",\n    \"/workspace/scratch/bfccb8494ba0/round32-capture-context-binding-preparation/generate-installed-R-bindings.py\"\n  ],\n  \"cwd\": \"/workspace/scratch/bfccb8494ba0/round32-capture-context-binding-preparation\",\n  \"started_at\": \"2026-10-10T01:09:31.884768+00:00\",\n  \"finished_at\": \"2026-10-10T01:09:31.925997+00:00\",\n  \"wall_seconds\": 0.04122859199924278,\n  \"exit_code\": 0\n}\n"
+    },
+    {
+      "path": "generation.stdout",
+      "bytes": 1648,
+      "sha256": "d910aef65c98cc98bdd789af141565964a99cbed151368336029c0bbbfe0ee69",
+      "git_blob": "43653329c08e205925988bf7a31b053b353bdddf",
+      "text": "{\"actual_G\": null, \"all_other_guard_bytes_unchanged\": true, \"all_other_validation_unchanged\": true, \"changed_validation_paths\": [\".github/workflows/p8-scale-100k-diagnostic.yml\"], \"complete_product_and_BASE_delta_unchanged\": true, \"counts\": {\"BASE_delta\": 79, \"inventory\": 1245, \"product\": 1096, \"validation\": 149}, \"execution_boundary\": \"Mechanical binding generation only. No source CLI, Rust, product or scale execution.\", \"expected_G_parent\": \"5c53bb909efef3fb842b5fbc39a45dec4054ba40\", \"expected_G_tree\": \"6461938788665701cfa4fa095a064a3a404ec492\", \"files\": [{\"bytes\": 181985, \"git_blob\": \"23f756f94b0a1b807c4593ec70287ef9cf05d36a\", \"path\": \"scripts/reviewed-source-registry-v15.json\", \"sha256\": \"60366eeca14c1729d4b7d76432d44a0c2d83a25cd46d7acb32ee72adabe47a76\"}, {\"bytes\": 11103, \"git_blob\": \"2044e76992e3c6d3047c39d937663cb5c8a53dd5\", \"path\": \"scripts/verify_reviewed_source_v15.py\", \"sha256\": \"962d25a6b7e00c275a030e8881b95776bf2a4e0be56a10527c375c129b146a30\"}], \"guard_changed_pins\": {\"PRODUCT\": \"aa8c86b168290e6133040072613aae8240d5b1f6\", \"REGISTRY_SHA256\": \"60366eeca14c1729d4b7d76432d44a0c2d83a25cd46d7acb32ee72adabe47a76\", \"REVIEW\": \"5c53bb909efef3fb842b5fbc39a45dec4054ba40\", \"REVIEW_PATH\": \"artifacts/checkpoints/p8-100k-diagnostic-workflow-context-bfcc-20261010/independent-source-review.json\"}, \"parent_source\": \"bcc3ada39603d5dfa0a902d7e188f1a86accafca\", \"registry_changed_fields\": [\"product_source\", \"review_sha256\", \"review_source\", \"validation_inputs\"], \"review\": \"5c53bb909efef3fb842b5fbc39a45dec4054ba40\", \"schema\": \"capture-context-fix-actual-R-binding-generation-v1\", \"source\": \"aa8c86b168290e6133040072613aae8240d5b1f6\"}\n"
+    },
+    {
+      "path": "generation.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "text": ""
+    },
+    {
+      "path": "two-binding-create-tree-request.json",
+      "bytes": 480,
+      "sha256": "0169e11e96b4188e48179e43d0a561c93f21f2fa38798cddadbcf9da66b56871",
+      "git_blob": "50f07c4ae06d0de81213ce37fe05363dc8c5d5b1",
+      "text": "{\n  \"repository_full_name\": \"jyqj/codecortex\",\n  \"base_tree_sha\": \"7c542b0699e2acd91a0e1823f6c26d6303b11809\",\n  \"tree_elements\": [\n    {\n      \"path\": \"scripts/reviewed-source-registry-v15.json\",\n      \"mode\": \"100644\",\n      \"type\": \"blob\",\n      \"sha\": \"23f756f94b0a1b807c4593ec70287ef9cf05d36a\"\n    },\n    {\n      \"path\": \"scripts/verify_reviewed_source_v15.py\",\n      \"mode\": \"100644\",\n      \"type\": \"blob\",\n      \"sha\": \"2044e76992e3c6d3047c39d937663cb5c8a53dd5\"\n    }\n  ]\n}\n"
+    },
+    {
+      "path": "two-create-blob-originals.json",
+      "bytes": 443,
+      "sha256": "69161e0297adc7cf80acbd34452d9d0ef7f620b342ecca204eda8110092e604b",
+      "git_blob": "7e3f84bd74f06cad15f00d5cc1b21778d528f4e9",
+      "text": "[\n  {\n    \"content\": [\n      {\n        \"type\": \"text\",\n        \"text\": \"Action completed.\"\n      }\n    ],\n    \"structuredContent\": {\n      \"sha\": \"23f756f94b0a1b807c4593ec70287ef9cf05d36a\"\n    },\n    \"isError\": false\n  },\n  {\n    \"content\": [\n      {\n        \"type\": \"text\",\n        \"text\": \"Action completed.\"\n      }\n    ],\n    \"structuredContent\": {\n      \"sha\": \"2044e76992e3c6d3047c39d937663cb5c8a53dd5\"\n    },\n    \"isError\": false\n  }\n]\n"
+    }
+  ],
+  "scope": "Mechanical binding generation only. Original CLI awaits actual G and independent binding acceptance. Failed old G workflow and its successful source admission remain separate; no new workflow execution or measurement."
+}

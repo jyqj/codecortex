@@ -1,0 +1,90 @@
+{
+  "schema": "original-aggregate-call-contract-review-v1",
+  "recorded_at_utc": "2026-10-10T05:40:21.336226+00:00",
+  "source": "f97c5068d056969705e8387ba1f37d83847f5bee",
+  "source_tree": "39a053ae49b486764751a570d164e7cd41d7ff29",
+  "run_id": 38026411200,
+  "attempt": 1,
+  "exact_original_driver": {
+    "path": "/workspace/scratch/bfccb8494ba0/round42-new45-build-original-intake/source-exact-G2/scripts/p8_task_profile_matrix.py",
+    "bytes": 29712,
+    "sha256": "8a3b7bad9448f56263bad49da1df7def16bfddaacaa1769abe97e710c73e776c",
+    "git_blob": "c858fcb4edea1f91b421367b67bf722f0c2fef3a"
+  },
+  "source_line_ranges": {
+    "validate_build": [
+      157,
+      172
+    ],
+    "validate_shard": [
+      270,
+      316
+    ],
+    "combine": [
+      330,
+      404
+    ],
+    "aggregate": [
+      407,
+      444
+    ],
+    "CLI": [
+      447,
+      481
+    ]
+  },
+  "answers": {
+    "aggregate_accepts_cached_returns": false,
+    "aggregate_arguments": "aggregate(build_directory, directories, output, root=None): directories are extracted complete original task-shard directories, not JSON result dictionaries or ZIP paths.",
+    "aggregate_original_revalidation": "At line413 original validate_build is called once; each supplied directory invokes original validate_shard at line425. No option accepts a cached tuple/return to skip these calls.",
+    "original_combine_accepts_complete_returns": true,
+    "combine_arguments": "combine(shards) accepts the exact complete dictionaries returned by validate_shard. All18 retained accepted returns contain all currently relevant top-level fields and setup resource_snapshots. This key check is not a repeated original semantic validation.",
+    "combine_scope_limit": "Calling combine on previously accepted returns would execute only its cross-cell predicate. It would not execute aggregate, rescan current original inventory/EOF, produce aggregate input_results/errors, or revalidate build. Do not label it original aggregate or silently substitute it.",
+    "successful_local_aggregate_hash_calls": "With all45 accepted complete directories: original build hash-file once plus original plan/raw hash-file twice per45 shard =91 utility invocations, with no compile or measurement. These are original aggregate steps, not an extra acceptance gate added here. Failure can produce fewer actual calls; actual count must be recorded.",
+    "producer_vs_local": "The original Actions aggregate follows the same path. If its complete original matrix/log are retained and accepted, this note does not require a second local aggregate. If Root requests local original aggregate execution, the repeated immutable checks must be reported honestly and not monkeypatched away."
+  },
+  "prepared_CLI": {
+    "cwd": "/workspace/scratch/bfccb8494ba0/round42-new45-build-original-intake/source-exact-G2",
+    "argv_prefix": [
+      "python3",
+      "-B",
+      "/workspace/scratch/bfccb8494ba0/round42-new45-build-original-intake/source-exact-G2/scripts/p8_task_profile_matrix.py",
+      "aggregate",
+      "--root",
+      "/workspace/scratch/bfccb8494ba0/round42-new45-build-original-intake/source-exact-G2",
+      "--build",
+      "/workspace/scratch/bfccb8494ba0/round42-new45-build-original-intake/original-build",
+      "--output",
+      "<new-absent-output-directory>",
+      "--inputs"
+    ],
+    "inputs": "Exactly45 completed original-shard directory paths from pending-45-original-input-directories.json, with27 null paths still pending.",
+    "no_run_flags": "Aggregate has no --run-id or --attempt; it reads the study identity from original build/registration.",
+    "output": "<new-output>/task-matrix.json",
+    "CLI_exit": "0 only when original result passed is true;1 on caught failed result;2 on outer invocation error. Actual stdio must be retained.",
+    "currently_executable": false
+  },
+  "original_population_and_outputs": {
+    "cells": 45,
+    "setup_pairs": 40,
+    "mutation_samples": 40,
+    "fanout_samples": 5,
+    "records": 85,
+    "cold_curve_from_no_op": "Exactly5 no_op setup records, a subset of40 setup_pairs; not5 additional records.",
+    "unique_record_identity": "(slot, role) retains repeated sample strings across profiles.",
+    "environment": "Original per-record environment_id joins exact environments including original host/runtime/config; do not pool hosts or derive stable tails.",
+    "identity_and_failure": "Original combine requires45 exact unique slots, one source/binary/driver/build/run/attempt identity, same pristine input digest per scale, exact plans and one actual over-budget fanout first-incomplete case. Original aggregate retains all attempted input_results/errors/missing_slots, never replacing missing originals with prefixes.",
+    "native_values": "Keep original measured integers/objects and resource_snapshots; no fabricated timings, counts, RSS peaks, quantiles or causal effects."
+  },
+  "current_boundary": {
+    "accepted_cells": 18,
+    "accepted_records": 36,
+    "pending_cells": 27,
+    "pending_records": 49,
+    "aggregate_or_combine_calls_during_preparation": 0,
+    "validate_build_or_shard_calls_during_preparation": 0,
+    "ELF_or_CRC_calls_during_preparation": 0,
+    "source_driver_modified": false,
+    "task_credit": 0
+  }
+}

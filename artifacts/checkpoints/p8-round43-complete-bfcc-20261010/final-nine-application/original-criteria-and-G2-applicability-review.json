@@ -1,0 +1,564 @@
+{
+  "schema": "original-nine-criteria-and-current-G2-applicability-bounded-review-v1",
+  "reviewer": "/root/todo_audit",
+  "read_at_utc": "2026-10-10 05:44:33 UTC",
+  "apply_now": false,
+  "original_tasks": {
+    "local_path": "/workspace/scratch/bfccb8494ba0/round43-final-nine-application/recovered/tasks.original.json",
+    "bytes": 879341,
+    "sha256": "e0a612bb4d42f63be01c17e77ff627db3581200275fbfa9e60679399e90877c6",
+    "git_blob": "adb44ee70a4c129bfb443d4ecf678fb934c8ea6b"
+  },
+  "original_nine_definitions_and_harddeps": [
+    {
+      "id": "P8-006",
+      "task_start_line": 12145,
+      "title": "增量规模与fanout曲线",
+      "status": "in_progress",
+      "depends_on": [
+        "P7-020",
+        "P8-001",
+        "P8-005"
+      ],
+      "steps": [
+        "测no-op/body/API/config/batch和超预算闭包",
+        "输出各phase计数"
+      ],
+      "acceptance": [
+        "时间可归因且闭包完成后full parity，未完成有显式status",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V07",
+        "V20"
+      ],
+      "immutable_definition_sha256": "65aca517fc2115bfa001afffe75c0ba1a8eaf2635d5085d9d10ad4e620b51f8d"
+    },
+    {
+      "id": "P8-007",
+      "task_start_line": 12233,
+      "title": "多并发与混合负载",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-006"
+      ],
+      "steps": [
+        "C1/4/8/16 mixed read/build/backfill",
+        "记录offered load和排队"
+      ],
+      "acceptance": [
+        "无死锁饥饿，吞吐不能隐藏timeout与尾部",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V11",
+        "V20"
+      ],
+      "immutable_definition_sha256": "b12a4f13e5f8c0520279a6aca3a78e0ea620286f81d1ab38867d88f4bda2c629"
+    },
+    {
+      "id": "P8-008",
+      "task_start_line": 12342,
+      "title": "冷建/重开/热查分层",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-007"
+      ],
+      "steps": [
+        "分离OS cache、process cold、result-cache hit与uncached warm",
+        "采全部样本"
+      ],
+      "acceptance": [
+        "无best-of，sample N/分布/CI齐全",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V20"
+      ],
+      "immutable_definition_sha256": "8ef3261fef77774871682996b6c633b017bc372d284fdba3de5f9b2744f5ba92"
+    },
+    {
+      "id": "P8-009",
+      "task_start_line": 12425,
+      "title": "内存/磁盘/费用总账",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-008"
+      ],
+      "steps": [
+        "分别client/server/process-tree和artifact/FTS大小",
+        "成本reported/estimated分栏"
+      ],
+      "acceptance": [
+        "单位和归属正确，不把unavailable填0或把runner当server",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V20"
+      ],
+      "immutable_definition_sha256": "c579ac1dc41b3dcdaaa4aed21ef331d5d240feb8b3fcd64337ebe5bd1e50eb0e"
+    },
+    {
+      "id": "P8-010",
+      "task_start_line": 12511,
+      "title": "长时soak与连续修改",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-009"
+      ],
+      "steps": [
+        "持续编辑、删除、切分支、catalog压实、cache/worker复用",
+        "终点完整对账"
+      ],
+      "acceptance": [
+        "内存/队列不无界增长，长期索引和全量一致",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V07",
+        "V17",
+        "V20"
+      ],
+      "immutable_definition_sha256": "3ddcb5d70c4fa9861aecf6ace914ef6e650dd51e6e26315d05f13f28ce86f4da"
+    },
+    {
+      "id": "P8-011",
+      "task_start_line": 12611,
+      "title": "端到端故障与恢复认证",
+      "status": "in_progress",
+      "depends_on": [
+        "P7-020",
+        "P8-007",
+        "P8-010"
+      ],
+      "steps": [
+        "kill进程/网络断开/缓存损坏/数据库忙/换库",
+        "保持raw故障工件"
+      ],
+      "acceptance": [
+        "没有假ready或删除复活，恢复与费用影响清楚",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V14",
+        "V17",
+        "V18"
+      ],
+      "immutable_definition_sha256": "107a73744c74d6b7f1dc96a4ba58758190defe7156a0e38037f453ce6ed4263b"
+    },
+    {
+      "id": "P8-012",
+      "task_start_line": 12696,
+      "title": "MSRV与平台冷构建矩阵",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-011"
+      ],
+      "steps": [
+        "Linux/macOS、当前声明MSRV与stable、默认/semantic features",
+        "全新target"
+      ],
+      "acceptance": [
+        "SDK blocker解决或发布平台范围明确，缓存测试不替冷构建",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V01",
+        "V21"
+      ],
+      "immutable_definition_sha256": "9d659bb5b73a6f1de815b66964d41391a4d0601b235ff842aab135888184d4c8"
+    },
+    {
+      "id": "P8-013",
+      "task_start_line": 12789,
+      "title": "指标/门槛与失败退出最终认证",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-012"
+      ],
+      "steps": [
+        "故意注入quality/perf/lock失败",
+        "验证退出和raw报告仍保留"
+      ],
+      "acceptance": [
+        "红线失败必非零，inconclusive不被自动passed",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V03",
+        "V04",
+        "V20"
+      ],
+      "immutable_definition_sha256": "fb677c9e5338c3f3a418f3a13e04d3a82091ef10b843fce3ebcfccb029e0953c"
+    },
+    {
+      "id": "P8-016",
+      "task_start_line": 12977,
+      "title": "数据库/配置/包回滚演练",
+      "status": "in_progress",
+      "depends_on": [
+        "P7-020",
+        "P8-012",
+        "P8-013"
+      ],
+      "steps": [
+        "旧binary开新schema的受控重建、cache版本隔离、disable语义回退"
+      ],
+      "acceptance": [
+        "回滚不误读新向量/丢用户源码，恢复步骤实测",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V13",
+        "V17",
+        "V21"
+      ],
+      "immutable_definition_sha256": "72249af70bb1f7b49f6e0b6993b561e11b511db7319b81d6b0c18ca08480db36"
+    }
+  ],
+  "original_directly_applicable_clauses": [
+    {
+      "file": "02-CONTRACTS.md",
+      "lines": [
+        41,
+        47
+      ],
+      "meaning": "Persist frontier and explicit incomplete status; original fixed-point semantics remain."
+    },
+    {
+      "file": "02-CONTRACTS.md",
+      "lines": [
+        120,
+        126
+      ],
+      "meaning": "Phase counts and current target SHA evidence are required. Existing source-scoped measurements are paired with current exact source/actual regression applicability, not relabelled."
+    },
+    {
+      "file": "06-VALIDATION.md",
+      "lines": [
+        29,
+        42
+      ],
+      "meaning": "V07 includes wider dirty-oracle cases; V20 includes1k–100k. Fresh45 is the chosen five-scale mutation/fanout descriptive population, with related old regressions separately referenced."
+    },
+    {
+      "file": "06-VALIDATION.md",
+      "lines": [
+        58,
+        67
+      ],
+      "meaning": "G8 full release profile and quality/performance gates remain distinct. N1 does not pass statistical tails or full release certification."
+    },
+    {
+      "file": "09-BENCHMARK.md",
+      "lines": [
+        154,
+        167
+      ],
+      "meaning": "D4 five synthetic scales plus real repositories; pristine A/B and independent facts remain. New45 is synthetic only; existing real-repository/correctness evidence retains its own source and scope."
+    },
+    {
+      "file": "09-BENCHMARK.md",
+      "lines": [
+        171,
+        185
+      ],
+      "meaning": "Profiles remain separate, release identity and all samples retained; no best-of, no cross-environment causal comparison or stable-tail/CI claim from N1. Original008 query distribution/CI evidence is not replaced by fresh45."
+    },
+    {
+      "file": "P8-SCALE.md",
+      "lines": [
+        243,
+        280
+      ],
+      "meaning": "Registered old150/1500/N30 remains required for that full-study protocol and its aggregate. The failed old study is never claimed complete or filled from fresh45."
+    }
+  ],
+  "preserved_boundary": "The descriptive route was prospectively registered before execution, requires all45 cells and85 records, and does not convert the original failed150-shard studies or query/tail statistical claims into passes.",
+  "source_applicability": {
+    "source_refs": {
+      "original_main": "b9b089bb4eae072affe9326681d4980eae15fd84",
+      "actual_source": "f97c5068d056969705e8387ba1f37d83847f5bee",
+      "tree": "39a053ae49b486764751a570d164e7cd41d7ff29",
+      "product_P": "3481da0baf46bf510580951a4f5fbc9cb2255ae5",
+      "review_R": "533e900cf83900f726e92835956137356081861f",
+      "canonical": {
+        "git_blob": "f9965c6df16bcf1665655f2d951db99d0258e5d3",
+        "commit": "533e900cf83900f726e92835956137356081861f",
+        "path": "artifacts/checkpoints/p8-task-profile-format-fix-bfcc-20261010/independent-source-review.json"
+      },
+      "combination_peer": {
+        "git_blob": "8adf965b33663cb72c138d3db69dce58142df0a7",
+        "commit": "a5158fd0b255fc51d57ce68bd7cae3b7346e8ff9"
+      },
+      "borrowed_cursor_peer": {
+        "git_blob": "da856258714effb3addab7f5c61c0e49d27a7895",
+        "commit": "a5158fd0b255fc51d57ce68bd7cae3b7346e8ff9"
+      },
+      "main_regression_peer": {
+        "git_blob": "a1c7594462f7d33ea7ebcb8998a46d0e3163086a",
+        "commit": "3f5928a6acf8172fb04e0c7f5474846b45a0dd20",
+        "path": "artifacts/checkpoints/p8-round42-complete-bfcc-20261010/PR201-main-terminal/independent-main-terminal-review.json"
+      },
+      "original_main_log": {
+        "path": "/workspace/scratch/bfccb8494ba0/round42-new45-study/114135224079-original-main.log",
+        "bytes": 1098463,
+        "sha256": "19dd6cb83ed8e7a9bfb93d9b3ba8b05465a6bffabf69824c381e5c2dfd042354",
+        "git_blob": "b42f2f685f4f2caaaa0497db6706399d9f89d998",
+        "contains_original_BOM": true
+      },
+      "actual_CI_checkout": {
+        "sha": "9c4f29f5b290bfcd60375bc1c1c7a194b5099eae",
+        "line": 190,
+        "parents": [
+          "b9b089bb4eae072affe9326681d4980eae15fd84",
+          "f97c5068d056969705e8387ba1f37d83847f5bee"
+        ],
+        "tree": "39a053ae49b486764751a570d164e7cd41d7ff29",
+        "evidence": "Actual checkout from this log; exact parents/tree reused from previously accepted official 05:10 bridge, immutable report ba71a59e609fdd31e73f20b304257ddfca89aae5 and support90e1acc5019ad32746af663573aeac35fe2a1a38. No new tree fetch."
+      },
+      "scope": "The old eight runs keep their original source and execution identities. Current source reviews plus actual G2-tree engineering regression provide applicability evidence, not a claim to rerun old mixed/platform/rollback/soak measurements on G2."
+    },
+    "direct_original_scope_paths_changed_since_b9": [],
+    "shared_dependency_changes": [
+      "oracle/streaming.rs borrowed sorted cursor: accepted source review preserves complete dual spool, 15 tables, duplicates, Value semantics, original budgets and A-before-B error order; three new methods each pass in default and eval-http. No speedup claim.",
+      "mutation_case.rs and p8_scale native/CLI shared helpers: isolated descriptive scope is explicit; accepted review preserves old default/full/cold/wide/isolated-N30 behavior; p8_scale22 methods pass in both main configurations. New45 results remain a separate study.",
+      "No index preparation/reconciliation/freshness production changes, query runner/statistics/resource sampler, semantic lifecycle/cache, migration or failure-gate implementation changes in the bounded b9-to-G2 official file list."
+    ],
+    "application_rule": "Keep original eight updates/source_component_index unchanged. At final root decision append current applicability/CI locator alongside each original evidence entry, without replacing original sources or optional/unavailable limitations.",
+    "new_required_reruns": [],
+    "caution": "This scoped applicability bridge is not all-current-platform, full G8/V20 or present-source performance certification."
+  },
+  "selected_actual_related_regression_lines": {
+    "log_git_blob": "b42f2f685f4f2caaaa0497db6706399d9f89d998",
+    "checkout": {
+      "sha": "9c4f29f5b290bfcd60375bc1c1c7a194b5099eae",
+      "line": 190,
+      "parents": [
+        "b9b089bb4eae072affe9326681d4980eae15fd84",
+        "f97c5068d056969705e8387ba1f37d83847f5bee"
+      ],
+      "tree": "39a053ae49b486764751a570d164e7cd41d7ff29",
+      "evidence": "Actual checkout from this log; exact parents/tree reused from previously accepted official 05:10 bridge, immutable report ba71a59e609fdd31e73f20b304257ddfca89aae5 and support90e1acc5019ad32746af663573aeac35fe2a1a38. No new tree fetch."
+    },
+    "observations": [
+      {
+        "line": 1640,
+        "original": "2026-10-10T05:02:01.1419668Z test dependency_fanout_over_budget_is_partial_not_normal ... ok"
+      },
+      {
+        "line": 1651,
+        "original": "2026-10-10T05:02:03.9702160Z test repeated_warm_catalog_mutations_match_cold_rebuild ... ok"
+      },
+      {
+        "line": 1667,
+        "original": "2026-10-10T05:02:06.2774918Z test fanout_larger_than_a_lookup_window_is_not_truncated_out_of_debt ... ok"
+      },
+      {
+        "line": 1670,
+        "original": "2026-10-10T05:02:06.6948539Z test reexport_cycle_and_deep_chain_converge_across_bounded_rounds ... ok"
+      },
+      {
+        "line": 2273,
+        "original": "2026-10-10T05:03:57.2824683Z test dirty_closure::tests::fixpoint_converges_on_import_cycles ... ok"
+      },
+      {
+        "line": 2275,
+        "original": "2026-10-10T05:03:57.2826782Z test dirty_closure::tests::fixpoint_reevaluates_promoted_siblings_for_reexport_chains ... ok"
+      },
+      {
+        "line": 2467,
+        "original": "2026-10-10T05:03:59.8007138Z test indexer_phases::dirty::dirty_propagation_fixpoint_tests::removed_dependency_promotes_importer ... ok"
+      },
+      {
+        "line": 2470,
+        "original": "2026-10-10T05:03:59.9519867Z test indexer_phases::dirty::dirty_propagation_fixpoint_tests::rust_pub_use_chain_promotes_transitive_importer_on_removal ... ok"
+      }
+    ],
+    "scope": "Selected corroborating actual V07-related controls, not an invented exhaustive V07 certification or new execution."
+  },
+  "remaining_real_inputs": {
+    "as_of_retained_original_receipts_only": "2026-10-10 05:44:33 UTC",
+    "accepted_cells": 18,
+    "accepted_records": 36,
+    "remaining_cells": 27,
+    "remaining_records": 49,
+    "remaining_setup_records": 22,
+    "remaining_mutation_records": 22,
+    "remaining_fanout_records": 5,
+    "cold_points": {
+      "accepted_scales": [
+        1000,
+        5000,
+        10000,
+        50000
+      ],
+      "pending_scales": [
+        100000
+      ]
+    },
+    "first12_review": {
+      "git_blob": "ec7263820a97b6022e06dbb105f3b9592671d97b",
+      "commit": "3f5928a6acf8172fb04e0c7f5474846b45a0dd20"
+    },
+    "next6_review": {
+      "git_blob": "358eed5867eb63b03a3b783144379575f3ff2116",
+      "publication_commit": null
+    },
+    "final_45_catalog": null,
+    "original_Actions_aggregate": null,
+    "formal_006_decision": null,
+    "ordinary_CI": {
+      "as_of_original_main_peer": {
+        "observed": {
+          "current_time": "2026-10-10 05:34:43 UTC"
+        },
+        "success": 25,
+        "total": 26,
+        "running_job": 114135223703,
+        "running_step": "One-hour actual stdio session with Git switches and catalog churn",
+        "started_at": "2026-10-10T04:59:53Z"
+      },
+      "terminal_soak_receipt": null,
+      "scope": "Retained ordinary merge condition, not a newly introduced universal task-measurement or N30 gate."
+    },
+    "planned_aggregate_intake": "Root uniquely receives original p8-task-matrix and complete Actions aggregate job log. Original workflow aggregate needs all measurement jobs and calls matrix.aggregate. Independent review uses that actual invocation; this plan does not require a duplicate local aggregate.",
+    "no_current_task_credit": true
+  },
+  "old_eight_own_scope": [
+    {
+      "id": "P8-007",
+      "harddeps": [
+        "P8-006"
+      ],
+      "accepted_original_scope": "Gc8 four-C mixed/read/build/queue/tail/error and three-seed fake-backfill components accepted; separateG2 fullfour-C actualDB acquisition component now accepted. No deadlock/starvation was hidden in the observed scope.",
+      "inherited_original_evidence_keys": [
+        "gc8_runtime_terminal_map",
+        "gc8_mixed_C8_C4",
+        "gc8_C1_platform_final",
+        "gc8_lifecycle_backfill",
+        "g2_complete_actual_acquisition",
+        "gc8_related_CI_and_gates"
+      ],
+      "new_own_scope_gap_discovered": null,
+      "completion_pending_original_dependencies_and_final_root_decision": true
+    },
+    {
+      "id": "P8-008",
+      "harddeps": [
+        "P8-007"
+      ],
+      "accepted_original_scope": "Gc8 lifecycle retains30 cold+400 reopen+400 uncached+400 cache-hit=1230samples,431sessions; originalN/distributions/CI all retained, no best-of. OS page cache not cleared and upper tail CI may be null.",
+      "inherited_original_evidence_keys": [
+        "gc8_lifecycle_backfill",
+        "gc8_runtime_terminal_map",
+        "gc8_related_CI_and_gates"
+      ],
+      "new_own_scope_gap_discovered": null,
+      "completion_pending_original_dependencies_and_final_root_decision": true
+    },
+    {
+      "id": "P8-009",
+      "harddeps": [
+        "P8-008"
+      ],
+      "accepted_original_scope": "Accepted original client/server/process-tree roles, physical artifact/FTS accounting and reported/estimated/unavailable columns. Overlapping roles are not summed; unavailable/whole-tree-peak/billing remain unavailable rather than zero.",
+      "inherited_original_evidence_keys": [
+        "gc8_runtime_terminal_map",
+        "gc8_lifecycle_backfill",
+        "gc8_soak",
+        "gc8_related_CI_and_gates"
+      ],
+      "new_own_scope_gap_discovered": null,
+      "completion_pending_original_dependencies_and_final_root_decision": true
+    },
+    {
+      "id": "P8-010",
+      "harddeps": [
+        "P8-009"
+      ],
+      "accepted_original_scope": "Original one-hour workload3600.054553094s;3601operations=1201build+2400compoundread, real edits/deletes/branch switches/catalog compaction/cache reuse, original growth checks and15table endpoint accepted.",
+      "inherited_original_evidence_keys": [
+        "gc8_soak",
+        "gc8_related_CI_and_gates"
+      ],
+      "new_own_scope_gap_discovered": null,
+      "completion_pending_original_dependencies_and_final_root_decision": true
+    },
+    {
+      "id": "P8-011",
+      "harddeps": [
+        "P7-020",
+        "P8-007",
+        "P8-010"
+      ],
+      "accepted_original_scope": "Accepted original process-kill/network/cache-corruption/database-busy/replacement components with raw failures retained and fake-provider recovery/cost boundaries. Local subreport3passed/4not_run stays unchanged; distinct active/production controls are cited with their own coverage.",
+      "inherited_original_evidence_keys": [
+        "gc8_recovery_platform_rollback",
+        "gc8_lifecycle_backfill",
+        "gc8_related_CI_and_gates"
+      ],
+      "new_own_scope_gap_discovered": null,
+      "completion_pending_original_dependencies_and_final_root_decision": true
+    },
+    {
+      "id": "P8-012",
+      "harddeps": [
+        "P8-011"
+      ],
+      "accepted_original_scope": "Original8 cold cells Linux/macOS×Rust1.95/stable×default/semantic and final originalcollector all accepted; absent/fresh target and actual SDK/toolchain/binary receipts retained.",
+      "inherited_original_evidence_keys": [
+        "gc8_recovery_platform_rollback",
+        "gc8_C1_platform_final",
+        "gc8_related_CI_and_gates"
+      ],
+      "new_own_scope_gap_discovered": null,
+      "completion_pending_original_dependencies_and_final_root_decision": true
+    },
+    {
+      "id": "P8-013",
+      "harddeps": [
+        "P8-012"
+      ],
+      "accepted_original_scope": "Six original Rust failure contracts plus seven retained compareCLI outcomes[1,1,1,1,2,2,2] accepted. Quality/performance/lock failure and inconclusive/invalid states remain non-passes; raw/report preservation verified.",
+      "inherited_original_evidence_keys": [
+        "gc8_related_CI_and_gates"
+      ],
+      "new_own_scope_gap_discovered": null,
+      "completion_pending_original_dependencies_and_final_root_decision": true
+    },
+    {
+      "id": "P8-016",
+      "harddeps": [
+        "P7-020",
+        "P8-012",
+        "P8-013"
+      ],
+      "accepted_original_scope": "Accepted controlled25→24→25/backup restoration using real277f2490fad3fa30f2812b5547bad033867c9ea5 andGc8, cache namespace/version isolation and default/semantic fallback; user source/config preserved. Historical dev binary is not a published release tag.",
+      "inherited_original_evidence_keys": [
+        "gc8_recovery_platform_rollback",
+        "gc8_related_CI_and_gates"
+      ],
+      "new_own_scope_gap_discovered": null,
+      "completion_pending_original_dependencies_and_final_root_decision": true
+    }
+  ],
+  "mechanical_preservation": {
+    "nine_definition_hashes_match_original_tasks": true,
+    "nine_harddeps_match": true,
+    "updates_007_to_013_and_016_structurally_unchanged": true,
+    "source_component_index_structurally_unchanged": true,
+    "protected_task_fields_or_criteria_changed": false
+  },
+  "read_only_attempt_note": "Local G2 Git metadata lacked b9 object, so bounded local diff-tree exited128. One official b9...G2 compare supplied the complete33path list. No source fetch or measurement run followed from the local metadata failure.",
+  "executed": {
+    "only_this_JSON_preparation": true,
+    "code_index_plan_write": false,
+    "code_index_plan_check": false,
+    "native_or_study_validator": false,
+    "combine_or_aggregate": false,
+    "Actions_download": false,
+    "task_or_ref_mutation": false
+  },
+  "verdict": "prepared_bound_applyfalse; no_current_completion_credit"
+}

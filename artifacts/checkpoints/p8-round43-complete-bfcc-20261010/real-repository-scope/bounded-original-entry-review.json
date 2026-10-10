@@ -1,0 +1,212 @@
+{
+  "schema": "bounded-real-repository-original-entry-review-v1",
+  "source": "f97c5068d056969705e8387ba1f37d83847f5bee",
+  "source_tree": "39a053ae49b486764751a570d164e7cd41d7ff29",
+  "source_view": "/workspace/scratch/bfccb8494ba0/round42-new45-build-original-intake/source-exact-G2",
+  "scope": "Read existing source and local path/tree metadata only. No benchmark, native/hash utility, validator, download, source mutation or workflow execution.",
+  "conclusion": "Existing locked-suite CLI primitives can produce a real-repository cold prepare report and separate mutation/full 15-table comparisons. No inspected existing CLI combines a retained real-repository cold report, bounded resume-to-closure and per-checkpoint full streaming parity in the same retained lifecycle. The existing P8 scale CLI generates synthetic projects and has no arbitrary repository input.",
+  "entries": [
+    {
+      "entry": "cc-eval run --suite <existing-locked-dev-suite> --backend mcp-stdio --binary <same-source-codecortex> --output <new-directory> --profile smoke",
+      "references": [
+        "crates/cc-eval/src/bin/cc-eval.rs:150",
+        "crates/cc-eval/src/benchmark/adapters/mcp_stdio.rs:222",
+        "crates/cc-eval/src/benchmark/runner.rs:115"
+      ],
+      "available": "Copies locked admitted source into a fresh temporary project; prepare calls public index full=true. prepare.json retains elapsed_us and original IndexReport result; manifest.json records engine/source/input/config. resources.jsonl and query outputs are separate observations.",
+      "limits": "Suite timeout_ms is validated in 1..600000 and applies to each MCP operation. Performance profile separately requires Release eval, warmup, >=200 query samples; smoke is not stable performance certification. This path does not mutate A/B or compare full parity."
+    },
+    {
+      "entry": "cc-eval mutate --suite <existing-locked-dev-suite> --mutation <bounded-write-delete-rename-plan> --output <new-directory>",
+      "references": [
+        "crates/cc-eval/src/bin/cc-eval.rs:440",
+        "crates/cc-eval/src/benchmark/oracle.rs:286",
+        "crates/cc-eval/src/runner.rs:39"
+      ],
+      "available": "Materializes two disposable identical admitted input copies; keeps A across steps; each step applies the same mutation to A/B, invokes original A incremental and B full, compares all 15 canonical tables and optional public search probes. oracle.json records incremental_report/full_report and checkpoint-*-incremental/full.json retain every canonical row.",
+      "gaps": [
+        "Initial CodeIndexBackend::new invokes build_index_report(false) on an empty index and discards its returned cold report. It does not retain initial full parity.",
+        "Each mutation invokes one incremental build. There is no explicit resolution_freshness.complete gate or resume loop in oracle::run; equal alone cannot be promoted to complete closure.",
+        "Uses the legacy in-memory canonical row cap: checks rows.len()>100000 before push; it is not the scalable double-spool oracle.",
+        "Both temporary project directories are deleted at return; they cannot subsequently be passed to p8-oracle. Suite timeout_ms is metadata-validated but not wrapped around this in-process oracle call."
+      ]
+    },
+    {
+      "entry": "p8-oracle --left <retained-A-project> --right <retained-B-project> --output <new-json>",
+      "references": [
+        "crates/cc-eval/src/bin/p8-oracle.rs:18",
+        "crates/cc-eval/src/benchmark/oracle/streaming.rs:25"
+      ],
+      "available": "Reads existing persisted indexes only, full 15-table double-spool comparison; writes binary_digest, paths, tables, comparison/error, elapsed_ns and actual exit_code 0 equal / 1 unequal / 2 error. No repair/build performed.",
+      "limits": "Default 5,000,000 rows/table; aggregate canonical bytes 4 GiB; scratch 8 GiB; max row 1 MiB. CLI does not expose a repository build, mutation, deadline, resume loop or budget override."
+    },
+    {
+      "entry": "Existing library primitives, not a ready CLI",
+      "references": [
+        "crates/cc-eval/src/runner.rs:49",
+        "crates/cc-eval/src/runner.rs:131",
+        "crates/cc-eval/src/benchmark/mutation_case.rs:116"
+      ],
+      "available": "CodeIndexBackend::new_unindexed plus build_index_report(true/false) or scoped changed_paths can retain original cold and incremental IndexReports. mutation_case::evaluate_with_initial_evidence already retains cold/full reports and bounded resume semantics for its embedded fixture representation.",
+      "limits": "The public mutation-case CLI calls evaluate without initial-evidence retention; embedded cases have <=512 files, <=4 MiB source, <=8 MiB payload, <=128 stages, dirty budget1..10000, resume1..1024. No arbitrary full cc-switch repository directory parameter. These APIs are usable building blocks but would need an explicitly reviewed host composition and fixed inputs to retain the requested complete real-repository lifecycle."
+    },
+    {
+      "entry": "p8-scale / p8_cold_matrix / p8_task_profile_matrix current protocols",
+      "references": [
+        "crates/cc-eval/src/bin/p8-scale.rs:40",
+        "crates/cc-eval/src/benchmark/p8_scale.rs:882",
+        "crates/cc-eval/src/benchmark/p8_scale.rs:943"
+      ],
+      "available": "Original scopes and full phase/parity output exist for generated fixtures.",
+      "limits": "Native CLI accepts files/matrix/scopes, not --repo/--suite. run_scale calls synth::generate for A/B. Supplying a real repository path is not an existing supported input and the current 45 study must not be reclassified."
+    },
+    {
+      "entry": "cargo test --release -p cc-eval --lib tests::benchmark_real_workspace -- --ignored --exact --nocapture (illustrative original ignored test selector)",
+      "references": [
+        "crates/cc-eval/src/lib.rs:481"
+      ],
+      "available": "Existing ignored test copies a sanitized real CodeCortex workspace and benchmarks original query/index corpus calls.",
+      "limits": "Hardcoded workspace source, not cc-switch/Flask, and output is legacy cold-session/warm-best-of query timing. It has no A/B mutation full-table parity or retained cold IndexReport. Not executed; exact compiled test path should be confirmed before any future invocation."
+    }
+  ],
+  "original_fields": {
+    "index_report": [
+      "files_scanned",
+      "files_added",
+      "files_updated",
+      "files_removed",
+      "files_skipped",
+      "files_parsed",
+      "symbols_total",
+      "chunks_total",
+      "parse_errors",
+      "elapsed_ms",
+      "dirty_plan",
+      "resolution_freshness",
+      "dirty_propagation",
+      "phase_timing",
+      "build_timing",
+      "build_explain"
+    ],
+    "phase_timing_units": "ms: scan_diff, parse, resolve, write, postprocess, analysis",
+    "build_timing_units": "us: prepare, commit_write, postprocess_compute, postprocess_apply, between_stages partition total; prepare_snapshot/full_staging are nested and must not be added again. Optional fields absent remain unknown.",
+    "counts_boundary": "IndexReport directly reports symbols/chunks but no global vector or edge total. 15-table canonical rows permit exact per-table edges/files/symbols/chunks counts. Vectors are outside that oracle surface; P8 generated fixtures explicitly report disabled/count=null after disabling semantic, which cannot be transplanted to an arbitrary real repository config.",
+    "reference": "crates/cc-index/src/indexer.rs:149"
+  },
+  "local_input_status": {
+    "cc_switch_and_flask": "No materialized cc-switch/Flask source checkout was found among the current task-root directories or filenames inspected; exact G2 benchmark/fixture tree has no corresponding directly vendored dev source directory. This is a bounded local observation, not a claim that immutable historical archives lack the inputs.",
+    "known_fixed_repositories_from_original_09": [
+      "farion1231/cc-switch@40cac1a68edf8c9e7b3a89125cf40bb93a348404",
+      "pallets/flask@22d924701a6ae2e4cd01e9a15bbaf3946094af65"
+    ],
+    "historical_evidence_boundary": "todo_audit separately located source2cd/run37749276827/artifact11537848186 real-repository query evidence. This review did not reopen its ZIP or body, does not relabel its engine source, and does not infer incremental phase/parity from query samples.",
+    "source_requirements": "Existing Suite manifest::load requires exact source digest, query digest, admitted files, clean exact Git commit (or non-Git snapshot lock), no symlink/LFS/binary input and <=1MB per UTF8 file, explicit auto_index=false. Two-copy materialize rechecks bytes. Source only goes into disposable copies; new_unindexed deletes their .codecortex and must not be aimed at a user project."
+  },
+  "definition_boundary": {
+    "reference": "docs/roadmap/code-index-v2/09-BENCHMARK.md:154,163,171",
+    "original_doc_git": "5ced0c455e7e774a9d95da23187c64dcefc37314",
+    "interpretation": "D4 says synthetic scales plus real repositories and symbols/chunks/edges/vector counts. Separate oracle/performance sections specify mutation and profile methodology. This source-interface review does not infer that every synthetic cell must be repeated on each real repository, does not decide task completion, and does not add a new gate."
+  },
+  "next_step_if_existing_evidence_insufficient": "First reuse already admitted dev source/locks and actual real-repository reports by exact historical identity. If a new same-source lifecycle observation is needed, retain a bounded pair of disposable projects and compose the existing new_unindexed/build_index_report, explicit resume/complete checks and p8-oracle APIs with immutable inputs/outputs. This would need a small reviewed execution host/input plan, not a modification of the active 45 protocol. No such candidate or experiment is created here.",
+  "source_files_read": [
+    {
+      "path": "crates/cc-eval/src/bin/cc-eval.rs",
+      "bytes": 16918,
+      "sha256": "99de08c18fa7b0172693763c9e14c3be2778cb2109f15ed5e474b20238350578",
+      "git_blob": "73c4666b05611b2e7b6578412f8f7dc4365e7d4c"
+    },
+    {
+      "path": "crates/cc-eval/src/bin/p8-oracle.rs",
+      "bytes": 1882,
+      "sha256": "135962540116e01d47db3a34daa9bfebe2117d25773a888b6b36fde85dabdd8e",
+      "git_blob": "269116e2247e88e2ca3590f95fc4a039532cfc0a"
+    },
+    {
+      "path": "crates/cc-eval/src/bin/p8-scale.rs",
+      "bytes": 7136,
+      "sha256": "86837977997b80c1198f2c4e1c284008704d7a60bb58c57d25b415226173f62c",
+      "git_blob": "1175287cd6eb2e60f1a86829cf621ac66296d444"
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/oracle.rs",
+      "bytes": 37632,
+      "sha256": "b4175911e4bad1669afcaaab68385de89821045d71181b38ef8db478e76811b2",
+      "git_blob": "9936bdda7293d2f27a296a6d24419bb3f2e00f7a"
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+      "bytes": 39984,
+      "sha256": "863dbceec78660565fe589c208f55cc07623fe638ff70f314c30c63585438367",
+      "git_blob": "059023a9cd58f2427c196851ba31ca3197a4d5dd"
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/manifest.rs",
+      "bytes": 9691,
+      "sha256": "8a67fab83b00a05727a00db97527de72b596aed497c32aa53c5e9ebaa8742001",
+      "git_blob": "54986d2482ae25eae70953077453fd295267d667"
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/schema.rs",
+      "bytes": 4328,
+      "sha256": "a17c78b23f507c732f0a0c4454cf0443ed182554988474cdc527a965bfbf5765",
+      "git_blob": "95c77b433956a75c6bb3255c95f6017e987b9a06"
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/runner.rs",
+      "bytes": 12441,
+      "sha256": "c5ee07890319d0e6ab31cd74fe0578cf0201e6cbd3b668cff89ded9846c5895a",
+      "git_blob": "25138446e4bb2d2b05cba88b2c0cfa03253b4e2b"
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/adapters/mcp_stdio.rs",
+      "bytes": 15014,
+      "sha256": "649f6ae03f1c06acf96f5095578c8a2366ccb511061516b49719e1408a24bd6f",
+      "git_blob": "f35f5b847923fc31a4aa6273f0e2221afc0e5221"
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/mutation_case.rs",
+      "bytes": 13421,
+      "sha256": "7474be8aa7c98a720f0a57b36431f7592845439086595c38119b3aac9d522618",
+      "git_blob": "edeba7de44347ad0e77f2472a7d0cd0672618f50"
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/mutations.rs",
+      "bytes": 2619,
+      "sha256": "c01a05b198bd96165e59bca597f3a10e96d3c7ac38f8f2bb8a04a5590da5936d",
+      "git_blob": "ebe5d7869068f8960c0cf438e71052ea98278673"
+    },
+    {
+      "path": "crates/cc-eval/src/benchmark/p8_scale.rs",
+      "bytes": 56294,
+      "sha256": "ac2042f0e6a227cb5d53394e4ae09c6ecedf98ade7d2119dcaf4b1344be57743",
+      "git_blob": "edc56c0ab9c0b3c35f319cdfc2be23ce13bdc220"
+    },
+    {
+      "path": "crates/cc-eval/src/runner.rs",
+      "bytes": 21425,
+      "sha256": "ea7cc22064dcc1b5b7f27c7544791ec7d0e5000b45a2b61458f85b3c5aea5b8f",
+      "git_blob": "e771db498b9124321f2d3ef57faf387c12f672d7"
+    },
+    {
+      "path": "crates/cc-eval/src/lib.rs",
+      "bytes": 50040,
+      "sha256": "3c83ddc270a7199908333801ce6f5de68048df128310143d63e74e0e6984896b",
+      "git_blob": "3ca75bb7450cc21d0e64badb49c5e3059fea3fc1"
+    },
+    {
+      "path": "crates/cc-index/src/indexer.rs",
+      "bytes": 61450,
+      "sha256": "754e4e43a3bbed17dbb698ace750e244d589873c1caf0685f418e59664fbd175",
+      "git_blob": "c282c999f19fd35c37df68bb9230fb8f5b7456ed"
+    },
+    {
+      "path": "crates/cc-server/src/cli.rs",
+      "bytes": 2636,
+      "sha256": "3987198c27e4cd720b43e37174b3951faab0e7357ffb15b700e76d0c3509d7f3",
+      "git_blob": "fc3e41e22858f4156d5140185c461366b6990b9f"
+    }
+  ],
+  "product_execution": false,
+  "todo_credit": 0,
+  "refs_updated": false
+}

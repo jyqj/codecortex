@@ -964,7 +964,10 @@ fn task_descriptive_scope_is_explicit_n1_without_weakening_old_n30() {
             wrong_scope.stage_scope = Some(StageScope::ProfileIsolatedV1);
             assert!(wrong_scope.validate().is_err());
             wrong_scope.repetitions = 30;
-            wrong_scope.shard = Some(ScaleShard { index: 0, count: 30 });
+            wrong_scope.shard = Some(ScaleShard {
+                index: 0,
+                count: 30,
+            });
             assert_eq!(wrong_scope.validate().is_ok(), !cfg!(debug_assertions));
             wrong_scope.stage_scope = Some(StageScope::ProfileTaskDescriptiveV1);
             assert!(wrong_scope.validate().is_err());

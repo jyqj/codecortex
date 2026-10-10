@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "round": 46,
+  "observed_at": "2026-10-10T00:40:00Z",
+  "authority": {
+    "main": "09d4454fa45455dc5a8bfdfec67e31bb7ed162c7",
+    "main_tree": "00b2877fc2003045467db450730ca05cf2e29317",
+    "tasks_blob": "adb44ee70a4c129bfb443d4ecf678fb934c8ea6b"
+  },
+  "ledger": {
+    "total": 192,
+    "done": 164,
+    "in_progress": 15,
+    "todo": 12,
+    "blocked": 1,
+    "remaining": 28,
+    "baseline_done": 163,
+    "cumulative_new_done": 1,
+    "target": 10
+  },
+  "new_original_todos_done": [],
+  "accepted_prior_completion": [
+    "P8-005"
+  ],
+  "new_facts": {
+    "dirty4096_terminal": {
+      "run": 37982220020,
+      "source": "008f1ec0ae16b9b6aff9f20d033b17b2219168f8",
+      "profile": "scale_wide_dirty_v1",
+      "dirty_budget": 4096,
+      "preflight_100k": {
+        "job": 114000097090,
+        "status": "completed",
+        "conclusion": "failure"
+      },
+      "aggregate": {
+        "job": 114077867196,
+        "status": "completed",
+        "conclusion": "failure"
+      },
+      "measure": {
+        "job": 114077867756,
+        "status": "completed",
+        "conclusion": "skipped"
+      },
+      "successful_shards": "4/150",
+      "missing_cells": 146,
+      "matrix_artifact": {
+        "id": 11651413055,
+        "zip_bytes": 580,
+        "sha256": "1a442892700c45cebaaa4108fa04c5d84a533f34b8686530861672abb565a4e4",
+        "zip_crc": "passed",
+        "matrix_status": "failed",
+        "release_certification": "not_run"
+      }
+    },
+    "pr199": {
+      "state": "open",
+      "draft": false,
+      "head": "4786c1457b47c5baf4c09d32b96048795e863111",
+      "base": "09d4454fa45455dc5a8bfdfec67e31bb7ed162c7",
+      "jobs_snapshot": {
+        "success": 24,
+        "in_progress": 2,
+        "total": 26,
+        "in_progress_names": [
+          "check",
+          "soak"
+        ]
+      },
+      "decision": "KEEP OPEN / DO NOT MERGE NOW; re-evaluate only after both exact-head jobs succeed and head/base remain unchanged",
+      "original_todo_credit": 0
+    },
+    "pr191": {
+      "state": "open",
+      "draft": true,
+      "head": "1ebb6208f2f5f8fe8a5bf237c00a3d963f44bb08",
+      "observation": "80 equal-lifetime pairs accepted, including 17 slower pairs and 10/10 single_plain retained-first slower",
+      "decision": "HOLD; finite observation does not support universal default adoption",
+      "original_todo_credit": 0
+    }
+  },
+  "scale_boundary": {
+    "dirty200": "terminal failure retained: 100k failed, aggregate failed, measure skipped, 4/150 shards and 41/1500 composites",
+    "pooling_prohibited": true,
+    "p8_006": "in_progress",
+    "downstream": "P8-007 through P8-013 and P8-016 remain open by hard dependencies"
+  },
+  "pr_management": {
+    "merge_now": [],
+    "close_now": [],
+    "hold": [
+      188,
+      190,
+      191,
+      192,
+      199
+    ]
+  },
+  "independent_reviews": [
+    {
+      "scope": "ledger_dependency",
+      "blob": "d3ec0c6913643093d3bdaab2e4f2864bbe02d9e2"
+    },
+    {
+      "scope": "scale_terminal",
+      "blob": "bd6325b2a3468daeea8d80ff333307430d612f01"
+    },
+    {
+      "scope": "pr_admission",
+      "blob": "1cdbac3c920379d9588cc744c5d1d4e94563da15"
+    }
+  ],
+  "root_decision": "No new original TODO satisfies its full acceptance and hard dependencies. Preserve both failed scale populations separately. Do not merge PR199 while exact-head check and soak are nonterminal."
+}

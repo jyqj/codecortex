@@ -1,0 +1,1595 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_triage",
+  "created_at_utc": "2026-10-10T00:42:38.981359+00:00",
+  "status": "accepted_scoped_original_closeout_log",
+  "source": "4786c1457b47c5baf4c09d32b96048795e863111",
+  "run_id": 38008269601,
+  "run_attempt": 1,
+  "job": {
+    "id": 114082032026,
+    "name": "closeout",
+    "status": "completed",
+    "conclusion": "success",
+    "started_at": "2026-10-10T00:19:07Z",
+    "completed_at": "2026-10-10T00:29:46Z",
+    "head_sha": "4786c1457b47c5baf4c09d32b96048795e863111"
+  },
+  "review_scope": "Read-only original log and official job metadata; no network, test, product, validator or artifact download performed by this reader.",
+  "independence": "Original executor is GitHub Actions. Reviewer did not run this job and is not the V18 synchronization fix author (root); reviewer previously integrated the independent borrowed-oracle donor and does not claim a new independent source review here.",
+  "original_inputs": [
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round32-PR199-closeout-original-intake/114082032026-original-closeout.log",
+      "bytes": 1913829,
+      "sha256": "da3fa6474b1682836b8f88cd09c7375b8bade1c3fcc6ecea225cc6222c93cca3",
+      "git_blob": "e9c4003615f8af33330bfb149f829096a27b6703"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round32-PR199-closeout-original-intake/original-run.json",
+      "bytes": 13528,
+      "sha256": "5bc51991a14a6e07cbd5b1de128cbbda0ae683887271ed1b1f5caf420251a5ee",
+      "git_blob": "5f9e13b70b0040ee26f4cb34ceba798e534683c6"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round32-PR199-closeout-original-intake/original-jobs.json",
+      "bytes": 17937,
+      "sha256": "9f570b9f267b0f058d499b9f7e970b2a39ed825d98ef854906dab6ee944a93c6",
+      "git_blob": "f2976094c5666ea11a4f364e2f0b45a61412ca94"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round32-PR199-closeout-original-intake/official-original-responses.json",
+      "bytes": 55085,
+      "sha256": "991b11665ccdaf7743a068fe1d5e8b05115debaf22dc6a917301c78825ef7564",
+      "git_blob": "40b7c3630bd3abf4dda0fe4bb4ca4de42bc30712"
+    }
+  ],
+  "raw_log_line_count": 4210,
+  "actual_checkout": {
+    "kind": "direct head checkout",
+    "commit": "4786c1457b47c5baf4c09d32b96048795e863111",
+    "proof": [
+      {
+        "line": 190,
+        "text": "HEAD is now at 4786c145 guard: bind borrowed oracle and V18 barrier integration review"
+      },
+      {
+        "line": 191,
+        "text": "##[endgroup]"
+      },
+      {
+        "line": 192,
+        "text": "[command]/usr/bin/git log -1 --format=%H"
+      },
+      {
+        "line": 193,
+        "text": "4786c1457b47c5baf4c09d32b96048795e863111"
+      }
+    ],
+    "not_test_merge": "d51e4d4ad298b2f883225fd847c5fe213cc53bc7"
+  },
+  "toolchain": {
+    "proof": [
+      {
+        "line": 448,
+        "text": "rustc 1.95.0 (59807616e 2026-04-14)"
+      },
+      {
+        "line": 449,
+        "text": "binary: rustc"
+      },
+      {
+        "line": 450,
+        "text": "commit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860"
+      },
+      {
+        "line": 451,
+        "text": "commit-date: 2026-04-14"
+      },
+      {
+        "line": 452,
+        "text": "host: x86_64-unknown-linux-gnu"
+      },
+      {
+        "line": 453,
+        "text": "release: 1.95.0"
+      },
+      {
+        "line": 454,
+        "text": "LLVM version: 22.1.2"
+      }
+    ],
+    "build_kind": "debug/test isolated closeout target; not cold release performance"
+  },
+  "official_job_steps": [
+    {
+      "name": "Set up job",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 1,
+      "started_at": "2026-10-10T00:19:07Z",
+      "completed_at": "2026-10-10T00:19:08Z"
+    },
+    {
+      "name": "Run actions/checkout@v4",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 2,
+      "started_at": "2026-10-10T00:19:08Z",
+      "completed_at": "2026-10-10T00:19:43Z"
+    },
+    {
+      "name": "Run dtolnay/rust-toolchain@1.95.0",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 3,
+      "started_at": "2026-10-10T00:19:43Z",
+      "completed_at": "2026-10-10T00:19:55Z"
+    },
+    {
+      "name": "Bind current source and isolated build",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 4,
+      "started_at": "2026-10-10T00:19:55Z",
+      "completed_at": "2026-10-10T00:19:55Z"
+    },
+    {
+      "name": "Actual cache races, process faults and WAL recovery",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 5,
+      "started_at": "2026-10-10T00:19:55Z",
+      "completed_at": "2026-10-10T00:23:04Z"
+    },
+    {
+      "name": "Original default, semantic and HTTP wiring contracts",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 6,
+      "started_at": "2026-10-10T00:23:04Z",
+      "completed_at": "2026-10-10T00:26:00Z"
+    },
+    {
+      "name": "Original thirteen-checkpoint real stdio lifecycle",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 7,
+      "started_at": "2026-10-10T00:26:00Z",
+      "completed_at": "2026-10-10T00:27:33Z"
+    },
+    {
+      "name": "Three-seed real product retry, crash, deletion, recovery and automatic GC",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 8,
+      "started_at": "2026-10-10T00:27:33Z",
+      "completed_at": "2026-10-10T00:29:16Z"
+    },
+    {
+      "name": "Attributed resources and actual worker contention",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 9,
+      "started_at": "2026-10-10T00:29:16Z",
+      "completed_at": "2026-10-10T00:29:41Z"
+    },
+    {
+      "name": "Preserve final source identity",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 10,
+      "started_at": "2026-10-10T00:29:41Z",
+      "completed_at": "2026-10-10T00:29:41Z"
+    },
+    {
+      "name": "Archive exact commands and raw evidence",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 11,
+      "started_at": "2026-10-10T00:29:41Z",
+      "completed_at": "2026-10-10T00:29:44Z"
+    },
+    {
+      "name": "Post Run actions/checkout@v4",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 22,
+      "started_at": "2026-10-10T00:29:44Z",
+      "completed_at": "2026-10-10T00:29:44Z"
+    },
+    {
+      "name": "Complete job",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 23,
+      "started_at": "2026-10-10T00:29:44Z",
+      "completed_at": "2026-10-10T00:29:44Z"
+    }
+  ],
+  "v18_feature_executions": [
+    {
+      "features": "default",
+      "command": [
+        {
+          "line": 1518,
+          "text": "cargo test -p cc-server --locked --test p7_v18_parameter_contract --test mcp_stdio \\"
+        },
+        {
+          "line": 1519,
+          "text": "  -- --nocapture 2>&1 | tee \"$RUNNER_TEMP/p7-closeout/default-wiring.log\""
+        }
+      ],
+      "target_line": 2037,
+      "executable": "Running tests/p7_v18_parameter_contract.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/p7_v18_parameter_contract-a1b87f195d4e095f)",
+      "footer": {
+        "status": "ok",
+        "passed": 8,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered_out": 0,
+        "seconds": 1.46,
+        "line": 2307,
+        "preceding_target": {
+          "line": 2037,
+          "text": "Running tests/p7_v18_parameter_contract.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/p7_v18_parameter_contract-a1b87f195d4e095f)"
+        },
+        "nested_child_footer": false
+      },
+      "methods_passed": [
+        {
+          "line": 2040,
+          "method": "query_network_contract::config_bool_is_default_false_and_rejects_non_boolean_values"
+        },
+        {
+          "line": 2106,
+          "method": "malformed_strategy_and_symbol_incompatibility_are_public_parameter_errors"
+        },
+        {
+          "line": 2152,
+          "method": "advertised_schema_keeps_fourteen_tools_and_optional_strategy_defaults"
+        },
+        {
+          "line": 2153,
+          "method": "query_network_contract::denied_authority_local_and_empty_scope_make_no_query_calls"
+        },
+        {
+          "line": 2200,
+          "method": "omitted_null_and_explicit_overrides_inherit_project_strategy_through_queries"
+        },
+        {
+          "line": 2216,
+          "method": "symbol_mode_preserves_legacy_array_and_sanitized_limits"
+        },
+        {
+          "line": 2227,
+          "method": "query_network_contract::mcp_input_cannot_enable_or_bypass_configuration_authority"
+        },
+        {
+          "line": 2305,
+          "method": "query_network_contract::each_missing_gate_keeps_cold_requests_off_the_network"
+        }
+      ]
+    },
+    {
+      "features": "semantic",
+      "command": [
+        {
+          "line": 1520,
+          "text": "cargo test -p cc-server --locked --features semantic --test p7_v18_parameter_contract \\"
+        },
+        {
+          "line": 1521,
+          "text": "  --test p7_gc_retention_config --test p7_runtime_independent_review -- --nocapture \\"
+        },
+        {
+          "line": 1522,
+          "text": "  2>&1 | tee \"$RUNNER_TEMP/p7-closeout/semantic-wiring.log\""
+        }
+      ],
+      "target_line": 2331,
+      "executable": "Running tests/p7_v18_parameter_contract.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/p7_v18_parameter_contract-d9c4ca35f817e128)",
+      "footer": {
+        "status": "ok",
+        "passed": 9,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered_out": 0,
+        "seconds": 1.66,
+        "line": 2631,
+        "preceding_target": {
+          "line": 2331,
+          "text": "Running tests/p7_v18_parameter_contract.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/p7_v18_parameter_contract-d9c4ca35f817e128)"
+        },
+        "nested_child_footer": false
+      },
+      "methods_passed": [
+        {
+          "line": 2396,
+          "method": "malformed_strategy_and_symbol_incompatibility_are_public_parameter_errors"
+        },
+        {
+          "line": 2398,
+          "method": "query_network_contract::config_bool_is_default_false_and_rejects_non_boolean_values"
+        },
+        {
+          "line": 2442,
+          "method": "advertised_schema_keeps_fourteen_tools_and_optional_strategy_defaults"
+        },
+        {
+          "line": 2470,
+          "method": "query_network_contract::denied_authority_local_and_empty_scope_make_no_query_calls"
+        },
+        {
+          "line": 2479,
+          "method": "omitted_null_and_explicit_overrides_inherit_project_strategy_through_queries"
+        },
+        {
+          "line": 2509,
+          "method": "enabled_semantic_strategy_reaches_real_wired_query_and_read_only_status"
+        },
+        {
+          "line": 2541,
+          "method": "query_network_contract::mcp_input_cannot_enable_or_bypass_configuration_authority"
+        },
+        {
+          "line": 2551,
+          "method": "symbol_mode_preserves_legacy_array_and_sanitized_limits"
+        },
+        {
+          "line": 2629,
+          "method": "query_network_contract::each_missing_gate_keeps_cold_requests_off_the_network"
+        }
+      ]
+    },
+    {
+      "features": "semantic-http",
+      "command": [
+        {
+          "line": 1525,
+          "text": "cargo test -p cc-server --locked --features semantic-http --test p7_v18_parameter_contract \\"
+        },
+        {
+          "line": 1526,
+          "text": "  --test p7_v18_fault_contract --test p7_runtime_independent_review \\"
+        },
+        {
+          "line": 1527,
+          "text": "  --test p7_gc_retention_config --test mcp_stdio -- --nocapture \\"
+        },
+        {
+          "line": 1528,
+          "text": "  2>&1 | tee \"$RUNNER_TEMP/p7-closeout/http-wiring.log\""
+        }
+      ],
+      "target_line": 3527,
+      "executable": "Running tests/p7_v18_parameter_contract.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/p7_v18_parameter_contract-e55837da75e6a2fc)",
+      "footer": {
+        "status": "ok",
+        "passed": 12,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered_out": 0,
+        "seconds": 1.95,
+        "line": 3933,
+        "preceding_target": {
+          "line": 3527,
+          "text": "Running tests/p7_v18_parameter_contract.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/p7_v18_parameter_contract-e55837da75e6a2fc)"
+        },
+        "nested_child_footer": false
+      },
+      "methods_passed": [
+        {
+          "line": 3595,
+          "method": "malformed_strategy_and_symbol_incompatibility_are_public_parameter_errors"
+        },
+        {
+          "line": 3639,
+          "method": "advertised_schema_keeps_fourteen_tools_and_optional_strategy_defaults"
+        },
+        {
+          "line": 3640,
+          "method": "query_network_contract::config_bool_is_default_false_and_rejects_non_boolean_values"
+        },
+        {
+          "line": 3681,
+          "method": "loopback::ready_publication_status_keeps_request_policy_and_per_query_coverage_distinct"
+        },
+        {
+          "line": 3690,
+          "method": "omitted_null_and_explicit_overrides_inherit_project_strategy_through_queries"
+        },
+        {
+          "line": 3719,
+          "method": "enabled_semantic_strategy_reaches_real_wired_query_and_read_only_status"
+        },
+        {
+          "line": 3726,
+          "method": "query_network_contract::denied_authority_local_and_empty_scope_make_no_query_calls"
+        },
+        {
+          "line": 3808,
+          "method": "query_network_contract::mcp_input_cannot_enable_or_bypass_configuration_authority"
+        },
+        {
+          "line": 3818,
+          "method": "query_network_contract::explicit_authority_encodes_public_search_and_context_and_reuses_cache"
+        },
+        {
+          "line": 3874,
+          "method": "symbol_mode_preserves_legacy_array_and_sanitized_limits"
+        },
+        {
+          "line": 3889,
+          "method": "query_network_contract::local_empty_scope_errors_and_reloaded_revocation_never_encode"
+        },
+        {
+          "line": 3931,
+          "method": "query_network_contract::each_missing_gate_keeps_cold_requests_off_the_network"
+        }
+      ]
+    }
+  ],
+  "v18_counts_boundary": "8, 9 and 12 are feature-separated target executions with overlapping method names; not 29 unique controls. The repaired ready-publication method actually passed only in semantic-http, at raw line 3681.",
+  "all_observed_test_result_footers": [
+    {
+      "status": "ok",
+      "passed": 206,
+      "failed": 0,
+      "ignored": 2,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 32.56,
+      "line": 863,
+      "preceding_target": {
+        "line": 640,
+        "text": "Running unittests src/lib.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/cc_db-2eef7e697a99d03b)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 9,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 0.22,
+      "line": 880,
+      "preceding_target": {
+        "line": 867,
+        "text": "Running tests/semantic_lease.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/semantic_lease-676a1229dc1a789c)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 11,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 0.16,
+      "line": 897,
+      "preceding_target": {
+        "line": 882,
+        "text": "Running tests/semantic_publish.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/semantic_publish-6f82743710f49e35)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 0.09,
+      "line": 906,
+      "preceding_target": {
+        "line": 899,
+        "text": "Running tests/semantic_queue.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/semantic_queue-96d8a3edb7135e72)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 0.21,
+      "line": 915,
+      "preceding_target": {
+        "line": 908,
+        "text": "Running tests/semantic_rebuild.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/semantic_rebuild-94800efd5648e559)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 4,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 0.11,
+      "line": 925,
+      "preceding_target": {
+        "line": 917,
+        "text": "Running tests/semantic_recovery.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/semantic_recovery-b63d07614d786d93)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 236,
+      "failed": 0,
+      "ignored": 1,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 0.67,
+      "line": 1190,
+      "preceding_target": {
+        "line": 933,
+        "text": "Running unittests src/lib.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/cc_semantic-3358fe9e174616a0)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 17,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 0.02,
+      "line": 1213,
+      "preceding_target": {
+        "line": 1192,
+        "text": "Running tests/artifact_cache.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/artifact_cache-01d3e549f6ceb24f)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 0.6,
+      "line": 1223,
+      "preceding_target": {
+        "line": 1215,
+        "text": "Running tests/attempt_lease_contract.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/attempt_lease_contract-4054cbbad720cca8)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 12,
+      "failed": 0,
+      "ignored": 1,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 1.82,
+      "line": 1253,
+      "preceding_target": {
+        "line": 1225,
+        "text": "Running tests/bounded_parallel.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/bounded_parallel-4b92edd868e5d949)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 1,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 45.95,
+      "line": 1261,
+      "preceding_target": {
+        "line": 1255,
+        "text": "Running tests/crash_independent_review.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/crash_independent_review-7430f146cfca9b98)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 0.14,
+      "line": 1270,
+      "preceding_target": {
+        "line": 1263,
+        "text": "Running tests/gc_concurrent_replacement.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/gc_concurrent_replacement-2aa68c3dac610dc6)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 5,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 0.16,
+      "line": 1281,
+      "preceding_target": {
+        "line": 1272,
+        "text": "Running tests/gc_unlink_accounting.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/gc_unlink_accounting-ed8ea13ca2ad3bdb)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 4,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 0.05,
+      "line": 1291,
+      "preceding_target": {
+        "line": 1283,
+        "text": "Running tests/manifest_exact_integration.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/manifest_exact_integration-165d1cf325c0114b)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 9,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 7.16,
+      "line": 1318,
+      "preceding_target": {
+        "line": 1293,
+        "text": "Running tests/opportunistic_reclaim.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/opportunistic_reclaim-994d88719aac3932)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 7,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 0.04,
+      "line": 1373,
+      "preceding_target": {
+        "line": 1320,
+        "text": "Running tests/p7_cache_allocation_independent_review.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/p7_cache_allocation_independent_review-9ee6440f195137fa)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 1,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 18.62,
+      "line": 1381,
+      "preceding_target": {
+        "line": 1375,
+        "text": "Running tests/p7_crash_preparation.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/p7_crash_preparation-b2cdcf6a26d4d147)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 1,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 10.93,
+      "line": 1389,
+      "preceding_target": {
+        "line": 1383,
+        "text": "Running tests/p7_staging_gc_preparation.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/p7_staging_gc_preparation-33359eea448fe665)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 4,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 0.11,
+      "line": 1399,
+      "preceding_target": {
+        "line": 1391,
+        "text": "Running tests/publish_cas.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/publish_cas-0dda16a375644992)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 17,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 0.0,
+      "line": 1422,
+      "preceding_target": {
+        "line": 1401,
+        "text": "Running tests/query_cache.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/query_cache-70244fa19b680d51)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 9,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 0.23,
+      "line": 1437,
+      "preceding_target": {
+        "line": 1424,
+        "text": "Running tests/queue_worker.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/queue_worker-4851c18260aa03dd)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 0.28,
+      "line": 1446,
+      "preceding_target": {
+        "line": 1439,
+        "text": "Running tests/reconcile_rebuild.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/reconcile_rebuild-2a86ddc9ac7aec8b)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 5,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 0.3,
+      "line": 1457,
+      "preceding_target": {
+        "line": 1448,
+        "text": "Running tests/retry_worker_layering.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/retry_worker_layering-9d74a4523ce971d1)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 6,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 0.22,
+      "line": 1472,
+      "preceding_target": {
+        "line": 1459,
+        "text": "Running tests/semantic_degrade.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/semantic_degrade-2902aba68dc879cf)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 8,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 0.22,
+      "line": 1486,
+      "preceding_target": {
+        "line": 1474,
+        "text": "Running tests/semantic_gc.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/semantic_gc-4c47f2f4e2b6c895)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 6,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 0.3,
+      "line": 1498,
+      "preceding_target": {
+        "line": 1488,
+        "text": "Running tests/semantic_recovery.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/semantic_recovery-a04678d8f00017a6)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 2,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 0.07,
+      "line": 1506,
+      "preceding_target": {
+        "line": 1500,
+        "text": "Running tests/space_switch.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/space_switch-903e0dad34ce1cbb)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 1,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 16.92,
+      "line": 1514,
+      "preceding_target": {
+        "line": 1508,
+        "text": "Running tests/staging_gc_independent_review.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/staging_gc_independent_review-bc3eb9aab37277fa)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 9,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 2.57,
+      "line": 2035,
+      "preceding_target": {
+        "line": 1768,
+        "text": "Running tests/mcp_stdio.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/mcp_stdio-472e30d79c157daa)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 8,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 1.46,
+      "line": 2307,
+      "preceding_target": {
+        "line": 2037,
+        "text": "Running tests/p7_v18_parameter_contract.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/p7_v18_parameter_contract-a1b87f195d4e095f)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 4,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 0.31,
+      "line": 2320,
+      "preceding_target": {
+        "line": 2312,
+        "text": "Running tests/p7_gc_retention_config.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/p7_gc_retention_config-7d4dfeb4670f5211)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 0.41,
+      "line": 2329,
+      "preceding_target": {
+        "line": 2322,
+        "text": "Running tests/p7_runtime_independent_review.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/p7_runtime_independent_review-7b41058ae08a7188)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 9,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 1.66,
+      "line": 2631,
+      "preceding_target": {
+        "line": 2331,
+        "text": "Running tests/p7_v18_parameter_contract.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/p7_v18_parameter_contract-d9c4ca35f817e128)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 355,
+      "seconds": 0.12,
+      "line": 2998,
+      "preceding_target": {
+        "line": 2780,
+        "text": "Running unittests src/lib.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/cc_server-4c7a215eae0fa02c)"
+      },
+      "nested_child_footer": true
+    },
+    {
+      "status": "ok",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 355,
+      "seconds": 0.17,
+      "line": 3008,
+      "preceding_target": {
+        "line": 2780,
+        "text": "Running unittests src/lib.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/cc_server-4c7a215eae0fa02c)"
+      },
+      "nested_child_footer": true
+    },
+    {
+      "status": "ok",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 355,
+      "seconds": 0.0,
+      "line": 3034,
+      "preceding_target": {
+        "line": 2780,
+        "text": "Running unittests src/lib.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/cc_server-4c7a215eae0fa02c)"
+      },
+      "nested_child_footer": true
+    },
+    {
+      "status": "ok",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 355,
+      "seconds": 0.34,
+      "line": 3082,
+      "preceding_target": {
+        "line": 2780,
+        "text": "Running unittests src/lib.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/cc_server-4c7a215eae0fa02c)"
+      },
+      "nested_child_footer": true
+    },
+    {
+      "status": "ok",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 355,
+      "seconds": 0.13,
+      "line": 3089,
+      "preceding_target": {
+        "line": 2780,
+        "text": "Running unittests src/lib.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/cc_server-4c7a215eae0fa02c)"
+      },
+      "nested_child_footer": true
+    },
+    {
+      "status": "ok",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 355,
+      "seconds": 0.0,
+      "line": 3096,
+      "preceding_target": {
+        "line": 2780,
+        "text": "Running unittests src/lib.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/cc_server-4c7a215eae0fa02c)"
+      },
+      "nested_child_footer": true
+    },
+    {
+      "status": "ok",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 355,
+      "seconds": 0.04,
+      "line": 3103,
+      "preceding_target": {
+        "line": 2780,
+        "text": "Running unittests src/lib.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/cc_server-4c7a215eae0fa02c)"
+      },
+      "nested_child_footer": true
+    },
+    {
+      "status": "ok",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 355,
+      "seconds": 0.5,
+      "line": 3119,
+      "preceding_target": {
+        "line": 2780,
+        "text": "Running unittests src/lib.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/cc_server-4c7a215eae0fa02c)"
+      },
+      "nested_child_footer": true
+    },
+    {
+      "status": "ok",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 355,
+      "seconds": 0.4,
+      "line": 3126,
+      "preceding_target": {
+        "line": 2780,
+        "text": "Running unittests src/lib.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/cc_server-4c7a215eae0fa02c)"
+      },
+      "nested_child_footer": true
+    },
+    {
+      "status": "ok",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 355,
+      "seconds": 0.4,
+      "line": 3133,
+      "preceding_target": {
+        "line": 2780,
+        "text": "Running unittests src/lib.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/cc_server-4c7a215eae0fa02c)"
+      },
+      "nested_child_footer": true
+    },
+    {
+      "status": "ok",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 355,
+      "seconds": 0.22,
+      "line": 3140,
+      "preceding_target": {
+        "line": 2780,
+        "text": "Running unittests src/lib.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/cc_server-4c7a215eae0fa02c)"
+      },
+      "nested_child_footer": true
+    },
+    {
+      "status": "ok",
+      "passed": 343,
+      "failed": 0,
+      "ignored": 13,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 16.39,
+      "line": 3227,
+      "preceding_target": {
+        "line": 2780,
+        "text": "Running unittests src/lib.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/cc_server-4c7a215eae0fa02c)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 9,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 3.17,
+      "line": 3498,
+      "preceding_target": {
+        "line": 3231,
+        "text": "Running tests/mcp_stdio.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/mcp_stdio-3edadf326b6839d4)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 4,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 0.65,
+      "line": 3508,
+      "preceding_target": {
+        "line": 3500,
+        "text": "Running tests/p7_gc_retention_config.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/p7_gc_retention_config-72f5f8a76c20640e)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 0.4,
+      "line": 3517,
+      "preceding_target": {
+        "line": 3510,
+        "text": "Running tests/p7_runtime_independent_review.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/p7_runtime_independent_review-c1efc3d17a504acd)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 2,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 32.23,
+      "line": 3525,
+      "preceding_target": {
+        "line": 3519,
+        "text": "Running tests/p7_v18_fault_contract.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/p7_v18_fault_contract-0003c0fcabaf3a7e)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 12,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 1.95,
+      "line": 3933,
+      "preceding_target": {
+        "line": 3527,
+        "text": "Running tests/p7_v18_parameter_contract.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/p7_v18_parameter_contract-e55837da75e6a2fc)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 7,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 85,
+      "seconds": 0.0,
+      "line": 3952,
+      "preceding_target": {
+        "line": 3941,
+        "text": "Running unittests src/lib.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/cc_model-232342554cb95af8)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 74,
+      "seconds": 0.03,
+      "line": 4105,
+      "preceding_target": {
+        "line": 4100,
+        "text": "Running unittests src/lib.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/cc_eval-fff71405cd04cfb3)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 7,
+      "failed": 0,
+      "ignored": 1,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 0.01,
+      "line": 4121,
+      "preceding_target": {
+        "line": 4109,
+        "text": "Running tests/p7_strategy_ablation.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/p7_strategy_ablation-a0e02e26057650d2)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 5.24,
+      "line": 4128,
+      "preceding_target": {
+        "line": 4123,
+        "text": "Running tests/p7_worker_contention.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/p7_worker_contention-8de38e4050efd6f7)"
+      },
+      "nested_child_footer": false
+    },
+    {
+      "status": "ok",
+      "passed": 2,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "seconds": 0.77,
+      "line": 4136,
+      "preceding_target": {
+        "line": 4130,
+        "text": "Running tests/semantic_lifecycle.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/semantic_lifecycle-e32b27e0a1402896)"
+      },
+      "nested_child_footer": false
+    }
+  ],
+  "footer_counting_boundary": "Preserve every footer without summing unique tests. Eleven 1-pass/355-filtered footers are subprocess results nested in the semantic-http cc-server lib execution; its own final footer is 343 passed / 13 ignored.",
+  "original_ignored_method_records": [
+    {
+      "line": 686,
+      "text": "test index_db::tests::mismatch_rebuild_stress_loop ... ignored",
+      "preceding_target": {
+        "line": 640,
+        "text": "Running unittests src/lib.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/cc_db-2eef7e697a99d03b)"
+      }
+    },
+    {
+      "line": 770,
+      "text": "test index_db_rebuild::fault_tests::rebuild_swap_child ... ignored, child entry; executed by the owning test with a private temporary database",
+      "preceding_target": {
+        "line": 640,
+        "text": "Running unittests src/lib.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/cc_db-2eef7e697a99d03b)"
+      }
+    },
+    {
+      "line": 1017,
+      "text": "test gc::concurrency_tests::mutation_child ... ignored, child entry; executed by the owning process with a private fixture",
+      "preceding_target": {
+        "line": 933,
+        "text": "Running unittests src/lib.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/cc_semantic-3358fe9e174616a0)"
+      }
+    },
+    {
+      "line": 1238,
+      "text": "test slow_provider_beyond_lease_cannot_publish_and_old_tokens_cannot_ack ... ignored, parent ruling: stronger strict-clock policy is not the existing token-fencing contract; original failed result retained in checkpoint",
+      "preceding_target": {
+        "line": 1225,
+        "text": "Running tests/bounded_parallel.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/bounded_parallel-4b92edd868e5d949)"
+      }
+    },
+    {
+      "line": 1258,
+      "text": "test independent_child ... ignored, child entry; invoked only by the owning parent with an isolated directory",
+      "preceding_target": {
+        "line": 1255,
+        "text": "Running tests/crash_independent_review.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/crash_independent_review-7430f146cfca9b98)"
+      }
+    },
+    {
+      "line": 1378,
+      "text": "test crash_child ... ignored, child entry; invoked only by the owning parent with an isolated directory",
+      "preceding_target": {
+        "line": 1375,
+        "text": "Running tests/p7_crash_preparation.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/p7_crash_preparation-b2cdcf6a26d4d147)"
+      }
+    },
+    {
+      "line": 1386,
+      "text": "test staging_gc_child ... ignored, owned subprocess entry",
+      "preceding_target": {
+        "line": 1383,
+        "text": "Running tests/p7_staging_gc_preparation.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/p7_staging_gc_preparation-33359eea448fe665)"
+      }
+    },
+    {
+      "line": 1511,
+      "text": "test independent_staging_gc_child ... ignored, owned subprocess entry",
+      "preceding_target": {
+        "line": 1508,
+        "text": "Running tests/staging_gc_independent_review.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/staging_gc_independent_review-bc3eb9aab37277fa)"
+      }
+    },
+    {
+      "line": 2988,
+      "text": "test project_session::startup_tests::busy_startup_and_retry ... ignored, isolated_startup_regressions starts a fresh process",
+      "preceding_target": {
+        "line": 2780,
+        "text": "Running unittests src/lib.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/cc_server-4c7a215eae0fa02c)"
+      }
+    },
+    {
+      "line": 2989,
+      "text": "test project_session::startup_tests::conflicting_startup_and_path_switch ... ignored, isolated_startup_regressions starts a fresh process",
+      "preceding_target": {
+        "line": 2780,
+        "text": "Running unittests src/lib.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/cc_server-4c7a215eae0fa02c)"
+      }
+    },
+    {
+      "line": 3029,
+      "text": "test semantic_http_transport::tests::proxy_environment_child ... ignored, run by isolated proxy-environment parent test",
+      "preceding_target": {
+        "line": 2780,
+        "text": "Running unittests src/lib.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/cc_server-4c7a215eae0fa02c)"
+      }
+    },
+    {
+      "line": 3065,
+      "text": "test semantic_runtime::shared_provider_gate_tests::busy_config_errors_propagate ... ignored, invoked by isolated parent harness",
+      "preceding_target": {
+        "line": 2780,
+        "text": "Running unittests src/lib.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/cc_server-4c7a215eae0fa02c)"
+      }
+    },
+    {
+      "line": 3066,
+      "text": "test semantic_runtime::shared_provider_gate_tests::combined_production_close ... ignored, invoked by isolated parent harness",
+      "preceding_target": {
+        "line": 2780,
+        "text": "Running unittests src/lib.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/cc_server-4c7a215eae0fa02c)"
+      }
+    },
+    {
+      "line": 3067,
+      "text": "test semantic_runtime::shared_provider_gate_tests::combined_queue_serial ... ignored, invoked by isolated parent harness",
+      "preceding_target": {
+        "line": 2780,
+        "text": "Running unittests src/lib.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/cc_server-4c7a215eae0fa02c)"
+      }
+    },
+    {
+      "line": 3068,
+      "text": "test semantic_runtime::shared_provider_gate_tests::combined_queue_width_one ... ignored, invoked by isolated parent harness",
+      "preceding_target": {
+        "line": 2780,
+        "text": "Running unittests src/lib.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/cc_server-4c7a215eae0fa02c)"
+      }
+    },
+    {
+      "line": 3069,
+      "text": "test semantic_runtime::shared_provider_gate_tests::combined_queue_width_two ... ignored, invoked by isolated parent harness",
+      "preceding_target": {
+        "line": 2780,
+        "text": "Running unittests src/lib.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/cc_server-4c7a215eae0fa02c)"
+      }
+    },
+    {
+      "line": 3070,
+      "text": "test semantic_runtime::shared_provider_gate_tests::concurrent_registry_init_and_acquire ... ignored, invoked by isolated parent harness",
+      "preceding_target": {
+        "line": 2780,
+        "text": "Running unittests src/lib.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/cc_server-4c7a215eae0fa02c)"
+      }
+    },
+    {
+      "line": 3071,
+      "text": "test semantic_runtime::shared_provider_gate_tests::disabled_is_inert ... ignored, invoked by isolated parent harness",
+      "preceding_target": {
+        "line": 2780,
+        "text": "Running unittests src/lib.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/cc_server-4c7a215eae0fa02c)"
+      }
+    },
+    {
+      "line": 3072,
+      "text": "test semantic_runtime::shared_provider_gate_tests::production_wrappers_adopt_and_enforce ... ignored, invoked by isolated parent harness",
+      "preceding_target": {
+        "line": 2780,
+        "text": "Running unittests src/lib.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/cc_server-4c7a215eae0fa02c)"
+      }
+    },
+    {
+      "line": 3076,
+      "text": "test semantic_runtime::tests::bounded_parallel_existing_first_wins_counterexample ... ignored, retained first-wins counterexample; run alone in a fresh test process",
+      "preceding_target": {
+        "line": 2780,
+        "text": "Running unittests src/lib.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/cc_server-4c7a215eae0fa02c)"
+      }
+    },
+    {
+      "line": 3144,
+      "text": "test semantic_runtime::tests::recoverable_retry_frozen_parallel_counterexample ... ignored, retained frozen parallel counterexample; run on 5cce6eb with this test-only fixture",
+      "preceding_target": {
+        "line": 2780,
+        "text": "Running unittests src/lib.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/cc_server-4c7a215eae0fa02c)"
+      }
+    },
+    {
+      "line": 4112,
+      "text": "test actual_stdio_local_and_auto_have_equal_effective_budget_and_verified_source ... ignored, requires explicit current product path and SHA256; mechanism smoke, no quality certification",
+      "preceding_target": {
+        "line": 4109,
+        "text": "Running tests/p7_strategy_ablation.rs (/home/runner/work/_temp/p7-closeout-target/debug/deps/p7_strategy_ablation-a0e02e26057650d2)"
+      }
+    }
+  ],
+  "filtered_or_probe_boundary": {
+    "semantic_config_filtered": 85,
+    "cc_eval_resource_target_filtered": 74,
+    "cc_eval_resource_only_command": [
+      {
+        "line": 4062,
+        "text": "cargo test -p cc-eval --locked --lib \\"
+      },
+      {
+        "line": 4063,
+        "text": "  self_usage_has_direct_identity_and_monotonic_cpu_without_procfs_lookup -- --nocapture \\"
+      },
+      {
+        "line": 4064,
+        "text": "  2>&1 | tee \"$RUNNER_TEMP/p7-closeout/self-resources.log\""
+      }
+    ],
+    "borrowed_correctness_or_ignored_cost_probe_credit_from_this_job": false,
+    "explanation": "The cc-eval lib command filters to self_usage_has_direct_identity_and_monotonic_cpu_without_procfs_lookup. No ignored borrowed cost probe was requested; ignored entries remain ignored even where original parent tests invoke an owned subprocess."
+  },
+  "producer_source_checks": {
+    "before_snapshot_command": [
+      {
+        "line": 459,
+        "text": "python3 - <<'PY'"
+      },
+      {
+        "line": 460,
+        "text": "import os, pathlib, sys"
+      },
+      {
+        "line": 461,
+        "text": "sys.path.insert(0, 'scripts')"
+      },
+      {
+        "line": 462,
+        "text": "from p7_build_identity import json_bytes, source_snapshot"
+      },
+      {
+        "line": 463,
+        "text": "out = pathlib.Path(os.environ['RUNNER_TEMP']) / 'p7-closeout'"
+      },
+      {
+        "line": 464,
+        "text": "(out / 'source-before.json').write_bytes(json_bytes(source_snapshot(pathlib.Path.cwd())))"
+      },
+      {
+        "line": 465,
+        "text": "PY"
+      }
+    ],
+    "after_snapshot_command": [
+      {
+        "line": 4139,
+        "text": "python3 - <<'PY'"
+      },
+      {
+        "line": 4140,
+        "text": "import json, os, pathlib, sys"
+      },
+      {
+        "line": 4141,
+        "text": "sys.path.insert(0, 'scripts')"
+      },
+      {
+        "line": 4142,
+        "text": "from p7_build_identity import json_bytes, source_snapshot"
+      },
+      {
+        "line": 4143,
+        "text": "out = pathlib.Path(os.environ['RUNNER_TEMP']) / 'p7-closeout'"
+      },
+      {
+        "line": 4144,
+        "text": "after = source_snapshot(pathlib.Path.cwd())"
+      },
+      {
+        "line": 4145,
+        "text": "(out / 'source-after.json').write_bytes(json_bytes(after))"
+      },
+      {
+        "line": 4146,
+        "text": "assert json.loads((out / 'source-before.json').read_text()) == after"
+      },
+      {
+        "line": 4147,
+        "text": "PY"
+      }
+    ],
+    "official_before_and_after_steps_success": true,
+    "boundary": "The successful producer executed its original source equality assertion. No separate before/after snapshot bytes from its artifact were downloaded or independently traversed here."
+  },
+  "other_original_control_boundaries": {
+    "http_product_lifecycle": "Official original step 7 succeeded after the logged semantic-http debug product build, original lifecycle driver binding and invocation; no separate binary/build JSON or 13-checkpoint raw artifact was independently received in this review.",
+    "fault_lifecycle_final_stdout": {
+      "line": 4059,
+      "text": "{\"passed\": true, \"output\": \"/home/runner/work/_temp/p7-closeout/fault-lifecycle\", \"error\": null}"
+    },
+    "fault_lifecycle_observed_seeds": [
+      197,
+      199,
+      211
+    ],
+    "original_guard_v15_claim": "This closeout job does not substitute for the separately running/received main source-admission job."
+  },
+  "artifact_upload_reported_by_producer_only": {
+    "id": 11652742014,
+    "name": "p7-closeout-4786c1457b47c5baf4c09d32b96048795e863111",
+    "bytes": 20518217,
+    "sha256": "3528b35d04305dc54452d4636da4f1775d2d72fd63bd0c312fca1a8db994ae75",
+    "proof": [
+      {
+        "line": 4188,
+        "text": "Uploaded bytes 20518217"
+      },
+      {
+        "line": 4189,
+        "text": "Finished uploading artifact content to blob storage!"
+      },
+      {
+        "line": 4190,
+        "text": "SHA256 digest of uploaded artifact zip is 3528b35d04305dc54452d4636da4f1775d2d72fd63bd0c312fca1a8db994ae75"
+      },
+      {
+        "line": 4191,
+        "text": "Finalizing artifact upload"
+      },
+      {
+        "line": 4192,
+        "text": "Artifact p7-closeout-4786c1457b47c5baf4c09d32b96048795e863111.zip successfully finalized. Artifact ID 11652742014"
+      },
+      {
+        "line": 4193,
+        "text": "Artifact p7-closeout-4786c1457b47c5baf4c09d32b96048795e863111 has been successfully uploaded! Final size is 20518217 bytes. Artifact ID is 11652742014"
+      },
+      {
+        "line": 4194,
+        "text": "Artifact download URL: https://github.com/jyqj/codecortex/actions/runs/38008269601/artifacts/11652742014"
+      }
+    ],
+    "downloaded_or_crc_checked_by_this_review": false
+  },
+  "retained_failure": {
+    "source": "f6750cad0df45af4ec2dddc456e76cc188f3a35a",
+    "run_id": 38004132959,
+    "job_id": 114068898390,
+    "log_git_blob": "3efadf710a054e2beda886cdd29938639145e94b",
+    "boundary": "Earlier 11-pass/1-failure V18 donor execution remains historical failure; this new source success neither rewrites nor reruns it."
+  },
+  "whole_pr_ci_green": false,
+  "whole_pr_ci_boundary": "No inference from this one completed job about main, runtime, soak or all PR checks. Root observes their independent current state.",
+  "todo_credit": 0,
+  "original_inputs_before_after_equal": true
+}

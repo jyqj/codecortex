@@ -1,0 +1,956 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/pr_triage",
+  "created_at_utc": "2026-10-10T00:46:07.906577+00:00",
+  "status": "accepted_scoped_original_main_log",
+  "source_head": "4786c1457b47c5baf4c09d32b96048795e863111",
+  "product": "2b6e9ebf2baeb8102df72d09360700e23487f870",
+  "review": "ca10314fbc5a4ffa28ada5b7c1097c1091b48aa4",
+  "scope": "Read-only review of root-received official metadata and original main log; no tests, CLI, product, download or artifact execution performed.",
+  "independence": "Original execution is GitHub Actions. Reviewer previously authored the main oracle integration but did not execute this job; this is execution-log review, not a new nonauthor source acceptance.",
+  "original_inputs": [
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round32-PR199-main-original-intake/114082031805-original-main.log",
+      "bytes": 1088532,
+      "sha256": "c08b73afefe55637d628305259ac6d0ba0c4fc9cbde6d13aa2c07c2961172901",
+      "git_blob": "37a142e0338f21104f06931b731a9f3e21daf6ba"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round32-PR199-main-original-intake/original-run.json",
+      "bytes": 13501,
+      "sha256": "08264e3e3e5863bc18c6babaee9ba9a4105d46d803fc1ebde10b5ea93b0f0b42",
+      "git_blob": "ca254c3cfb021f5da9c56ba6547c201e51a7d27c"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round32-PR199-main-original-intake/original-jobs.json",
+      "bytes": 16317,
+      "sha256": "ec4a0fe00eec042cb91c6eca0cd9d546ebb9f8f89edd9e768540049f5f728ee1",
+      "git_blob": "b1d0e0666aa7d91b22d1f951c5d45f5af2cd3390"
+    },
+    {
+      "path": "/workspace/scratch/bfccb8494ba0/round31-PR199-actual-testmerge-identity.json",
+      "bytes": 48488,
+      "sha256": "76b33d5236f02a3c2908c58aa66e4e15978c6e21d88d13933b13077ddf87b624",
+      "git_blob": "0ad89328b661cde7e8f591a659cf53f992c65448"
+    }
+  ],
+  "input_bytes_unchanged": true,
+  "raw_log_line_count": 9724,
+  "actual_checkout": {
+    "commit": "d51e4d4ad298b2f883225fd847c5fe213cc53bc7",
+    "kind": "PR test merge",
+    "raw_proof": [
+      {
+        "line": 165,
+        "text": "HEAD is now at d51e4d4a Merge 4786c1457b47c5baf4c09d32b96048795e863111 into 09d4454fa45455dc5a8bfdfec67e31bb7ed162c7"
+      },
+      {
+        "line": 166,
+        "text": "##[endgroup]"
+      },
+      {
+        "line": 167,
+        "text": "[command]/usr/bin/git log -1 --format=%H"
+      },
+      {
+        "line": 168,
+        "text": "d51e4d4ad298b2f883225fd847c5fe213cc53bc7"
+      }
+    ],
+    "tree": "6518a5b317683a24ded3a69b027da6a04b8c996c",
+    "ordered_parents": [
+      "09d4454fa45455dc5a8bfdfec67e31bb7ed162c7",
+      "4786c1457b47c5baf4c09d32b96048795e863111"
+    ],
+    "whole_tree_equals_G": true,
+    "basis": "Already retrieved official merge commit plus original root bridge; reused without API request. This is not a direct G checkout."
+  },
+  "original_toolchain": [
+    {
+      "line": 370,
+      "text": "rustc 1.99.0 (b940084d7 2026-09-28)"
+    },
+    {
+      "line": 371,
+      "text": "binary: rustc"
+    },
+    {
+      "line": 372,
+      "text": "commit-hash: b940084d7eb6a299eb4bfeb8e34901bc051e7ac4"
+    },
+    {
+      "line": 373,
+      "text": "commit-date: 2026-09-28"
+    },
+    {
+      "line": 374,
+      "text": "host: x86_64-unknown-linux-gnu"
+    },
+    {
+      "line": 375,
+      "text": "release: 1.99.0"
+    },
+    {
+      "line": 376,
+      "text": "LLVM version: 23.1.1"
+    }
+  ],
+  "main_workflow_jobs": [
+    {
+      "id": 114082031455,
+      "name": "security",
+      "head_sha": "4786c1457b47c5baf4c09d32b96048795e863111",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-10T00:15:40Z",
+      "completed_at": "2026-10-10T00:19:00Z"
+    },
+    {
+      "id": 114082031714,
+      "name": "msrv",
+      "head_sha": "4786c1457b47c5baf4c09d32b96048795e863111",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-10T00:16:26Z",
+      "completed_at": "2026-10-10T00:17:48Z"
+    },
+    {
+      "id": 114082031805,
+      "name": "check",
+      "head_sha": "4786c1457b47c5baf4c09d32b96048795e863111",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-10T00:17:35Z",
+      "completed_at": "2026-10-10T00:39:24Z"
+    }
+  ],
+  "main_check_steps": [
+    {
+      "name": "Set up job",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 1,
+      "started_at": "2026-10-10T00:17:36Z",
+      "completed_at": "2026-10-10T00:17:37Z"
+    },
+    {
+      "name": "Run actions/checkout@v4",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 2,
+      "started_at": "2026-10-10T00:17:37Z",
+      "completed_at": "2026-10-10T00:18:03Z"
+    },
+    {
+      "name": "Run dtolnay/rust-toolchain@stable",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 3,
+      "started_at": "2026-10-10T00:18:03Z",
+      "completed_at": "2026-10-10T00:18:05Z"
+    },
+    {
+      "name": "Run Swatinem/rust-cache@v2",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 4,
+      "started_at": "2026-10-10T00:18:05Z",
+      "completed_at": "2026-10-10T00:18:19Z"
+    },
+    {
+      "name": "Format check",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 5,
+      "started_at": "2026-10-10T00:18:19Z",
+      "completed_at": "2026-10-10T00:18:21Z"
+    },
+    {
+      "name": "Clippy",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 6,
+      "started_at": "2026-10-10T00:18:21Z",
+      "completed_at": "2026-10-10T00:18:37Z"
+    },
+    {
+      "name": "Compile every default test target",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 7,
+      "started_at": "2026-10-10T00:18:37Z",
+      "completed_at": "2026-10-10T00:21:33Z"
+    },
+    {
+      "name": "Default regression within authorized scope",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 8,
+      "started_at": "2026-10-10T00:21:33Z",
+      "completed_at": "2026-10-10T00:24:40Z"
+    },
+    {
+      "name": "Fixed resource driver harmless fixtures and TODO consistency",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 9,
+      "started_at": "2026-10-10T00:24:40Z",
+      "completed_at": "2026-10-10T00:33:12Z"
+    },
+    {
+      "name": "Semantic HTTP capability snapshot and normal stdio query fence",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 10,
+      "started_at": "2026-10-10T00:33:12Z",
+      "completed_at": "2026-10-10T00:33:39Z"
+    },
+    {
+      "name": "Eval suite",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 11,
+      "started_at": "2026-10-10T00:33:39Z",
+      "completed_at": "2026-10-10T00:33:42Z"
+    },
+    {
+      "name": "P0 benchmark optional HTTP contract tests",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 12,
+      "started_at": "2026-10-10T00:33:42Z",
+      "completed_at": "2026-10-10T00:37:11Z"
+    },
+    {
+      "name": "P0 real MCP subprocess adapter",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 13,
+      "started_at": "2026-10-10T00:37:11Z",
+      "completed_at": "2026-10-10T00:38:02Z"
+    },
+    {
+      "name": "P2-A public surface real MCP regression",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 14,
+      "started_at": "2026-10-10T00:38:02Z",
+      "completed_at": "2026-10-10T00:38:02Z"
+    },
+    {
+      "name": "P2-B resolution dependency real MCP regression",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 15,
+      "started_at": "2026-10-10T00:38:02Z",
+      "completed_at": "2026-10-10T00:38:03Z"
+    },
+    {
+      "name": "P2-C durable recovery and freshness MCP regression",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 16,
+      "started_at": "2026-10-10T00:38:03Z",
+      "completed_at": "2026-10-10T00:38:03Z"
+    },
+    {
+      "name": "P2-D multi-language public truth regression",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 17,
+      "started_at": "2026-10-10T00:38:03Z",
+      "completed_at": "2026-10-10T00:38:03Z"
+    },
+    {
+      "name": "P3-A project config recovery real MCP",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 18,
+      "started_at": "2026-10-10T00:38:03Z",
+      "completed_at": "2026-10-10T00:38:04Z"
+    },
+    {
+      "name": "P3-B package and module recovery real MCP",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 19,
+      "started_at": "2026-10-10T00:38:04Z",
+      "completed_at": "2026-10-10T00:38:04Z"
+    },
+    {
+      "name": "P3-C Go package recovery real MCP",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 20,
+      "started_at": "2026-10-10T00:38:04Z",
+      "completed_at": "2026-10-10T00:38:04Z"
+    },
+    {
+      "name": "P3-C available independent module oracles",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 21,
+      "started_at": "2026-10-10T00:38:04Z",
+      "completed_at": "2026-10-10T00:38:06Z"
+    },
+    {
+      "name": "P3-D module boundary and architecture contracts",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 22,
+      "started_at": "2026-10-10T00:38:06Z",
+      "completed_at": "2026-10-10T00:38:07Z"
+    },
+    {
+      "name": "P4-A source fidelity and real MCP indexing",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 23,
+      "started_at": "2026-10-10T00:38:07Z",
+      "completed_at": "2026-10-10T00:38:09Z"
+    },
+    {
+      "name": "P4-B chunk budgets and live-session policy changes",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 24,
+      "started_at": "2026-10-10T00:38:09Z",
+      "completed_at": "2026-10-10T00:38:09Z"
+    },
+    {
+      "name": "P4-C document versions and source freshness",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 25,
+      "started_at": "2026-10-10T00:38:09Z",
+      "completed_at": "2026-10-10T00:38:10Z"
+    },
+    {
+      "name": "P4-D identity and chunk-quality gates",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 26,
+      "started_at": "2026-10-10T00:38:10Z",
+      "completed_at": "2026-10-10T00:38:11Z"
+    },
+    {
+      "name": "P5-A versioned retrieval lanes",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 27,
+      "started_at": "2026-10-10T00:38:11Z",
+      "completed_at": "2026-10-10T00:38:13Z"
+    },
+    {
+      "name": "P5-B bounded query execution and cancellation",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 28,
+      "started_at": "2026-10-10T00:38:13Z",
+      "completed_at": "2026-10-10T00:38:28Z"
+    },
+    {
+      "name": "P5-C generation, bounded assembly and final source verification",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 29,
+      "started_at": "2026-10-10T00:38:28Z",
+      "completed_at": "2026-10-10T00:38:31Z"
+    },
+    {
+      "name": "P5-D capabilities, query pins and public policies",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 30,
+      "started_at": "2026-10-10T00:38:31Z",
+      "completed_at": "2026-10-10T00:38:33Z"
+    },
+    {
+      "name": "P0 plan and corpus locks (historical ten-file DEV subset)",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 31,
+      "started_at": "2026-10-10T00:38:33Z",
+      "completed_at": "2026-10-10T00:38:34Z"
+    },
+    {
+      "name": "P7 semantic product disabled stdio contract",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 32,
+      "started_at": "2026-10-10T00:38:34Z",
+      "completed_at": "2026-10-10T00:39:20Z"
+    },
+    {
+      "name": "Post Run Swatinem/rust-cache@v2",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 63,
+      "started_at": "2026-10-10T00:39:20Z",
+      "completed_at": "2026-10-10T00:39:22Z"
+    },
+    {
+      "name": "Post Run actions/checkout@v4",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 64,
+      "started_at": "2026-10-10T00:39:22Z",
+      "completed_at": "2026-10-10T00:39:22Z"
+    },
+    {
+      "name": "Complete job",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 65,
+      "started_at": "2026-10-10T00:39:22Z",
+      "completed_at": "2026-10-10T00:39:22Z"
+    }
+  ],
+  "borrowed_correctness_executions": [
+    {
+      "actual_cargo_feature_argument": "default",
+      "original_command": [
+        {
+          "line": 709,
+          "text": "##[group]Run cargo test --workspace --all-targets --exclude cc-semantic --locked"
+        },
+        {
+          "line": 710,
+          "text": "cargo test --workspace --all-targets --exclude cc-semantic --locked"
+        }
+      ],
+      "target": [
+        {
+          "line": 1183,
+          "text": "     Running unittests src/lib.rs (target/debug/deps/cc_eval-93be0e8965328c31)"
+        }
+      ],
+      "passed_methods": [
+        {
+          "line": 1206,
+          "method": "borrowed_projection_preserves_select_error_order_and_recovers",
+          "result": "ok"
+        },
+        {
+          "line": 1207,
+          "method": "borrowed_projection_matches_owned_bytes_for_reordered_and_duplicate_columns",
+          "result": "ok"
+        },
+        {
+          "line": 1208,
+          "method": "borrowed_projection_uses_original_value_real_encoding",
+          "result": "ok"
+        },
+        {
+          "line": 1251,
+          "method": "borrowed_projection_preserves_escaped_byte_lengths_at_row_boundaries",
+          "result": "ok"
+        }
+      ],
+      "ignored_cost_probes": [
+        {
+          "line": 1209,
+          "method": "borrowed_serialization_equal_lifetime_release_cost_probe",
+          "result": "ignored, explicit finite release cost observation; no timing acceptance threshold"
+        },
+        {
+          "line": 1210,
+          "method": "borrowed_serialization_release_cost_probe",
+          "result": "ignored, explicit finite release cost observation; no timing acceptance threshold"
+        }
+      ],
+      "lib_footer": [
+        {
+          "line": 1262,
+          "text": "test result: ok. 68 passed; 0 failed; 7 ignored; 0 measured; 0 filtered out; finished in 5.61s"
+        }
+      ]
+    },
+    {
+      "actual_cargo_feature_argument": "eval-http",
+      "original_command": [
+        {
+          "line": 7249,
+          "text": "##[group]Run cargo test -p cc-eval --features eval-http --locked"
+        },
+        {
+          "line": 7250,
+          "text": "cargo test -p cc-eval --features eval-http --locked"
+        }
+      ],
+      "target": [
+        {
+          "line": 7262,
+          "text": "     Running unittests src/lib.rs (target/debug/deps/cc_eval-cd0a180509b52bfb)"
+        }
+      ],
+      "passed_methods": [
+        {
+          "line": 7285,
+          "method": "borrowed_projection_matches_owned_bytes_for_reordered_and_duplicate_columns",
+          "result": "ok"
+        },
+        {
+          "line": 7286,
+          "method": "borrowed_projection_preserves_select_error_order_and_recovers",
+          "result": "ok"
+        },
+        {
+          "line": 7287,
+          "method": "borrowed_projection_uses_original_value_real_encoding",
+          "result": "ok"
+        },
+        {
+          "line": 7337,
+          "method": "borrowed_projection_preserves_escaped_byte_lengths_at_row_boundaries",
+          "result": "ok"
+        }
+      ],
+      "ignored_cost_probes": [
+        {
+          "line": 7288,
+          "method": "borrowed_serialization_equal_lifetime_release_cost_probe",
+          "result": "ignored, explicit finite release cost observation; no timing acceptance threshold"
+        },
+        {
+          "line": 7289,
+          "method": "borrowed_serialization_release_cost_probe",
+          "result": "ignored, explicit finite release cost observation; no timing acceptance threshold"
+        }
+      ],
+      "lib_footer": [
+        {
+          "line": 7341,
+          "text": "test result: ok. 68 passed; 0 failed; 7 ignored; 0 measured; 0 filtered out; finished in 6.02s"
+        }
+      ]
+    }
+  ],
+  "counting_and_feature_boundary": "Four unique named correctness controls each executed twice: default workspace regression and explicit --features eval-http. Eight execution records are not eight unique tests and are not relabeled as an explicit --features semantic command.",
+  "cost_probe_boundary": "Both named ignored cost probes remained ignored in both observed cc-eval lib executions. No new cost/performance evidence is granted by this ordinary CI job.",
+  "source_admission": {
+    "original_command_block": [
+      {
+        "line": 5281,
+        "text": "# Read-only AST comparator object; never check out or run its driver."
+      },
+      {
+        "line": 5282,
+        "text": "git fetch --no-tags origin da8b618cbf8b67683c6b16880419089f7159c15e"
+      },
+      {
+        "line": 5283,
+        "text": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/resource_harness -v"
+      },
+      {
+        "line": 5284,
+        "text": "python3 scripts/code_index_plan.py"
+      },
+      {
+        "line": 5285,
+        "text": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s scripts/tests -p 'test_p8_*.py' -v"
+      },
+      {
+        "line": 5286,
+        "text": "python3 scripts/p8_facts.py --check"
+      },
+      {
+        "line": 5287,
+        "text": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/source_integrity -v"
+      },
+      {
+        "line": 5288,
+        "text": "python3 scripts/verify_reviewed_source_v15.py --source-version p8-completion-source-20261009-v15"
+      },
+      {
+        "line": 5289,
+        "text": "python3 scripts/verify_historical_integrations_v2.py"
+      }
+    ],
+    "actual_v15_stdout": {
+      "line": 6007,
+      "result": {
+        "schema_version": 10,
+        "source_version": "p8-completion-source-20261009-v15",
+        "previous_source_version": "p8-oracle-compat-source-20261008-v14",
+        "base_source": "7354db236c9d9850a75f31672697ae9eab44565e",
+        "product_source": "2b6e9ebf2baeb8102df72d09360700e23487f870",
+        "review_source": "ca10314fbc5a4ffa28ada5b7c1097c1091b48aa4",
+        "scope": "independently_reviewed_source_and_validation_inputs",
+        "runtime_and_quality_claims": "require_separate_execution_evidence",
+        "status": "passed",
+        "complete_inputs": 1096,
+        "executed_previous_proof": "p8-oracle-compat-source-20261008-v14"
+      }
+    },
+    "task_plan_stdout_records": [
+      {
+        "line": 5351,
+        "result": {
+          "status": "passed",
+          "task_count": 192,
+          "states": {
+            "done": 164,
+            "blocked": 1,
+            "in_progress": 15,
+            "todo": 12
+          },
+          "task_sha256": "e0a612bb4d42f63be01c17e77ff627db3581200275fbfa9e60679399e90877c6",
+          "views": 4
+        }
+      },
+      {
+        "line": 6016,
+        "result": {
+          "status": "passed",
+          "task_count": 192,
+          "states": {
+            "done": 164,
+            "blocked": 1,
+            "in_progress": 15,
+            "todo": 12
+          },
+          "task_sha256": "e0a612bb4d42f63be01c17e77ff627db3581200275fbfa9e60679399e90877c6",
+          "views": 4
+        }
+      },
+      {
+        "line": 9628,
+        "result": {
+          "status": "passed",
+          "task_count": 192,
+          "states": {
+            "done": 164,
+            "blocked": 1,
+            "in_progress": 15,
+            "todo": 12
+          },
+          "task_sha256": "e0a612bb4d42f63be01c17e77ff627db3581200275fbfa9e60679399e90877c6",
+          "views": 4
+        }
+      }
+    ],
+    "source_integrity_181_tests": {
+      "line": 6004,
+      "text": "Ran 181 tests in 395.704s",
+      "next_nonblank": [
+        {
+          "line": 6006,
+          "text": "OK"
+        },
+        {
+          "line": 6007,
+          "text": "{\"schema_version\": 10, \"source_version\": \"p8-completion-source-20261009-v15\", \"previous_source_version\": \"p8-oracle-compat-source-20261008-v14\", \"base_source\": \"7354db236c9d9850a75f31672697ae9eab44565e\", \"product_source\": \"2b6e9ebf2baeb8102df72d09360700e23487f870\", \"review_source\": \"ca10314fbc5a4ffa28ada5b7c1097c1091b48aa4\", \"scope\": \"independently_reviewed_source_and_validation_inputs\", \"runtime_and_quality_claims\": \"require_separate_execution_evidence\", \"status\": \"passed\", \"complete_inputs\": 1096, \"executed_previous_proof\": \"p8-oracle-compat-source-20261008-v14\"}"
+        },
+        {
+          "line": 6008,
+          "text": "From https://github.com/jyqj/codecortex"
+        }
+      ]
+    },
+    "historical_integrations_stdout": {
+      "line": 6017,
+      "result": {
+        "V19": "open",
+        "current_plan_check": "passed",
+        "current_task_sha256": "e0a612bb4d42f63be01c17e77ff627db3581200275fbfa9e60679399e90877c6",
+        "e3_imported_files": 58,
+        "e3_inputs": 708,
+        "e3_integration": "88f2cf099c8b81f3acef485fd5ac9b01c63ce790",
+        "e3_source": "e3c04fed903c4d0e3c26b5d7cf0e055a6f7c5207",
+        "evidence_content_acceptance": "not_granted_by_this_verifier",
+        "fault_runtime_tests": "not_run",
+        "full_P7": "open",
+        "legacy_files_unchanged": 9,
+        "packing_evidence_files": 246,
+        "packing_inputs": 731,
+        "packing_integration": "37dd042eaa1209a86e0cafdcd92ae77e036e76f5",
+        "packing_source": "90858afae647a513537bf118932a7ba5020ee98b",
+        "quality_and_100k": "not_inherited",
+        "schema_version": 2,
+        "scope": "historical_integrity_and_current_task_definitions_only",
+        "state_changes_since_baseline": [
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P7-011"
+          },
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P7-012"
+          },
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P7-013"
+          },
+          {
+            "baseline": "in_progress",
+            "current": "done",
+            "task_id": "P7-014"
+          },
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P7-015"
+          },
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P7-016"
+          },
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P7-017"
+          },
+          {
+            "baseline": "todo",
+            "current": "blocked",
+            "task_id": "P7-018"
+          },
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P7-019"
+          },
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P7-020"
+          },
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P8-001"
+          },
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P8-002"
+          },
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P8-003"
+          },
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P8-004"
+          },
+          {
+            "baseline": "todo",
+            "current": "done",
+            "task_id": "P8-005"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-006"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-007"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-008"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-009"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-010"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-011"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-012"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-013"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-014"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-015"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-016"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-017"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-018"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-019"
+          },
+          {
+            "baseline": "todo",
+            "current": "in_progress",
+            "task_id": "P8-020"
+          }
+        ],
+        "status": "passed",
+        "task_count": 192,
+        "task_definition_base": "6d02d77f018a5965a6f289b0b43558ed4b9f8322",
+        "task_definition_base_sha256": "cc453fe700a01dd756d35e543d2ceae1f0b748bf97e9542ba0519767f5359ccc",
+        "verifier_version": "historical-integrations-v2"
+      }
+    },
+    "boundary": "Observed passed stdout and official successful fail-on-error steps establish actual original command completion; no separate integer-exit JSON was emitted for each command. No fabricated raw per-command exit receipts."
+  },
+  "other_python_original_summaries": [
+    {
+      "line": 5348,
+      "text": "Ran 46 tests in 2.574s",
+      "next_nonblank": [
+        {
+          "line": 5350,
+          "text": "OK"
+        },
+        {
+          "line": 5351,
+          "text": "{\"status\": \"passed\", \"task_count\": 192, \"states\": {\"done\": 164, \"blocked\": 1, \"in_progress\": 15, \"todo\": 12}, \"task_sha256\": \"e0a612bb4d42f63be01c17e77ff627db3581200275fbfa9e60679399e90877c6\", \"views\": 4}"
+        },
+        {
+          "line": 5352,
+          "text": "test_failed_build_uses_private_target_and_retains_sealed_failure (test_p8_backfill.BackfillBuildTests.test_failed_build_uses_private_target_and_retains_sealed_failure) ... ok"
+        }
+      ]
+    },
+    {
+      "line": 5792,
+      "text": "Ran 438 tests in 37.634s",
+      "next_nonblank": [
+        {
+          "line": 5794,
+          "text": "OK"
+        },
+        {
+          "line": 5795,
+          "text": "{\"status\": \"invalid_inputs\", \"exit_code\": 2, \"error_type\": \"Invalid\", \"release_certified\": false}"
+        },
+        {
+          "line": 5796,
+          "text": "{\"status\": \"validated_inputs_only\", \"exit_code\": 0, \"release_certified\": false}"
+        }
+      ]
+    },
+    {
+      "line": 6004,
+      "text": "Ran 181 tests in 395.704s",
+      "next_nonblank": [
+        {
+          "line": 6006,
+          "text": "OK"
+        },
+        {
+          "line": 6007,
+          "text": "{\"schema_version\": 10, \"source_version\": \"p8-completion-source-20261009-v15\", \"previous_source_version\": \"p8-oracle-compat-source-20261008-v14\", \"base_source\": \"7354db236c9d9850a75f31672697ae9eab44565e\", \"product_source\": \"2b6e9ebf2baeb8102df72d09360700e23487f870\", \"review_source\": \"ca10314fbc5a4ffa28ada5b7c1097c1091b48aa4\", \"scope\": \"independently_reviewed_source_and_validation_inputs\", \"runtime_and_quality_claims\": \"require_separate_execution_evidence\", \"status\": \"passed\", \"complete_inputs\": 1096, \"executed_previous_proof\": \"p8-oracle-compat-source-20261008-v14\"}"
+        },
+        {
+          "line": 6008,
+          "text": "From https://github.com/jyqj/codecortex"
+        }
+      ]
+    },
+    {
+      "line": 9118,
+      "text": "Ran 9 tests in 0.805s",
+      "next_nonblank": [
+        {
+          "line": 9120,
+          "text": "OK"
+        },
+        {
+          "line": 9121,
+          "text": "{"
+        },
+        {
+          "line": 9122,
+          "text": "  \"status\": \"passed\","
+        }
+      ]
+    },
+    {
+      "line": 9647,
+      "text": "Ran 14 tests in 0.840s",
+      "next_nonblank": [
+        {
+          "line": 9649,
+          "text": "OK"
+        },
+        {
+          "line": 9650,
+          "text": "Historical DEV corpus validation; source anchor=277f2490fad3fa30f2812b5547bad033867c9ea5"
+        },
+        {
+          "line": 9651,
+          "text": "P0 current CodeCortex source DEV subset (20261003 semantic migration): 14 queries, 10 admitted files, locks valid"
+        }
+      ]
+    }
+  ],
+  "benchmark_fixture_actual_ok": [
+    {
+      "line": 1260,
+      "text": "test tests::benchmark_fixture ... ok"
+    },
+    {
+      "line": 7339,
+      "text": "test tests::benchmark_fixture ... ok"
+    }
+  ],
+  "checks_boundary": {
+    "main_CI_three_jobs_success": true,
+    "whole_PR_all_checks_success": false,
+    "root_observation_not_new_poll": {
+      "at": "2026-10-10T00:43:42Z",
+      "total": 28,
+      "success": 25,
+      "skipped": 2,
+      "running": 1,
+      "remaining_job": 114082032045
+    },
+    "explanation": "Main CI, closeout and soak are separate runs. Root reports PR199 soak still running; this report does not promote the PR to all-green or grant TODO credit."
+  },
+  "preserved_failures": {
+    "donor_source": "f6750cad0df45af4ec2dddc456e76cc188f3a35a",
+    "closeout_run": 38004132959,
+    "failed_job": 114068898390,
+    "log_git_blob": "3efadf710a054e2beda886cdd29938639145e94b",
+    "boundary": "Donor soak success does not erase its earlier closeout failure; it is not execution of PR199."
+  },
+  "new_performance_or_task_credit": 0
+}

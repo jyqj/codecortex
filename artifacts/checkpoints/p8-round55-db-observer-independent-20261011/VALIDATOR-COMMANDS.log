@@ -1,0 +1,36 @@
+Read-only acceptance commands. Working download root: /tmp/codecortex-db-observer.ns0KW5
+
+For C in 1 4 8 16:
+  sha256sum /tmp/codecortex-db-observer.ns0KW5/c${C}.zip
+  unzip -t /tmp/codecortex-db-observer.ns0KW5/c${C}.zip
+  /tmp/codecortex-db-observer.ns0KW5/x${C}/p8-lock-build/p8-runtime-statistics \
+    --plan /tmp/codecortex-db-observer.ns0KW5/x${C}/p8-lock-runtime/plan.json \
+    --raw /tmp/codecortex-db-observer.ns0KW5/x${C}/p8-lock-runtime/raw.jsonl \
+    --output /tmp/codecortex-db-observer.ns0KW5/x${C}/independent-statistics.json
+  /tmp/codecortex-db-observer.ns0KW5/x${C}/p8-lock-build/p8-oracle \
+    --left /tmp/codecortex-db-observer.ns0KW5/x${C}/p8-lock-runtime/project \
+    --right /tmp/codecortex-db-observer.ns0KW5/x${C}/p8-lock-runtime/fresh-full \
+    --output /tmp/codecortex-db-observer.ns0KW5/x${C}/independent-parity.json
+
+Receipts:
+  C1  ZIP SHA=6fa82bbe05ee1a35212cae00e0e861ad97d74f026dfd21a895b93020cbb895ac CRC_exit=0 statistics_exit=0 statistics_byte_equal=yes oracle_exit=0 oracle_equal=true oracle_tables=15 parity_normalized_equal=yes
+  C4  ZIP SHA=67eba33ee740e923a303b6ec8c19018d6d40fd5b25f8ab7514ef56f1490e9cfc CRC_exit=0 statistics_exit=0 statistics_byte_equal=yes oracle_exit=0 oracle_equal=true oracle_tables=15 parity_normalized_equal=yes
+  C8  ZIP SHA=d12b7f72eee15a47691f3168342671f4d7426b76200e9ca3288fd844f33f0236 CRC_exit=0 statistics_exit=0 statistics_byte_equal=yes oracle_exit=0 oracle_equal=true oracle_tables=15 parity_normalized_equal=yes
+  C16 ZIP SHA=3486cb9bfff9787be59db59ae7612d8b20b56846cb9858caf4709de5ade2586e CRC_exit=0 statistics_exit=0 statistics_byte_equal=yes oracle_exit=0 oracle_equal=true oracle_tables=15 parity_normalized_equal=yes
+
+Statistics SHA-256 (recorded = replay = independent):
+  C1  11699fcaed450bb20becefcf0f1531d908be6ff338373ae585566353f5f40464
+  C4  f7ff09418e560e6211395d98f956d774eca2097eade97d0e847874dceeab4698
+  C8  fd1cfcd4c562b8d81776b056300eabe24253ddd7580205afef3b52a9bd6bfef8
+  C16 d9deafec6ecc8d7cca2bb12a6dcb306f9d343fe2d8586ba00dc5177779784822
+
+Recorded parity SHA-256 / independent parity SHA-256:
+  C1  9e65b3f5e7392fdb30a7b84fad8b144142458696ea2f4c5940a99431a3670cac / 892f6461844060e7142d702cc652f75a30788e400d127a88c788965859dcf313
+  C4  8ee5b51be7e875855caf372a025ced5249eec368fde6bb981f8ba54aa4c4057c / 1070b0d6dacfe08a93332389e34782096a7637d840e21b8df68bbc9fd25bf94a
+  C8  8a522f2381a3c06ed9b824f5904ce03988e6324ba78ce681b84225a331d7c6c0 / ccf5d889b15f72dfc58464249835494196e58ec8bfe5e1af9a08c35fd65ff5cd
+  C16 d79fdfde1ddd9b568424b801e286be5793744ffaed65df3c77fda36679959615 / 9a27bdacf77c27b93ccae366d9f9e97b181c0e94a452e055d0d41806ea3873fd
+
+Parity files differ in local left/right paths and elapsed/timestamp values. Normalized comparison deletes only:
+  .left, .right, .elapsed_ns, .generated_at, .started_at, .completed_at
+
+No repository, GitHub, workflow, or task-ledger mutation was performed.

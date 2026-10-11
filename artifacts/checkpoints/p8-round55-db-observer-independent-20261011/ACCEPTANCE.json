@@ -1,0 +1,196 @@
+{
+  "schema_version": 1,
+  "kind": "independent_acceptance_record",
+  "generated_at": "2026-10-11T18:16:57Z",
+  "cutoff": "2026-10-11T16:52:28Z",
+  "repository": "jyqj/codecortex",
+  "mutations": {
+    "github_writes": false,
+    "repository_writes": false,
+    "reruns": false,
+    "cancellations": false,
+    "cross_source_pooling": false,
+    "source_relabeling": false
+  },
+  "fresh_state": {
+    "main": "c2b726538cacfdf6ae9f01977a7b93da48d2e2b2",
+    "commits_since_cutoff": 0,
+    "workflow_runs_created_or_updated_since_cutoff": 0,
+    "issue_158_comments_created_or_updated_since_cutoff": 0,
+    "issue_158_latest_comment": {
+      "id": 6095956801,
+      "created_at": "2026-10-10T09:06:08Z",
+      "updated_at": "2026-10-10T09:06:08Z",
+      "url": "https://github.com/jyqj/codecortex/issues/158#issuecomment-6095956801",
+      "acceptance_effect": "PR #202 ledger status changes are not original-TODO credit under the controlling contract; P8-006 has only N=1 task-profile evidence and all fixed N=30 studies failed; P8-007 hard-depends on P8-006."
+    }
+  },
+  "p8_006": {
+    "can_close_under_controlling_acceptance": false,
+    "required_population": {
+      "same_source_binary_profile": true,
+      "repetitions": 30,
+      "measurement_shards": 150,
+      "observations": 1500,
+      "requires_100k_success": true,
+      "requires_aggregate_success": true
+    },
+    "satisfied": false,
+    "reason": "No qualifying N=30 study exists. All known fixed studies remain completed/failure; there is no 150/150, 1500-observation, successful 100k plus successful aggregate cohort under one unchanged source/binary/profile identity.",
+    "known_runs": [
+      {"run": 37896198208, "head_sha": "275e8799d4947d297329073eaa3ca675d3fd0777", "status": "completed", "conclusion": "failure", "updated_at": "2026-10-09T12:46:29Z"},
+      {"run": 37902429727, "head_sha": "c8be5afaac568ffd40ef86d3795423c3b73c9f39", "status": "completed", "conclusion": "failure", "updated_at": "2026-10-09T13:31:29Z"},
+      {"run": 37910924354, "head_sha": "3ffcefc3b28ee1a4ed80caecebd7208a45c3e302", "status": "completed", "conclusion": "failure", "updated_at": "2026-10-09T15:24:54Z"},
+      {"run": 37962416564, "head_sha": "4fe927488d5cb7f26bd27c7624745fb1b6ca202b", "status": "completed", "conclusion": "failure", "updated_at": "2026-10-09T22:14:54Z"},
+      {"run": 37982220020, "head_sha": "008f1ec0ae16b9b6aff9f20d033b17b2219168f8", "status": "completed", "conclusion": "failure", "updated_at": "2026-10-09T23:58:42Z"},
+      {"run": 38013753078, "head_sha": "9cc6bf49f6dd81e4069a8004eed49addba0ab79b", "status": "completed", "conclusion": "failure", "updated_at": "2026-10-10T03:54:59Z"}
+    ]
+  },
+  "p8_007": {
+    "can_close_under_controlling_acceptance": false,
+    "hard_dependency": "P8-006",
+    "hard_dependency_satisfied": false,
+    "narrow_db_acquisition_observation_gap_independently_validated": true,
+    "reason": "The existing four-concurrency observer cohort is independently intact and reproducible, but P8-007 cannot close while P8-006 is unaccepted. The observer artifacts also explicitly declare task_complete=false and release_approval=false and do not create a new performance gate.",
+    "observer_run": {
+      "run": 37930392164,
+      "attempt": 1,
+      "head_sha": "4d18dcdb34b5d7a277566b57801cc882d8b1eb61",
+      "status": "completed",
+      "conclusion": "success",
+      "updated_at": "2026-10-09T14:18:53Z",
+      "profile": "mixed",
+      "diagnostic_profile": "mixed_db_lock_observation_v1",
+      "product_sha256_all_four": "5f42c2aceaf74d6abd6c96dd176f93f82f5bdcb898b80f9b2740cabe61745f7a",
+      "runtime_statistics_binary_sha256_all_four": "c0b169f50d0530e64e9fb461504274d8ade82d4efe1d0ede632c14daa684027b",
+      "oracle_binary_sha256_all_four": "a48ab71e4342fa30b2e987b32cc172f0686c41d27e03cb2becf07c570873383a",
+      "identity_limit": "This diagnostic source/profile is retained as its own observer identity and is not pooled or relabeled as a scale-study cohort."
+    },
+    "artifacts": [
+      {
+        "concurrency": 1,
+        "artifact_id": 11623110311,
+        "artifact_size_bytes": 16608748,
+        "github_digest_sha256": "6fa82bbe05ee1a35212cae00e0e861ad97d74f026dfd21a895b93020cbb895ac",
+        "local_zip": "/tmp/codecortex-db-observer.ns0KW5/c1.zip",
+        "local_zip_sha256": "6fa82bbe05ee1a35212cae00e0e861ad97d74f026dfd21a895b93020cbb895ac",
+        "zip_crc_test_exit": 0,
+        "extract_root": "/tmp/codecortex-db-observer.ns0KW5/x1",
+        "key_files": {
+          "plan": "p8-lock-runtime/plan.json",
+          "raw": "p8-lock-runtime/raw.jsonl",
+          "report": "p8-lock-runtime/report.json",
+          "statistics": "p8-lock-runtime/statistics.json",
+          "statistics_replay": "p8-lock-runtime/statistics-replay.json",
+          "parity": "p8-lock-runtime/parity.json",
+          "seal": "p8-lock-runtime/seal.json",
+          "runtime_statistics_binary": "p8-lock-build/p8-runtime-statistics",
+          "oracle_binary": "p8-lock-build/p8-oracle",
+          "independent_statistics": "independent-statistics.json",
+          "independent_parity": "independent-parity.json"
+        },
+        "hashes": {
+          "plan_sha256": "0491e976f87c7f433d41ffd4cd8463c41c56ae9888a02bccabd12eb1c5339c84",
+          "raw_sha256": "c9ce4618d692a07cb28090edfa0109a4de9c03d28613982ad840e17c857b0408",
+          "statistics_recorded_replay_independent_sha256": "11699fcaed450bb20becefcf0f1531d908be6ff338373ae585566353f5f40464",
+          "parity_recorded_sha256": "9e65b3f5e7392fdb30a7b84fad8b144142458696ea2f4c5940a99431a3670cac",
+          "parity_independent_sha256": "892f6461844060e7142d702cc652f75a30788e400d127a88c788965859dcf313"
+        },
+        "validators": {
+          "runtime_statistics_exit": 0,
+          "runtime_statistics_byte_identical_to_recorded_and_replay": true,
+          "oracle_exit": 0,
+          "oracle_equal": true,
+          "oracle_table_count": 15,
+          "oracle_normalized_equal_to_recorded": true,
+          "oracle_normalization": "deleted left/right and volatile timing/timestamp fields only"
+        },
+        "samples": {"expected": 900, "recorded": 900, "missing": 0, "unexpected": 0, "offered": 900, "success": 900},
+        "actual_concurrency": {"maximum": 1, "read_build_overlap": false},
+        "workload_db_acquisition": {
+          "read_connection_checkout": {"attempts": 16850, "acquired": 16850, "elapsed_ns_total": 86362596, "process_lifetime_max_ns_at_end": 105718, "failed": 0, "would_block": 0, "in_flight_at_boundaries": [0, 0]},
+          "read_pool_lock_acquire": {"attempts": 16850, "acquired": 16850, "elapsed_ns_total": 997977, "process_lifetime_max_ns_at_end": 23404, "failed": 0, "would_block": 0, "in_flight_at_boundaries": [0, 0]},
+          "writer_mutex_acquire": {"attempts": 3550, "acquired": 3550, "elapsed_ns_total": 177158, "process_lifetime_max_ns_at_end": 27832, "failed": 0, "would_block": 0, "in_flight_at_boundaries": [0, 0]}
+        },
+        "flags": {"task_complete": false, "release_approval": false, "release_certified": false, "new_performance_gate": false, "interval_maximum_observed": false, "sqlite_busy_wait_observed": false}
+      },
+      {
+        "concurrency": 4,
+        "artifact_id": 11620977433,
+        "artifact_size_bytes": 16993296,
+        "github_digest_sha256": "67eba33ee740e923a303b6ec8c19018d6d40fd5b25f8ab7514ef56f1490e9cfc",
+        "local_zip": "/tmp/codecortex-db-observer.ns0KW5/c4.zip",
+        "local_zip_sha256": "67eba33ee740e923a303b6ec8c19018d6d40fd5b25f8ab7514ef56f1490e9cfc",
+        "zip_crc_test_exit": 0,
+        "extract_root": "/tmp/codecortex-db-observer.ns0KW5/x4",
+        "key_files": {"plan": "p8-lock-runtime/plan.json", "raw": "p8-lock-runtime/raw.jsonl", "report": "p8-lock-runtime/report.json", "statistics": "p8-lock-runtime/statistics.json", "statistics_replay": "p8-lock-runtime/statistics-replay.json", "parity": "p8-lock-runtime/parity.json", "seal": "p8-lock-runtime/seal.json", "runtime_statistics_binary": "p8-lock-build/p8-runtime-statistics", "oracle_binary": "p8-lock-build/p8-oracle", "independent_statistics": "independent-statistics.json", "independent_parity": "independent-parity.json"},
+        "hashes": {"plan_sha256": "8782fe249e93ae76e3fd1b28559282e5e66914717b3deb1b895da20b33043bb7", "raw_sha256": "191ef1a6bbf44c5b63e2d577901e76346856cd93d29fb26c078105a73882636d", "statistics_recorded_replay_independent_sha256": "f7ff09418e560e6211395d98f956d774eca2097eade97d0e847874dceeab4698", "parity_recorded_sha256": "8ee5b51be7e875855caf372a025ced5249eec368fde6bb981f8ba54aa4c4057c", "parity_independent_sha256": "1070b0d6dacfe08a93332389e34782096a7637d840e21b8df68bbc9fd25bf94a"},
+        "validators": {"runtime_statistics_exit": 0, "runtime_statistics_byte_identical_to_recorded_and_replay": true, "oracle_exit": 0, "oracle_equal": true, "oracle_table_count": 15, "oracle_normalized_equal_to_recorded": true, "oracle_normalization": "deleted left/right and volatile timing/timestamp fields only"},
+        "samples": {"expected": 900, "recorded": 900, "missing": 0, "unexpected": 0, "offered": 900, "success": 900},
+        "actual_concurrency": {"maximum": 4, "read_build_overlap": true},
+        "workload_db_acquisition": {
+          "read_connection_checkout": {"attempts": 16848, "acquired": 16848, "elapsed_ns_total": 68937811, "process_lifetime_max_ns_at_end": 362008, "failed": 0, "would_block": 0, "in_flight_at_boundaries": [0, 0]},
+          "read_pool_lock_acquire": {"attempts": 16848, "acquired": 16848, "elapsed_ns_total": 901594, "process_lifetime_max_ns_at_end": 2254, "failed": 0, "would_block": 0, "in_flight_at_boundaries": [0, 0]},
+          "writer_mutex_acquire": {"attempts": 3550, "acquired": 3550, "elapsed_ns_total": 117172, "process_lifetime_max_ns_at_end": 250, "failed": 0, "would_block": 0, "in_flight_at_boundaries": [0, 0]}
+        },
+        "flags": {"task_complete": false, "release_approval": false, "release_certified": false, "new_performance_gate": false, "interval_maximum_observed": false, "sqlite_busy_wait_observed": false}
+      },
+      {
+        "concurrency": 8,
+        "artifact_id": 11621010611,
+        "artifact_size_bytes": 16642248,
+        "github_digest_sha256": "d12b7f72eee15a47691f3168342671f4d7426b76200e9ca3288fd844f33f0236",
+        "local_zip": "/tmp/codecortex-db-observer.ns0KW5/c8.zip",
+        "local_zip_sha256": "d12b7f72eee15a47691f3168342671f4d7426b76200e9ca3288fd844f33f0236",
+        "zip_crc_test_exit": 0,
+        "extract_root": "/tmp/codecortex-db-observer.ns0KW5/x8",
+        "key_files": {"plan": "p8-lock-runtime/plan.json", "raw": "p8-lock-runtime/raw.jsonl", "report": "p8-lock-runtime/report.json", "statistics": "p8-lock-runtime/statistics.json", "statistics_replay": "p8-lock-runtime/statistics-replay.json", "parity": "p8-lock-runtime/parity.json", "seal": "p8-lock-runtime/seal.json", "runtime_statistics_binary": "p8-lock-build/p8-runtime-statistics", "oracle_binary": "p8-lock-build/p8-oracle", "independent_statistics": "independent-statistics.json", "independent_parity": "independent-parity.json"},
+        "hashes": {"plan_sha256": "9ce3ff057e622b5a89c2fc5fe8c3b0345204d50877fd58c96761d71ad20c9221", "raw_sha256": "0be112292791124b3f5eb8a86991f35f22380cf512e01813b8aebe407c1d5103", "statistics_recorded_replay_independent_sha256": "fd1cfcd4c562b8d81776b056300eabe24253ddd7580205afef3b52a9bd6bfef8", "parity_recorded_sha256": "8a522f2381a3c06ed9b824f5904ce03988e6324ba78ce681b84225a331d7c6c0", "parity_independent_sha256": "ccf5d889b15f72dfc58464249835494196e58ec8bfe5e1af9a08c35fd65ff5cd"},
+        "validators": {"runtime_statistics_exit": 0, "runtime_statistics_byte_identical_to_recorded_and_replay": true, "oracle_exit": 0, "oracle_equal": true, "oracle_table_count": 15, "oracle_normalized_equal_to_recorded": true, "oracle_normalization": "deleted left/right and volatile timing/timestamp fields only"},
+        "samples": {"expected": 900, "recorded": 900, "missing": 0, "unexpected": 0, "offered": 900, "success": 900},
+        "actual_concurrency": {"maximum": 7, "read_build_overlap": true},
+        "workload_db_acquisition": {
+          "read_connection_checkout": {"attempts": 16846, "acquired": 16846, "elapsed_ns_total": 73025045, "process_lifetime_max_ns_at_end": 279844, "failed": 0, "would_block": 0, "in_flight_at_boundaries": [0, 0]},
+          "read_pool_lock_acquire": {"attempts": 16846, "acquired": 16846, "elapsed_ns_total": 1015497, "process_lifetime_max_ns_at_end": 35452, "failed": 0, "would_block": 0, "in_flight_at_boundaries": [0, 0]},
+          "writer_mutex_acquire": {"attempts": 3550, "acquired": 3550, "elapsed_ns_total": 130941, "process_lifetime_max_ns_at_end": 320, "failed": 0, "would_block": 0, "in_flight_at_boundaries": [0, 0]}
+        },
+        "flags": {"task_complete": false, "release_approval": false, "release_certified": false, "new_performance_gate": false, "interval_maximum_observed": false, "sqlite_busy_wait_observed": false}
+      },
+      {
+        "concurrency": 16,
+        "artifact_id": 11623006495,
+        "artifact_size_bytes": 16407395,
+        "github_digest_sha256": "3486cb9bfff9787be59db59ae7612d8b20b56846cb9858caf4709de5ade2586e",
+        "local_zip": "/tmp/codecortex-db-observer.ns0KW5/c16.zip",
+        "local_zip_sha256": "3486cb9bfff9787be59db59ae7612d8b20b56846cb9858caf4709de5ade2586e",
+        "zip_crc_test_exit": 0,
+        "extract_root": "/tmp/codecortex-db-observer.ns0KW5/x16",
+        "key_files": {"plan": "p8-lock-runtime/plan.json", "raw": "p8-lock-runtime/raw.jsonl", "report": "p8-lock-runtime/report.json", "statistics": "p8-lock-runtime/statistics.json", "statistics_replay": "p8-lock-runtime/statistics-replay.json", "parity": "p8-lock-runtime/parity.json", "seal": "p8-lock-runtime/seal.json", "runtime_statistics_binary": "p8-lock-build/p8-runtime-statistics", "oracle_binary": "p8-lock-build/p8-oracle", "independent_statistics": "independent-statistics.json", "independent_parity": "independent-parity.json"},
+        "hashes": {"plan_sha256": "b5b7a6a60b7f7a4686a19bf48a4e10a0d5e5d50ec12bdfc7fe9b118d45ed965b", "raw_sha256": "0ad5e377ecec57699a56d1c36f6d13c37e289f6a810ad2029fb8dbdc72a9de05", "statistics_recorded_replay_independent_sha256": "d9deafec6ecc8d7cca2bb12a6dcb306f9d343fe2d8586ba00dc5177779784822", "parity_recorded_sha256": "d79fdfde1ddd9b568424b801e286be5793744ffaed65df3c77fda36679959615", "parity_independent_sha256": "9a27bdacf77c27b93ccae366d9f9e97b181c0e94a452e055d0d41806ea3873fd"},
+        "validators": {"runtime_statistics_exit": 0, "runtime_statistics_byte_identical_to_recorded_and_replay": true, "oracle_exit": 0, "oracle_equal": true, "oracle_table_count": 15, "oracle_normalized_equal_to_recorded": true, "oracle_normalization": "deleted left/right and volatile timing/timestamp fields only"},
+        "samples": {"expected": 900, "recorded": 900, "missing": 0, "unexpected": 0, "offered": 900, "success": 900},
+        "actual_concurrency": {"maximum": 12, "read_build_overlap": true},
+        "workload_db_acquisition": {
+          "read_connection_checkout": {"attempts": 16848, "acquired": 16848, "elapsed_ns_total": 78694013, "process_lifetime_max_ns_at_end": 489805, "failed": 0, "would_block": 0, "in_flight_at_boundaries": [0, 0]},
+          "read_pool_lock_acquire": {"attempts": 16848, "acquired": 16848, "elapsed_ns_total": 1040384, "process_lifetime_max_ns_at_end": 29546, "failed": 0, "would_block": 0, "in_flight_at_boundaries": [0, 0]},
+          "writer_mutex_acquire": {"attempts": 3550, "acquired": 3550, "elapsed_ns_total": 147338, "process_lifetime_max_ns_at_end": 161, "failed": 0, "would_block": 0, "in_flight_at_boundaries": [0, 0]}
+        },
+        "flags": {"task_complete": false, "release_approval": false, "release_certified": false, "new_performance_gate": false, "interval_maximum_observed": false, "sqlite_busy_wait_observed": false}
+      }
+    ],
+    "interpretation_limits": [
+      "read_connection_checkout is checkout wall time and may include validation or construction; it is not pure lock or SQLite busy wait.",
+      "writer and pool timing covers the actual acquisition call, including uncontended call overhead; it is not pure blocked scheduler time.",
+      "interval_max_ns is null and interval_maximum_observed is false; process_lifetime_max_ns_at_end must not be relabeled as a run-window maximum.",
+      "sqlite_busy_wait_observed is false.",
+      "The instrumented feature build is diagnostic-only and must not be merged into default-build latency samples.",
+      "C8 and C16 observed actual peaks of 7 and 12 respectively; configured concurrency must not be claimed as achieved concurrency."
+    ]
+  },
+  "acceptance_decision": {
+    "new_original_todo_closures": [],
+    "p8_006": "keep_uncredited_not_closed",
+    "p8_007": "narrow_db_observer_gap_validated_but_keep_uncredited_not_closed_due_to_hard_dependency",
+    "ledger_note": "Current main mechanically records both tasks as done, but this draft follows the controlling automation acceptance contract and Issue #158 correction rather than crediting the status field alone."
+  }
+}

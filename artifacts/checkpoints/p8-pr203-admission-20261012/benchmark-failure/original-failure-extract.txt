@@ -1,0 +1,48 @@
+1379: 2026-10-10T08:23:31.6400733Z ---- tests::benchmark_fixture stdout ----
+1380: 2026-10-10T08:23:31.6401373Z # Benchmark Results
+1381: 2026-10-10T08:23:31.6401613Z 
+1382: 2026-10-10T08:23:31.6401766Z Generated: 2026-10-10T08:23:31.559614879+00:00
+1383: 2026-10-10T08:23:31.6402091Z Dataset: fixture
+1384: 2026-10-10T08:23:31.6402319Z Files: 18
+1385: 2026-10-10T08:23:31.6402443Z 
+1386: 2026-10-10T08:23:31.6402544Z ## Per-Tool Latency
+1387: 2026-10-10T08:23:31.6402696Z 
+1388: 2026-10-10T08:23:31.6494406Z Methodology: cold = first call of a fresh MCP session per iteration (new IndexDb identity → cold graph adjacency + SQLite page caches, empty search LRUs; OS file cache retained). warm = repeated identical calls in one shared session after 1 discarded warmup (cache-hit path).
+1389: 2026-10-10T08:23:31.6495535Z 
+1390: 2026-10-10T08:23:31.6495908Z Per case: cold = 1 fresh-session call, warm = best of 2 measured calls; percentiles aggregate across cases per tool.
+1391: 2026-10-10T08:23:31.6496374Z 
+1392: 2026-10-10T08:23:31.6496618Z | Tool | Cases | cold p50 | cold max | warm p50 | warm p95 | warm max | Avg Output |
+1393: 2026-10-10T08:23:31.6497162Z |------|-------|----------|----------|----------|----------|----------|------------|
+1394: 2026-10-10T08:23:31.6497602Z | adr | 1 | 10.02ms | 10.02ms | 9.79ms | 9.79ms | 9.79ms | 11 B |
+1395: 2026-10-10T08:23:31.6498049Z | architecture | 6 | 40.01ms | 160.10ms | 30.46ms | 129.63ms | 129.63ms | 5.3 KB |
+1396: 2026-10-10T08:23:31.6498516Z | context | 8 | 1.72s | 2.19s | 1.19s | 1.72s | 1.72s | 15.4 KB |
+1397: 2026-10-10T08:23:31.6498949Z | explore | 5 | 49.96ms | 69.75ms | 30.24ms | 39.93ms | 39.93ms | 2.2 KB |
+1398: 2026-10-10T08:23:31.6602615Z | files | 2 | 944µs | 19.76ms | 689µs | 19.49ms | 19.49ms | 1.2 KB |
+1399: 2026-10-10T08:23:31.6603808Z | graph_query | 9 | 20.16ms | 60.56ms | 10.33ms | 49.76ms | 49.76ms | 311 B |
+1400: 2026-10-10T08:23:31.6604314Z | impact | 7 | 40.78ms | 80.45ms | 30.43ms | 79.55ms | 79.55ms | 1.6 KB |
+1401: 2026-10-10T08:23:31.6604732Z | index | 1 | 5.01s | 5.01s | 4.23s | 4.23s | 4.23s | 2.8 KB |
+1402: 2026-10-10T08:23:31.6605164Z | ingest_traces | 1 | 19.59ms | 19.59ms | 9.54ms | 9.54ms | 9.54ms | 157 B |
+1403: 2026-10-10T08:23:31.6605607Z | node | 6 | 20.54ms | 30.66ms | 10.76ms | 20.97ms | 20.97ms | 886 B |
+1404: 2026-10-10T08:23:31.6606036Z | relations | 8 | 30.16ms | 46.29ms | 10.50ms | 20.17ms | 20.17ms | 807 B |
+1405: 2026-10-10T08:23:31.6606471Z | search | 28 | 19.79ms | 1.39s | 10.38ms | 659.53ms | 1.04s | 4.0 KB |
+1406: 2026-10-10T08:23:31.6606891Z | status | 1 | 80.52ms | 80.52ms | 80.33ms | 80.33ms | 80.33ms | 14.9 KB |
+1407: 2026-10-10T08:23:31.6607322Z | trace | 11 | 29.30ms | 40.09ms | 9.90ms | 29.50ms | 29.50ms | 1.2 KB |
+1408: 2026-10-10T08:23:31.6607582Z 
+1409: 2026-10-10T08:23:31.6693673Z ## Summary
+1410: 2026-10-10T08:23:31.6693846Z 
+1411: 2026-10-10T08:23:31.6693959Z - Total cases: 94
+1412: 2026-10-10T08:23:31.6694267Z - All tools under 500ms warm p95: NO
+1413: 2026-10-10T08:23:31.6694509Z 
+1414: 2026-10-10T08:23:31.6694513Z 
+1415: 2026-10-10T08:23:31.6694836Z thread 'tests::benchmark_fixture' (8590) panicked at crates/cc-eval/src/lib.rs:915:13:
+1416: 2026-10-10T08:23:31.6695680Z perf regression: tool 'context' warm p95 = 1.72s (limit 500ms)
+1417: 2026-10-10T08:23:31.6696267Z note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+1418: 2026-10-10T08:23:31.6696650Z 
+1419: 2026-10-10T08:23:31.6696655Z 
+1420: 2026-10-10T08:23:31.6696761Z failures:
+1421: 2026-10-10T08:23:31.6697022Z     tests::benchmark_fixture
+1422: 2026-10-10T08:23:31.6697221Z 
+1423: 2026-10-10T08:23:31.6697561Z test result: FAILED. 70 passed; 1 failed; 7 ignored; 0 measured; 0 filtered out; finished in 118.85s
+1424: 2026-10-10T08:23:31.6698024Z 
+1425: 2026-10-10T08:23:31.7700784Z [1m[91merror[0m: test failed, to rerun pass `-p cc-eval --lib`
+1426: 2026-10-10T08:23:31.8200571Z ##[error]Process completed with exit code 101.

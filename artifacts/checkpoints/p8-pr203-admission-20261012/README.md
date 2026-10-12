@@ -40,3 +40,25 @@ validation/before-admission* 记录实际原校验器拒绝旧registry未收录w
 P8-020须继续完成选定发布范围的真实V01/V18–V21及独立发行验收。P9-001..012仍受原依赖阻塞；P7-018/P8-014/P8-015仍需各自实际授权和预算。没有执行新native规模实验、在线provider或holdout，未选择发布范围。
 
 本目录只记录已经发生的复核与准备。G的原源码校验和新head CI应另以实际执行证据补充。
+
+## 最终绑定与实际原校验（2026-10-12 补充）
+
+独立审查 R 为 `72723404303125d4dca201b27139cdc4089dfff9`，精确绑定 G 为 `f631350e07841164c5d27f23769483ef71aadea4`。G 只修改两份 v15 绑定文件；四个 guard 常量和 registry 的 product/review/摘要/已审 workflow leaf 被精确替换，算法、历史批准、CI 和门限未变。独立 AST、完整原字节替换、Git mode/blob 检查见 final/。
+
+第一次在 G 上运行完整 guard 因浅层部分克隆缺少 v14 固定历史 blob 而 exit1；原日志留在 validation/after-admission.*。补齐原件并核实当前受保护文件后，2026-10-12 07:14:50–07:24:21 UTC 实际运行同一命令成功，exit0：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python scripts/verify_reviewed_source_v15.py --source-version p8-completion-source-20261009-v15
+```
+
+实际 stdout 为572 bytes，SHA-256 `1a8eab0f8f0a1b0cb934b08612e02a65395a14e3672359f54bf9487ca2414586`；stderr为空。它明确报告1096 complete_inputs、executed_previous_proof=v14、runtime_and_quality_claims=require_separate_execution_evidence。完整命令、时间、退出码及原 stdout/stderr 见 validation/full-admission-final.*。没有改写旧失败，也没有修改验证器来适应本地环境。
+
+本补充提交只追加审查/执行/缺口证据和本说明，不再改动源码、原始TODO或验证输入。此补充创建时，新 head 的 GitHub CI 尚待实际执行；普通 PR CI 通过前维持 Draft/HOLD，旧797e的性能失败继续保留。
+
+### 下一原始任务的实质缺口
+
+progress/g8-existing-evidence-gap-matrix.json 直接检查已存在的历史记录。公开质量原 gate 1、后续 coverage diagnostic gate 2、Boltons原候选 gate 1均保留；旧holdout已使用，不可当作新候选的clean数据。f97 raw45可保留为同产品的N=1描述性证据；044 cold150与当前产品之间有实际实现变化，不能重标为当前release测量。
+
+原100k raw显示bounded resume反复扫描/prepare/commit的调查方向：body/API/config累计490/171/330 builds、49.0M/17.1M/33.0M扫描次数，分别只parse1/1/0；数字为累计工作量，不是独立文件数，也不是已证明的安全优化。benchmark-failure/单独分析原普通CI的三个超限工具和缺失的逐case诊断；没有宣称性能根因或已修复。
+
+全部原始TODO计数不变：本执行每轮新增关闭ID []，新增0；历史累计新增13；176/192 done、剩余16。不能把本PR、审查、修复、执行通过或文档计为原始TODO。

@@ -596,19 +596,11 @@ jobs:
       env:
         PREVIOUS_ARTIFACT_ID: ${{ steps.upload_18.outputs.artifact-id }}
         PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_18.outputs.artifact-digest }}
-    - uses: actions/upload-artifact@v4
-      if: always() && steps.freeze_19.outputs.ready == 'true'
-      with:
-        name: p8-task-progress-${{ matrix.cell }}-${{ github.run_id }}-${{ github.run_attempt }}-19
-        path: ${{ steps.freeze_19.outputs.bundle }}
-        if-no-files-found: error
-      id: upload_19
+    # Keep checkpoint 19 local. Its pending chunks are carried by the final
+    # boundary, avoiding the 1,000-artifact listing cap without falsifying custody.
     - name: Preserve final or interrupted task diagnostic boundary
       id: finish
       if: always() && steps.launch.outcome == 'success'
-      env:
-        PREVIOUS_ARTIFACT_ID: ${{ steps.upload_19.outputs.artifact-id }}
-        PREVIOUS_ARTIFACT_DIGEST: ${{ steps.upload_19.outputs.artifact-digest }}
       run: |
         python3 scripts/p8_task_profile_capture.py finish \
           --directory "$RUNNER_TEMP/p8-task-cell-$P8_TASK_CELL" --index 20

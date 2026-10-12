@@ -1,0 +1,1442 @@
+﻿2026-10-10T07:49:56.1519231Z Current runner version: '2.337.0'
+2026-10-10T07:49:56.1813626Z ##[group]Runner Image Provisioner
+2026-10-10T07:49:56.1815023Z Hosted Compute Agent
+2026-10-10T07:49:56.1816046Z Version: 20261002.596
+2026-10-10T07:49:56.1817086Z Commit: c3d12f3313a95f25162a1503be624f3b0617f8c0
+2026-10-10T07:49:56.1818436Z Build Date: 2026-10-02T22:28:27Z
+2026-10-10T07:49:56.1819721Z Worker ID: {b7c5e9c0-b9e1-40ba-8cdc-47e571e70c67}
+2026-10-10T07:49:56.1821150Z Region: westus
+2026-10-10T07:49:56.1821882Z Cloud: Azure
+2026-10-10T07:49:56.1822573Z ##[endgroup]
+2026-10-10T07:49:56.1824614Z ##[group]Operating System
+2026-10-10T07:49:56.1825574Z Ubuntu
+2026-10-10T07:49:56.1826187Z 24.04.5
+2026-10-10T07:49:56.1913039Z LTS
+2026-10-10T07:49:56.1914115Z ##[endgroup]
+2026-10-10T07:49:56.1915058Z ##[group]Runner Image
+2026-10-10T07:49:56.1916182Z Image: ubuntu-24.04
+2026-10-10T07:49:56.1917126Z Version: 20261004.327.1
+2026-10-10T07:49:56.1919968Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-10T07:49:56.1923488Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327
+2026-10-10T07:49:56.1925242Z ##[endgroup]
+2026-10-10T07:49:56.2013847Z ##[group]GITHUB_TOKEN Permissions
+2026-10-10T07:49:56.2016950Z Contents: read
+2026-10-10T07:49:56.2017894Z Metadata: read
+2026-10-10T07:49:56.2018894Z Packages: read
+2026-10-10T07:49:56.2019724Z ##[endgroup]
+2026-10-10T07:49:56.2022587Z Secret source: Actions
+2026-10-10T07:49:56.2024197Z Cache mode: write
+2026-10-10T07:49:56.2025043Z Prepare workflow directory
+2026-10-10T07:49:56.6616992Z Prepare all required actions
+2026-10-10T07:49:56.7017594Z Getting action download info
+2026-10-10T07:49:57.5447042Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-10T07:49:58.0448374Z Download action repository 'dtolnay/rust-toolchain@stable' (SHA:686976e191b89faba57d3206551f0f330d8cb249)
+2026-10-10T07:49:58.3727531Z Download action repository 'Swatinem/rust-cache@v2' (SHA:6323deb102c322ba6fcbdcafc7e3dddab59af2b6)
+2026-10-10T07:50:00.6597348Z Complete job name: check
+2026-10-10T07:50:01.8496585Z ##[group]Run actions/checkout@v4
+2026-10-10T07:50:01.8585321Z with:
+2026-10-10T07:50:01.8586343Z   repository: jyqj/codecortex
+2026-10-10T07:50:01.8596623Z   token: ***
+2026-10-10T07:50:01.8597526Z   ssh-strict: true
+2026-10-10T07:50:01.8598369Z   ssh-user: git
+2026-10-10T07:50:01.8599197Z   persist-credentials: true
+2026-10-10T07:50:01.8600076Z   clean: true
+2026-10-10T07:50:01.8600912Z   sparse-checkout-cone-mode: true
+2026-10-10T07:50:01.8601869Z   fetch-depth: 1
+2026-10-10T07:50:01.8602679Z   fetch-tags: false
+2026-10-10T07:50:01.8603903Z   show-progress: true
+2026-10-10T07:50:01.8604727Z   lfs: false
+2026-10-10T07:50:01.8685619Z   submodules: false
+2026-10-10T07:50:01.8686868Z   set-safe-directory: true
+2026-10-10T07:50:01.8688147Z   allow-unsafe-pr-checkout: false
+2026-10-10T07:50:01.8689502Z env:
+2026-10-10T07:50:01.8690271Z   CARGO_TERM_COLOR: always
+2026-10-10T07:50:01.8691227Z   RUSTFLAGS: -D warnings
+2026-10-10T07:50:01.8692084Z ##[endgroup]
+2026-10-10T07:50:02.8190046Z Syncing repository: jyqj/codecortex
+2026-10-10T07:50:02.8192811Z ##[group]Getting Git version info
+2026-10-10T07:50:02.8194474Z Working directory is '/home/runner/work/codecortex/codecortex'
+2026-10-10T07:50:02.8196432Z [command]/usr/bin/git version
+2026-10-10T07:50:02.8438486Z git version 2.55.0
+2026-10-10T07:50:02.8597416Z ##[endgroup]
+2026-10-10T07:50:02.8788848Z Temporarily overriding HOME='/home/runner/work/_temp/bb855c25-7c7c-44f9-ba7c-db04aa8da5b4' before making global git config changes
+2026-10-10T07:50:02.8794907Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-10T07:50:02.8798959Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/codecortex/codecortex
+2026-10-10T07:50:02.9188741Z Deleting the contents of '/home/runner/work/codecortex/codecortex'
+2026-10-10T07:50:02.9192944Z ##[group]Initializing the repository
+2026-10-10T07:50:02.9196869Z [command]/usr/bin/git init /home/runner/work/codecortex/codecortex
+2026-10-10T07:50:02.9799802Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-10T07:50:02.9885098Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-10T07:50:02.9887174Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-10T07:50:02.9888751Z hint: call:
+2026-10-10T07:50:02.9889496Z hint:
+2026-10-10T07:50:02.9890407Z hint: 	git config --global init.defaultBranch <name>
+2026-10-10T07:50:02.9891502Z hint:
+2026-10-10T07:50:02.9892536Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-10T07:50:02.9894544Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-10T07:50:02.9895844Z hint:
+2026-10-10T07:50:02.9896608Z hint: 	git branch -m <name>
+2026-10-10T07:50:02.9897461Z hint:
+2026-10-10T07:50:02.9898907Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-10T07:50:02.9900746Z Initialized empty Git repository in /home/runner/work/codecortex/codecortex/.git/
+2026-10-10T07:50:02.9903965Z [command]/usr/bin/git remote add origin https://github.com/jyqj/codecortex
+2026-10-10T07:50:03.0194241Z ##[endgroup]
+2026-10-10T07:50:03.0195666Z ##[group]Disabling automatic garbage collection
+2026-10-10T07:50:03.0197544Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-10T07:50:03.0396002Z ##[endgroup]
+2026-10-10T07:50:03.0485674Z ##[group]Setting up auth
+2026-10-10T07:50:03.0488485Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-10T07:50:03.0603289Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-10T07:50:03.2688322Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-10T07:50:03.2804720Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-10T07:50:03.4494183Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-10T07:50:03.4794468Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-10T07:50:03.6886778Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-10T07:50:03.7211549Z ##[endgroup]
+2026-10-10T07:50:03.7215088Z ##[group]Fetching the repository
+2026-10-10T07:50:03.7307827Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +c5bfa6150eb57a22adfbd34be1cd04d763d7d853:refs/remotes/pull/203/merge
+2026-10-10T07:51:51.2977805Z From https://github.com/jyqj/codecortex
+2026-10-10T07:51:51.2978669Z  * [new ref]           c5bfa6150eb57a22adfbd34be1cd04d763d7d853 -> pull/203/merge
+2026-10-10T07:51:51.3059738Z ##[endgroup]
+2026-10-10T07:51:51.3060386Z ##[group]Determining the checkout info
+2026-10-10T07:51:51.3062892Z ##[endgroup]
+2026-10-10T07:51:51.3068813Z [command]/usr/bin/git sparse-checkout disable
+2026-10-10T07:51:51.3276366Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-10T07:51:51.3389593Z ##[group]Checking out the ref
+2026-10-10T07:51:51.3555496Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/203/merge
+2026-10-10T07:51:53.1293917Z Updating files:   5% (1307/24255)
+2026-10-10T07:51:53.2784024Z Updating files:   6% (1456/24255)
+2026-10-10T07:51:53.3987692Z Updating files:   7% (1698/24255)
+2026-10-10T07:51:53.4893274Z Updating files:   8% (1941/24255)
+2026-10-10T07:51:53.5393334Z Updating files:   9% (2183/24255)
+2026-10-10T07:51:53.5695000Z Updating files:   9% (2320/24255)
+2026-10-10T07:51:54.1083153Z Updating files:  10% (2426/24255)
+2026-10-10T07:51:54.2283549Z Updating files:  11% (2669/24255)
+2026-10-10T07:51:54.3194302Z Updating files:  12% (2911/24255)
+2026-10-10T07:51:54.4189017Z Updating files:  13% (3154/24255)
+2026-10-10T07:51:54.5288039Z Updating files:  14% (3396/24255)
+2026-10-10T07:51:54.5393880Z Updating files:  15% (3639/24255)
+2026-10-10T07:51:54.6789238Z Updating files:  15% (3662/24255)
+2026-10-10T07:51:54.7696942Z Updating files:  16% (3881/24255)
+2026-10-10T07:51:54.8397174Z Updating files:  17% (4124/24255)
+2026-10-10T07:51:54.9197911Z Updating files:  18% (4366/24255)
+2026-10-10T07:51:55.0586129Z Updating files:  19% (4609/24255)
+2026-10-10T07:51:55.2595543Z Updating files:  20% (4851/24255)
+2026-10-10T07:51:55.4595202Z Updating files:  21% (5094/24255)
+2026-10-10T07:51:55.5396269Z Updating files:  22% (5337/24255)
+2026-10-10T07:51:55.5897428Z Updating files:  22% (5450/24255)
+2026-10-10T07:51:55.6600332Z Updating files:  23% (5579/24255)
+2026-10-10T07:51:55.7394981Z Updating files:  24% (5822/24255)
+2026-10-10T07:51:55.8499004Z Updating files:  25% (6064/24255)
+2026-10-10T07:51:55.9594141Z Updating files:  26% (6307/24255)
+2026-10-10T07:51:56.1100869Z Updating files:  27% (6549/24255)
+2026-10-10T07:51:56.2496002Z Updating files:  28% (6792/24255)
+2026-10-10T07:51:56.3391805Z Updating files:  29% (7034/24255)
+2026-10-10T07:51:56.4101983Z Updating files:  30% (7277/24255)
+2026-10-10T07:51:56.5399438Z Updating files:  31% (7520/24255)
+2026-10-10T07:51:57.2601580Z Updating files:  31% (7685/24255)
+2026-10-10T07:51:57.7992998Z Updating files:  32% (7762/24255)
+2026-10-10T07:51:57.9002785Z Updating files:  32% (7793/24255)
+2026-10-10T07:51:58.3501530Z Updating files:  33% (8005/24255)
+2026-10-10T07:51:58.4296960Z Updating files:  34% (8247/24255)
+2026-10-10T07:51:58.5000139Z Updating files:  35% (8490/24255)
+2026-10-10T07:51:58.5396756Z Updating files:  36% (8732/24255)
+2026-10-10T07:51:58.6104557Z Updating files:  36% (8862/24255)
+2026-10-10T07:51:58.9896004Z Updating files:  37% (8975/24255)
+2026-10-10T07:51:59.0509877Z Updating files:  38% (9217/24255)
+2026-10-10T07:51:59.1206568Z Updating files:  39% (9460/24255)
+2026-10-10T07:51:59.1997363Z Updating files:  40% (9702/24255)
+2026-10-10T07:51:59.2697129Z Updating files:  41% (9945/24255)
+2026-10-10T07:51:59.3404464Z Updating files:  42% (10188/24255)
+2026-10-10T07:51:59.4509759Z Updating files:  43% (10430/24255)
+2026-10-10T07:51:59.5308726Z Updating files:  44% (10673/24255)
+2026-10-10T07:51:59.5398828Z Updating files:  45% (10915/24255)
+2026-10-10T07:51:59.6301758Z Updating files:  45% (10924/24255)
+2026-10-10T07:52:00.1798503Z Updating files:  46% (11158/24255)
+2026-10-10T07:52:00.4699783Z Updating files:  47% (11400/24255)
+2026-10-10T07:52:00.5402465Z Updating files:  48% (11643/24255)
+2026-10-10T07:52:00.8710921Z Updating files:  48% (11772/24255)
+2026-10-10T07:52:01.0211969Z Updating files:  49% (11885/24255)
+2026-10-10T07:52:01.4211185Z Updating files:  50% (12128/24255)
+2026-10-10T07:52:01.5201625Z Updating files:  51% (12371/24255)
+2026-10-10T07:52:01.5404122Z Updating files:  52% (12613/24255)
+2026-10-10T07:52:01.6502476Z Updating files:  52% (12688/24255)
+2026-10-10T07:52:01.8014052Z Updating files:  53% (12856/24255)
+2026-10-10T07:52:01.9313392Z Updating files:  54% (13098/24255)
+2026-10-10T07:52:02.0403495Z Updating files:  55% (13341/24255)
+2026-10-10T07:52:02.1408555Z Updating files:  56% (13583/24255)
+2026-10-10T07:52:02.2216161Z Updating files:  57% (13826/24255)
+2026-10-10T07:52:02.3110146Z Updating files:  58% (14068/24255)
+2026-10-10T07:52:02.3916088Z Updating files:  59% (14311/24255)
+2026-10-10T07:52:02.4810918Z Updating files:  60% (14553/24255)
+2026-10-10T07:52:02.5408157Z Updating files:  61% (14796/24255)
+2026-10-10T07:52:02.5613404Z Updating files:  61% (14959/24255)
+2026-10-10T07:52:02.6411642Z Updating files:  62% (15039/24255)
+2026-10-10T07:52:02.7510189Z Updating files:  63% (15281/24255)
+2026-10-10T07:52:02.8810845Z Updating files:  64% (15524/24255)
+2026-10-10T07:52:03.6522705Z Updating files:  65% (15766/24255)
+2026-10-10T07:52:03.7918974Z Updating files:  65% (15939/24255)
+2026-10-10T07:52:04.1018978Z Updating files:  66% (16009/24255)
+2026-10-10T07:52:04.6020314Z Updating files:  67% (16251/24255)
+2026-10-10T07:52:04.6310155Z Updating files:  67% (16477/24255)
+2026-10-10T07:52:04.9722316Z Updating files:  68% (16494/24255)
+2026-10-10T07:52:05.2126651Z Updating files:  69% (16736/24255)
+2026-10-10T07:52:05.6028195Z Updating files:  70% (16979/24255)
+2026-10-10T07:52:05.6821176Z Updating files:  70% (17214/24255)
+2026-10-10T07:52:06.5628724Z Updating files:  71% (17222/24255)
+2026-10-10T07:52:06.9417088Z Updating files:  71% (17379/24255)
+2026-10-10T07:52:07.3924893Z Updating files:  72% (17464/24255)
+2026-10-10T07:52:07.5832758Z Updating files:  73% (17707/24255)
+2026-10-10T07:52:08.6534632Z Updating files:  73% (17814/24255)
+2026-10-10T07:52:09.4327404Z Updating files:  73% (17848/24255)
+2026-10-10T07:52:09.5434425Z Updating files:  74% (17949/24255)
+2026-10-10T07:52:09.5629029Z Updating files:  74% (18117/24255)
+2026-10-10T07:52:09.7431259Z Updating files:  75% (18192/24255)
+2026-10-10T07:52:09.9728417Z Updating files:  76% (18434/24255)
+2026-10-10T07:52:10.2531917Z Updating files:  77% (18677/24255)
+2026-10-10T07:52:10.6135618Z Updating files:  78% (18919/24255)
+2026-10-10T07:52:11.6134571Z Updating files:  78% (19097/24255)
+2026-10-10T07:52:12.5943657Z Updating files:  78% (19117/24255)
+2026-10-10T07:52:13.5540706Z Updating files:  78% (19130/24255)
+2026-10-10T07:52:14.6447560Z Updating files:  78% (19145/24255)
+2026-10-10T07:52:15.0539129Z Updating files:  78% (19157/24255)
+2026-10-10T07:52:15.6041025Z Updating files:  79% (19162/24255)
+2026-10-10T07:52:16.5750844Z Updating files:  79% (19175/24255)
+2026-10-10T07:52:17.5955569Z Updating files:  79% (19186/24255)
+2026-10-10T07:52:18.6248870Z Updating files:  79% (19198/24255)
+2026-10-10T07:52:19.5649125Z Updating files:  79% (19211/24255)
+2026-10-10T07:52:20.5452907Z Updating files:  79% (19223/24255)
+2026-10-10T07:52:21.5755705Z Updating files:  79% (19235/24255)
+2026-10-10T07:52:22.5460785Z Updating files:  79% (19251/24255)
+2026-10-10T07:52:23.5654715Z Updating files:  79% (19268/24255)
+2026-10-10T07:52:24.6371614Z Updating files:  79% (19288/24255)
+2026-10-10T07:52:25.1158688Z Updating files:  79% (19298/24255)
+2026-10-10T07:52:25.3364508Z Updating files:  80% (19404/24255)
+2026-10-10T07:52:25.5251671Z Updating files:  81% (19647/24255)
+2026-10-10T07:52:25.5566944Z Updating files:  82% (19890/24255)
+2026-10-10T07:52:25.6561840Z Updating files:  82% (19916/24255)
+2026-10-10T07:52:26.0657978Z Updating files:  83% (20132/24255)
+2026-10-10T07:52:26.5559418Z Updating files:  84% (20375/24255)
+2026-10-10T07:52:26.7695665Z Updating files:  84% (20500/24255)
+2026-10-10T07:52:27.5560238Z Updating files:  85% (20617/24255)
+2026-10-10T07:52:27.5864853Z Updating files:  85% (20780/24255)
+2026-10-10T07:52:28.0360904Z Updating files:  86% (20860/24255)
+2026-10-10T07:52:28.5767387Z Updating files:  87% (21102/24255)
+2026-10-10T07:52:29.1772795Z Updating files:  87% (21159/24255)
+2026-10-10T07:52:29.3469089Z Updating files:  88% (21345/24255)
+2026-10-10T07:52:29.4760512Z Updating files:  89% (21587/24255)
+2026-10-10T07:52:29.5462764Z Updating files:  90% (21830/24255)
+2026-10-10T07:52:29.5870508Z Updating files:  90% (22020/24255)
+2026-10-10T07:52:29.7464974Z Updating files:  91% (22073/24255)
+2026-10-10T07:52:30.9174662Z Updating files:  92% (22315/24255)
+2026-10-10T07:52:32.3481310Z Updating files:  92% (22479/24255)
+2026-10-10T07:52:32.5569393Z Updating files:  92% (22486/24255)
+2026-10-10T07:52:32.7069619Z Updating files:  92% (22497/24255)
+2026-10-10T07:52:34.2380586Z Updating files:  93% (22558/24255)
+2026-10-10T07:52:34.7484022Z Updating files:  93% (22577/24255)
+2026-10-10T07:52:34.8987626Z Updating files:  93% (22589/24255)
+2026-10-10T07:52:35.0385527Z Updating files:  94% (22800/24255)
+2026-10-10T07:52:35.1675978Z Updating files:  95% (23043/24255)
+2026-10-10T07:52:35.3087200Z Updating files:  96% (23285/24255)
+2026-10-10T07:52:35.4880341Z Updating files:  97% (23528/24255)
+2026-10-10T07:52:35.5476851Z Updating files:  98% (23770/24255)
+2026-10-10T07:52:35.6186241Z Updating files:  98% (23895/24255)
+2026-10-10T07:52:35.8088763Z Updating files:  99% (24013/24255)
+2026-10-10T07:52:35.8089350Z Updating files: 100% (24255/24255)
+2026-10-10T07:52:35.8089920Z Updating files: 100% (24255/24255), done.
+2026-10-10T07:52:36.0285346Z Note: switching to 'refs/remotes/pull/203/merge'.
+2026-10-10T07:52:36.0285847Z 
+2026-10-10T07:52:36.0286393Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-10T07:52:36.0287010Z changes and commit them, and you can discard any commits you make in this
+2026-10-10T07:52:36.0287716Z state without impacting any branches by switching back to a branch.
+2026-10-10T07:52:36.0288094Z 
+2026-10-10T07:52:36.0288467Z If you want to create a new branch to retain commits you create, you may
+2026-10-10T07:52:36.0289031Z do so (now or later) by using -c with the switch command. Example:
+2026-10-10T07:52:36.0289412Z 
+2026-10-10T07:52:36.0289737Z   git switch -c <new-branch-name>
+2026-10-10T07:52:36.0290017Z 
+2026-10-10T07:52:36.0290233Z Or undo this operation with:
+2026-10-10T07:52:36.0290516Z 
+2026-10-10T07:52:36.0290802Z   git switch -
+2026-10-10T07:52:36.0290953Z 
+2026-10-10T07:52:36.0291263Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-10T07:52:36.0291688Z 
+2026-10-10T07:52:36.0292267Z HEAD is now at c5bfa615 Merge 797e9e60516e9bb8cc3c35f14a6ec7dc0092aa4f into 0da9a2800d2b3112d584a8bad4f79785e01162a9
+2026-10-10T07:52:36.1984669Z ##[endgroup]
+2026-10-10T07:52:36.2264534Z [command]/usr/bin/git log -1 --format=%H
+2026-10-10T07:52:36.2364083Z c5bfa6150eb57a22adfbd34be1cd04d763d7d853
+2026-10-10T07:52:36.5087601Z ##[group]Run dtolnay/rust-toolchain@stable
+2026-10-10T07:52:36.5087995Z with:
+2026-10-10T07:52:36.5088268Z   components: clippy, rustfmt
+2026-10-10T07:52:36.5088577Z   toolchain: stable
+2026-10-10T07:52:36.5088830Z env:
+2026-10-10T07:52:36.5089104Z   CARGO_TERM_COLOR: always
+2026-10-10T07:52:36.5089454Z   RUSTFLAGS: -D warnings
+2026-10-10T07:52:36.5089742Z ##[endgroup]
+2026-10-10T07:52:36.5986247Z ##[start-action display=Parse toolchain version;id=__dtolnay_rust-toolchain.parse]
+2026-10-10T07:52:36.6491159Z ##[group]Run if [[ -z $toolchain ]]; then
+2026-10-10T07:52:36.6491691Z [36;1mif [[ -z $toolchain ]]; then[0m
+2026-10-10T07:52:36.6492386Z [36;1m  # GitHub does not enforce `required: true` inputs itself. https://github.com/actions/runner/issues/1070[0m
+2026-10-10T07:52:36.6493019Z [36;1m  echo "'toolchain' is a required input" >&2[0m
+2026-10-10T07:52:36.6493551Z [36;1m  exit 1[0m
+2026-10-10T07:52:36.6493969Z [36;1melif [[ $toolchain =~ ^stable' '[0-9]+' '(year|month|week|day)s?' 'ago$ ]]; then[0m
+2026-10-10T07:52:36.6494444Z [36;1m  if [[ Linux == macOS ]]; then[0m
+2026-10-10T07:52:36.6495042Z [36;1m    echo "toolchain=1.$((($(date -v-$(sed 's/stable \([0-9]*\) \(.\).*/\1\2/' <<< $toolchain) +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT[0m
+2026-10-10T07:52:36.6495631Z [36;1m  else[0m
+2026-10-10T07:52:36.6581827Z [36;1m    echo "toolchain=1.$((($(date --date "${toolchain#stable }" +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT[0m
+2026-10-10T07:52:36.6582464Z [36;1m  fi[0m
+2026-10-10T07:52:36.6582896Z [36;1melif [[ $toolchain =~ ^stable' 'minus' '[0-9]+' 'releases?$ ]]; then[0m
+2026-10-10T07:52:36.6583724Z [36;1m  echo "toolchain=1.$((($(date +%s)/60/60/24-16569)/7/6-${toolchain//[^0-9]/}))" >> $GITHUB_OUTPUT[0m
+2026-10-10T07:52:36.6584327Z [36;1melif [[ $toolchain =~ ^1\.[0-9]+$ ]]; then[0m
+2026-10-10T07:52:36.6584999Z [36;1m  echo "toolchain=1.$((i=${toolchain#1.}, c=($(date +%s)/60/60/24-16569)/7/6, i+9*i*(10*i<=c)+90*i*(100*i<=c)))" >> $GITHUB_OUTPUT[0m
+2026-10-10T07:52:36.6585631Z [36;1melse[0m
+2026-10-10T07:52:36.6585888Z [36;1m  delimiter=EOF[0m
+2026-10-10T07:52:36.6586284Z [36;1m  while [[ $toolchain == *$delimiter* ]]; do delimiter+=_; done[0m
+2026-10-10T07:52:36.6586932Z [36;1m  printf 'toolchain<<%s\n%s\n%s\n' "$delimiter" "$toolchain" "$delimiter" >> $GITHUB_OUTPUT[0m
+2026-10-10T07:52:36.6587474Z [36;1mfi[0m
+2026-10-10T07:52:36.8088029Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-10T07:52:36.8088429Z env:
+2026-10-10T07:52:36.8088662Z   CARGO_TERM_COLOR: always
+2026-10-10T07:52:36.8088932Z   RUSTFLAGS: -D warnings
+2026-10-10T07:52:36.8089189Z   toolchain: stable
+2026-10-10T07:52:36.8089421Z ##[endgroup]
+2026-10-10T07:52:36.9183627Z ##[end-action id=__dtolnay_rust-toolchain.parse;outcome=success;conclusion=success;duration_ms=319]
+2026-10-10T07:52:36.9188921Z ##[start-action display=Set $CARGO_HOME;id=__dtolnay_rust-toolchain.__run]
+2026-10-10T07:52:36.9492567Z ##[group]Run echo CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV
+2026-10-10T07:52:36.9493605Z [36;1mecho CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV[0m
+2026-10-10T07:52:36.9993578Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-10T07:52:36.9994000Z env:
+2026-10-10T07:52:36.9994244Z   CARGO_TERM_COLOR: always
+2026-10-10T07:52:36.9994677Z   RUSTFLAGS: -D warnings
+2026-10-10T07:52:36.9995003Z ##[endgroup]
+2026-10-10T07:52:37.0608672Z ##[end-action id=__dtolnay_rust-toolchain.__run;outcome=success;conclusion=success;duration_ms=141]
+2026-10-10T07:52:37.0611027Z ##[start-action display=Install rustup if needed;id=__dtolnay_rust-toolchain.__run_2]
+2026-10-10T07:52:37.0902882Z ##[group]Run if ! command -v rustup &>/dev/null; then
+2026-10-10T07:52:37.0903570Z [36;1mif ! command -v rustup &>/dev/null; then[0m
+2026-10-10T07:52:37.0904382Z [36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://sh.rustup.rs | sh -s -- --default-toolchain none -y[0m
+2026-10-10T07:52:37.0905413Z [36;1m  echo "$CARGO_HOME/bin" >> $GITHUB_PATH[0m
+2026-10-10T07:52:37.0905725Z [36;1mfi[0m
+2026-10-10T07:52:37.1398911Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-10T07:52:37.1399389Z env:
+2026-10-10T07:52:37.1399663Z   CARGO_TERM_COLOR: always
+2026-10-10T07:52:37.1400006Z   RUSTFLAGS: -D warnings
+2026-10-10T07:52:37.1400352Z   CARGO_HOME: /home/runner/.cargo
+2026-10-10T07:52:37.1400718Z ##[endgroup]
+2026-10-10T07:52:37.2007193Z ##[end-action id=__dtolnay_rust-toolchain.__run_2;outcome=success;conclusion=success;duration_ms=139]
+2026-10-10T07:52:37.2009640Z ##[start-action display=Install rustup if needed on windows;id=__dtolnay_rust-toolchain.__run_3]
+2026-10-10T07:52:37.2096446Z ##[end-action id=__dtolnay_rust-toolchain.__run_3;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-10-10T07:52:37.2197800Z ##[start-action display=rustup toolchain install stable;id=__dtolnay_rust-toolchain.__run_4]
+2026-10-10T07:52:37.2306578Z ##[group]Run set -f  # split targets and components on commas and whitespace, without glob expansion
+2026-10-10T07:52:37.2307311Z [36;1mset -f  # split targets and components on commas and whitespace, without glob expansion[0m
+2026-10-10T07:52:37.2307782Z [36;1mflags=()[0m
+2026-10-10T07:52:37.2392545Z [36;1mfor t in ${targets//,/ }; do flags+=(--target "$t"); done[0m
+2026-10-10T07:52:37.2393588Z [36;1mfor c in ${components//,/ }; do flags+=(--component "$c"); done[0m
+2026-10-10T07:52:37.2394265Z [36;1mif [[ $toolchain == nightly && -n $components ]]; then flags+=(--allow-downgrade); fi[0m
+2026-10-10T07:52:37.2394807Z [36;1mlog=$(mktemp)[0m
+2026-10-10T07:52:37.2395111Z [36;1mtrap 'rm -f "$log"' EXIT[0m
+2026-10-10T07:52:37.2395438Z [36;1mfor attempt in 1 2 3 4 5; do[0m
+2026-10-10T07:52:37.2396146Z [36;1m  if rustup toolchain install "$toolchain" "${flags[@]}" --profile minimal --no-self-update --force-non-host 2>&1 | tee "$log"; then[0m
+2026-10-10T07:52:37.2396857Z [36;1m    break[0m
+2026-10-10T07:52:37.2397116Z [36;1m  else[0m
+2026-10-10T07:52:37.2397372Z [36;1m    status=$?[0m
+2026-10-10T07:52:37.2397649Z [36;1m  fi[0m
+2026-10-10T07:52:37.2398017Z [36;1m  if [[ $attempt == 5 ]] || ! grep -Fq 'checksum failed for ' "$log" \[0m
+2026-10-10T07:52:37.2398712Z [36;1m      || ! grep -Fq 'this is likely due to an ongoing update of the official release server' "$log"; then[0m
+2026-10-10T07:52:37.2399524Z [36;1m    exit "$status"[0m
+2026-10-10T07:52:37.2399810Z [36;1m  fi[0m
+2026-10-10T07:52:37.2400259Z [36;1m  echo "Retrying rustup toolchain install in 30 seconds (retry $attempt of 4)" >&2[0m
+2026-10-10T07:52:37.2400788Z [36;1m  sleep 30[0m
+2026-10-10T07:52:37.2401048Z [36;1mdone[0m
+2026-10-10T07:52:37.2897752Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-10T07:52:37.2898256Z env:
+2026-10-10T07:52:37.2898549Z   CARGO_TERM_COLOR: always
+2026-10-10T07:52:37.2898909Z   RUSTFLAGS: -D warnings
+2026-10-10T07:52:37.2899269Z   CARGO_HOME: /home/runner/.cargo
+2026-10-10T07:52:37.2899644Z   toolchain: stable
+2026-10-10T07:52:37.2899965Z   targets: 
+2026-10-10T07:52:37.2900266Z   components: clippy, rustfmt
+2026-10-10T07:52:37.2900654Z   RUSTUP_PERMIT_COPY_RENAME: 1
+2026-10-10T07:52:37.2901015Z ##[endgroup]
+2026-10-10T07:52:39.9571292Z info: syncing channel updates for stable-x86_64-unknown-linux-gnu
+2026-10-10T07:52:40.7014244Z info: latest update on 2026-10-01 for version 1.99.0 (b940084d7 2026-09-28)
+2026-10-10T07:52:40.8119322Z info: component clippy is up to date
+2026-10-10T07:52:40.8119845Z info: component rustfmt is up to date
+2026-10-10T07:52:40.8218825Z 
+2026-10-10T07:52:40.8733470Z   stable-x86_64-unknown-linux-gnu unchanged - rustc 1.99.0 (b940084d7 2026-09-28)
+2026-10-10T07:52:40.8733935Z 
+2026-10-10T07:52:40.9041409Z ##[end-action id=__dtolnay_rust-toolchain.__run_4;outcome=success;conclusion=success;duration_ms=3684]
+2026-10-10T07:52:40.9123749Z ##[start-action display=rustup default stable;id=__dtolnay_rust-toolchain.__run_5]
+2026-10-10T07:52:40.9233008Z ##[group]Run rustup default "$toolchain" --force-non-host
+2026-10-10T07:52:40.9233776Z [36;1mrustup default "$toolchain" --force-non-host[0m
+2026-10-10T07:52:40.9729941Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-10T07:52:40.9730326Z env:
+2026-10-10T07:52:40.9730556Z   CARGO_TERM_COLOR: always
+2026-10-10T07:52:40.9730826Z   RUSTFLAGS: -D warnings
+2026-10-10T07:52:40.9731101Z   CARGO_HOME: /home/runner/.cargo
+2026-10-10T07:52:40.9731409Z   toolchain: stable
+2026-10-10T07:52:40.9731642Z ##[endgroup]
+2026-10-10T07:52:41.0728097Z info: using existing install for stable-x86_64-unknown-linux-gnu
+2026-10-10T07:52:41.0736725Z info: default toolchain set to stable-x86_64-unknown-linux-gnu
+2026-10-10T07:52:41.0737099Z 
+2026-10-10T07:52:41.1336709Z   stable-x86_64-unknown-linux-gnu unchanged - rustc 1.99.0 (b940084d7 2026-09-28)
+2026-10-10T07:52:41.1337334Z 
+2026-10-10T07:52:41.1432251Z ##[end-action id=__dtolnay_rust-toolchain.__run_5;outcome=success;conclusion=success;duration_ms=230]
+2026-10-10T07:52:41.1522877Z ##[start-action display=Create cachekey;id=__dtolnay_rust-toolchain.rustc-version]
+2026-10-10T07:52:41.1631389Z ##[group]Run DATE=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')
+2026-10-10T07:52:41.1632452Z [36;1mDATE=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')[0m
+2026-10-10T07:52:41.1718435Z [36;1mHASH=$(rustc +"$toolchain" --version --verbose | sed -ne 's/^commit-hash: //p')[0m
+2026-10-10T07:52:41.1719122Z [36;1mecho "cachekey=$(echo $DATE$HASH | head -c12)" >> $GITHUB_OUTPUT[0m
+2026-10-10T07:52:41.2221588Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-10T07:52:41.2222040Z env:
+2026-10-10T07:52:41.2222304Z   CARGO_TERM_COLOR: always
+2026-10-10T07:52:41.2222624Z   RUSTFLAGS: -D warnings
+2026-10-10T07:52:41.2222942Z   CARGO_HOME: /home/runner/.cargo
+2026-10-10T07:52:41.2223726Z   toolchain: stable
+2026-10-10T07:52:41.2224007Z ##[endgroup]
+2026-10-10T07:52:41.5443838Z ##[end-action id=__dtolnay_rust-toolchain.rustc-version;outcome=success;conclusion=success;duration_ms=391]
+2026-10-10T07:52:41.5446787Z ##[start-action display=Disable incremental compilation;id=__dtolnay_rust-toolchain.__run_6]
+2026-10-10T07:52:41.5642151Z ##[group]Run if [ -z "${CARGO_INCREMENTAL+set}" ]; then
+2026-10-10T07:52:41.5642611Z [36;1mif [ -z "${CARGO_INCREMENTAL+set}" ]; then[0m
+2026-10-10T07:52:41.5643576Z [36;1m  echo CARGO_INCREMENTAL=0 >> $GITHUB_ENV[0m
+2026-10-10T07:52:41.5643931Z [36;1mfi[0m
+2026-10-10T07:52:41.6144164Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-10T07:52:41.6144676Z env:
+2026-10-10T07:52:41.6144974Z   CARGO_TERM_COLOR: always
+2026-10-10T07:52:41.6145340Z   RUSTFLAGS: -D warnings
+2026-10-10T07:52:41.6145701Z   CARGO_HOME: /home/runner/.cargo
+2026-10-10T07:52:41.6146052Z ##[endgroup]
+2026-10-10T07:52:41.6748057Z ##[end-action id=__dtolnay_rust-toolchain.__run_6;outcome=success;conclusion=success;duration_ms=129]
+2026-10-10T07:52:41.6839137Z ##[start-action display=Enable colors in Cargo output;id=__dtolnay_rust-toolchain.__run_7]
+2026-10-10T07:52:41.7127189Z ##[group]Run if [ -z "${CARGO_TERM_COLOR+set}" ]; then
+2026-10-10T07:52:41.7127984Z [36;1mif [ -z "${CARGO_TERM_COLOR+set}" ]; then[0m
+2026-10-10T07:52:41.7128619Z [36;1m  echo CARGO_TERM_COLOR=always >> $GITHUB_ENV[0m
+2026-10-10T07:52:41.7129189Z [36;1mfi[0m
+2026-10-10T07:52:41.7628879Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-10T07:52:41.7629300Z env:
+2026-10-10T07:52:41.7629544Z   CARGO_TERM_COLOR: always
+2026-10-10T07:52:41.7629848Z   RUSTFLAGS: -D warnings
+2026-10-10T07:52:41.7630140Z   CARGO_HOME: /home/runner/.cargo
+2026-10-10T07:52:41.7630449Z   CARGO_INCREMENTAL: 0
+2026-10-10T07:52:41.7630710Z ##[endgroup]
+2026-10-10T07:52:41.8236558Z ##[end-action id=__dtolnay_rust-toolchain.__run_7;outcome=success;conclusion=success;duration_ms=139]
+2026-10-10T07:52:41.8326176Z ##[start-action display=Enable Cargo sparse registry;id=__dtolnay_rust-toolchain.__run_8]
+2026-10-10T07:52:41.8432957Z ##[group]Run # implemented in 1.66, stabilized in 1.68, made default in 1.70
+2026-10-10T07:52:41.8434037Z [36;1m# implemented in 1.66, stabilized in 1.68, made default in 1.70[0m
+2026-10-10T07:52:41.8434898Z [36;1mif [ -z "${CARGO_REGISTRIES_CRATES_IO_PROTOCOL+set}" -o -f "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol ]; then[0m
+2026-10-10T07:52:41.8435830Z [36;1m  if rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.6[89]\.'; then[0m
+2026-10-10T07:52:41.8436549Z [36;1m    touch "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol || true[0m
+2026-10-10T07:52:41.8437205Z [36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse >> $GITHUB_ENV[0m
+2026-10-10T07:52:41.8437831Z [36;1m  elif rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.6[67]\.'; then[0m
+2026-10-10T07:52:41.8524107Z [36;1m    touch "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol || true[0m
+2026-10-10T07:52:41.8525184Z [36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=git >> $GITHUB_ENV[0m
+2026-10-10T07:52:41.8525811Z [36;1m  fi[0m
+2026-10-10T07:52:41.8526060Z [36;1mfi[0m
+2026-10-10T07:52:41.8932231Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-10T07:52:41.8932614Z env:
+2026-10-10T07:52:41.8932837Z   CARGO_TERM_COLOR: always
+2026-10-10T07:52:41.8933410Z   RUSTFLAGS: -D warnings
+2026-10-10T07:52:41.8933690Z   CARGO_HOME: /home/runner/.cargo
+2026-10-10T07:52:41.8933975Z   CARGO_INCREMENTAL: 0
+2026-10-10T07:52:41.8934242Z   toolchain: stable
+2026-10-10T07:52:41.8934473Z ##[endgroup]
+2026-10-10T07:52:42.1437756Z ##[end-action id=__dtolnay_rust-toolchain.__run_8;outcome=success;conclusion=success;duration_ms=311]
+2026-10-10T07:52:42.1442204Z ##[start-action display=Work around spurious network errors in curl 8.0;id=__dtolnay_rust-toolchain.__run_9]
+2026-10-10T07:52:42.1634545Z ##[group]Run # https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation
+2026-10-10T07:52:42.1635553Z [36;1m# https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation[0m
+2026-10-10T07:52:42.1636611Z [36;1mif rustc +"$toolchain" --version --verbose | grep -q '^release: 1\.7[01]\.'; then[0m
+2026-10-10T07:52:42.1637197Z [36;1m  echo CARGO_HTTP_MULTIPLEXING=false >> $GITHUB_ENV[0m
+2026-10-10T07:52:42.1637789Z [36;1mfi[0m
+2026-10-10T07:52:42.2048252Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-10T07:52:42.2134075Z env:
+2026-10-10T07:52:42.2134356Z   CARGO_TERM_COLOR: always
+2026-10-10T07:52:42.2134696Z   RUSTFLAGS: -D warnings
+2026-10-10T07:52:42.2135032Z   CARGO_HOME: /home/runner/.cargo
+2026-10-10T07:52:42.2135396Z   CARGO_INCREMENTAL: 0
+2026-10-10T07:52:42.2135704Z   toolchain: stable
+2026-10-10T07:52:42.2135991Z ##[endgroup]
+2026-10-10T07:52:42.3442127Z ##[end-action id=__dtolnay_rust-toolchain.__run_9;outcome=success;conclusion=success;duration_ms=199]
+2026-10-10T07:52:42.3448737Z ##[start-action display=rustc +stable --version --verbose;id=__dtolnay_rust-toolchain.__run_10]
+2026-10-10T07:52:42.3734406Z ##[group]Run rustc +"$toolchain" --version --verbose
+2026-10-10T07:52:42.3734837Z [36;1mrustc +"$toolchain" --version --verbose[0m
+2026-10-10T07:52:42.4143760Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-10T07:52:42.4144147Z env:
+2026-10-10T07:52:42.4144392Z   CARGO_TERM_COLOR: always
+2026-10-10T07:52:42.4144667Z   RUSTFLAGS: -D warnings
+2026-10-10T07:52:42.4144934Z   CARGO_HOME: /home/runner/.cargo
+2026-10-10T07:52:42.4145212Z   CARGO_INCREMENTAL: 0
+2026-10-10T07:52:42.4145451Z   toolchain: stable
+2026-10-10T07:52:42.4145681Z ##[endgroup]
+2026-10-10T07:52:42.5540710Z rustc 1.99.0 (b940084d7 2026-09-28)
+2026-10-10T07:52:42.5541255Z binary: rustc
+2026-10-10T07:52:42.5541674Z commit-hash: b940084d7eb6a299eb4bfeb8e34901bc051e7ac4
+2026-10-10T07:52:42.5542097Z commit-date: 2026-09-28
+2026-10-10T07:52:42.5542381Z host: x86_64-unknown-linux-gnu
+2026-10-10T07:52:42.5542671Z release: 1.99.0
+2026-10-10T07:52:42.5543540Z LLVM version: 23.1.1
+2026-10-10T07:52:42.5647125Z ##[end-action id=__dtolnay_rust-toolchain.__run_10;outcome=success;conclusion=success;duration_ms=219]
+2026-10-10T07:52:42.6346788Z ##[group]Run Swatinem/rust-cache@v2
+2026-10-10T07:52:42.6347113Z with:
+2026-10-10T07:52:42.6347340Z   prefix-key: v0-rust
+2026-10-10T07:52:42.6347597Z   add-job-id-key: true
+2026-10-10T07:52:42.6347888Z   add-rust-environment-hash-key: true
+2026-10-10T07:52:42.6348190Z   cache-targets: true
+2026-10-10T07:52:42.6348435Z   cache-all-crates: false
+2026-10-10T07:52:42.6348705Z   cache-workspace-crates: false
+2026-10-10T07:52:42.6348983Z   save-if: true
+2026-10-10T07:52:42.6349215Z   cache-provider: github
+2026-10-10T07:52:42.6434614Z   cache-bin: true
+2026-10-10T07:52:42.6434923Z   lookup-only: false
+2026-10-10T07:52:42.6435199Z   cmd-format: {0}
+2026-10-10T07:52:42.6435445Z env:
+2026-10-10T07:52:42.6435685Z   CARGO_TERM_COLOR: always
+2026-10-10T07:52:42.6435984Z   RUSTFLAGS: -D warnings
+2026-10-10T07:52:42.6436283Z   CARGO_HOME: /home/runner/.cargo
+2026-10-10T07:52:42.6436601Z   CARGO_INCREMENTAL: 0
+2026-10-10T07:52:42.6436867Z ##[endgroup]
+2026-10-10T07:53:03.5082799Z ##[group]Cache Configuration
+2026-10-10T07:53:03.5083729Z Cache Provider:
+2026-10-10T07:53:03.5084145Z     github
+2026-10-10T07:53:03.5084529Z Workspaces:
+2026-10-10T07:53:03.5084959Z     /home/runner/work/codecortex/codecortex
+2026-10-10T07:53:03.5085539Z Cache Paths:
+2026-10-10T07:53:03.5085959Z     /home/runner/.cargo/bin
+2026-10-10T07:53:03.5086482Z     /home/runner/.cargo/.crates.toml
+2026-10-10T07:53:03.5087069Z     /home/runner/.cargo/.crates2.json
+2026-10-10T07:53:03.5087645Z     /home/runner/.cargo/registry
+2026-10-10T07:53:03.5088206Z     /home/runner/.cargo/git
+2026-10-10T07:53:03.5088591Z     /home/runner/work/codecortex/codecortex/target
+2026-10-10T07:53:03.5088961Z Restore Key:
+2026-10-10T07:53:03.5089248Z     v0-rust-check-Linux-x64-cbcac849
+2026-10-10T07:53:03.5089603Z Cache Key:
+2026-10-10T07:53:03.5089904Z     v0-rust-check-Linux-x64-cbcac849-015a28e6
+2026-10-10T07:53:03.5090220Z .. Prefix:
+2026-10-10T07:53:03.5090451Z   - v0-rust-check-Linux-x64
+2026-10-10T07:53:03.5090725Z .. Environment considered:
+2026-10-10T07:53:03.5090990Z   - Rust Versions:
+2026-10-10T07:53:03.5091353Z     - 1.99.0 x86_64-unknown-linux-gnu b940084d7eb6a299eb4bfeb8e34901bc051e7ac4
+2026-10-10T07:53:03.5091780Z   - CARGO_HOME
+2026-10-10T07:53:03.5092344Z   - CARGO_INCREMENTAL
+2026-10-10T07:53:03.5092583Z   - CARGO_TERM_COLOR
+2026-10-10T07:53:03.5092811Z   - RUSTFLAGS
+2026-10-10T07:53:03.5093032Z .. Lockfiles considered:
+2026-10-10T07:53:03.5093779Z   - /home/runner/work/codecortex/codecortex/Cargo.lock
+2026-10-10T07:53:03.5094477Z   - /home/runner/work/codecortex/codecortex/crates/cc-db/Cargo.toml
+2026-10-10T07:53:03.5095272Z   - /home/runner/work/codecortex/codecortex/crates/cc-eval/Cargo.toml
+2026-10-10T07:53:03.5182534Z   - /home/runner/work/codecortex/codecortex/crates/cc-index/Cargo.toml
+2026-10-10T07:53:03.5183806Z   - /home/runner/work/codecortex/codecortex/crates/cc-model/Cargo.toml
+2026-10-10T07:53:03.5184829Z   - /home/runner/work/codecortex/codecortex/crates/cc-parsers/Cargo.toml
+2026-10-10T07:53:03.5185454Z   - /home/runner/work/codecortex/codecortex/crates/cc-search/Cargo.toml
+2026-10-10T07:53:03.5186042Z   - /home/runner/work/codecortex/codecortex/crates/cc-semantic/Cargo.toml
+2026-10-10T07:53:03.5186615Z   - /home/runner/work/codecortex/codecortex/crates/cc-server/Cargo.toml
+2026-10-10T07:53:03.5187365Z ##[endgroup]
+2026-10-10T07:53:03.5187519Z 
+2026-10-10T07:53:03.5187630Z ... Restoring cache ...
+2026-10-10T07:53:03.9564151Z Cache hit for: v0-rust-check-Linux-x64-cbcac849-015a28e6
+2026-10-10T07:53:05.4118698Z Received 0 of 554480263 (0.0%), 0.0 MBs/sec
+2026-10-10T07:53:06.4363717Z Received 25165824 of 554480263 (4.5%), 11.8 MBs/sec
+2026-10-10T07:53:07.4440583Z Received 71303168 of 554480263 (12.9%), 22.3 MBs/sec
+2026-10-10T07:53:08.4720108Z Received 113246208 of 554480263 (20.4%), 26.5 MBs/sec
+2026-10-10T07:53:09.4763886Z Received 130023424 of 554480263 (23.4%), 24.4 MBs/sec
+2026-10-10T07:53:10.4766832Z Received 130023424 of 554480263 (23.4%), 20.4 MBs/sec
+2026-10-10T07:53:11.5419306Z Received 142606336 of 554480263 (25.7%), 19.1 MBs/sec
+2026-10-10T07:53:12.5743686Z Received 184549376 of 554480263 (33.3%), 21.5 MBs/sec
+2026-10-10T07:53:13.6272337Z Received 230686720 of 554480263 (41.6%), 23.9 MBs/sec
+2026-10-10T07:53:14.6046050Z Received 264241152 of 554480263 (47.7%), 24.7 MBs/sec
+2026-10-10T07:53:15.6174467Z Received 281018368 of 554480263 (50.7%), 23.9 MBs/sec
+2026-10-10T07:53:16.6106965Z Received 327155712 of 554480263 (59.0%), 25.5 MBs/sec
+2026-10-10T07:53:17.6209024Z Received 364904448 of 554480263 (65.8%), 26.3 MBs/sec
+2026-10-10T07:53:18.7658991Z Received 402653184 of 554480263 (72.6%), 26.7 MBs/sec
+2026-10-10T07:53:19.8222434Z Received 444596224 of 554480263 (80.2%), 27.5 MBs/sec
+2026-10-10T07:53:20.8162008Z Received 494927872 of 554480263 (89.3%), 28.7 MBs/sec
+2026-10-10T07:53:21.8165196Z Received 537703047 of 554480263 (97.0%), 29.4 MBs/sec
+2026-10-10T07:53:22.5074729Z Received 554480263 of 554480263 (100.0%), 29.2 MBs/sec
+2026-10-10T07:53:22.5075644Z Cache Size: ~529 MB (554480263 B)
+2026-10-10T07:53:22.5537720Z [command]/usr/bin/tar -xf /home/runner/work/_temp/39471874-4461-456c-a953-a72d6b9ebbb8/cache.tzst -P -C /home/runner/work/codecortex/codecortex --use-compress-program unzstd
+2026-10-10T07:53:50.2264233Z Cache restored successfully
+2026-10-10T07:53:50.9947115Z Restored from cache key "v0-rust-check-Linux-x64-cbcac849-015a28e6" full match: true.
+2026-10-10T07:53:51.2064412Z ##[group]Run cargo fmt --all -- --check
+2026-10-10T07:53:51.2065102Z [36;1mcargo fmt --all -- --check[0m
+2026-10-10T07:53:51.2657995Z shell: /usr/bin/bash -e {0}
+2026-10-10T07:53:51.2658537Z env:
+2026-10-10T07:53:51.2658957Z   CARGO_TERM_COLOR: always
+2026-10-10T07:53:51.2659484Z   RUSTFLAGS: -D warnings
+2026-10-10T07:53:51.2660029Z   CARGO_HOME: /home/runner/.cargo
+2026-10-10T07:53:51.2660591Z   CARGO_INCREMENTAL: 0
+2026-10-10T07:53:51.2661109Z   CACHE_ON_FAILURE: false
+2026-10-10T07:53:51.2661619Z ##[endgroup]
+2026-10-10T07:54:14.4087051Z ##[group]Run cargo clippy --workspace --all-targets -- -D warnings
+2026-10-10T07:54:14.4087722Z [36;1mcargo clippy --workspace --all-targets -- -D warnings[0m
+2026-10-10T07:54:14.4581141Z shell: /usr/bin/bash -e {0}
+2026-10-10T07:54:14.4581558Z env:
+2026-10-10T07:54:14.4581887Z   CARGO_TERM_COLOR: always
+2026-10-10T07:54:14.4582536Z   RUSTFLAGS: -D warnings
+2026-10-10T07:54:14.4582948Z   CARGO_HOME: /home/runner/.cargo
+2026-10-10T07:54:14.4583873Z   CARGO_INCREMENTAL: 0
+2026-10-10T07:54:14.4584250Z   CACHE_ON_FAILURE: false
+2026-10-10T07:54:14.4584626Z ##[endgroup]
+2026-10-10T07:54:15.5465343Z [1m[92m    Updating[0m crates.io index
+2026-10-10T07:54:22.3597927Z [1m[92m    Checking[0m cc-model v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-model)
+2026-10-10T07:54:58.3967509Z [1m[92m    Checking[0m cc-db v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-db)
+2026-10-10T07:54:58.3968959Z [1m[92m    Checking[0m cc-parsers v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-parsers)
+2026-10-10T07:55:21.4027863Z [1m[92m    Checking[0m cc-index v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-index)
+2026-10-10T07:55:21.4029104Z [1m[92m    Checking[0m cc-search v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-search)
+2026-10-10T07:55:21.4030200Z [1m[92m    Checking[0m cc-semantic v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-semantic)
+2026-10-10T07:55:49.5167190Z [1m[92m    Checking[0m cc-server v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-server)
+2026-10-10T07:56:20.2217605Z [1m[92m    Checking[0m cc-eval v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-eval)
+2026-10-10T07:57:34.9200707Z [1m[92m    Finished[0m `dev` profile [unoptimized + debuginfo] target(s) in 3m 20s
+2026-10-10T07:57:35.7564026Z ##[group]Run cargo test --workspace --all-targets --locked --no-run
+2026-10-10T07:57:35.7564607Z [36;1mcargo test --workspace --all-targets --locked --no-run[0m
+2026-10-10T07:57:35.8063269Z shell: /usr/bin/bash -e {0}
+2026-10-10T07:57:35.8063741Z env:
+2026-10-10T07:57:35.8064099Z   CARGO_TERM_COLOR: always
+2026-10-10T07:57:35.8151753Z   RUSTFLAGS: -D warnings
+2026-10-10T07:57:35.8152284Z   CARGO_HOME: /home/runner/.cargo
+2026-10-10T07:57:35.8152797Z   CARGO_INCREMENTAL: 0
+2026-10-10T07:57:35.8153381Z   CACHE_ON_FAILURE: false
+2026-10-10T07:57:35.8153712Z ##[endgroup]
+2026-10-10T07:57:38.3962905Z [1m[92m   Compiling[0m cc-model v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-model)
+2026-10-10T07:58:10.5911020Z [1m[92m   Compiling[0m cc-db v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-db)
+2026-10-10T07:58:10.5912697Z [1m[92m   Compiling[0m cc-parsers v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-parsers)
+2026-10-10T07:58:44.0505014Z [1m[92m   Compiling[0m cc-index v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-index)
+2026-10-10T07:58:44.5277555Z [1m[92m   Compiling[0m cc-search v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-search)
+2026-10-10T07:58:45.6801536Z [1m[92m   Compiling[0m cc-semantic v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-semantic)
+2026-10-10T07:59:19.6404662Z [1m[92m   Compiling[0m cc-server v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-server)
+2026-10-10T08:00:03.9319922Z [1m[92m   Compiling[0m cc-eval v1.0.0 (/home/runner/work/codecortex/codecortex/crates/cc-eval)
+2026-10-10T08:15:59.1107633Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 18m 23s
+2026-10-10T08:16:01.0929812Z [1m[92m  Executable[0m unittests src/lib.rs (target/debug/deps/cc_db-814cb268cf63c4ea)
+2026-10-10T08:16:01.0931576Z [1m[92m  Executable[0m tests/ci_schema_guard_contract.rs (target/debug/deps/ci_schema_guard_contract-ac86f4db610f7136)
+2026-10-10T08:16:01.0932783Z [1m[92m  Executable[0m tests/fts_identifier_expansion.rs (target/debug/deps/fts_identifier_expansion-31ad596a8da919c8)
+2026-10-10T08:16:01.0934483Z [1m[92m  Executable[0m tests/incremental_write_bench.rs (target/debug/deps/incremental_write_bench-5e85734bee650e49)
+2026-10-10T08:16:01.0935514Z [1m[92m  Executable[0m tests/p2b_resolution_store.rs (target/debug/deps/p2b_resolution_store-d41376e032984943)
+2026-10-10T08:16:01.0936487Z [1m[92m  Executable[0m tests/p2c_freshness_store.rs (target/debug/deps/p2c_freshness_store-7710cc01dc65b85a)
+2026-10-10T08:16:01.1019198Z [1m[92m  Executable[0m tests/p2d_dependency_cost.rs (target/debug/deps/p2d_dependency_cost-3dd574927aa83a1f)
+2026-10-10T08:16:01.1021324Z [1m[92m  Executable[0m tests/p7_configured_space_transition.rs (target/debug/deps/p7_configured_space_transition-997cee82e209e27e)
+2026-10-10T08:16:01.1022951Z [1m[92m  Executable[0m tests/public_surface_store.rs (target/debug/deps/public_surface_store-53ee8fcf6a9e9a3e)
+2026-10-10T08:16:01.1024696Z [1m[92m  Executable[0m tests/resolver_bind_independent_review.rs (target/debug/deps/resolver_bind_independent_review-1662a0475c32272d)
+2026-10-10T08:16:01.1025799Z [1m[92m  Executable[0m tests/resolver_seed_large_exclusion.rs (target/debug/deps/resolver_seed_large_exclusion-ce762b7d4680e000)
+2026-10-10T08:16:01.1112037Z [1m[92m  Executable[0m tests/semantic_coverage.rs (target/debug/deps/semantic_coverage-10ff5312f2d96546)
+2026-10-10T08:16:01.1113871Z [1m[92m  Executable[0m tests/semantic_lease.rs (target/debug/deps/semantic_lease-f76225eec0c64550)
+2026-10-10T08:16:01.1115428Z [1m[92m  Executable[0m tests/semantic_outbox.rs (target/debug/deps/semantic_outbox-4c07976e5d2c8ca6)
+2026-10-10T08:16:01.1117013Z [1m[92m  Executable[0m tests/semantic_publish.rs (target/debug/deps/semantic_publish-8e2be8a409778aa9)
+2026-10-10T08:16:01.1118566Z [1m[92m  Executable[0m tests/semantic_queue.rs (target/debug/deps/semantic_queue-ce951f168ab14fdf)
+2026-10-10T08:16:01.1120476Z [1m[92m  Executable[0m tests/semantic_rebuild.rs (target/debug/deps/semantic_rebuild-f82e8bbc28e9aaa4)
+2026-10-10T08:16:01.1121915Z [1m[92m  Executable[0m tests/semantic_recovery.rs (target/debug/deps/semantic_recovery-c7b465f9231445c2)
+2026-10-10T08:16:01.1123376Z [1m[92m  Executable[0m tests/semantic_schema.rs (target/debug/deps/semantic_schema-9317f12b9695f07e)
+2026-10-10T08:16:01.1124706Z [1m[92m  Executable[0m tests/semantic_space_switch.rs (target/debug/deps/semantic_space_switch-03ea49a06d0df2ab)
+2026-10-10T08:16:01.1212103Z [1m[92m  Executable[0m tests/test_edge_empty_population.rs (target/debug/deps/test_edge_empty_population-c2fe127989fd8629)
+2026-10-10T08:16:01.1213954Z [1m[92m  Executable[0m unittests src/lib.rs (target/debug/deps/cc_eval-93be0e8965328c31)
+2026-10-10T08:16:01.1215381Z [1m[92m  Executable[0m unittests src/bin/cc-eval.rs (target/debug/deps/cc_eval-ba1724510ce6db32)
+2026-10-10T08:16:01.1217003Z [1m[92m  Executable[0m unittests src/bin/cc-eval-p8-load.rs (target/debug/deps/cc_eval_p8_load-d49c7bda06b5036c)
+2026-10-10T08:16:01.1218744Z [1m[92m  Executable[0m unittests src/bin/p8-measurements.rs (target/debug/deps/p8_measurements-ceb66408435e7c92)
+2026-10-10T08:16:01.1220393Z [1m[92m  Executable[0m unittests src/bin/p8-oracle.rs (target/debug/deps/p8_oracle-ecf8348b58ab224d)
+2026-10-10T08:16:01.1221894Z [1m[92m  Executable[0m unittests src/bin/p8-runtime-statistics.rs (target/debug/deps/p8_runtime_statistics-6dd9f6ff59b1dbc4)
+2026-10-10T08:16:01.1222833Z [1m[92m  Executable[0m unittests src/bin/p8-scale.rs (target/debug/deps/p8_scale-379b3129ba69ff23)
+2026-10-10T08:16:01.1223853Z [1m[92m  Executable[0m tests/benchmark_adapters.rs (target/debug/deps/benchmark_adapters-d915da8f8d40faca)
+2026-10-10T08:16:01.1224677Z [1m[92m  Executable[0m tests/benchmark_cli.rs (target/debug/deps/benchmark_cli-140db93228c58f15)
+2026-10-10T08:16:01.1311145Z [1m[92m  Executable[0m tests/benchmark_coverage_diagnostics.rs (target/debug/deps/benchmark_coverage_diagnostics-f5ab3dac0ff23b0c)
+2026-10-10T08:16:01.1312268Z [1m[92m  Executable[0m tests/benchmark_defects.rs (target/debug/deps/benchmark_defects-2b8ae809b3fc6dda)
+2026-10-10T08:16:01.1313388Z [1m[92m  Executable[0m tests/benchmark_lock.rs (target/debug/deps/benchmark_lock-915d3657327f0a19)
+2026-10-10T08:16:01.1314393Z [1m[92m  Executable[0m tests/benchmark_oracle_streaming.rs (target/debug/deps/benchmark_oracle_streaming-f20d6f3208aacf65)
+2026-10-10T08:16:01.1315416Z [1m[92m  Executable[0m tests/benchmark_reports.rs (target/debug/deps/benchmark_reports-ab34e6f077ed7556)
+2026-10-10T08:16:01.1316585Z [1m[92m  Executable[0m tests/benchmark_scoring.rs (target/debug/deps/benchmark_scoring-8179ee2a168741c8)
+2026-10-10T08:16:01.1317619Z [1m[92m  Executable[0m tests/ci_generation_guard_contract.rs (target/debug/deps/ci_generation_guard_contract-9cb3e80f57c056c4)
+2026-10-10T08:16:01.1318831Z [1m[92m  Executable[0m tests/diag_p5e_fix_review_boundary_20261003.rs (target/debug/deps/diag_p5e_fix_review_boundary_20261003-922cf6fe057c7a55)
+2026-10-10T08:16:01.1320052Z [1m[92m  Executable[0m tests/diag_p5e_fix_review_stage_20261003.rs (target/debug/deps/diag_p5e_fix_review_stage_20261003-9c0fad213d96f492)
+2026-10-10T08:16:01.1321259Z [1m[92m  Executable[0m tests/diag_p5e_stage_receipts_20261003.rs (target/debug/deps/diag_p5e_stage_receipts_20261003-39ab3002b3549ec4)
+2026-10-10T08:16:01.1322257Z [1m[92m  Executable[0m tests/document_identity.rs (target/debug/deps/document_identity-acd3d30b7f2a1681)
+2026-10-10T08:16:01.1323227Z [1m[92m  Executable[0m tests/mcp_dispatch_seam.rs (target/debug/deps/mcp_dispatch_seam-3b68e36a7ba4b202)
+2026-10-10T08:16:01.1324058Z [1m[92m  Executable[0m tests/p1a_retrieval.rs (target/debug/deps/p1a_retrieval-748f2ca1f697ae10)
+2026-10-10T08:16:01.1324857Z [1m[92m  Executable[0m tests/p1b_retrieval.rs (target/debug/deps/p1b_retrieval-b59f95960d9b25d9)
+2026-10-10T08:16:01.1411409Z [1m[92m  Executable[0m tests/p1b_scan_accounting.rs (target/debug/deps/p1b_scan_accounting-e156b5f0ab6d4bb5)
+2026-10-10T08:16:01.1412418Z [1m[92m  Executable[0m tests/p1c_contract.rs (target/debug/deps/p1c_contract-e4fa2c81f550fe51)
+2026-10-10T08:16:01.1413385Z [1m[92m  Executable[0m tests/p1c_retrieval.rs (target/debug/deps/p1c_retrieval-59075b6a1a39f5b2)
+2026-10-10T08:16:01.1414255Z [1m[92m  Executable[0m tests/p1d_concurrency.rs (target/debug/deps/p1d_concurrency-8f34c10a6a15b231)
+2026-10-10T08:16:01.1415072Z [1m[92m  Executable[0m tests/p1d_cost.rs (target/debug/deps/p1d_cost-611256cb3780e23f)
+2026-10-10T08:16:01.1415883Z [1m[92m  Executable[0m tests/p1d_cost_probe.rs (target/debug/deps/p1d_cost_probe-7c3334ea9c769186)
+2026-10-10T08:16:01.1416679Z [1m[92m  Executable[0m tests/p1d_docs.rs (target/debug/deps/p1d_docs-15e0e71d5461b951)
+2026-10-10T08:16:01.1417501Z [1m[92m  Executable[0m tests/p2a_incremental.rs (target/debug/deps/p2a_incremental-1844dcc4c4bae933)
+2026-10-10T08:16:01.1418383Z [1m[92m  Executable[0m tests/p2b_incremental.rs (target/debug/deps/p2b_incremental-081c773897bfea38)
+2026-10-10T08:16:01.1419233Z [1m[92m  Executable[0m tests/p2c_reconcile.rs (target/debug/deps/p2c_reconcile-351513c30c4422bf)
+2026-10-10T08:16:01.1420025Z [1m[92m  Executable[0m tests/p2d_cost.rs (target/debug/deps/p2d_cost-38b318faf359d2ab)
+2026-10-10T08:16:01.1420817Z [1m[92m  Executable[0m tests/p2d_mutations.rs (target/debug/deps/p2d_mutations-9cb6834ae2bcd09f)
+2026-10-10T08:16:01.1421653Z [1m[92m  Executable[0m tests/p3a_cost.rs (target/debug/deps/p3a_cost-f9f9b039d2f7ed8a)
+2026-10-10T08:16:01.1422411Z [1m[92m  Executable[0m tests/p3a_project_model.rs (target/debug/deps/p3a_project_model-454f7e6a8e1cf22c)
+2026-10-10T08:16:01.1423274Z [1m[92m  Executable[0m tests/p3b_cost.rs (target/debug/deps/p3b_cost-ff8b7b8c888f5a78)
+2026-10-10T08:16:01.1423994Z [1m[92m  Executable[0m tests/p3b_modules.rs (target/debug/deps/p3b_modules-ff1fe43d1b789ae7)
+2026-10-10T08:16:01.1424708Z [1m[92m  Executable[0m tests/p3c_cost.rs (target/debug/deps/p3c_cost-3e44c30535f23516)
+2026-10-10T08:16:01.1425458Z [1m[92m  Executable[0m tests/p3c_modules.rs (target/debug/deps/p3c_modules-1c0ba9e56fe14767)
+2026-10-10T08:16:01.1511803Z [1m[92m  Executable[0m tests/p3d_cost.rs (target/debug/deps/p3d_cost-071062ef119b5fd4)
+2026-10-10T08:16:01.1512640Z [1m[92m  Executable[0m tests/p3d_modules.rs (target/debug/deps/p3d_modules-c85143793f04fe5f)
+2026-10-10T08:16:01.1513595Z [1m[92m  Executable[0m tests/p4a_cost.rs (target/debug/deps/p4a_cost-83d91fb941eff305)
+2026-10-10T08:16:01.1514428Z [1m[92m  Executable[0m tests/p4a_source.rs (target/debug/deps/p4a_source-f6661d399cd18027)
+2026-10-10T08:16:01.1515473Z [1m[92m  Executable[0m tests/p4b_chunks.rs (target/debug/deps/p4b_chunks-68369a10ba19b1df)
+2026-10-10T08:16:01.1516291Z [1m[92m  Executable[0m tests/p4b_cost.rs (target/debug/deps/p4b_cost-d28a974298e909cd)
+2026-10-10T08:16:01.1517080Z [1m[92m  Executable[0m tests/p4c_cost.rs (target/debug/deps/p4c_cost-1a5fd03b10370158)
+2026-10-10T08:16:01.1517947Z [1m[92m  Executable[0m tests/p4c_documents.rs (target/debug/deps/p4c_documents-55d1f70eca208155)
+2026-10-10T08:16:01.1518789Z [1m[92m  Executable[0m tests/p4d_cost.rs (target/debug/deps/p4d_cost-fa398893b7dbf962)
+2026-10-10T08:16:01.1520278Z [1m[92m  Executable[0m tests/p4d_quality.rs (target/debug/deps/p4d_quality-c0e3a53b6efe2a6d)
+2026-10-10T08:16:01.1521564Z [1m[92m  Executable[0m tests/p5a_boundaries.rs (target/debug/deps/p5a_boundaries-564e99a8777b92a1)
+2026-10-10T08:16:01.1522584Z [1m[92m  Executable[0m tests/p5a_cost.rs (target/debug/deps/p5a_cost-a70fec6c705921c0)
+2026-10-10T08:16:01.1523714Z [1m[92m  Executable[0m tests/p5a_retrieval.rs (target/debug/deps/p5a_retrieval-1770dcb53e853700)
+2026-10-10T08:16:01.1524440Z [1m[92m  Executable[0m tests/p5b_cost.rs (target/debug/deps/p5b_cost-56f50f83e907637c)
+2026-10-10T08:16:01.1525354Z [1m[92m  Executable[0m tests/p5b_execution.rs (target/debug/deps/p5b_execution-7a4176cbec7fe179)
+2026-10-10T08:16:01.1612555Z [1m[92m  Executable[0m tests/p5c_budget.rs (target/debug/deps/p5c_budget-16a27ef299d7c59d)
+2026-10-10T08:16:01.1613929Z [1m[92m  Executable[0m tests/p5c_cost.rs (target/debug/deps/p5c_cost-99344440f9061528)
+2026-10-10T08:16:01.1614875Z [1m[92m  Executable[0m tests/p5c_hydration.rs (target/debug/deps/p5c_hydration-c790f77631421ba9)
+2026-10-10T08:16:01.1616079Z [1m[92m  Executable[0m tests/p5c_selection.rs (target/debug/deps/p5c_selection-ada41e37b20886e8)
+2026-10-10T08:16:01.1617472Z [1m[92m  Executable[0m tests/p5d_contract.rs (target/debug/deps/p5d_contract-40811b24c9b2b9cb)
+2026-10-10T08:16:01.1618929Z [1m[92m  Executable[0m tests/p5d_cost.rs (target/debug/deps/p5d_cost-4ef9809e967348aa)
+2026-10-10T08:16:01.1619931Z [1m[92m  Executable[0m tests/p5d_runtime.rs (target/debug/deps/p5d_runtime-a7540ca94db4265a)
+2026-10-10T08:16:01.1620763Z [1m[92m  Executable[0m tests/p5e_ablation.rs (target/debug/deps/p5e_ablation-3ca3c199c4730a58)
+2026-10-10T08:16:01.1621710Z [1m[92m  Executable[0m tests/p5e_context_facets.rs (target/debug/deps/p5e_context_facets-07c993e337579d43)
+2026-10-10T08:16:01.1622638Z [1m[92m  Executable[0m tests/p5e_graph_anchor.rs (target/debug/deps/p5e_graph_anchor-ec28df81e7b4bd17)
+2026-10-10T08:16:01.1623734Z [1m[92m  Executable[0m tests/p5e_identifier.rs (target/debug/deps/p5e_identifier-dae570be6512d2d2)
+2026-10-10T08:16:01.1624611Z [1m[92m  Executable[0m tests/p5e_path_domain.rs (target/debug/deps/p5e_path_domain-008a4ba654f39fbb)
+2026-10-10T08:16:01.1625552Z [1m[92m  Executable[0m tests/p5e_priority_pressure.rs (target/debug/deps/p5e_priority_pressure-fe6cdba05ee7616f)
+2026-10-10T08:16:01.1712215Z [1m[92m  Executable[0m tests/p7_mechanism_stdio.rs (target/debug/deps/p7_mechanism_stdio-e1ef53bbfb96fc0b)
+2026-10-10T08:16:01.1713402Z [1m[92m  Executable[0m tests/p7_partial_budget.rs (target/debug/deps/p7_partial_budget-a2e61aba3bc47cd4)
+2026-10-10T08:16:01.1714484Z [1m[92m  Executable[0m tests/p7_strategy_ablation.rs (target/debug/deps/p7_strategy_ablation-f72d144c961f16de)
+2026-10-10T08:16:01.1715553Z [1m[92m  Executable[0m tests/p7_strategy_stdio.rs (target/debug/deps/p7_strategy_stdio-0de8a87829e25839)
+2026-10-10T08:16:01.1716797Z [1m[92m  Executable[0m tests/p7_validation_work.rs (target/debug/deps/p7_validation_work-d961895930abbce5)
+2026-10-10T08:16:01.1718310Z [1m[92m  Executable[0m tests/p7_worker_contention.rs (target/debug/deps/p7_worker_contention-96d0b00fe6d5ad7d)
+2026-10-10T08:16:01.1719696Z [1m[92m  Executable[0m tests/p8_lifecycle_replay.rs (target/debug/deps/p8_lifecycle_replay-3dabe34b2dfa1634)
+2026-10-10T08:16:01.1720873Z [1m[92m  Executable[0m tests/p8_load.rs (target/debug/deps/p8_load-d3c9244af71244e8)
+2026-10-10T08:16:01.1727361Z [1m[92m  Executable[0m tests/p8_mcp_readiness.rs (target/debug/deps/p8_mcp_readiness-2ceefa2e83051e38)
+2026-10-10T08:16:01.1728357Z [1m[92m  Executable[0m tests/p8_measurements.rs (target/debug/deps/p8_measurements-0878822a4857a9fb)
+2026-10-10T08:16:01.1811595Z [1m[92m  Executable[0m tests/p8_route_reload.rs (target/debug/deps/p8_route_reload-7fa14f9983fdaa86)
+2026-10-10T08:16:01.1812852Z [1m[92m  Executable[0m tests/p8_scale.rs (target/debug/deps/p8_scale-0351677387d88cdd)
+2026-10-10T08:16:01.1814279Z [1m[92m  Executable[0m tests/packing_scope_v1.rs (target/debug/deps/packing_scope_v1-c9fde2355724c932)
+2026-10-10T08:16:01.1816070Z [1m[92m  Executable[0m tests/packing_validation_work.rs (target/debug/deps/packing_validation_work-6d41a3c9019c3f4e)
+2026-10-10T08:16:01.1817368Z [1m[92m  Executable[0m tests/scale_bench.rs (target/debug/deps/scale_bench-5e4de1e619b34929)
+2026-10-10T08:16:01.1818983Z [1m[92m  Executable[0m tests/semantic_lifecycle.rs (target/debug/deps/semantic_lifecycle-0f7d4e36cea1ec65)
+2026-10-10T08:16:01.1819933Z [1m[92m  Executable[0m tests/soak.rs (target/debug/deps/soak-14f4360888f4b395)
+2026-10-10T08:16:01.1820966Z [1m[92m  Executable[0m tests/v16_cache_read_soak.rs (target/debug/deps/v16_cache_read_soak-e4aa3d3f02c2f2a1)
+2026-10-10T08:16:01.1822669Z [1m[92m  Executable[0m tests/v16_resource_bounds.rs (target/debug/deps/v16_resource_bounds-42d7b185fdd73474)
+2026-10-10T08:16:01.1823957Z [1m[92m  Executable[0m unittests src/lib.rs (target/debug/deps/cc_index-5d4c29cceedcba7d)
+2026-10-10T08:16:01.1824883Z [1m[92m  Executable[0m tests/explicit_text_admission.rs (target/debug/deps/explicit_text_admission-4e913415f98e7de8)
+2026-10-10T08:16:01.1912283Z [1m[92m  Executable[0m tests/full_snapshot_empty_config.rs (target/debug/deps/full_snapshot_empty_config-1e1114f7fe550b23)
+2026-10-10T08:16:01.1914036Z [1m[92m  Executable[0m tests/independent_qname_parser_public.rs (target/debug/deps/independent_qname_parser_public-9cf1acd362c95dce)
+2026-10-10T08:16:01.1916057Z [1m[92m  Executable[0m tests/independent_qname_repair_guard.rs (target/debug/deps/independent_qname_repair_guard-defb06c32eb0420c)
+2026-10-10T08:16:01.1917327Z [1m[92m  Executable[0m tests/p3a_project_model.rs (target/debug/deps/p3a_project_model-a9a3e0d44ed85d36)
+2026-10-10T08:16:01.1918574Z [1m[92m  Executable[0m tests/p3b_modules.rs (target/debug/deps/p3b_modules-82c93f4f47d1423b)
+2026-10-10T08:16:01.1919478Z [1m[92m  Executable[0m tests/p3c_modules.rs (target/debug/deps/p3c_modules-8b274899896a908e)
+2026-10-10T08:16:01.1920831Z [1m[92m  Executable[0m tests/p3d_boundaries.rs (target/debug/deps/p3d_boundaries-7570b43975bde9bd)
+2026-10-10T08:16:01.1921786Z [1m[92m  Executable[0m tests/p4b_render.rs (target/debug/deps/p4b_render-01ff02e95c49bbc1)
+2026-10-10T08:16:01.1922840Z [1m[92m  Executable[0m tests/p4c_identity.rs (target/debug/deps/p4c_identity-3aa08f2e334a80c7)
+2026-10-10T08:16:01.1924009Z [1m[92m  Executable[0m tests/python_declaration_identity.rs (target/debug/deps/python_declaration_identity-ea811b1560e96105)
+2026-10-10T08:16:01.2011343Z [1m[92m  Executable[0m tests/python_identity_resource_integration.rs (target/debug/deps/python_identity_resource_integration-be0b1776cacc8a50)
+2026-10-10T08:16:01.2013437Z [1m[92m  Executable[0m tests/python_inventory_capture.rs (target/debug/deps/python_inventory_capture-c626d9e03b583417)
+2026-10-10T08:16:01.2014746Z [1m[92m  Executable[0m tests/python_inventory_resource_integration.rs (target/debug/deps/python_inventory_resource_integration-439fda348f0a0440)
+2026-10-10T08:16:01.2016071Z [1m[92m  Executable[0m tests/python_inventory_revalidation.rs (target/debug/deps/python_inventory_revalidation-2659b8237acbf4c3)
+2026-10-10T08:16:01.2017387Z [1m[92m  Executable[0m tests/python_provenance_independent_review.rs (target/debug/deps/python_provenance_independent_review-fc4062399b049e75)
+2026-10-10T08:16:01.2018649Z [1m[92m  Executable[0m tests/qname_db_independent_review.rs (target/debug/deps/qname_db_independent_review-136c093825a84c70)
+2026-10-10T08:16:01.2019979Z [1m[92m  Executable[0m tests/qname_identity_proof.rs (target/debug/deps/qname_identity_proof-1974042fd19a648a)
+2026-10-10T08:16:01.2021080Z [1m[92m  Executable[0m tests/qname_identity_transaction.rs (target/debug/deps/qname_identity_transaction-b246cab49473e038)
+2026-10-10T08:16:01.2022207Z [1m[92m  Executable[0m tests/qname_owner_diagnostic.rs (target/debug/deps/qname_owner_diagnostic-25b3598d38555012)
+2026-10-10T08:16:01.2023405Z [1m[92m  Executable[0m tests/snapshot_leaf_batching.rs (target/debug/deps/snapshot_leaf_batching-e04a0b4aff62381a)
+2026-10-10T08:16:01.2024288Z [1m[92m  Executable[0m tests/type_catalog_bench.rs (target/debug/deps/type_catalog_bench-74892fd6e891a070)
+2026-10-10T08:16:01.2025023Z [1m[92m  Executable[0m unittests src/lib.rs (target/debug/deps/cc_model-c8f8b063e3308028)
+2026-10-10T08:16:01.2112646Z [1m[92m  Executable[0m tests/declaration_identity_independent_review.rs (target/debug/deps/declaration_identity_independent_review-9a1758d83b447939)
+2026-10-10T08:16:01.2114479Z [1m[92m  Executable[0m tests/declaration_identity_resources.rs (target/debug/deps/declaration_identity_resources-e8fea8579c9bb080)
+2026-10-10T08:16:01.2115843Z [1m[92m  Executable[0m tests/declaration_identity_v1.rs (target/debug/deps/declaration_identity_v1-32531ed24907fd7c)
+2026-10-10T08:16:01.2117411Z [1m[92m  Executable[0m tests/declaration_resource_independent.rs (target/debug/deps/declaration_resource_independent-52f56f8f08cf995d)
+2026-10-10T08:16:01.2118713Z [1m[92m  Executable[0m tests/p2b_resolution.rs (target/debug/deps/p2b_resolution-549c498d1cbb40b6)
+2026-10-10T08:16:01.2119739Z [1m[92m  Executable[0m tests/p4a_source.rs (target/debug/deps/p4a_source-58bff515424c70d5)
+2026-10-10T08:16:01.2120915Z [1m[92m  Executable[0m tests/provenance_compatibility.rs (target/debug/deps/provenance_compatibility-a3a18bab10491f9e)
+2026-10-10T08:16:01.2122236Z [1m[92m  Executable[0m tests/public_surface_encoding.rs (target/debug/deps/public_surface_encoding-7a149e60e73da97a)
+2026-10-10T08:16:01.2123576Z [1m[92m  Executable[0m unittests src/lib.rs (target/debug/deps/cc_parsers-927cb06bf5f871cb)
+2026-10-10T08:16:01.2124504Z [1m[92m  Executable[0m tests/c_cpp_declarator_boundaries.rs (target/debug/deps/c_cpp_declarator_boundaries-cc208959d8477d26)
+2026-10-10T08:16:01.2212147Z [1m[92m  Executable[0m tests/declaration_boundary_hints.rs (target/debug/deps/declaration_boundary_hints-10a75bab9ccaa83e)
+2026-10-10T08:16:01.2213898Z [1m[92m  Executable[0m tests/independent_cpp_final_declarators.rs (target/debug/deps/independent_cpp_final_declarators-434a89611a834dae)
+2026-10-10T08:16:01.2215192Z [1m[92m  Executable[0m tests/jsts_call_truth.rs (target/debug/deps/jsts_call_truth-e3200a91e82a6711)
+2026-10-10T08:16:01.2216253Z [1m[92m  Executable[0m tests/p2b_go_surface.rs (target/debug/deps/p2b_go_surface-94b880e44ab91d8d)
+2026-10-10T08:16:01.2217267Z [1m[92m  Executable[0m tests/p4a_source.rs (target/debug/deps/p4a_source-9faacdd26318ea1d)
+2026-10-10T08:16:01.2218245Z [1m[92m  Executable[0m tests/p4b_chunks.rs (target/debug/deps/p4b_chunks-3f514421dc56c702)
+2026-10-10T08:16:01.2219303Z [1m[92m  Executable[0m tests/public_surface.rs (target/debug/deps/public_surface-6dc19236562420e4)
+2026-10-10T08:16:01.2220461Z [1m[92m  Executable[0m tests/public_surface_edges.rs (target/debug/deps/public_surface_edges-4d44cc94f5e14e3f)
+2026-10-10T08:16:01.2221628Z [1m[92m  Executable[0m tests/python_call_truth.rs (target/debug/deps/python_call_truth-6ed480ac13d49092)
+2026-10-10T08:16:01.2222838Z [1m[92m  Executable[0m tests/python_identity_adapter.rs (target/debug/deps/python_identity_adapter-3a902eefc519b6a7)
+2026-10-10T08:16:01.2224329Z [1m[92m  Executable[0m tests/python_identity_independent.rs (target/debug/deps/python_identity_independent-51d5f940f8d86450)
+2026-10-10T08:16:01.2312132Z [1m[92m  Executable[0m tests/python_identity_r1_independent_delta.rs (target/debug/deps/python_identity_r1_independent_delta-a588eb1a1bf70cee)
+2026-10-10T08:16:01.2313968Z [1m[92m  Executable[0m tests/python_identity_trivia_r1.rs (target/debug/deps/python_identity_trivia_r1-376235c47f8c1e1d)
+2026-10-10T08:16:01.2315104Z [1m[92m  Executable[0m unittests src/lib.rs (target/debug/deps/cc_search-6a0a5c9de926a88a)
+2026-10-10T08:16:01.2316105Z [1m[92m  Executable[0m unittests src/lib.rs (target/debug/deps/cc_semantic-7c75f45da86e6a7d)
+2026-10-10T08:16:01.2317147Z [1m[92m  Executable[0m tests/artifact_cache.rs (target/debug/deps/artifact_cache-c97c9386c6c183b2)
+2026-10-10T08:16:01.2318318Z [1m[92m  Executable[0m tests/attempt_lease_contract.rs (target/debug/deps/attempt_lease_contract-ebdcb6a0b5606dad)
+2026-10-10T08:16:01.2319510Z [1m[92m  Executable[0m tests/bounded_parallel.rs (target/debug/deps/bounded_parallel-5d2448f7608b6a1c)
+2026-10-10T08:16:01.2320735Z [1m[92m  Executable[0m tests/crash_independent_review.rs (target/debug/deps/crash_independent_review-b9c6112724e3bd7a)
+2026-10-10T08:16:01.2322064Z [1m[92m  Executable[0m tests/gc_concurrent_replacement.rs (target/debug/deps/gc_concurrent_replacement-a7727d6035bebf54)
+2026-10-10T08:16:01.2323481Z [1m[92m  Executable[0m tests/gc_unlink_accounting.rs (target/debug/deps/gc_unlink_accounting-8311fc96459b22f4)
+2026-10-10T08:16:01.2324655Z [1m[92m  Executable[0m tests/manifest_exact_integration.rs (target/debug/deps/manifest_exact_integration-af36038b9de95a81)
+2026-10-10T08:16:01.2412174Z [1m[92m  Executable[0m tests/opportunistic_reclaim.rs (target/debug/deps/opportunistic_reclaim-b5ad154c6659330d)
+2026-10-10T08:16:01.2413777Z [1m[92m  Executable[0m tests/p7_cache_allocation_independent_review.rs (target/debug/deps/p7_cache_allocation_independent_review-2b8a31c126e14c19)
+2026-10-10T08:16:01.2415182Z [1m[92m  Executable[0m tests/p7_crash_preparation.rs (target/debug/deps/p7_crash_preparation-085701c9d0ad018a)
+2026-10-10T08:16:01.2416556Z [1m[92m  Executable[0m tests/p7_staging_gc_preparation.rs (target/debug/deps/p7_staging_gc_preparation-7d8b8a628dff7d3e)
+2026-10-10T08:16:01.2418307Z [1m[92m  Executable[0m tests/publish_cas.rs (target/debug/deps/publish_cas-845f9647291d3ed5)
+2026-10-10T08:16:01.2419319Z [1m[92m  Executable[0m tests/query_cache.rs (target/debug/deps/query_cache-a230aa74ef61422e)
+2026-10-10T08:16:01.2420327Z [1m[92m  Executable[0m tests/queue_worker.rs (target/debug/deps/queue_worker-c46bab907e070d98)
+2026-10-10T08:16:01.2421430Z [1m[92m  Executable[0m tests/reconcile_rebuild.rs (target/debug/deps/reconcile_rebuild-6caa43658899617d)
+2026-10-10T08:16:01.2422618Z [1m[92m  Executable[0m tests/retry_worker_layering.rs (target/debug/deps/retry_worker_layering-11f34d8bfe7615b0)
+2026-10-10T08:16:01.2423841Z [1m[92m  Executable[0m tests/semantic_degrade.rs (target/debug/deps/semantic_degrade-0b88838a0f008432)
+2026-10-10T08:16:01.2424659Z [1m[92m  Executable[0m tests/semantic_gc.rs (target/debug/deps/semantic_gc-794d696c71cbd403)
+2026-10-10T08:16:01.2511842Z [1m[92m  Executable[0m tests/semantic_recovery.rs (target/debug/deps/semantic_recovery-e8138403f9689474)
+2026-10-10T08:16:01.2512980Z [1m[92m  Executable[0m tests/space_switch.rs (target/debug/deps/space_switch-3e51c76e6f278602)
+2026-10-10T08:16:01.2514429Z [1m[92m  Executable[0m tests/staging_gc_independent_review.rs (target/debug/deps/staging_gc_independent_review-52bf7b09b4d67e41)
+2026-10-10T08:16:01.2515433Z [1m[92m  Executable[0m unittests src/lib.rs (target/debug/deps/cc_server-fe0173d2073aa540)
+2026-10-10T08:16:01.2516225Z [1m[92m  Executable[0m unittests src/main.rs (target/debug/deps/codecortex-c5fb29f595fbf5aa)
+2026-10-10T08:16:01.2517168Z [1m[92m  Executable[0m tests/cache_key_review_behavior.rs (target/debug/deps/cache_key_review_behavior-fe42ccd2eb5c0905)
+2026-10-10T08:16:01.2518188Z [1m[92m  Executable[0m tests/graph_traversal_bench.rs (target/debug/deps/graph_traversal_bench-c8ffa0a5ac920147)
+2026-10-10T08:16:01.2519278Z [1m[92m  Executable[0m tests/independent_qname_repair_public.rs (target/debug/deps/independent_qname_repair_public-1f16e78a82e0711f)
+2026-10-10T08:16:01.2520580Z [1m[92m  Executable[0m tests/index_fix_pinned_handle.rs (target/debug/deps/index_fix_pinned_handle-c49756f02ed68a60)
+2026-10-10T08:16:01.2521503Z [1m[92m  Executable[0m tests/installer_cli.rs (target/debug/deps/installer_cli-bf7039281d8975b6)
+2026-10-10T08:16:01.2522324Z [1m[92m  Executable[0m tests/mcp_startup.rs (target/debug/deps/mcp_startup-93ec8e2e5dc37614)
+2026-10-10T08:16:01.2523325Z [1m[92m  Executable[0m tests/mcp_stdio.rs (target/debug/deps/mcp_stdio-6d5b46a9e5049ea2)
+2026-10-10T08:16:01.2524221Z [1m[92m  Executable[0m tests/p7_acceptance_matrix.rs (target/debug/deps/p7_acceptance_matrix-f82e946b45097d4c)
+2026-10-10T08:16:01.2525127Z [1m[92m  Executable[0m tests/p7_dense_artifact_coverage.rs (target/debug/deps/p7_dense_artifact_coverage-f9fc6108f3acfa38)
+2026-10-10T08:16:01.2612393Z [1m[92m  Executable[0m tests/p7_gc_retention_config.rs (target/debug/deps/p7_gc_retention_config-96d6155c09ff41fe)
+2026-10-10T08:16:01.2613830Z [1m[92m  Executable[0m tests/p7_production_fairness_model_review.rs (target/debug/deps/p7_production_fairness_model_review-cc3b737bcd9b2350)
+2026-10-10T08:16:01.2614993Z [1m[92m  Executable[0m tests/p7_query_deadline_public.rs (target/debug/deps/p7_query_deadline_public-32d58a083d3ea559)
+2026-10-10T08:16:01.2616223Z [1m[92m  Executable[0m tests/p7_query_production.rs (target/debug/deps/p7_query_production-6ca8393398165f0d)
+2026-10-10T08:16:01.2617286Z [1m[92m  Executable[0m tests/p7_runtime_independent_review.rs (target/debug/deps/p7_runtime_independent_review-310a50f86a91c7f4)
+2026-10-10T08:16:01.2618904Z [1m[92m  Executable[0m tests/p7_status_snapshot_independent_review.rs (target/debug/deps/p7_status_snapshot_independent_review-17443575e87384e8)
+2026-10-10T08:16:01.2620269Z [1m[92m  Executable[0m tests/p7_v05_all_lane_scope.rs (target/debug/deps/p7_v05_all_lane_scope-5600b0693dc6c89f)
+2026-10-10T08:16:01.2621313Z [1m[92m  Executable[0m tests/p7_v05_scope_public.rs (target/debug/deps/p7_v05_scope_public-ce8049339c8c6151)
+2026-10-10T08:16:01.2622568Z [1m[92m  Executable[0m tests/p7_v05_v11_independent_review.rs (target/debug/deps/p7_v05_v11_independent_review-b02ff4c2d6a861bd)
+2026-10-10T08:16:01.2624478Z [1m[92m  Executable[0m tests/p7_v11_cache_consumption.rs (target/debug/deps/p7_v11_cache_consumption-bbab80573d30f572)
+2026-10-10T08:16:01.2711781Z [1m[92m  Executable[0m tests/p7_v11_cache_key_matrix.rs (target/debug/deps/p7_v11_cache_key_matrix-9a3227b61519a3d6)
+2026-10-10T08:16:01.2713301Z [1m[92m  Executable[0m tests/p7_v11_generation_public.rs (target/debug/deps/p7_v11_generation_public-724f789b5c5e05fb)
+2026-10-10T08:16:01.2714938Z [1m[92m  Executable[0m tests/p7_v11_ready_epoch_independent_review.rs (target/debug/deps/p7_v11_ready_epoch_independent_review-cc1034317eda5996)
+2026-10-10T08:16:01.2716317Z [1m[92m  Executable[0m tests/p7_v16_exact_oracle.rs (target/debug/deps/p7_v16_exact_oracle-ef1cc8aa2b42a99e)
+2026-10-10T08:16:01.2717667Z [1m[92m  Executable[0m tests/p7_v16_oracle_independent_review.rs (target/debug/deps/p7_v16_oracle_independent_review-8703040445ba5fd6)
+2026-10-10T08:16:01.2719094Z [1m[92m  Executable[0m tests/p7_v18_fault_contract.rs (target/debug/deps/p7_v18_fault_contract-caa415308dc9515d)
+2026-10-10T08:16:01.2720210Z [1m[92m  Executable[0m tests/p7_v18_parameter_contract.rs (target/debug/deps/p7_v18_parameter_contract-b15e2159cef16a59)
+2026-10-10T08:16:01.2721554Z [1m[92m  Executable[0m tests/p8_db_lock_observation.rs (target/debug/deps/p8_db_lock_observation-719c407e64bcfc5c)
+2026-10-10T08:16:01.2722879Z [1m[92m  Executable[0m tests/python_declaration_public.rs (target/debug/deps/python_declaration_public-e97aebb0159ddb5f)
+2026-10-10T08:16:01.2724512Z [1m[92m  Executable[0m tests/qname_db_independent_review.rs (target/debug/deps/qname_db_independent_review-15c1fe668d8b7b56)
+2026-10-10T08:16:01.2811852Z [1m[92m  Executable[0m tests/qname_identity_lifecycle.rs (target/debug/deps/qname_identity_lifecycle-4e9db9a5086a3d4d)
+2026-10-10T08:16:01.2813660Z [1m[92m  Executable[0m tests/qname_public_diagnostic.rs (target/debug/deps/qname_public_diagnostic-c39772ea76538ba2)
+2026-10-10T08:16:01.2815280Z [1m[92m  Executable[0m tests/v11_consumption_independent_review.rs (target/debug/deps/v11_consumption_independent_review-61dde726d487a5b7)
+2026-10-10T08:16:01.4049847Z ##[group]Run cargo test --workspace --all-targets --exclude cc-semantic --locked
+2026-10-10T08:16:01.4118585Z [36;1mcargo test --workspace --all-targets --exclude cc-semantic --locked[0m
+2026-10-10T08:16:01.4119235Z [36;1mcargo test -p cc-semantic --lib --locked[0m
+2026-10-10T08:16:01.4119711Z [36;1mcargo test -p cc-semantic --locked \[0m
+2026-10-10T08:16:01.4120239Z [36;1m  --test artifact_cache --test attempt_lease_contract \[0m
+2026-10-10T08:16:01.4120857Z [36;1m  --test bounded_parallel --test manifest_exact_integration \[0m
+2026-10-10T08:16:01.4121533Z [36;1m  --test p7_cache_allocation_independent_review --test publish_cas \[0m
+2026-10-10T08:16:01.4122263Z [36;1m  --test query_cache --test queue_worker --test retry_worker_layering \[0m
+2026-10-10T08:16:01.4122883Z [36;1m  --test semantic_degrade --test space_switch[0m
+2026-10-10T08:16:01.7331255Z shell: /usr/bin/bash -e {0}
+2026-10-10T08:16:01.7331845Z env:
+2026-10-10T08:16:01.7332190Z   CARGO_TERM_COLOR: always
+2026-10-10T08:16:01.7332542Z   RUSTFLAGS: -D warnings
+2026-10-10T08:16:01.7332892Z   CARGO_HOME: /home/runner/.cargo
+2026-10-10T08:16:01.7333448Z   CARGO_INCREMENTAL: 0
+2026-10-10T08:16:01.7333889Z   CACHE_ON_FAILURE: false
+2026-10-10T08:16:01.7334322Z ##[endgroup]
+2026-10-10T08:16:04.2786615Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 2.34s
+2026-10-10T08:16:05.0591538Z [1m[92m     Running[0m unittests src/lib.rs (target/debug/deps/cc_db-814cb268cf63c4ea)
+2026-10-10T08:16:05.0698689Z 
+2026-10-10T08:16:05.0698891Z running 208 tests
+2026-10-10T08:16:05.1203301Z test capability_read::tests::missing_count_table_errors_are_not_zero_or_a_partial_ready_snapshot ... ok
+2026-10-10T08:16:05.1290516Z test capability_read::tests::unsupported_error_and_undefined_identity_results_are_never_unmoved ... ok
+2026-10-10T08:16:05.1402086Z test capability_read::tests::normal_rename_checks_the_actual_open_file_without_rebuild_or_wal ... ok
+2026-10-10T08:16:05.5285578Z test capability_read::tests::incarnation_validation_rejects_in_place_replacement_but_not_epoch_churn ... ok
+2026-10-10T08:16:05.5486520Z test capability_read::tests::unwired_read_skips_semantic_counts_and_does_not_write ... ok
+2026-10-10T08:16:05.5500400Z test direct_writer::tests::direct_writer_creates_valid_db ... ok
+2026-10-10T08:16:05.5685433Z test direct_writer::tests::direct_writer_write_fn_error_propagates ... ok
+2026-10-10T08:16:05.5686871Z test direct_writer::tests::drop_index_stmts_match_create_set ... ok
+2026-10-10T08:16:05.5687853Z test direct_writer::tests::extract_index_stmts ... ok
+2026-10-10T08:16:05.6088834Z test direct_writer::tests::full_schema_preserves_seed_views_triggers_and_defers_explicit_indexes ... ok
+2026-10-10T08:16:05.6095590Z test capability_read::tests::all_fields_keep_the_pinned_snapshot_across_a_committed_publication ... ok
+2026-10-10T08:16:05.6204374Z test direct_writer::tests::direct_writer_handles_fts_tables ... ok
+2026-10-10T08:16:05.6205720Z test direct_writer::tests::selected_indexes_keep_order_and_reject_missing_or_duplicate_definitions ... ok
+2026-10-10T08:16:05.6291796Z test direct_writer::tests::split_sql_handles_comments_and_strings ... ok
+2026-10-10T08:16:05.6391056Z test direct_writer::tests::sqlite_boundaries_preserve_triggers_quotes_comments_and_tail ... ok
+2026-10-10T08:16:05.6594641Z test direct_writer::tests::schema_and_deferred_unique_errors_propagate_without_dropping_input ... ok
+2026-10-10T08:16:05.7404152Z test direct_writer::tests::direct_writer_bulk_insert_perf ... ok
+2026-10-10T08:16:05.9998255Z test epoch_rules::tests::auxiliary_commit_advances_no_clock ... ok
+2026-10-10T08:16:05.9999298Z test epoch_rules::tests::effect_set_membership_and_union_are_exact ... ok
+2026-10-10T08:16:06.0102437Z test epoch_rules::tests::boost_http_edge_confidence_bumps_evidence_clock ... ok
+2026-10-10T08:16:06.0495697Z test epoch_rules::tests::combined_index_and_semantic_commit_bumps_each_exactly_once ... ok
+2026-10-10T08:16:06.0587968Z test epoch_rules::tests::lookup_covers_known_tables_and_rejects_metadata ... ok
+2026-10-10T08:16:06.4890974Z test epoch_rules::tests::declared_clock_matches_observed_bump_for_every_table ... ok
+2026-10-10T08:16:06.4891677Z test epoch_rules::tests::semantic_effect_starts_the_clock_from_none_to_one ... ok
+2026-10-10T08:16:06.5298951Z test epoch_rules::tests::empty_effect_set_commits_without_touching_any_clock ... ok
+2026-10-10T08:16:06.5300256Z test epoch_rules::tests::evidence_method_family_bumps_evidence_only ... ok
+2026-10-10T08:16:06.9592718Z test epoch_rules::tests::unit_of_work_commit_bumps_index_exactly_once ... ok
+2026-10-10T08:16:07.0706349Z test file_state_cache::tests::cache_hit_shares_the_same_allocation ... ok
+2026-10-10T08:16:07.0795788Z test fts::tests::camel_case_split ... ok
+2026-10-10T08:16:07.0898847Z test fts::tests::expand_query ... ok
+2026-10-10T08:16:07.1001994Z test fts::tests::expand_query_snake_case ... ok
+2026-10-10T08:16:07.1091664Z test file_state_cache::tests::foreign_files_writer_invalidates_then_rewarns ... ok
+2026-10-10T08:16:07.1102145Z test file_state_cache::tests::batch_delta_matches_direct_load ... ok
+2026-10-10T08:16:07.1198723Z test fts::tests::fts_sanitize_basic ... ok
+2026-10-10T08:16:07.1302543Z test index_db::tests::chunk_text_encoding_reads_plain_and_zstd ... ok
+2026-10-10T08:16:07.5800910Z test file_state_cache::tests::held_snapshot_is_immutable_across_batches ... ok
+2026-10-10T08:16:08.0004982Z test index_db::tests::app_maintained_fts_rowids_align_with_base_tables ... ok
+2026-10-10T08:16:08.4001906Z test index_db::tests::empty_file_state ... ok
+2026-10-10T08:16:10.1114241Z test index_db::tests::direct_rebuild_callback_and_index_errors_leave_live_database_unchanged ... ok
+2026-10-10T08:16:10.6609416Z test index_db::tests::full_rebuild_advances_both_epochs_past_previous_values ... ok
+2026-10-10T08:16:10.8818833Z test index_db::tests::generation_starts_at_zero_and_index_writes_bump_index_epoch ... ok
+2026-10-10T08:16:11.3816716Z test index_db::tests::http_call_cross_service_chain ... ok
+2026-10-10T08:16:11.7616381Z test index_db::tests::batched_fts_deletes_cover_all_paths_across_chunk_boundary ... ok
+2026-10-10T08:16:11.7713002Z test index_db::tests::mismatch_rebuild_stress_loop ... ignored
+2026-10-10T08:16:11.8319687Z test index_db::tests::metadata_round_trip ... ok
+2026-10-10T08:16:12.4615568Z test index_db::tests::open_creates_schema ... ok
+2026-10-10T08:16:12.9124745Z test index_db::tests::read_pool_connections_reject_writes ... ok
+2026-10-10T08:16:13.0422318Z test index_db::tests::precompressed_chunk_payloads_match_in_transaction_compression ... ok
+2026-10-10T08:16:13.2418924Z test index_db::tests::direct_rebuild_canonical_schema_matches_normal_temp_path ... ok
+2026-10-10T08:16:13.6530991Z test index_db::tests::resolver_seed_symbols_excludes_requested_files ... ok
+2026-10-10T08:16:13.7324781Z test index_db::tests::replace_in_place_keeps_test_edges_removal_cascades ... ok
+2026-10-10T08:16:14.1130045Z test index_db::tests::route_edge_resolution_provenance_round_trips ... ok
+2026-10-10T08:16:14.5622759Z test index_db::tests::schema_mismatch_rebuild_advances_generation_past_old_values ... ok
+2026-10-10T08:16:14.8131739Z test index_db::tests::rebuild_generation_exceeds_writes_committed_during_rebuild ... ok
+2026-10-10T08:16:15.0225926Z test index_db::tests::test_find_symbol_safe_with_injection_string ... ok
+2026-10-10T08:16:15.2233915Z test index_db::tests::test_find_symbol_safe_with_null_byte ... ok
+2026-10-10T08:16:15.4533843Z test index_db::tests::test_find_symbol_safe_with_unicode_injection ... ok
+2026-10-10T08:16:15.7126486Z test index_db::tests::test_find_symbol_safe_with_union_injection ... ok
+2026-10-10T08:16:15.8523603Z test index_db::tests::test_metadata_safe_with_injection_key ... ok
+2026-10-10T08:16:16.1734001Z test index_db_arch::tests::test_adr_crud ... ok
+2026-10-10T08:16:16.2433533Z test index_db_arch::tests::test_adr_upsert_conflict ... ok
+2026-10-10T08:16:16.5432366Z test index_db_arch::tests::test_architecture_entry_points ... ok
+2026-10-10T08:16:16.5831205Z test index_db_arch::tests::test_architecture_languages ... ok
+2026-10-10T08:16:16.5928519Z test index_db_arch::tests::test_extract_package_from_path ... ok
+2026-10-10T08:16:16.9329896Z test index_db_arch::tests::test_architecture_routes ... ok
+2026-10-10T08:16:16.9430710Z test index_db_edges::tests::evidence_writes_bump_only_evidence_epoch ... ok
+2026-10-10T08:16:17.2729225Z test index_db_edges::tests::http_edge_match_prefers_method_then_falls_back_to_path ... ok
+2026-10-10T08:16:17.5234005Z test index_db_edges::tests::postprocess_writes_bump_index_epoch ... ok
+2026-10-10T08:16:17.6934108Z test index_db_edges::tests::full_rebuild_matches_incremental_like_semantics ... ok
+2026-10-10T08:16:17.8330915Z test index_db_edges::tests::route_id_for_normalized_path_returns_first_match ... ok
+2026-10-10T08:16:18.0537293Z test index_db_edges::tests::test_co_change_edges_roundtrip ... ok
+2026-10-10T08:16:18.2837758Z test index_db_edges::tests::test_dispatch_sites_roundtrip ... ok
+2026-10-10T08:16:18.5534168Z test index_db_edges::tests::test_rebuild_test_edges_for_files ... ok
+2026-10-10T08:16:18.6736120Z test index_db_edges::tests::test_runtime_evidence_lifecycle ... ok
+2026-10-10T08:16:18.6834143Z test index_db_edges::tests::test_stem_to_base_clean ... ok
+2026-10-10T08:16:18.9346546Z test index_db_edges::tests::test_semantic_edges_roundtrip ... ok
+2026-10-10T08:16:19.0945179Z test index_db_frontier::tests::test_http_calls_by_caller_uid ... ok
+2026-10-10T08:16:19.4049705Z test index_db_frontier::tests::test_route_nodes_by_normalized_path ... ok
+2026-10-10T08:16:19.4738072Z test index_db::tests::live_checkpoint_busy_preserves_committed_wal_and_refuses_replacement ... ok
+2026-10-10T08:16:19.5838388Z test index_db_frontier::tests::test_route_rows_by_path ... ok
+2026-10-10T08:16:20.0042498Z test index_db_graph::tests::test_caller_callee_rows ... ok
+2026-10-10T08:16:20.0650103Z test index_db_graph::tests::step_error_after_side_connection_drop_is_err_not_empty_ok ... ok
+2026-10-10T08:16:20.2741079Z test index_db_graph::tests::test_caller_callee_rows_by_uids_match_single_uid_queries ... ok
+2026-10-10T08:16:20.4641437Z test index_db_graph::tests::test_find_symbols_by_names_and_kinds_matches_single ... ok
+2026-10-10T08:16:20.5744731Z test index_db_graph::tests::test_get_export_fingerprints_batch_matches_single ... ok
+2026-10-10T08:16:20.7047859Z test index_db_graph::tests::test_get_export_fingerprints_empty_input ... ok
+2026-10-10T08:16:20.9545442Z test index_db_graph::tests::test_reexport_targets_for_files ... ok
+2026-10-10T08:16:21.1432386Z test index_db_graph::tests::test_reexport_targets_for_files_empty_input ... ok
+2026-10-10T08:16:21.2046259Z test index_db_graph::tests::test_symbol_degree_details ... ok
+2026-10-10T08:16:21.2254897Z test index_db::tests::staging_checkpoint_busy_preserves_wal_and_refuses_replacement ... ok
+2026-10-10T08:16:21.4933982Z test index_db_graph::tests::test_symbol_degree_details_batch_matches_single ... ok
+2026-10-10T08:16:21.6634149Z test index_db_graph::tests::test_symbols_covering ... ok
+2026-10-10T08:16:21.7834213Z test index_db_graph_read::tests::async_consumer_rows_match_topic_in_name_or_properties ... ok
+2026-10-10T08:16:21.7835714Z test index_db_graph::tests::test_update_communities ... ok
+2026-10-10T08:16:22.0551055Z test index_db_graph_read::tests::call_edge_provenance_counts_breakdowns ... ok
+2026-10-10T08:16:22.2255233Z test index_db_graph_read::tests::child_symbol_outline_rows_ordered_by_start_line ... ok
+2026-10-10T08:16:22.4246497Z test index_db_graph_read::tests::community_adjacency_pairs_cross_community_only ... ok
+2026-10-10T08:16:22.4349844Z test index_db_graph_read::tests::callees_with_nonself_callers_excludes_self_loops ... ok
+2026-10-10T08:16:22.5147425Z test index_db_graph_read::tests::cross_file_call_file_pairs_skip_same_file_edges ... ok
+2026-10-10T08:16:22.8252988Z test index_db_graph_read::tests::dead_code_symbol_scan_applies_scope_like_filter ... ok
+2026-10-10T08:16:23.0656558Z test index_db_graph_read::tests::env_access_rows_filter_by_key_and_file_patterns ... ok
+2026-10-10T08:16:23.1256229Z test index_db_graph_read::tests::direct_importers_exclude_self_and_respect_limit ... ok
+2026-10-10T08:16:23.2161025Z test index_db_graph_read::tests::file_import_pairs_returns_only_resolved_distinct_pairs ... ok
+2026-10-10T08:16:23.3852599Z test index_db_graph_read::tests::import_witness_rows_keeps_import_string ... ok
+2026-10-10T08:16:23.6156779Z test index_db_graph_read::tests::param_counts_for_uids_maps_null_to_none ... ok
+2026-10-10T08:16:23.6662008Z test index_db_graph_read::tests::importers_of_paths_batches_into_single_query ... ok
+2026-10-10T08:16:23.8155188Z test index_db_graph_read::tests::reverse_callers_applies_confidence_and_limit ... ok
+2026-10-10T08:16:23.9856894Z test index_db_graph_read::tests::route_handler_rows_filters_by_path_substring ... ok
+2026-10-10T08:16:24.1453370Z test index_db_graph_read::tests::suggested_test_files_distinct_and_ordered ... ok
+2026-10-10T08:16:24.3452249Z test index_db_graph_read::tests::service_binding_rows_match_nodes_routes_and_edges ... ok
+2026-10-10T08:16:24.4151873Z test index_db_graph_read::tests::symbol_kind_counts_orders_by_frequency ... ok
+2026-10-10T08:16:24.6756853Z test index_db_graph_read::tests::symbol_names_for_uids_skips_missing ... ok
+2026-10-10T08:16:24.6852607Z test index_db_graph_read::tests::symbol_ref_containers_for_targets_returns_uid_container_pairs ... ok
+2026-10-10T08:16:24.8547326Z test index_db_graph_read::tests::symbol_source_candidates_rank_exact_before_fuzzy ... ok
+2026-10-10T08:16:24.9149375Z test index_db_graph_read::tests::symbols_lite_in_files_skips_files_not_requested_and_uidless ... ok
+2026-10-10T08:16:25.1354962Z test index_db_query::tests::read_pool_supports_explicit_read_transaction ... ok
+2026-10-10T08:16:25.1457931Z test index_db_query::tests::count_table_rows_counts_and_errors_on_missing_table ... ok
+2026-10-10T08:16:25.3948402Z test index_db_query::tests::test_file_summary ... ok
+2026-10-10T08:16:25.4361318Z test index_db_query::tests::test_file_symbols ... ok
+2026-10-10T08:16:25.5759935Z test index_db_query::tests::test_query_json ... ok
+2026-10-10T08:16:25.6749558Z test index_db_query::tests::test_find_symbol_exact_and_like ... ok
+2026-10-10T08:16:25.6761281Z test index_db_rebuild::fault_tests::rebuild_swap_child ... ignored, child entry; executed by the owning test with a private temporary database
+2026-10-10T08:16:27.5869471Z test index_db_rebuild::fault_tests::failed_writer_reopen_leaves_no_writable_ghost_or_stale_read_pool ... ok
+2026-10-10T08:16:27.7871059Z test index_db_rebuild::fault_tests::writer_mutex_spans_rename_reopen_and_connection_installation ... ok
+2026-10-10T08:16:28.0062852Z test index_db_retrieval::tests::chunk_rows_by_ids_empty_input ... ok
+2026-10-10T08:16:28.2062722Z test index_db_retrieval::tests::chunk_rows_by_ids_fetches_batch ... ok
+2026-10-10T08:16:28.3962089Z test index_db_retrieval::tests::chunk_rows_by_ids_rejects_unverified_cached_text ... ok
+2026-10-10T08:16:28.7754611Z test index_db_retrieval::tests::chunk_spans_for_files_groups_by_file ... ok
+2026-10-10T08:16:28.8974011Z test index_db_retrieval::tests::chunk_rows_by_ids_spans_multiple_in_batches ... ok
+2026-10-10T08:16:29.1055654Z test index_db_retrieval::tests::fts_chunk_candidates_applies_scope_and_limit ... ok
+2026-10-10T08:16:29.2168516Z test index_db_retrieval::tests::fts_file_summaries_applies_prefix_and_limit ... ok
+2026-10-10T08:16:29.5664753Z test index_db_retrieval::tests::fts_file_summaries_empty_for_no_match ... ok
+2026-10-10T08:16:29.6674422Z test index_db_retrieval::tests::fts_file_summaries_orders_by_bm25 ... ok
+2026-10-10T08:16:29.9467573Z test index_db_retrieval::tests::fts_file_summaries_prefix_treats_underscore_as_literal ... ok
+2026-10-10T08:16:30.0564742Z test index_db_retrieval::tests::path_token_file_hits_many_substring_match_per_token ... ok
+2026-10-10T08:16:30.3164509Z test index_db_retrieval::tests::path_token_file_hits_many_treats_underscore_as_literal ... ok
+2026-10-10T08:16:30.3970477Z test index_db_retrieval::tests::recent_indexed_files_newest_first ... ok
+2026-10-10T08:16:30.6668528Z test index_db_retrieval::tests::scan_chunks_for_grep_recency_order_early_stop_and_prefix_escaping ... ok
+2026-10-10T08:16:30.7572317Z test index_db_retrieval::tests::symbol_seed_hits_exact_first_and_skips_null_uid ... ok
+2026-10-10T08:16:30.9963702Z test index_db_retrieval::tests::symbol_seed_hits_mixed_case_token_exact_first ... ok
+2026-10-10T08:16:31.1984776Z test index_db_retrieval::tests::symbol_seed_hits_treats_underscore_as_literal ... ok
+2026-10-10T08:16:31.4576234Z test index_db_retrieval::tests::symbol_token_hits_many_exact_name_first_per_token ... ok
+2026-10-10T08:16:31.7257881Z test index_db_retrieval::tests::symbol_token_hits_many_prefixed_keeps_exact_name_first_ordering ... ok
+2026-10-10T08:16:32.0082247Z test index_db_retrieval::tests::symbol_token_hits_many_treats_underscore_as_literal ... ok
+2026-10-10T08:16:32.2489756Z test index_db_retrieval::tests::symbol_uids_by_exact_names_matches_only_listed_names ... ok
+2026-10-10T08:16:32.6086721Z test index_db_snapshot_insert::snapshot_fts_tests::autocommit_keeps_original_partial_failure_and_immediate_mirrors ... ok
+2026-10-10T08:16:33.1384389Z test index_db_snapshot_insert::snapshot_fts_tests::checked_capacity_and_near_maximum_rowids_use_original_fallback ... ok
+2026-10-10T08:16:35.4065290Z P8_FTS_MAX_ROWID_CONTROL={"observations":[{"explain":[[0,"Init",0,15,0,null],[1,"Null",0,1,2,null],[2,"OpenRead",0,9,0,"0"],[3,"Last",0,9,0,null],[4,"Rowid",0,3,0,null],[5,"CollSeq",0,0,0,"BINARY-8"],[6,"AggStep",0,3,2,"max(1)"],[7,"Goto",0,9,0,null],[8,"Prev",0,4,0,null],[9,"AggFinal",2,1,0,"max(1)"],[10,"SCopy",2,4,0,null],[11,"NotNull",4,13,0,null],[12,"Integer",0,4,0,null],[13,"ResultRow",4,1,0,null],[14,"Halt",0,0,0,null],[15,"Transaction",0,0,210,"0"],[16,"Goto",0,1,0,null]],"max_fullscan_steps":0,"maximum":0,"rows":0,"sum_fullscan_steps":0,"table":"files"},{"explain":[[0,"Init",0,15,0,null],[1,"Null",0,1,2,null],[2,"OpenRead",0,81,0,"0"],[3,"Last",0,9,0,null],[4,"Rowid",0,3,0,null],[5,"CollSeq",0,0,0,"BINARY-8"],[6,"AggStep",0,3,2,"max(1)"],[7,"Goto",0,9,0,null],[8,"Prev",0,4,0,null],[9,"AggFinal",2,1,0,"max(1)"],[10,"SCopy",2,4,0,null],[11,"NotNull",4,13,0,null],[12,"Integer",0,4,0,null],[13,"ResultRow",4,1,0,null],[14,"Halt",0,0,0,null],[15,"Transaction",0,0,210,"0"],[16,"Goto",0,1,0,null]],"max_fullscan_steps":0,"maximum":0,"rows":0,"sum_fullscan_steps":0,"table":"literal_index"},{"explain":[[0,"Init",0,15,0,null],[1,"Null",0,1,2,null],[2,"OpenRead",0,9,0,"0"],[3,"Last",0,9,0,null],[4,"Rowid",0,3,0,null],[5,"CollSeq",0,0,0,"BINARY-8"],[6,"AggStep",0,3,2,"max(1)"],[7,"Goto",0,9,0,null],[8,"Prev",0,4,0,null],[9,"AggFinal",2,1,0,"max(1)"],[10,"SCopy",2,4,0,null],[11,"NotNull",4,13,0,null],[12,"Integer",0,4,0,null],[13,"ResultRow",4,1,0,null],[14,"Halt",0,0,0,null],[15,"Transaction",0,0,210,"0"],[16,"Goto",0,1,0,null]],"max_fullscan_steps":0,"maximum":1,"rows":1,"sum_fullscan_steps":0,"table":"files"},{"explain":[[0,"Init",0,15,0,null],[1,"Null",0,1,2,null],[2,"OpenRead",0,81,0,"0"],[3,"Last",0,9,0,null],[4,"Rowid",0,3,0,null],[5,"CollSeq",0,0,0,"BINARY-8"],[6,"AggStep",0,3,2,"max(1)"],[7,"Goto",0,9,0,null],[8,"Prev",0,4,0,null],[9,"AggFinal",2,1,0,"max(1)"],[10,"SCopy",2,4,0,null],[11,"NotNull",4,13,0,null],[12,"Integer",0,4,0,null],[13,"ResultRow",4,1,0,null],[14,"Halt",0,0,0,null],[15,"Transaction",0,0,210,"0"],[16,"Goto",0,1,0,null]],"max_fullscan_steps":0,"maximum":1,"rows":1,"sum_fullscan_steps":0,"table":"literal_index"},{"explain":[[0,"Init",0,15,0,null],[1,"Null",0,1,2,null],[2,"OpenRead",0,9,0,"0"],[3,"Last",0,9,0,null],[4,"Rowid",0,3,0,null],[5,"CollSeq",0,0,0,"BINARY-8"],[6,"AggStep",0,3,2,"max(1)"],[7,"Goto",0,9,0,null],[8,"Prev",0,4,0,null],[9,"AggFinal",2,1,0,"max(1)"],[10,"SCopy",2,4,0,null],[11,"NotNull",4,13,0,null],[12,"Integer",0,4,0,null],[13,"ResultRow",4,1,0,null],[14,"Halt",0,0,0,null],[15,"Transaction",0,0,210,"0"],[16,"Goto",0,1,0,null]],"max_fullscan_steps":0,"maximum":257,"rows":257,"sum_fullscan_steps":256,"table":"files"},{"explain":[[0,"Init",0,15,0,null],[1,"Null",0,1,2,null],[2,"OpenRead",0,81,0,"0"],[3,"Last",0,9,0,null],[4,"Rowid",0,3,0,null],[5,"CollSeq",0,0,0,"BINARY-8"],[6,"AggStep",0,3,2,"max(1)"],[7,"Goto",0,9,0,null],[8,"Prev",0,4,0,null],[9,"AggFinal",2,1,0,"max(1)"],[10,"SCopy",2,4,0,null],[11,"NotNull",4,13,0,null],[12,"Integer",0,4,0,null],[13,"ResultRow",4,1,0,null],[14,"Halt",0,0,0,null],[15,"Transaction",0,0,210,"0"],[16,"Goto",0,1,0,null]],"max_fullscan_steps":0,"maximum":257,"rows":257,"sum_fullscan_steps":256,"table":"literal_index"}],"timing_measurement":false}
+2026-10-10T08:16:35.4167134Z test index_db_snapshot_insert::snapshot_fts_tests::max_rowid_boundaries_use_tail_lookup_with_a_real_scan_control ... ok
+2026-10-10T08:16:37.3158453Z test index_db_snapshot_insert::snapshot_fts_tests::noncanonical_or_temp_schema_falls_back_without_losing_mirrors ... ok
+2026-10-10T08:16:38.2290442Z test index_db_snapshot_insert::snapshot_fts_tests::late_failure_rolls_back_flushed_windows_and_preserves_live_generation ... ok
+2026-10-10T08:16:38.7462615Z test index_db_snapshot_insert::snapshot_fts_tests::public_entry_preserves_partial_state_when_caller_commits_after_error ... ok
+2026-10-10T08:16:39.1563352Z test index_db_rebuild::fault_tests::owned_process_kill_between_sidecar_cleanup_rename_and_reopen_preserves_database ... ok
+2026-10-10T08:16:39.5769321Z test index_db_snapshot_insert::snapshot_fts_tests::private_fts_flush_full_error_abandons_actual_rebuild_without_publication ... ok
+2026-10-10T08:16:39.5963962Z test index_db_snapshot_insert::tests::bound_payload_measures_sql_values_and_keeps_large_rows_legal ... ok
+2026-10-10T08:16:39.6063647Z test index_db_snapshot_insert::tests::failed_window_stops_before_later_rows_or_tables ... ok
+2026-10-10T08:16:41.2175295Z test index_db_snapshot_insert::tests::resolution_snapshot_batches_match_original_order_and_statement_work ... ok
+2026-10-10T08:16:41.2869520Z test index_db_snapshot_insert::tests::resolution_snapshot_byte_windows_keep_legal_large_rows_single ... ok
+2026-10-10T08:16:41.3369698Z test index_db_snapshot_insert::tests::semantic_leaf_batches_reduce_actual_sqlite_statement_runs ... ok
+2026-10-10T08:16:41.4775252Z test index_db_snapshot_insert::snapshot_fts_tests::rowid_range_uses_primary_key_and_reduces_mirror_statement_runs ... ok
+2026-10-10T08:16:41.5688267Z test index_migrate::tests::fresh_db_initializes_schema ... ok
+2026-10-10T08:16:41.8087156Z test index_migrate::tests::matching_version_returns_up_to_date ... ok
+2026-10-10T08:16:42.0194542Z test index_migrate::tests::legacy_parse_and_resolution_versions_require_rebuild ... ok
+2026-10-10T08:16:42.2466199Z test index_migrate::tests::non_adjacent_versions_keep_rebuild_on_mismatch ... ok
+2026-10-10T08:16:42.2666662Z test read_generation::tests::identity_and_epoch_corruption_never_become_zero_generation ... ok
+2026-10-10T08:16:42.2686809Z test index_migrate::tests::old_version_returns_mismatch ... ok
+2026-10-10T08:16:43.2684526Z test read_generation::tests::persisted_identity_survives_reopen_and_differs_at_equal_epochs ... ok
+2026-10-10T08:16:43.8768113Z test seed_symbol_cache::tests::batch_delta_matches_direct_load ... ok
+2026-10-10T08:16:44.2367478Z test seed_symbol_cache::tests::batch_duplicate_uid_folds_like_sql ... ok
+2026-10-10T08:16:44.2394459Z test seed_symbol_cache::tests::build_respects_capacity_cap ... ok
+2026-10-10T08:16:44.5371669Z test seed_symbol_cache::tests::foreign_symbol_writer_invalidates_then_rewarns ... ok
+2026-10-10T08:16:44.5385955Z test seed_symbol_cache::tests::materialize_orders_and_excludes ... ok
+2026-10-10T08:16:44.5468833Z test seed_symbol_cache::tests::projection_strips_non_seed_fields ... ok
+2026-10-10T08:16:44.7196172Z test semantic_coverage::tests::coverage_reads_are_pure_and_zero_limit_is_rejected ... ok
+2026-10-10T08:16:44.8769242Z test semantic_coverage::tests::failed_counts_only_active_space_failures ... ok
+2026-10-10T08:16:45.0306546Z test semantic_coverage::tests::foreign_space_rows_never_count_as_published ... ok
+2026-10-10T08:16:45.0396974Z test read_generation::tests::staged_rebuild_gets_fresh_persistent_identity ... ok
+2026-10-10T08:16:45.1897410Z test semantic_coverage::tests::full_coverage_reports_no_gap_and_no_reason ... ok
+2026-10-10T08:16:45.2198577Z test semantic_coverage::tests::partial_coverage_reports_the_gap_and_the_uncovered_list ... ok
+2026-10-10T08:16:45.3596339Z test semantic_coverage::tests::stale_counts_live_tasks_lagging_the_base_manifest ... ok
+2026-10-10T08:16:45.4370459Z test semantic_coverage::tests::uncovered_projects_authoritative_language_without_dropping_missing_files ... ok
+2026-10-10T08:16:45.5485195Z test semantic_coverage::tests::unwired_semantic_reports_zero_coverage_without_inflating ... ok
+2026-10-10T08:16:45.6484978Z test semantic_coverage::tests::zero_eligible_is_explained_by_documents_and_encoding ... ok
+2026-10-10T08:16:45.7487503Z test semantic_gc_reads::tests::exact_ref_mark_is_reflexive_and_checksum_scoped ... ok
+2026-10-10T08:16:45.8884885Z test semantic_gc_reads::tests::live_task_mark_covers_pending_and_claimed_but_not_terminal_states ... ok
+2026-10-10T08:16:45.9669610Z test semantic_gc_reads::tests::pair_mark_holds_across_spec_and_checksum_and_spaces_are_separate ... ok
+2026-10-10T08:16:46.1169608Z test semantic_manifest_reads::tests::empty_space_scans_empty_and_zero_batch_is_rejected ... ok
+2026-10-10T08:16:46.1375519Z test semantic_manifest_reads::tests::deleted_document_cascades_out_of_the_candidate_stream ... ok
+2026-10-10T08:16:46.3178770Z test semantic_manifest_reads::tests::published_row_reads_the_single_current_publication_whatever_space ... ok
+2026-10-10T08:16:46.3987034Z test semantic_manifest_reads::tests::scan_is_keyset_paginated_and_ordered ... ok
+2026-10-10T08:16:46.4877518Z test semantic_manifest_reads::tests::scan_is_space_isolated_at_the_load_layer ... ok
+2026-10-10T08:16:46.6186125Z test semantic_manifest_reads::tests::scan_joins_language_and_carries_provenance_columns ... ok
+2026-10-10T08:16:46.7475240Z test signature_agg::tests::empty_batch_initializes_missing_baseline ... ok
+2026-10-10T08:16:47.1368365Z test signature_agg::tests::incremental_batch_add_modify_remove_converges ... ok
+2026-10-10T08:16:47.1369365Z test signature_agg::tests::row_agg_add_remove_round_trips ... ok
+2026-10-10T08:16:47.1370283Z test signature_agg::tests::row_agg_distinguishes_duplicate_multisets ... ok
+2026-10-10T08:16:47.1372807Z test signature_agg::tests::serialize_round_trips_and_rejects_other_versions ... ok
+2026-10-10T08:16:47.1573007Z test signature_agg::tests::file_scoped_writers_converge ... ok
+2026-10-10T08:16:47.4583456Z test signature_agg::tests::unit_of_work_synthesis_writes_converge ... ok
+2026-10-10T08:16:47.4683889Z test sql_util::tests::escape_like_escapes_wildcards_and_backslash ... ok
+2026-10-10T08:16:47.5892897Z test signature_agg::tests::synthetic_call_edge_lifecycle_converges ... ok
+2026-10-10T08:16:47.8580751Z test unit_of_work::tests::commit_applies_all_writes_and_bumps_epoch_once ... ok
+2026-10-10T08:16:48.0086185Z test unit_of_work::tests::commit_with_evidence_bumps_evidence_only ... ok
+2026-10-10T08:16:48.2494573Z test unit_of_work::tests::commit_with_index_and_semantic_bumps_both_exactly_once ... ok
+2026-10-10T08:16:48.4489521Z test unit_of_work::tests::default_commit_keeps_index_only_semantics_and_semantic_absent ... ok
+2026-10-10T08:16:48.5885532Z test unit_of_work::tests::drop_without_commit_rolls_back_and_leaves_epoch_untouched ... ok
+2026-10-10T08:16:48.7994590Z test unit_of_work::tests::repeat_ack_without_visible_change_does_not_bump_semantic_epoch ... ok
+2026-10-10T08:16:56.2482338Z test index_db_snapshot_insert::snapshot_fts_tests::windows_preserve_all_rows_fts_search_and_cross_path_survivors ... ok
+2026-10-10T08:16:57.4769649Z test index_db_rebuild::fault_tests::failed_read_pool_reopen_leaves_no_partially_installed_writer_or_stale_reads ... ok
+2026-10-10T08:16:57.4770378Z 
+2026-10-10T08:16:57.4770711Z test result: ok. 206 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 52.40s
+2026-10-10T08:16:57.4771464Z 
+2026-10-10T08:16:57.5767946Z [1m[92m     Running[0m tests/ci_schema_guard_contract.rs (target/debug/deps/ci_schema_guard_contract-ac86f4db610f7136)
+2026-10-10T08:16:57.6071045Z 
+2026-10-10T08:16:57.6071466Z running 5 tests
+2026-10-10T08:16:58.0374282Z test fresh_index_really_initializes_current_schema ... ok
+2026-10-10T08:16:58.7306214Z test nonadjacent_versions_still_require_rebuild ... ok
+2026-10-10T08:16:59.7377814Z test committed_v21_upgrade_invalidates_legacy_rows_and_incarnation ... ok
+2026-10-10T08:16:59.9782595Z test committed_v24_requires_rebuild_and_invalidates_legacy_rows ... ok
+2026-10-10T08:17:00.0430670Z test current_schema_identity_index_preserves_rows_and_uses_indexed_fk_cascade ... ok
+2026-10-10T08:17:00.0431306Z 
+2026-10-10T08:17:00.0431764Z test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.44s
+2026-10-10T08:17:00.0432358Z 
+2026-10-10T08:17:00.0535211Z [1m[92m     Running[0m tests/fts_identifier_expansion.rs (target/debug/deps/fts_identifier_expansion-31ad596a8da919c8)
+2026-10-10T08:17:00.0725843Z 
+2026-10-10T08:17:00.0726008Z running 13 tests
+2026-10-10T08:17:00.1235128Z test full_identifier_and_all_components_are_both_useful ... ok
+2026-10-10T08:17:00.1324467Z test expansion_requires_all_components_not_just_one ... ok
+2026-10-10T08:17:00.1425592Z test independent_natural_words_still_have_or_semantics ... ok
+2026-10-10T08:17:00.1433658Z test acronym_and_number_boundaries_preserve_every_distinct_component ... ok
+2026-10-10T08:17:00.1534286Z test multiple_groups_share_one_atom_budget_without_dropping_originals ... ok
+2026-10-10T08:17:00.1631679Z test one_distinct_component_never_degrades_to_generic_fragment ... ok
+2026-10-10T08:17:00.1828124Z test oversized_identifier_group_is_omitted_as_a_whole ... ok
+2026-10-10T08:17:00.1834721Z test original_terms_have_priority_and_an_expansion_is_never_truncated ... ok
+2026-10-10T08:17:00.1927731Z test snake_whole_preserves_phrase_and_parts_support_reordering ... ok
+2026-10-10T08:17:00.2025050Z test unicode_original_terms_coexist_with_compound_all_components ... ok
+2026-10-10T08:17:00.2124296Z test unknown_identifier_does_not_buy_recall_from_a_generic_fragment ... ok
+2026-10-10T08:17:00.2128918Z test source_token_limit_is_explicit_and_does_not_claim_full_input_coverage ... ok
+2026-10-10T08:17:00.2134045Z test literal_fts_operators_and_punctuation_cannot_control_match_syntax ... ok
+2026-10-10T08:17:00.2134627Z 
+2026-10-10T08:17:00.2134958Z test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+2026-10-10T08:17:00.2135334Z 
+2026-10-10T08:17:00.2225767Z [1m[92m     Running[0m tests/incremental_write_bench.rs (target/debug/deps/incremental_write_bench-5e85734bee650e49)
+2026-10-10T08:17:00.2332744Z 
+2026-10-10T08:17:00.2333413Z running 2 tests
+2026-10-10T08:17:00.2334372Z test bench_concurrent_reads_during_incremental_writes ... ignored, read-during-write micro-benchmark; run explicitly with --release
+2026-10-10T08:17:00.2335688Z test bench_incremental_batch_write_10k ... ignored, write-path micro-benchmark; run explicitly with --release
+2026-10-10T08:17:00.2336290Z 
+2026-10-10T08:17:00.2336793Z test result: ok. 0 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-10-10T08:17:00.2337418Z 
+2026-10-10T08:17:00.2338723Z [1m[92m     Running[0m tests/p2b_resolution_store.rs (target/debug/deps/p2b_resolution_store-d41376e032984943)
+2026-10-10T08:17:00.2525303Z 
+2026-10-10T08:17:00.2525873Z running 7 tests
+2026-10-10T08:17:00.9327956Z test corrupt_payload_is_rejected ... ok
+2026-10-10T08:17:01.0331533Z test package_aggregate_tracks_files_and_test_visibility ... ok
+2026-10-10T08:17:01.2430049Z test dependency_manifest_roundtrip_reverse_lookup_delete_and_rollback ... ok
+2026-10-10T08:17:02.0629092Z test public_snapshot_dependency_failure_preserves_original_catch_and_commit_prefix ... ok
+2026-10-10T08:17:02.3727877Z test bounded_frontier_excludes_changed_files_before_counting_and_crosses_batches ... ok
+2026-10-10T08:17:04.2449247Z test snapshot_dependency_manifest_and_rows_match_original_full_writer ... ok
+2026-10-10T08:17:04.6250859Z test snapshot_dependency_failure_keeps_live_rows_and_generation_like_original ... ok
+2026-10-10T08:17:04.6251330Z 
+2026-10-10T08:17:04.6251615Z test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.37s
+2026-10-10T08:17:04.6339615Z 
+2026-10-10T08:17:04.6360323Z [1m[92m     Running[0m tests/p2c_freshness_store.rs (target/debug/deps/p2c_freshness_store-7710cc01dc65b85a)
+2026-10-10T08:17:04.6676843Z 
+2026-10-10T08:17:04.6677060Z running 6 tests
+2026-10-10T08:17:05.5055099Z test invalid_frontier_precedes_a_file_mutation_error ... ok
+2026-10-10T08:17:05.5056932Z test failed_file_batch_never_acknowledges_or_publishes_debt ... ok
+2026-10-10T08:17:05.5059029Z test invalid_frontier_fails_before_file_commit_and_bad_hash_is_not_ready ... ok
+2026-10-10T08:17:05.6148198Z test debt_and_file_facts_share_epoch_and_survive_reopen ... ok
+2026-10-10T08:17:05.9058028Z test stale_prepare_is_fenced_inside_the_writer_transaction ... ok
+2026-10-10T08:17:05.9751758Z test prepared_frontier_keeps_legacy_bytes_and_late_failure_rolls_back_facts ... ok
+2026-10-10T08:17:05.9752469Z 
+2026-10-10T08:17:05.9752838Z test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.31s
+2026-10-10T08:17:05.9753874Z 
+2026-10-10T08:17:05.9772405Z [1m[92m     Running[0m tests/p2d_dependency_cost.rs (target/debug/deps/p2d_dependency_cost-3dd574927aa83a1f)
+2026-10-10T08:17:06.0067627Z 
+2026-10-10T08:17:06.0067930Z running 1 test
+2026-10-10T08:17:15.7281578Z test p2d_dependency_queries_bound_rows_across_unrelated_scale_and_completed_prefixes ... ok
+2026-10-10T08:17:15.7341763Z 
+2026-10-10T08:17:15.7342489Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 9.72s
+2026-10-10T08:17:15.7442570Z 
+2026-10-10T08:17:15.7479043Z [1m[92m     Running[0m tests/p7_configured_space_transition.rs (target/debug/deps/p7_configured_space_transition-997cee82e209e27e)
+2026-10-10T08:17:15.7578097Z 
+2026-10-10T08:17:15.7578593Z running 3 tests
+2026-10-10T08:17:16.2344844Z test explicit_transition_registers_activates_and_records_revision_atomically ... ok
+2026-10-10T08:17:16.2884376Z test external_writer_wait_does_not_block_close_or_allow_late_switch ... ok
+2026-10-10T08:17:16.4784807Z test retired_or_stale_incarnation_cannot_register_or_switch ... ok
+2026-10-10T08:17:16.4879985Z 
+2026-10-10T08:17:16.4881016Z test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.72s
+2026-10-10T08:17:16.4881832Z 
+2026-10-10T08:17:16.4982237Z [1m[92m     Running[0m tests/public_surface_store.rs (target/debug/deps/public_surface_store-53ee8fcf6a9e9a3e)
+2026-10-10T08:17:16.5281280Z 
+2026-10-10T08:17:16.5283396Z running 6 tests
+2026-10-10T08:17:17.3383308Z test nonempty_surface_roundtrip_canonicalizes_declaration_order ... ok
+2026-10-10T08:17:17.4683631Z test a_bad_surface_rolls_back_the_whole_file_batch ... ok
+2026-10-10T08:17:17.5082817Z test corrupt_fingerprint_and_new_format_fail_closed ... ok
+2026-10-10T08:17:17.9096327Z test surface_roundtrip_shares_file_epoch_and_cascades_on_delete ... ok
+2026-10-10T08:17:18.9494439Z test batched_surface_reads_cross_placeholder_boundary_without_losing_empty_unknown ... ok
+2026-10-10T08:17:20.3610249Z test previous_schema_cannot_reuse_absent_surface_evidence ... ok
+2026-10-10T08:17:20.3610870Z 
+2026-10-10T08:17:20.3611357Z test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.83s
+2026-10-10T08:17:20.3612058Z 
+2026-10-10T08:17:20.3921586Z [1m[92m     Running[0m tests/resolver_bind_independent_review.rs (target/debug/deps/resolver_bind_independent_review-1662a0475c32272d)
+2026-10-10T08:17:20.4414487Z 
+2026-10-10T08:17:20.4414866Z running 4 tests
+2026-10-10T08:17:21.2111413Z test embedded_nul_api_observation ... ok
+2026-10-10T08:17:21.5518323Z test literal_set_semantics_null_safety_and_order ... ok
+2026-10-10T08:17:33.0934205Z test actual_legacy_overflow_or_fixed_large_inputs ... ok
+2026-10-10T08:18:20.4470087Z test fifty_thousand_file_database_real_queries has been running for over 60 seconds
+2026-10-10T08:20:20.2989611Z test fifty_thousand_file_database_real_queries ... ok
+2026-10-10T08:20:20.2990042Z 
+2026-10-10T08:20:20.2990472Z test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 179.86s
+2026-10-10T08:20:20.2991363Z 
+2026-10-10T08:20:20.3394135Z [1m[92m     Running[0m tests/resolver_seed_large_exclusion.rs (target/debug/deps/resolver_seed_large_exclusion-ce762b7d4680e000)
+2026-10-10T08:20:20.3488550Z 
+2026-10-10T08:20:20.3488759Z running 1 test
+2026-10-10T08:20:21.5995470Z test large_exclusion_keeps_literal_order_and_escaped_paths_without_bind_overflow ... ok
+2026-10-10T08:20:21.5996263Z 
+2026-10-10T08:20:21.5996849Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.25s
+2026-10-10T08:20:21.5997446Z 
+2026-10-10T08:20:21.6006614Z [1m[92m     Running[0m tests/semantic_coverage.rs (target/debug/deps/semantic_coverage-10ff5312f2d96546)
+2026-10-10T08:20:21.6100225Z 
+2026-10-10T08:20:21.6100431Z running 3 tests
+2026-10-10T08:20:22.0510570Z test coverage_facade_pairs_a_strict_generation_snapshot_with_publication ... ok
+2026-10-10T08:20:22.1310091Z test primitive_counts_agree_with_facade_on_a_stable_database ... ok
+2026-10-10T08:20:22.1316957Z test unwired_facade_reports_honest_zero_and_none_epoch ... ok
+2026-10-10T08:20:22.1317365Z 
+2026-10-10T08:20:22.1317646Z test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.52s
+2026-10-10T08:20:22.1318019Z 
+2026-10-10T08:20:22.1513541Z [1m[92m     Running[0m tests/semantic_lease.rs (target/debug/deps/semantic_lease-f76225eec0c64550)
+2026-10-10T08:20:22.1724467Z 
+2026-10-10T08:20:22.1724735Z running 9 tests
+2026-10-10T08:20:22.5422451Z test claim_skips_future_and_serves_oldest_with_identity ... ok
+2026-10-10T08:20:22.5423884Z test fresh_token_per_attempt_and_old_token_dead_on_retry ... ok
+2026-10-10T08:20:22.5514835Z test expired_lease_reclaimed_then_old_owner_fenced_out ... ok
+2026-10-10T08:20:22.8415047Z test heartbeat_renews_and_lost_lease_heartbeats_fail ... ok
+2026-10-10T08:20:22.8418764Z test retry_exhaustion_dead_letters_to_failed ... ok
+2026-10-10T08:20:23.0823714Z test superseded_task_unclaimable_and_unackable ... ok
+2026-10-10T08:20:23.1113303Z test wrong_token_and_owner_mismatch_are_fenced ... ok
+2026-10-10T08:20:23.1820330Z test lease_lifecycle_is_auxiliary_zero_epoch_bumps ... ok
+2026-10-10T08:20:23.4020442Z test concurrent_claim_exactly_one_winner ... ok
+2026-10-10T08:20:23.4021285Z 
+2026-10-10T08:20:23.4021894Z test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.23s
+2026-10-10T08:20:23.4022662Z 
+2026-10-10T08:20:23.4120148Z [1m[92m     Running[0m tests/semantic_outbox.rs (target/debug/deps/semantic_outbox-4c07976e5d2c8ca6)
+2026-10-10T08:20:23.4224106Z 
+2026-10-10T08:20:23.4224328Z running 20 tests
+2026-10-10T08:20:23.7322446Z test duplicate_live_upsert_conflicts_fail_stop ... ok
+2026-10-10T08:20:24.2225552Z test failed_batch_rolls_back_no_half_task ... ok
+2026-10-10T08:20:24.3133569Z test file_removal_revokes_manifest_and_supersedes_without_embed ... ok
+2026-10-10T08:20:24.5323954Z test guarded_fifo_matches_original_cas_through_retry_and_clock_boundaries ... ok
+2026-10-10T08:20:24.8530825Z test incremental_batch_without_active_space_keeps_default_behavior ... ok
+2026-10-10T08:20:24.8827047Z test no_active_space_is_a_full_noop ... ok
+2026-10-10T08:20:24.8916453Z test incremental_batch_with_active_space_enqueues_embed_and_bumps_semantic_once ... ok
+2026-10-10T08:20:25.0423458Z test ready_query_filters_and_orders ... ok
+2026-10-10T08:20:25.0427527Z test ready_query_uses_the_ready_index ... ok
+2026-10-10T08:20:25.1733521Z test removals_revoke_manifest_and_supersede_without_embed ... ok
+2026-10-10T08:20:25.3814535Z test remove_files_batch_supersedes_without_embed ... ok
+2026-10-10T08:20:25.6026072Z test rewritten_doc_keeps_exactly_one_live_embed ... ok
+2026-10-10T08:20:25.6423891Z test replace_files_batch_enqueues_embed_with_semantic_effect ... ok
+2026-10-10T08:20:25.6424947Z test state_transition_table_is_exact ... ok
+2026-10-10T08:20:25.9527953Z test rollback_leaves_no_outbox_or_manifest_trace ... ok
+2026-10-10T08:20:25.9925731Z test transition_guards_in_database ... ok
+2026-10-10T08:20:26.0923474Z test fifo_physical_index_preserves_existing_current_logical_data ... ok
+2026-10-10T08:20:26.2024269Z test two_active_spaces_fail_stop ... ok
+2026-10-10T08:20:26.2124357Z test upsert_supersedes_old_and_enqueues_one_pending_embed ... ok
+2026-10-10T08:20:27.0220238Z test original_and_guarded_fifo_have_identical_normal_cas_competition ... ok
+2026-10-10T08:20:27.0220840Z 
+2026-10-10T08:20:27.0221286Z test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.60s
+2026-10-10T08:20:27.0221892Z 
+2026-10-10T08:20:27.0318088Z [1m[92m     Running[0m tests/semantic_publish.rs (target/debug/deps/semantic_publish-8e2be8a409778aa9)
+2026-10-10T08:20:27.0415277Z 
+2026-10-10T08:20:27.0415503Z running 11 tests
+2026-10-10T08:20:27.3815776Z test deleted_document_is_fenced_out ... ok
+2026-10-10T08:20:27.3816668Z test expired_reclaimed_lease_fences_the_old_publish ... ok
+2026-10-10T08:20:27.6825339Z test facade_rejection_commits_retry_without_any_epoch_bump ... ok
+2026-10-10T08:20:27.7923339Z test duplicate_ack_of_identical_content_acks_without_bumping ... ok
+2026-10-10T08:20:27.9016129Z test lost_lease_is_fenced_out_without_touching_anything ... ok
+2026-10-10T08:20:28.0225876Z test non_active_space_is_fenced_out ... ok
+2026-10-10T08:20:28.1825650Z test input_digest_mismatch_is_fenced_out ... ok
+2026-10-10T08:20:28.2719658Z test rejection_retries_with_backoff_then_dead_letters_on_exhaustion ... ok
+2026-10-10T08:20:28.3328217Z test stale_doc_version_cannot_attach_to_a_newer_document ... ok
+2026-10-10T08:20:28.3725345Z test publish_cas_happy_path_bumps_semantic_exactly_once ... ok
+2026-10-10T08:20:28.4425116Z test stale_incarnation_is_fenced_out ... ok
+2026-10-10T08:20:28.4425587Z 
+2026-10-10T08:20:28.4426196Z test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.40s
+2026-10-10T08:20:28.4426614Z 
+2026-10-10T08:20:28.4528606Z [1m[92m     Running[0m tests/semantic_queue.rs (target/debug/deps/semantic_queue-ce951f168ab14fdf)
+2026-10-10T08:20:28.4835894Z 
+2026-10-10T08:20:28.4836542Z running 3 tests
+2026-10-10T08:20:28.9432215Z test facade_reclaim_returns_only_expired_leases_to_pending ... ok
+2026-10-10T08:20:28.9837762Z test facade_claim_renew_and_retry_keep_the_fenced_semantics ... ok
+2026-10-10T08:20:29.1636386Z test claim_fairness_doc_rotation_serves_the_least_recently_touched_doc_first ... ok
+2026-10-10T08:20:29.1636933Z 
+2026-10-10T08:20:29.1644677Z test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.68s
+2026-10-10T08:20:29.1645283Z 
+2026-10-10T08:20:29.1733323Z [1m[92m     Running[0m tests/semantic_rebuild.rs (target/debug/deps/semantic_rebuild-f82e8bbc28e9aaa4)
+2026-10-10T08:20:29.1835305Z 
+2026-10-10T08:20:29.1835648Z running 3 tests
+2026-10-10T08:20:29.5642001Z test enqueue_semantic_rebuild_plan_requeues_desired_set_and_bumps_semantic_once_per_change ... ok
+2026-10-10T08:20:30.3759552Z test rebuild_epoch_vector_advances_and_semantic_epoch_starts_absent ... ok
+2026-10-10T08:20:30.4363682Z test pre_swap_process_is_fenced_out_of_publish_and_claim_after_the_swap ... ok
+2026-10-10T08:20:30.4364473Z 
+2026-10-10T08:20:30.4365036Z test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.25s
+2026-10-10T08:20:30.4365665Z 
+2026-10-10T08:20:30.4469608Z [1m[92m     Running[0m tests/semantic_recovery.rs (target/debug/deps/semantic_recovery-c7b465f9231445c2)
+2026-10-10T08:20:30.4660328Z 
+2026-10-10T08:20:30.4660624Z running 4 tests
+2026-10-10T08:20:31.0777975Z test hand_back_primitive_fences_and_never_consumes_an_attempt ... ok
+2026-10-10T08:20:31.1071696Z test dead_letter_census_counts_only_the_active_space_failures ... ok
+2026-10-10T08:20:31.1165735Z test desired_set_bounded_keyset_pagination_matches_the_unbounded_projection ... ok
+2026-10-10T08:20:31.1276988Z test bounded_reclaim_pages_through_expired_leases_and_reports_exhaustion ... ok
+2026-10-10T08:20:31.1277464Z 
+2026-10-10T08:20:31.1360978Z test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.66s
+2026-10-10T08:20:31.1361767Z 
+2026-10-10T08:20:31.1466568Z [1m[92m     Running[0m tests/semantic_schema.rs (target/debug/deps/semantic_schema-9317f12b9695f07e)
+2026-10-10T08:20:31.1567143Z 
+2026-10-10T08:20:31.1567349Z running 6 tests
+2026-10-10T08:20:31.5165074Z test semantic_outbox_op_and_state_domains_are_typed ... ok
+2026-10-10T08:20:31.5166485Z test semantic_manifest_pk_fk_and_cascade ... ok
+2026-10-10T08:20:31.5175647Z test fresh_database_carries_semantic_tables_at_current_version ... ok
+2026-10-10T08:20:31.5264586Z test semantic_outbox_at_most_one_live_task_per_doc_and_space ... ok
+2026-10-10T08:20:31.6468487Z test semantic_spaces_state_domain_and_active_read_pattern ... ok
+2026-10-10T08:20:32.2560539Z test v21_file_database_requires_reindex ... ok
+2026-10-10T08:20:32.2560936Z 
+2026-10-10T08:20:32.2561323Z test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.10s
+2026-10-10T08:20:32.2561861Z 
+2026-10-10T08:20:32.2571711Z [1m[92m     Running[0m tests/semantic_space_switch.rs (target/debug/deps/semantic_space_switch-03ea49a06d0df2ab)
+2026-10-10T08:20:32.2797412Z 
+2026-10-10T08:20:32.2797672Z running 10 tests
+2026-10-10T08:20:32.5962640Z test first_activation_has_no_previous_active_and_no_epoch_bump ... ok
+2026-10-10T08:20:32.6268433Z test re_switch_of_a_revoked_space_supersedes_stale_live_revokes_before_reenqueue ... ok
+2026-10-10T08:20:32.8564222Z test consume_revoke_never_touches_another_space_row_and_loses_to_stale_token ... ok
+2026-10-10T08:20:32.8565337Z test register_inserts_backfilling_and_refuses_any_existing_row ... ok
+2026-10-10T08:20:32.8570118Z test space_transition_table_admits_exactly_the_three_edges ... ok
+2026-10-10T08:20:32.8959692Z test consume_revoke_deletes_own_space_row_and_bumps_exactly_on_change ... ok
+2026-10-10T08:20:33.1362557Z test switch_requires_known_space_and_legal_target_state ... ok
+2026-10-10T08:20:33.1560989Z test switch_appends_pinned_false_audit_event_to_metadata_log ... ok
+2026-10-10T08:20:33.1874214Z test switch_revokes_old_activates_new_and_produces_revoke_tasks ... ok
+2026-10-10T08:20:33.1985722Z test space_switch_facades_end_to_end_epoch_and_states ... ok
+2026-10-10T08:20:33.1986212Z 
+2026-10-10T08:20:33.1986640Z test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.92s
+2026-10-10T08:20:33.1987049Z 
+2026-10-10T08:20:33.2071672Z [1m[92m     Running[0m tests/test_edge_empty_population.rs (target/debug/deps/test_edge_empty_population-c2fe127989fd8629)
+2026-10-10T08:20:33.2165386Z 
+2026-10-10T08:20:33.2165704Z running 4 tests
+2026-10-10T08:20:33.7972568Z test a_real_test_file_retains_both_incremental_branches ... ok
+2026-10-10T08:20:33.7973990Z test no_tests_preserves_scoped_deletion_and_single_epoch_commit ... ok
+2026-10-10T08:20:33.8073556Z test malformed_flag_keeps_existing_error_and_transaction_rollback ... ok
+2026-10-10T08:21:32.7181485Z test fifty_thousand_non_test_additions_have_no_edges_and_one_commit ... ok
+2026-10-10T08:21:32.7181872Z 
+2026-10-10T08:21:32.7182467Z test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 59.50s
+2026-10-10T08:21:32.7182969Z 
+2026-10-10T08:21:32.7286663Z [1m[92m     Running[0m unittests src/lib.rs (target/debug/deps/cc_eval-93be0e8965328c31)
+2026-10-10T08:21:32.7801172Z 
+2026-10-10T08:21:32.7802144Z running 78 tests
+2026-10-10T08:21:32.8196178Z test benchmark::ablation::mechanism::tests::fixed_controls_match_current_product_source_once ... ok
+2026-10-10T08:21:32.8896999Z test benchmark::ablation::mechanism::tests::absent_duplicate_and_unexpected_receipts_cannot_prove_isolation ... ok
+2026-10-10T08:21:32.8996471Z test benchmark::ablation::mechanism::tests::public_semantic_with_local_lanes_cannot_masquerade_as_dense_only ... ok
+2026-10-10T08:21:32.9492634Z test benchmark::ablation::tests::binary_and_compiler_drift_cannot_be_compared ... ok
+2026-10-10T08:21:32.9884667Z test benchmark::ablation::tests::identical_options_except_target_dir_pass_with_positional_metrics ... ok
+2026-10-10T08:21:32.9888920Z test benchmark::ablation::tests::exact_source_controls_reject_undeclared_edits_and_files ... ok
+2026-10-10T08:21:33.0088024Z test benchmark::ablation::tests::matrix_requires_every_cell_and_unique_factor_paths ... ok
+2026-10-10T08:21:33.0188346Z test benchmark::ablation::tests::missing_target_dir_is_rejected ... ok
+2026-10-10T08:21:33.0388636Z test benchmark::ablation::tests::malformed_plan_and_hints_fail_closed ... ok
+2026-10-10T08:21:33.0793793Z test benchmark::ablation::tests::rustc_version_drift_is_rejected_by_semantic_projection ... ok
+2026-10-10T08:21:33.0888396Z test benchmark::ablation::tests::rustflags_drift_is_rejected_by_semantic_projection ... ok
+2026-10-10T08:21:33.1184600Z test benchmark::ablation::tests::shared_target_dir_across_cells_is_rejected ... ok
+2026-10-10T08:21:33.1193913Z test benchmark::ablation::tests::unknown_build_option_key_fails_closed ... ok
+2026-10-10T08:21:33.1394355Z test benchmark::adapters::mcp_stdio::inventory_tests::keyset_query_quotes_cursor_and_has_a_fixed_limit ... ok
+2026-10-10T08:21:33.1588773Z test benchmark::ablation::tests::profile_features_jobs_binding_drift_is_rejected ... ok
+2026-10-10T08:21:33.1592607Z test benchmark::adapters::mcp_stdio::inventory_tests::same_count_with_wrong_path_is_not_ready ... ok
+2026-10-10T08:21:33.1689038Z test benchmark::adapters::mcp_stdio::inventory_tests::missing_inputs_remain_unknown_and_generated_config_is_explicit ... ok
+2026-10-10T08:21:33.1784991Z test benchmark::adapters::mcp_stdio::inventory_tests::size_count_and_epoch_drift_are_rejected ... ok
+2026-10-10T08:21:33.1787656Z test benchmark::adapters::mcp_stdio::inventory_tests::truncated_duplicate_or_inconsistent_pages_are_rejected ... ok
+2026-10-10T08:21:33.2486116Z test benchmark::ablation::tests::consistently_missing_required_semantic_key_is_rejected ... ok
+2026-10-10T08:21:33.2494657Z test benchmark::ablation::tests::unknown_projection_kind_or_version_is_rejected ... ok
+2026-10-10T08:21:33.2588771Z test benchmark::oracle::projection_tests::borrowed_projection_uses_original_value_real_encoding ... ok
+2026-10-10T08:21:33.2590130Z test benchmark::oracle::projection_tests::borrowed_serialization_equal_lifetime_release_cost_probe ... ignored, explicit finite release cost observation; no timing acceptance threshold
+2026-10-10T08:21:33.2591871Z test benchmark::oracle::projection_tests::borrowed_serialization_release_cost_probe ... ignored, explicit finite release cost observation; no timing acceptance threshold
+2026-10-10T08:21:33.2694420Z test benchmark::oracle::projection_tests::projection_error_clears_partial_and_prior_values_before_recovery ... ok
+2026-10-10T08:21:33.2785332Z test benchmark::oracle::projection_tests::borrowed_projection_preserves_select_error_order_and_recovers ... ok
+2026-10-10T08:21:33.2787853Z test benchmark::oracle::projection_tests::borrowed_projection_matches_owned_bytes_for_reordered_and_duplicate_columns ... ok
+2026-10-10T08:21:33.2790448Z test benchmark::oracle::projection_tests::reused_projection_keeps_exact_sql_value_bytes_and_only_its_layout ... ok
+2026-10-10T08:21:33.3192418Z test benchmark::oracle::streaming::tests::batch_inserts_reduce_actual_statements_with_bounded_pending_bytes ... ok
+2026-10-10T08:21:33.4886353Z test benchmark::oracle::streaming::tests::batched_spool_budget_errors_match_original_and_never_commit_pending_rows ... ok
+2026-10-10T08:21:33.5085837Z test benchmark::oracle::streaming::tests::borrowed_cursor_pair_keeps_original_step_and_conversion_error_order ... ok
+2026-10-10T08:21:33.5292704Z test benchmark::oracle::streaming::tests::batched_spool_scratch_exhaustion_remains_an_error ... ok
+2026-10-10T08:21:33.5391137Z test benchmark::oracle::streaming::tests::borrowed_cursor_pair_preserves_both_rows_duplicates_and_asymmetric_eof ... ok
+2026-10-10T08:21:33.5491030Z test benchmark::oracle::streaming::tests::borrowed_cursor_text_matches_owned_conversion_and_row_storage ... ok
+2026-10-10T08:21:33.5585801Z test benchmark::oracle::streaming::tests::named_capacity_never_widens_general_oracle_admission ... ok
+2026-10-10T08:21:33.5590946Z test benchmark::oracle::streaming::tests::sole_primary_tree_preserves_duplicate_order_without_external_sorting ... ok
+2026-10-10T08:21:33.5898096Z test benchmark::p8_load::artifact_budget_tests::contended_reservations_never_exceed_limit_or_lose_successes ... ok
+2026-10-10T08:21:33.6089790Z test benchmark::p8_load::artifact_budget_tests::rejected_reservations_preserve_the_counter_at_limit_and_overflow_boundaries ... ok
+2026-10-10T08:21:33.6091820Z test benchmark::p8_load::artifact_budget_tests::reservation_preserves_counter_on_overflow_or_budget_exhaustion ... ok
+2026-10-10T08:21:33.6189064Z test benchmark::p8_load::artifact_budget_tests::concurrent_reservations_fill_only_whole_reservations_within_the_budget ... ok
+2026-10-10T08:21:33.6190892Z test benchmark::p8_load::stderr_tests::stderr_write_failure_is_visible_and_input_is_still_drained ... ok
+2026-10-10T08:21:33.6288987Z test benchmark::sampler::process_probe_tests::cpu_tick_conversion_is_checked_and_preserves_units ... ok
+2026-10-10T08:21:33.6589389Z test benchmark::p8_load::stderr_tests::stderr_drain_retains_only_the_bounded_prefix_and_accounts_for_suffix ... ok
+2026-10-10T08:21:33.6689311Z test benchmark::sampler::process_probe_tests::linux::invalid_units_and_rss_overflow_are_unavailable_cpu_overflow_stays_raw ... ok
+2026-10-10T08:21:33.7098657Z test benchmark::sampler::process_probe_tests::linux::disabled_probe_is_unavailable_in_an_isolated_process ... ok
+2026-10-10T08:21:33.7194519Z test benchmark::sampler::process_probe_tests::linux::malformed_dead_or_mismatched_process_is_unavailable ... ok
+2026-10-10T08:21:33.7293303Z test benchmark::sampler::process_probe_tests::linux::proc_stat_handles_parentheses_whitespace_and_documented_units ... ok
+2026-10-10T08:21:33.7493561Z test benchmark::sampler::process_probe_tests::self_usage_has_direct_identity_and_monotonic_cpu_without_procfs_lookup ... ok
+2026-10-10T08:21:33.8487100Z test benchmark::sampler::process_probe_tests::stalled_resource_probe_is_unavailable_not_zero_or_infinite_wait ... ok
+2026-10-10T08:21:33.8786913Z test benchmark::sampler::process_probe_tests::unresponsive_optional_probe_cannot_block_or_accumulate_workers ... ok
+2026-10-10T08:21:33.8789470Z test benchmark::statistics::legacy_latency_ns_tests::preserves_empty_single_and_submicrosecond_wire_values ... ok
+2026-10-10T08:21:33.8792520Z test benchmark::statistics::legacy_latency_ns_tests::preserves_nearest_rank_boundaries_without_rounding_to_microseconds ... ok
+2026-10-10T08:21:33.9187006Z test benchmark::sampler::process_probe_tests::linux::live_child_snapshot_is_attributed_monotonic_and_disappears ... ok
+2026-10-10T08:21:34.1087410Z test synth::tests::synth_ground_truth_facts_match_emitted_content ... ok
+2026-10-10T08:21:34.1187201Z test tests::assertion_array_contains_item ... ok
+2026-10-10T08:21:34.1286822Z test tests::assertion_check_field_equals ... ok
+2026-10-10T08:21:34.1386607Z test tests::assertion_check_field_exists ... ok
+2026-10-10T08:21:34.1387420Z test tests::assertion_check_min_results ... ok
+2026-10-10T08:21:34.1388219Z test tests::assertion_check_output_contains ... ok
+2026-10-10T08:21:34.1389122Z test tests::assertion_expected_error_fail ... ok
+2026-10-10T08:21:34.1486559Z test tests::assertion_expected_error_pass ... ok
+2026-10-10T08:21:34.1586564Z test tests::assertion_expected_symbols_enforces_recall_threshold ... ok
+2026-10-10T08:21:34.3494258Z test tests::assertion_field_matches_regex ... ok
+2026-10-10T08:21:34.3685345Z test tests::assertion_negate ... ok
+2026-10-10T08:21:34.3686142Z test tests::assertion_output_not_contains ... ok
+2026-10-10T08:21:34.3887730Z test tests::bench_incremental_dirty_closure ... ignored, measures dirty-closure incremental rebuild latency; run explicitly
+2026-10-10T08:21:34.4087873Z test tests::bench_incremental_noop ... ignored, measures incremental no-op rebuild latency; run explicitly
+2026-10-10T08:21:34.4090714Z test tests::bench_incremental_single_file ... ignored, measures single-file incremental rebuild latency; run explicitly
+2026-10-10T08:21:34.4095643Z test synth::tests::synth_generation_is_deterministic ... ok
+2026-10-10T08:21:34.4189733Z test tests::benchmark_incremental_index_report_correctness ... ignored, benchmarks incremental indexing report counters; run explicitly
+2026-10-10T08:21:34.4287344Z test tests::benchmark_real_workspace ... ignored, benchmarks the real workspace copy; run explicitly
+2026-10-10T08:21:34.4288966Z test tests::corpus_load_new_format ... ok
+2026-10-10T08:21:34.4289953Z test tests::incremental_latency_summary_computation ... ok
+2026-10-10T08:21:35.4184964Z test benchmark::oracle::streaming::tests::batched_spool_matches_original_at_tier_and_byte_boundaries ... ok
+2026-10-10T08:21:35.4186795Z test tests::report_summary_computation ... ok
+2026-10-10T08:21:38.0085981Z test benchmark::oracle::projection_tests::borrowed_projection_preserves_escaped_byte_lengths_at_row_boundaries ... ok
+2026-10-10T08:22:19.5500830Z test tests::integration_fixtures_and_corpus ... ok
+2026-10-10T08:22:34.3559990Z test tests::benchmark_fixture has been running for over 60 seconds
+2026-10-10T08:23:31.6299652Z test tests::benchmark_fixture ... FAILED
+2026-10-10T08:23:31.6394346Z 
+2026-10-10T08:23:31.6398473Z failures:
+2026-10-10T08:23:31.6400410Z 
+2026-10-10T08:23:31.6400733Z ---- tests::benchmark_fixture stdout ----
+2026-10-10T08:23:31.6401373Z # Benchmark Results
+2026-10-10T08:23:31.6401613Z 
+2026-10-10T08:23:31.6401766Z Generated: 2026-10-10T08:23:31.559614879+00:00
+2026-10-10T08:23:31.6402091Z Dataset: fixture
+2026-10-10T08:23:31.6402319Z Files: 18
+2026-10-10T08:23:31.6402443Z 
+2026-10-10T08:23:31.6402544Z ## Per-Tool Latency
+2026-10-10T08:23:31.6402696Z 
+2026-10-10T08:23:31.6494406Z Methodology: cold = first call of a fresh MCP session per iteration (new IndexDb identity → cold graph adjacency + SQLite page caches, empty search LRUs; OS file cache retained). warm = repeated identical calls in one shared session after 1 discarded warmup (cache-hit path).
+2026-10-10T08:23:31.6495535Z 
+2026-10-10T08:23:31.6495908Z Per case: cold = 1 fresh-session call, warm = best of 2 measured calls; percentiles aggregate across cases per tool.
+2026-10-10T08:23:31.6496374Z 
+2026-10-10T08:23:31.6496618Z | Tool | Cases | cold p50 | cold max | warm p50 | warm p95 | warm max | Avg Output |
+2026-10-10T08:23:31.6497162Z |------|-------|----------|----------|----------|----------|----------|------------|
+2026-10-10T08:23:31.6497602Z | adr | 1 | 10.02ms | 10.02ms | 9.79ms | 9.79ms | 9.79ms | 11 B |
+2026-10-10T08:23:31.6498049Z | architecture | 6 | 40.01ms | 160.10ms | 30.46ms | 129.63ms | 129.63ms | 5.3 KB |
+2026-10-10T08:23:31.6498516Z | context | 8 | 1.72s | 2.19s | 1.19s | 1.72s | 1.72s | 15.4 KB |
+2026-10-10T08:23:31.6498949Z | explore | 5 | 49.96ms | 69.75ms | 30.24ms | 39.93ms | 39.93ms | 2.2 KB |
+2026-10-10T08:23:31.6602615Z | files | 2 | 944µs | 19.76ms | 689µs | 19.49ms | 19.49ms | 1.2 KB |
+2026-10-10T08:23:31.6603808Z | graph_query | 9 | 20.16ms | 60.56ms | 10.33ms | 49.76ms | 49.76ms | 311 B |
+2026-10-10T08:23:31.6604314Z | impact | 7 | 40.78ms | 80.45ms | 30.43ms | 79.55ms | 79.55ms | 1.6 KB |
+2026-10-10T08:23:31.6604732Z | index | 1 | 5.01s | 5.01s | 4.23s | 4.23s | 4.23s | 2.8 KB |
+2026-10-10T08:23:31.6605164Z | ingest_traces | 1 | 19.59ms | 19.59ms | 9.54ms | 9.54ms | 9.54ms | 157 B |
+2026-10-10T08:23:31.6605607Z | node | 6 | 20.54ms | 30.66ms | 10.76ms | 20.97ms | 20.97ms | 886 B |
+2026-10-10T08:23:31.6606036Z | relations | 8 | 30.16ms | 46.29ms | 10.50ms | 20.17ms | 20.17ms | 807 B |
+2026-10-10T08:23:31.6606471Z | search | 28 | 19.79ms | 1.39s | 10.38ms | 659.53ms | 1.04s | 4.0 KB |
+2026-10-10T08:23:31.6606891Z | status | 1 | 80.52ms | 80.52ms | 80.33ms | 80.33ms | 80.33ms | 14.9 KB |
+2026-10-10T08:23:31.6607322Z | trace | 11 | 29.30ms | 40.09ms | 9.90ms | 29.50ms | 29.50ms | 1.2 KB |
+2026-10-10T08:23:31.6607582Z 
+2026-10-10T08:23:31.6693673Z ## Summary
+2026-10-10T08:23:31.6693846Z 
+2026-10-10T08:23:31.6693959Z - Total cases: 94
+2026-10-10T08:23:31.6694267Z - All tools under 500ms warm p95: NO
+2026-10-10T08:23:31.6694509Z 
+2026-10-10T08:23:31.6694513Z 
+2026-10-10T08:23:31.6694836Z thread 'tests::benchmark_fixture' (8590) panicked at crates/cc-eval/src/lib.rs:915:13:
+2026-10-10T08:23:31.6695680Z perf regression: tool 'context' warm p95 = 1.72s (limit 500ms)
+2026-10-10T08:23:31.6696267Z note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+2026-10-10T08:23:31.6696650Z 
+2026-10-10T08:23:31.6696655Z 
+2026-10-10T08:23:31.6696761Z failures:
+2026-10-10T08:23:31.6697022Z     tests::benchmark_fixture
+2026-10-10T08:23:31.6697221Z 
+2026-10-10T08:23:31.6697561Z test result: FAILED. 70 passed; 1 failed; 7 ignored; 0 measured; 0 filtered out; finished in 118.85s
+2026-10-10T08:23:31.6698024Z 
+2026-10-10T08:23:31.7700784Z [1m[91merror[0m: test failed, to rerun pass `-p cc-eval --lib`
+2026-10-10T08:23:31.8200571Z ##[error]Process completed with exit code 101.
+2026-10-10T08:23:32.1809641Z Post job cleanup.
+2026-10-10T08:23:34.1997798Z [command]/usr/bin/git version
+2026-10-10T08:23:34.2402864Z git version 2.55.0
+2026-10-10T08:23:34.2988924Z Temporarily overriding HOME='/home/runner/work/_temp/94145bfc-1512-44e6-b547-4c06a902c687' before making global git config changes
+2026-10-10T08:23:34.2990749Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-10T08:23:34.2992748Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/codecortex/codecortex
+2026-10-10T08:23:34.3399054Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-10T08:23:34.3694838Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-10T08:23:34.6888828Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-10T08:23:34.7091727Z http.https://github.com/.extraheader
+2026-10-10T08:23:34.7194089Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-10T08:23:34.7502147Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-10T08:23:35.0298232Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-10T08:23:35.0604427Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-10T08:23:35.4612586Z Cleaning up orphan processes
+2026-10-10T08:23:35.9707492Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

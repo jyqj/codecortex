@@ -1,0 +1,2072 @@
+{
+  "schema": "codecortex_g8_actual_historical_evidence_gap_audit_v1",
+  "reviewer": "/root/ledger_audit",
+  "fixed_references": {
+    "main": "c2b726538cacfdf6ae9f01977a7b93da48d2e2b2",
+    "product_integration": "0692ed27c4f86a254484e76155fe07a55ab2e09c",
+    "guard": "f631350e07841164c5d27f23769483ef71aadea4",
+    "historical_current_product": "f97c5068d056969705e8387ba1f37d83847f5bee",
+    "historical_cold150": "044c008c9459cfa61e7701db2eb868342c508a39"
+  },
+  "scope": "Read-only actual historical evidence and source-applicability audit. No product/remote changes or new native measurements; not a release manifest or acceptance decision.",
+  "original_definition_snapshot": {
+    "source": "6d02d77f018a5965a6f289b0b43558ed4b9f8322",
+    "sha256": "ff2dff22f5064dca04254e8191fdf93a52155acbbaf2c52d03ff147b519690aa",
+    "g8": {
+      "original_row": "| G8 | P8 | V01/V18–V21 全量 release profile，holdout及100k、原始报告和回滚演练；blocker=0 |",
+      "release_checks": [
+        "clean_heldout",
+        "scale_100k",
+        "raw_reports",
+        "rollback_drill",
+        "legacy_regressions"
+      ],
+      "source_path": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+      "source_sha256": "64a9fde995077f8349edc76ee501825feca6717c6c60ab7c03cc535142016aad",
+      "validations": [
+        "V01",
+        "V18",
+        "V19",
+        "V20",
+        "V21"
+      ]
+    }
+  },
+  "accounting": {
+    "original_total": 192,
+    "done": 176,
+    "remaining": 16,
+    "new_original_todo_ids": [],
+    "new_original_todo_count": 0,
+    "historical_additions_since_163": 13
+  },
+  "original_p8_020": {
+    "acceptance": [
+      "本次选择发布范围内blocker为0，其他证据不足明确列出",
+      "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+    ],
+    "batch": "P8-D",
+    "benchmark_doc": "09-BENCHMARK.md",
+    "conditional": null,
+    "conditional_dependencies": [
+      {
+        "task": "P8-015",
+        "when": "M4-semantic release; not required for M4-local"
+      }
+    ],
+    "contracts_doc": "02-CONTRACTS.md",
+    "deliverables": [
+      "P8发布评审与遗留关闭的实现/配置或规格变更",
+      "artifacts/benchmarks/<run-id>/ 中对应 V18, V19, V20, V21 验证证据（实施时生成）"
+    ],
+    "depends_on": [
+      "P8-001",
+      "P8-002",
+      "P8-003",
+      "P8-004",
+      "P8-005",
+      "P8-006",
+      "P8-007",
+      "P8-008",
+      "P8-009",
+      "P8-010",
+      "P8-011",
+      "P8-012",
+      "P8-013",
+      "P8-016",
+      "P8-017",
+      "P8-018",
+      "P8-019"
+    ],
+    "id": "P8-020",
+    "phase": "P8",
+    "phase_name": "规模、质量与发行认证",
+    "priority": "blocking",
+    "required_for": [
+      "M4-local",
+      "M4-semantic"
+    ],
+    "rollback": "不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。",
+    "scope": [
+      "docs/roadmap/code-index-v2/",
+      "artifacts/benchmarks/"
+    ],
+    "steps": [
+      "G8按local/semantic能力分别审核",
+      "汇总风险、回滚和后续决策"
+    ],
+    "title": "P8发布评审与遗留关闭",
+    "validations": [
+      "V18",
+      "V19",
+      "V20",
+      "V21"
+    ]
+  },
+  "remaining_original_todos": [
+    {
+      "id": "P7-018",
+      "status": "blocked",
+      "depends_on": [
+        "P7-017"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P8-014",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-013"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P8-015",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-013",
+        "P7-018"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P8-020",
+      "status": "in_progress",
+      "depends_on": [
+        "P8-001",
+        "P8-002",
+        "P8-003",
+        "P8-004",
+        "P8-005",
+        "P8-006",
+        "P8-007",
+        "P8-008",
+        "P8-009",
+        "P8-010",
+        "P8-011",
+        "P8-012",
+        "P8-013",
+        "P8-016",
+        "P8-017",
+        "P8-018",
+        "P8-019"
+      ],
+      "conditional_dependencies": [
+        {
+          "task": "P8-015",
+          "when": "M4-semantic release; not required for M4-local"
+        }
+      ]
+    },
+    {
+      "id": "P9-001",
+      "status": "todo",
+      "depends_on": [
+        "P8-020"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P9-002",
+      "status": "todo",
+      "depends_on": [
+        "P9-001"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P9-003",
+      "status": "todo",
+      "depends_on": [
+        "P9-002"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P9-004",
+      "status": "todo",
+      "depends_on": [
+        "P9-003"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P9-005",
+      "status": "todo",
+      "depends_on": [
+        "P8-020"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P9-006",
+      "status": "todo",
+      "depends_on": [
+        "P9-005"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P9-007",
+      "status": "todo",
+      "depends_on": [
+        "P9-006"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P9-008",
+      "status": "todo",
+      "depends_on": [
+        "P9-007"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P9-009",
+      "status": "todo",
+      "depends_on": [
+        "P8-020"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P9-010",
+      "status": "todo",
+      "depends_on": [
+        "P9-009"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P9-011",
+      "status": "todo",
+      "depends_on": [
+        "P9-010"
+      ],
+      "conditional_dependencies": []
+    },
+    {
+      "id": "P9-012",
+      "status": "todo",
+      "depends_on": [
+        "P9-001",
+        "P9-002",
+        "P9-003",
+        "P9-004",
+        "P9-005",
+        "P9-006",
+        "P9-007",
+        "P9-008",
+        "P9-009",
+        "P9-010",
+        "P9-011"
+      ],
+      "conditional_dependencies": []
+    }
+  ],
+  "current_product_equivalence": {
+    "crates": "7cb70a9b0843fa9c222996b626b78fd97a5ad63b",
+    "Cargo_lock": "0c0bdc1601013b195c3580be4b0a9238557251cd",
+    "Cargo_toml": "c376fdc70465a237022de8a05b7b27cc28f72cc8",
+    "applies_to": [
+      "f97c5068d056969705e8387ba1f37d83847f5bee",
+      "c2b726538cacfdf6ae9f01977a7b93da48d2e2b2",
+      "0692ed27c4f86a254484e76155fe07a55ab2e09c",
+      "f631350e07841164c5d27f23769483ef71aadea4"
+    ],
+    "limitation": "Source equality is not actual binary/toolchain/config/corpus/runtime equality. P changed the task-profile transport workflow; G changed source-guard selector identities. Keep original run/source values."
+  },
+  "cold150_non_equivalence": {
+    "compare_url": "https://github.com/jyqj/codecortex/compare/044c008c9459cfa61e7701db2eb868342c508a39...f97c5068d056969705e8387ba1f37d83847f5bee",
+    "commits": 63,
+    "changed_paths": 103,
+    "production_or_evaluator_paths": [
+      {
+        "filename": "crates/cc-db/src/freshness_store.rs",
+        "status": "modified",
+        "additions": 18,
+        "deletions": 4,
+        "changes": 22,
+        "previous_filename": null
+      },
+      {
+        "filename": "crates/cc-db/src/index_db_write_batch.rs",
+        "status": "modified",
+        "additions": 7,
+        "deletions": 7,
+        "changes": 14,
+        "previous_filename": null
+      },
+      {
+        "filename": "crates/cc-eval/src/benchmark/mutation_case.rs",
+        "status": "modified",
+        "additions": 69,
+        "deletions": 11,
+        "changes": 80,
+        "previous_filename": null
+      },
+      {
+        "filename": "crates/cc-eval/src/benchmark/oracle.rs",
+        "status": "modified",
+        "additions": 529,
+        "deletions": 3,
+        "changes": 532,
+        "previous_filename": null
+      },
+      {
+        "filename": "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+        "status": "modified",
+        "additions": 253,
+        "deletions": 22,
+        "changes": 275,
+        "previous_filename": null
+      },
+      {
+        "filename": "crates/cc-eval/src/benchmark/p8_scale.rs",
+        "status": "modified",
+        "additions": 168,
+        "deletions": 24,
+        "changes": 192,
+        "previous_filename": null
+      },
+      {
+        "filename": "crates/cc-eval/src/bin/p8-scale.rs",
+        "status": "modified",
+        "additions": 42,
+        "deletions": 6,
+        "changes": 48,
+        "previous_filename": null
+      },
+      {
+        "filename": "crates/cc-index/src/build_plan.rs",
+        "status": "modified",
+        "additions": 2,
+        "deletions": 5,
+        "changes": 7,
+        "previous_filename": null
+      },
+      {
+        "filename": "crates/cc-index/src/indexer.rs",
+        "status": "modified",
+        "additions": 28,
+        "deletions": 2,
+        "changes": 30,
+        "previous_filename": null
+      },
+      {
+        "filename": "crates/cc-index/src/indexer_phases/dirty.rs",
+        "status": "modified",
+        "additions": 3,
+        "deletions": 0,
+        "changes": 3,
+        "previous_filename": null
+      },
+      {
+        "filename": "crates/cc-index/src/indexer_phases/reconcile.rs",
+        "status": "modified",
+        "additions": 181,
+        "deletions": 9,
+        "changes": 190,
+        "previous_filename": null
+      },
+      {
+        "filename": "crates/cc-index/src/project_model/mod.rs",
+        "status": "modified",
+        "additions": 78,
+        "deletions": 3,
+        "changes": 81,
+        "previous_filename": null
+      },
+      {
+        "filename": "crates/cc-server/src/installer/helpers.rs",
+        "status": "modified",
+        "additions": 158,
+        "deletions": 20,
+        "changes": 178,
+        "previous_filename": null
+      },
+      {
+        "filename": "crates/cc-server/src/installer/targets/claude_code.rs",
+        "status": "modified",
+        "additions": 161,
+        "deletions": 35,
+        "changes": 196,
+        "previous_filename": null
+      }
+    ],
+    "all_compare_files": [
+      {
+        "filename": ".github/workflows/p8-profile.yml",
+        "status": "added",
+        "additions": 668,
+        "deletions": 0,
+        "changes": 668,
+        "previous_filename": null
+      },
+      {
+        "filename": ".github/workflows/p8-scale-100k-diagnostic.yml",
+        "status": "added",
+        "additions": 415,
+        "deletions": 0,
+        "changes": 415,
+        "previous_filename": null
+      },
+      {
+        "filename": ".github/workflows/p8-scale-wide-dirty.yml",
+        "status": "added",
+        "additions": 221,
+        "deletions": 0,
+        "changes": 221,
+        "previous_filename": null
+      },
+      {
+        "filename": ".github/workflows/p8-task-profile.yml",
+        "status": "added",
+        "additions": 678,
+        "deletions": 0,
+        "changes": 678,
+        "previous_filename": null
+      },
+      {
+        "filename": "README.md",
+        "status": "modified",
+        "additions": 6,
+        "deletions": 7,
+        "changes": 13,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-100k-diagnostic-capture-bfcc-20261009/independent-source-review.json",
+        "status": "added",
+        "additions": 10672,
+        "deletions": 0,
+        "changes": 10672,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-100k-diagnostic-capture-bfcc-20261009/independent-source-support.json",
+        "status": "added",
+        "additions": 262,
+        "deletions": 0,
+        "changes": 262,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-100k-diagnostic-workflow-context-bfcc-20261010/independent-source-originals.json",
+        "status": "added",
+        "additions": 105,
+        "deletions": 0,
+        "changes": 105,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-100k-diagnostic-workflow-context-bfcc-20261010/independent-source-review.json",
+        "status": "added",
+        "additions": 10463,
+        "deletions": 0,
+        "changes": 10463,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-G8-format-admission-bfcc-20261009/incremental-format-source-proof.json",
+        "status": "added",
+        "additions": 3548,
+        "deletions": 0,
+        "changes": 3548,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-G8-format-admission-bfcc-20261009/independent-source-review.json",
+        "status": "added",
+        "additions": 10368,
+        "deletions": 0,
+        "changes": 10368,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-borrowed-oracle-main-integration-bfcc-20261009/independent-source-review.json",
+        "status": "added",
+        "additions": 10562,
+        "deletions": 0,
+        "changes": 10562,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-borrowed-oracle-main-integration-bfcc-20261009/independent-source-support.json",
+        "status": "added",
+        "additions": 160,
+        "deletions": 0,
+        "changes": 160,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-code-review-2b5e-20261010/independent-source-review.json",
+        "status": "added",
+        "additions": 1568,
+        "deletions": 0,
+        "changes": 1568,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-cold-format-repair-a217-20261009/actual-product-official-proof.json",
+        "status": "added",
+        "additions": 324,
+        "deletions": 0,
+        "changes": 324,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-cold-format-repair-a217-20261009/candidate-manifest.json",
+        "status": "added",
+        "additions": 61,
+        "deletions": 0,
+        "changes": 61,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-cold-format-repair-a217-20261009/candidate.patch",
+        "status": "added",
+        "additions": 36,
+        "deletions": 0,
+        "changes": 36,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-cold-format-repair-a217-20261009/formatter-hunks.json",
+        "status": "added",
+        "additions": 26,
+        "deletions": 0,
+        "changes": 26,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-cold-format-repair-a217-20261009/independent-source-review.json",
+        "status": "added",
+        "additions": 1623,
+        "deletions": 0,
+        "changes": 1623,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-cold-format-repair-a217-20261009/original-fmt-failure.log",
+        "status": "added",
+        "additions": 524,
+        "deletions": 0,
+        "changes": 524,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-cold-format-repair-a217-20261009/runtime-independent-review.json",
+        "status": "added",
+        "additions": 90,
+        "deletions": 0,
+        "changes": 90,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-cold-wide-integration-bfcc-20261009/independent-actual-P-merge-proof.json",
+        "status": "added",
+        "additions": 705,
+        "deletions": 0,
+        "changes": 705,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-cold-wide-integration-bfcc-20261009/independent-source-review.json",
+        "status": "added",
+        "additions": 11539,
+        "deletions": 0,
+        "changes": 11539,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-cold-wide-startup-integration-bfcc-20261009/independent-source-review.json",
+        "status": "added",
+        "additions": 10373,
+        "deletions": 0,
+        "changes": 10373,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-cold-wide-startup-integration-bfcc-20261009/independent-startup-fix-proof.json",
+        "status": "added",
+        "additions": 1144,
+        "deletions": 0,
+        "changes": 1144,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-crash-ready-publication-bfcc-20261009/P6B-source-only-originals.zip",
+        "status": "added",
+        "additions": 0,
+        "deletions": 0,
+        "changes": 0,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-crash-ready-publication-bfcc-20261009/independent-source-review.json",
+        "status": "added",
+        "additions": 10384,
+        "deletions": 0,
+        "changes": 10384,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-immutable-payload-cell-witness-bfcc-20261009/P8B-source-only-originals.zip",
+        "status": "added",
+        "additions": 0,
+        "deletions": 0,
+        "changes": 0,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-immutable-payload-cell-witness-bfcc-20261009/diagnostics-v1/complete-diagnostic-byte-results.zip",
+        "status": "added",
+        "additions": 0,
+        "deletions": 0,
+        "changes": 0,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-immutable-payload-cell-witness-bfcc-20261009/diagnostics-v2/complete-diagnostic-byte-results.zip",
+        "status": "added",
+        "additions": 0,
+        "deletions": 0,
+        "changes": 0,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-immutable-payload-cell-witness-bfcc-20261009/independent-source-review.json",
+        "status": "added",
+        "additions": 10846,
+        "deletions": 0,
+        "changes": 10846,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-immutable-payload-oracle-witness-bfcc-20261009/P7B-source-only-originals.zip",
+        "status": "added",
+        "additions": 0,
+        "deletions": 0,
+        "changes": 0,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-immutable-payload-oracle-witness-bfcc-20261009/independent-source-review.json",
+        "status": "added",
+        "additions": 10394,
+        "deletions": 0,
+        "changes": 10394,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-oracle-compatibility-integration-bfcc-20261009/independent-source-review-support.json",
+        "status": "added",
+        "additions": 222,
+        "deletions": 0,
+        "changes": 222,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-oracle-compatibility-integration-bfcc-20261009/independent-source-review.json",
+        "status": "added",
+        "additions": 10817,
+        "deletions": 0,
+        "changes": 10817,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-oracle-format-correction-bfcc-20261009/independent-source-review-support.json",
+        "status": "added",
+        "additions": 105,
+        "deletions": 0,
+        "changes": 105,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-oracle-format-correction-bfcc-20261009/independent-source-review.json",
+        "status": "added",
+        "additions": 10908,
+        "deletions": 0,
+        "changes": 10908,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-task-profile-and-borrowed-cursor-bfcc-20261010/actual-product-identity.json",
+        "status": "added",
+        "additions": 193,
+        "deletions": 0,
+        "changes": 193,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-task-profile-and-borrowed-cursor-bfcc-20261010/archive-selection.json",
+        "status": "added",
+        "additions": 363,
+        "deletions": 0,
+        "changes": 363,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-task-profile-and-borrowed-cursor-bfcc-20261010/author-capture-workflow-review.json",
+        "status": "added",
+        "additions": 105,
+        "deletions": 0,
+        "changes": 105,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-task-profile-and-borrowed-cursor-bfcc-20261010/borrowed-sorted-cursor-independent-review.json",
+        "status": "added",
+        "additions": 149,
+        "deletions": 0,
+        "changes": 149,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-task-profile-and-borrowed-cursor-bfcc-20261010/capture-workflow-complete-author-support.zip",
+        "status": "added",
+        "additions": 0,
+        "deletions": 0,
+        "changes": 0,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-task-profile-and-borrowed-cursor-bfcc-20261010/combined-candidate-source-manifest.json",
+        "status": "added",
+        "additions": 301,
+        "deletions": 0,
+        "changes": 301,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-task-profile-and-borrowed-cursor-bfcc-20261010/independent-combination-source-review.json",
+        "status": "added",
+        "additions": 284,
+        "deletions": 0,
+        "changes": 284,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-task-profile-and-borrowed-cursor-bfcc-20261010/independent-source-review.json",
+        "status": "added",
+        "additions": 10669,
+        "deletions": 0,
+        "changes": 10669,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-task-profile-and-borrowed-cursor-bfcc-20261010/independent-source-support.json",
+        "status": "added",
+        "additions": 248,
+        "deletions": 0,
+        "changes": 248,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-task-profile-and-borrowed-cursor-bfcc-20261010/runtime-interface-crosscheck.json",
+        "status": "added",
+        "additions": 266,
+        "deletions": 0,
+        "changes": 266,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-task-profile-format-fix-bfcc-20261010/114133731619-original-check.log",
+        "status": "added",
+        "additions": 501,
+        "deletions": 0,
+        "changes": 501,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-task-profile-format-fix-bfcc-20261010/independent-source-review.json",
+        "status": "added",
+        "additions": 10514,
+        "deletions": 0,
+        "changes": 10514,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-task-profile-format-fix-bfcc-20261010/independent-source-support.json",
+        "status": "added",
+        "additions": 187,
+        "deletions": 0,
+        "changes": 187,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-wide-dirty-format-admission-bfcc-20261009/incremental-format-source-proof.json",
+        "status": "added",
+        "additions": 3548,
+        "deletions": 0,
+        "changes": 3548,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-wide-dirty-format-admission-bfcc-20261009/independent-source-review.json",
+        "status": "added",
+        "additions": 10411,
+        "deletions": 0,
+        "changes": 10411,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-wide-dirty-scale-study-bfcc-20261009/PW1-source-only-originals.zip",
+        "status": "added",
+        "additions": 0,
+        "deletions": 0,
+        "changes": 0,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-wide-dirty-scale-study-bfcc-20261009/independent-source-review.json",
+        "status": "added",
+        "additions": 10450,
+        "deletions": 0,
+        "changes": 10450,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-wide-dirty-toolchain-admission-bfcc-20261009/incremental-toolchain-source-proof.json",
+        "status": "added",
+        "additions": 496,
+        "deletions": 0,
+        "changes": 496,
+        "previous_filename": null
+      },
+      {
+        "filename": "artifacts/checkpoints/p8-wide-dirty-toolchain-admission-bfcc-20261009/independent-source-review.json",
+        "status": "added",
+        "additions": 10425,
+        "deletions": 0,
+        "changes": 10425,
+        "previous_filename": null
+      },
+      {
+        "filename": "crates/cc-db/src/freshness_store.rs",
+        "status": "modified",
+        "additions": 18,
+        "deletions": 4,
+        "changes": 22,
+        "previous_filename": null
+      },
+      {
+        "filename": "crates/cc-db/src/index_db_write_batch.rs",
+        "status": "modified",
+        "additions": 7,
+        "deletions": 7,
+        "changes": 14,
+        "previous_filename": null
+      },
+      {
+        "filename": "crates/cc-db/tests/p2c_freshness_store.rs",
+        "status": "modified",
+        "additions": 74,
+        "deletions": 0,
+        "changes": 74,
+        "previous_filename": null
+      },
+      {
+        "filename": "crates/cc-eval/src/benchmark/mutation_case.rs",
+        "status": "modified",
+        "additions": 69,
+        "deletions": 11,
+        "changes": 80,
+        "previous_filename": null
+      },
+      {
+        "filename": "crates/cc-eval/src/benchmark/oracle.rs",
+        "status": "modified",
+        "additions": 529,
+        "deletions": 3,
+        "changes": 532,
+        "previous_filename": null
+      },
+      {
+        "filename": "crates/cc-eval/src/benchmark/oracle/streaming.rs",
+        "status": "modified",
+        "additions": 253,
+        "deletions": 22,
+        "changes": 275,
+        "previous_filename": null
+      },
+      {
+        "filename": "crates/cc-eval/src/benchmark/p8_scale.rs",
+        "status": "modified",
+        "additions": 168,
+        "deletions": 24,
+        "changes": 192,
+        "previous_filename": null
+      },
+      {
+        "filename": "crates/cc-eval/src/bin/p8-scale.rs",
+        "status": "modified",
+        "additions": 42,
+        "deletions": 6,
+        "changes": 48,
+        "previous_filename": null
+      },
+      {
+        "filename": "crates/cc-eval/tests/benchmark_oracle_streaming.rs",
+        "status": "modified",
+        "additions": 236,
+        "deletions": 0,
+        "changes": 236,
+        "previous_filename": null
+      },
+      {
+        "filename": "crates/cc-eval/tests/p8_scale.rs",
+        "status": "modified",
+        "additions": 381,
+        "deletions": 1,
+        "changes": 382,
+        "previous_filename": null
+      },
+      {
+        "filename": "crates/cc-index/src/build_plan.rs",
+        "status": "modified",
+        "additions": 2,
+        "deletions": 5,
+        "changes": 7,
+        "previous_filename": null
+      },
+      {
+        "filename": "crates/cc-index/src/indexer.rs",
+        "status": "modified",
+        "additions": 28,
+        "deletions": 2,
+        "changes": 30,
+        "previous_filename": null
+      },
+      {
+        "filename": "crates/cc-index/src/indexer_phases/dirty.rs",
+        "status": "modified",
+        "additions": 3,
+        "deletions": 0,
+        "changes": 3,
+        "previous_filename": null
+      },
+      {
+        "filename": "crates/cc-index/src/indexer_phases/reconcile.rs",
+        "status": "modified",
+        "additions": 181,
+        "deletions": 9,
+        "changes": 190,
+        "previous_filename": null
+      },
+      {
+        "filename": "crates/cc-index/src/project_model/mod.rs",
+        "status": "modified",
+        "additions": 78,
+        "deletions": 3,
+        "changes": 81,
+        "previous_filename": null
+      },
+      {
+        "filename": "crates/cc-index/src/sparse_actions_tests.rs",
+        "status": "added",
+        "additions": 122,
+        "deletions": 0,
+        "changes": 122,
+        "previous_filename": null
+      },
+      {
+        "filename": "crates/cc-semantic/tests/p7_crash_preparation.rs",
+        "status": "modified",
+        "additions": 5,
+        "deletions": 4,
+        "changes": 9,
+        "previous_filename": null
+      },
+      {
+        "filename": "crates/cc-server/src/installer/helpers.rs",
+        "status": "modified",
+        "additions": 158,
+        "deletions": 20,
+        "changes": 178,
+        "previous_filename": null
+      },
+      {
+        "filename": "crates/cc-server/src/installer/targets/claude_code.rs",
+        "status": "modified",
+        "additions": 161,
+        "deletions": 35,
+        "changes": 196,
+        "previous_filename": null
+      },
+      {
+        "filename": "crates/cc-server/tests/installer_cli.rs",
+        "status": "modified",
+        "additions": 93,
+        "deletions": 0,
+        "changes": 93,
+        "previous_filename": null
+      },
+      {
+        "filename": "crates/cc-server/tests/p7_v18_parameter_contract.rs",
+        "status": "modified",
+        "additions": 3,
+        "deletions": 2,
+        "changes": 5,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/BENCHMARK.md",
+        "status": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "changes": 2,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/P8_SCALE_WIDE_DIRTY.md",
+        "status": "added",
+        "additions": 74,
+        "deletions": 0,
+        "changes": 74,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/roadmap/code-index-v2/05-TODO.md",
+        "status": "modified",
+        "additions": 9,
+        "deletions": 5,
+        "changes": 14,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/roadmap/code-index-v2/08-HANDOFF.md",
+        "status": "modified",
+        "additions": 6,
+        "deletions": 7,
+        "changes": 13,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/roadmap/code-index-v2/P8-OWNERSHIP.md",
+        "status": "added",
+        "additions": 90,
+        "deletions": 0,
+        "changes": 90,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/roadmap/code-index-v2/P8-PROFILE-ISOLATED.md",
+        "status": "added",
+        "additions": 75,
+        "deletions": 0,
+        "changes": 75,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/roadmap/code-index-v2/P8-RELEASE-EVIDENCE.md",
+        "status": "modified",
+        "additions": 18,
+        "deletions": 0,
+        "changes": 18,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/roadmap/code-index-v2/P8-TASK-PROFILE-DESCRIPTIVE.md",
+        "status": "added",
+        "additions": 110,
+        "deletions": 0,
+        "changes": 110,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/roadmap/code-index-v2/README.md",
+        "status": "modified",
+        "additions": 6,
+        "deletions": 7,
+        "changes": 13,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/roadmap/code-index-v2/p8-profile-isolated-v1.json",
+        "status": "added",
+        "additions": 95,
+        "deletions": 0,
+        "changes": 95,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/roadmap/code-index-v2/p8-profile-task-descriptive-v1.json",
+        "status": "added",
+        "additions": 47,
+        "deletions": 0,
+        "changes": 47,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/roadmap/code-index-v2/tasks.json",
+        "status": "modified",
+        "additions": 291,
+        "deletions": 4,
+        "changes": 295,
+        "previous_filename": null
+      },
+      {
+        "filename": "scripts/p8_profile_matrix.py",
+        "status": "added",
+        "additions": 404,
+        "deletions": 0,
+        "changes": 404,
+        "previous_filename": null
+      },
+      {
+        "filename": "scripts/p8_release_evidence.py",
+        "status": "modified",
+        "additions": 10,
+        "deletions": 2,
+        "changes": 12,
+        "previous_filename": null
+      },
+      {
+        "filename": "scripts/p8_scale_diagnostic_capture.py",
+        "status": "added",
+        "additions": 370,
+        "deletions": 0,
+        "changes": 370,
+        "previous_filename": null
+      },
+      {
+        "filename": "scripts/p8_scale_matrix.py",
+        "status": "modified",
+        "additions": 65,
+        "deletions": 28,
+        "changes": 93,
+        "previous_filename": null
+      },
+      {
+        "filename": "scripts/p8_task_profile_capture.py",
+        "status": "added",
+        "additions": 204,
+        "deletions": 0,
+        "changes": 204,
+        "previous_filename": null
+      },
+      {
+        "filename": "scripts/p8_task_profile_matrix.py",
+        "status": "added",
+        "additions": 484,
+        "deletions": 0,
+        "changes": 484,
+        "previous_filename": null
+      },
+      {
+        "filename": "scripts/reviewed-source-registry-v15.json",
+        "status": "modified",
+        "additions": 88,
+        "deletions": 39,
+        "changes": 127,
+        "previous_filename": null
+      },
+      {
+        "filename": "scripts/tests/test_p8_profile_matrix.py",
+        "status": "added",
+        "additions": 184,
+        "deletions": 0,
+        "changes": 184,
+        "previous_filename": null
+      },
+      {
+        "filename": "scripts/tests/test_p8_release_evidence.py",
+        "status": "modified",
+        "additions": 71,
+        "deletions": 0,
+        "changes": 71,
+        "previous_filename": null
+      },
+      {
+        "filename": "scripts/tests/test_p8_scale_diagnostic_capture.py",
+        "status": "added",
+        "additions": 213,
+        "deletions": 0,
+        "changes": 213,
+        "previous_filename": null
+      },
+      {
+        "filename": "scripts/tests/test_p8_scale_matrix.py",
+        "status": "modified",
+        "additions": 116,
+        "deletions": 0,
+        "changes": 116,
+        "previous_filename": null
+      },
+      {
+        "filename": "scripts/tests/test_p8_task_profile_capture.py",
+        "status": "added",
+        "additions": 93,
+        "deletions": 0,
+        "changes": 93,
+        "previous_filename": null
+      },
+      {
+        "filename": "scripts/tests/test_p8_task_profile_matrix.py",
+        "status": "added",
+        "additions": 268,
+        "deletions": 0,
+        "changes": 268,
+        "previous_filename": null
+      },
+      {
+        "filename": "scripts/verify_reviewed_source_v15.py",
+        "status": "modified",
+        "additions": 4,
+        "deletions": 4,
+        "changes": 8,
+        "previous_filename": null
+      }
+    ]
+  },
+  "quality_observation": {
+    "source": "2cd04485b0e0b23483f64671d56538bbaa47f442",
+    "run": 37749276827,
+    "profiles": [
+      {
+        "repo": "cc-switch",
+        "profile": "compat",
+        "rows": 300,
+        "statuses": {
+          "partial": 300
+        },
+        "gate_exit_code": 1,
+        "replay_exit_code": 1,
+        "top1": 0.26,
+        "ndcg10": 0.2556726944728614
+      },
+      {
+        "repo": "cc-switch",
+        "profile": "native",
+        "rows": 300,
+        "statuses": {
+          "partial": 300
+        },
+        "gate_exit_code": 1,
+        "replay_exit_code": 1,
+        "top1": 0.12,
+        "ndcg10": 0.25176020155965245
+      },
+      {
+        "repo": "flask",
+        "profile": "compat",
+        "rows": 300,
+        "statuses": {
+          "partial": 270,
+          "no_match": 30
+        },
+        "gate_exit_code": 1,
+        "replay_exit_code": 1,
+        "top1": 0.49,
+        "ndcg10": 0.4997546423927355
+      },
+      {
+        "repo": "flask",
+        "profile": "native",
+        "rows": 300,
+        "statuses": {
+          "partial": 270,
+          "no_match": 30
+        },
+        "gate_exit_code": 1,
+        "replay_exit_code": 1,
+        "top1": 0.44,
+        "ndcg10": 0.49780574827945595
+      }
+    ],
+    "later_diagnostics": [
+      {
+        "run": "canonical-cc-switch-compat-coverage-diagnostic",
+        "exit_code": 2,
+        "retrieval_requests": 0
+      },
+      {
+        "run": "canonical-cc-switch-native-coverage-diagnostic",
+        "exit_code": 2,
+        "retrieval_requests": 0
+      },
+      {
+        "run": "canonical-flask-compat-coverage-diagnostic",
+        "exit_code": 2,
+        "retrieval_requests": 0
+      },
+      {
+        "run": "canonical-flask-native-coverage-diagnostic",
+        "exit_code": 2,
+        "retrieval_requests": 0
+      }
+    ]
+  },
+  "holdout_observation": {
+    "candidate": {
+      "commit": "2cd04485b0e0b23483f64671d56538bbaa47f442",
+      "tree": "4db46c8403c0a8687dc01f95ded006e31f842076",
+      "source_count": 1038,
+      "source_sha256": "4a99362ed8249510d6794d23e8ea2d8c5f06238de9b7355e533ff762d56308d2",
+      "validation_count": 110,
+      "validation_sha256": "dd407762f6e7f6c156a2f6ea6c8f61ee9d6e824adffbb69ca2b4b6253d8bf49e",
+      "product_sha256": "f9337b0347727a31a7b147497763b9c0765a725f207c6245b3715cd4749f79f0",
+      "evaluator_sha256": "afdaf1ddbd28340f4ffbfbbef935194d563f3242d31ffb022b9bbd208e31537f",
+      "not_relabelled_as_later_main_candidate": true
+    },
+    "original_formal": {
+      "run_id": 37769636440,
+      "attempt": 1,
+      "job_id": 113285728247,
+      "utility": "b5146043fd57e3edd2655397b5775fdc0f1d2e52",
+      "actions": "failure",
+      "helper_exit": 1,
+      "results": 288,
+      "candidate_gate": "gate_failed",
+      "candidate_gate_exit": 1,
+      "baseline_gate": "baseline_recorded_not_quality_certified",
+      "baseline_gate_exit": 0,
+      "attempt_consumed": true
+    },
+    "metrics": {
+      "all_family_metric_denominators": 12,
+      "all_scores_retained": true,
+      "answerable_components": 10,
+      "answerable_rows_per_arm": 120,
+      "ci_scope": "Original native per-arm CI and frozen paired component CI are distinct methods; both preserved. One purposively selected repository, conditional exploratory, not general quality certification.",
+      "family_means_and_original_metrics_cases_independently_reaggregated": true,
+      "frozen_component_paired_ndcg_CI": {
+        "high": 0.3425597563926427,
+        "independent_components": 10,
+        "low": 0.06230901540826343,
+        "mean_candidate_minus_rg": 0.18916292784156089,
+        "replicates": 10000,
+        "sampling_unit": "paired complete family component, retaining all4variants/3repetitions",
+        "scope": "one purposively selected repository; not population/general release inference",
+        "seed": 20261003,
+        "status": "conditional_exploratory"
+      },
+      "ndcg10": {
+        "candidate": 0.18916292784156089,
+        "rg": 0
+      },
+      "noanswer_components": 2,
+      "noanswer_correct": {
+        "candidate": "0/24",
+        "rg": "24/24"
+      },
+      "noanswer_rows_per_arm": 24,
+      "null_rows_dropped": 0,
+      "null_zero_filled": 0,
+      "original_native_ndcg_CI": {
+        "high": 0.35656688868403597,
+        "independent_units": 10,
+        "low": 0.06545945999889101,
+        "mean": 0.1891629278415609
+      },
+      "paired_bootstrap_independently_recomputed": {
+        "max_CI_or_mean_roundoff": 5.551115123125783e-17,
+        "metrics_verified": 9,
+        "note": "No product thresholds changed. Original reported values retained; pure JS vs Python3.12 summation differs by at most ordinary floating rounding.",
+        "replicates": 10000,
+        "review_only_floating_comparison_tolerance": 1e-14,
+        "sampling_unit": "complete family retaining4variants/3repetitions",
+        "seed": 20261003
+      },
+      "top1": {
+        "candidate": 0.175,
+        "rg": 0
+      }
+    },
+    "still_not_accepted": [
+      "Candidate quality gate / release quality",
+      "Full G8 and complete V19 release certification",
+      "Population-level or unseen-corpus independence claims",
+      "Later PR156/main product behavior or CI by inference from fixed2cd",
+      "Any new formal attempt, scorer change, relabeling or candidate tuning",
+      "Future final evidence PR CI or merge"
+    ]
+  },
+  "gap_matrix": [
+    {
+      "gate": "Candidate freeze / P8-001",
+      "existing": "Accepted ffdc single DEV baseline binds 795 source inputs; f97 raw45 binds its own release p8-scale binary. Current G/P source audits prove selected source identity only.",
+      "missing": "One selected local release candidate with complete transitive build, exact server/evaluator binaries, configs, actual corpus files, scoring/policy, environment and build receipts, verified before/after its measurements. The current 556-file audit digest and 1096-product review digest are not interchangeable with historical candidate/archive digests.",
+      "reuse": "Keep each original candidate/source/run identity; an explicit relevance mapping may reuse unchanged source properties, but the archive tool prohibits rebinding arbitrary old reports to a new candidate.",
+      "next": "After exact G CI stabilizes, use the existing freeze/verify workflow in a new isolated, quiescent checkout with explicit public DEV inputs. This is authorized local preparation; it is not G8 approval."
+    },
+    {
+      "gate": "V01 / legacy regressions",
+      "existing": "Current f97 product has original main CI and 26 engineering checks; old #203 at 797e has the preserved benchmark fixture context warm p95 failure (1.72 s vs 500 ms). Root is executing source v15 at G separately.",
+      "missing": "Required CI at the actual published #203 revision and a release package build/regression receipt. Source v15 passing alone neither measures the benchmark nor waives the existing failure.",
+      "reuse": "Original successful controls remain valid within their executed source/environment; historical failures remain attached to their original attempts.",
+      "next": "Let ordinary current-head CI finish and investigate any real failure using original logs and equivalent environment. No new live-provider authorization is needed for normal offline/fake CI."
+    },
+    {
+      "gate": "V18 / MCP and configuration",
+      "existing": "The original task acceptance preserves 14 tools, default no-key/offline behavior, parameter/config wiring and G2/main engineering checks; crates and Cargo roots are equal from f97 through G/P.",
+      "missing": "A release-scope candidate/package applicability record and current integration results. No new V18 functional defect was established by this audit.",
+      "reuse": "These source-equivalent local facts can be mapped to G/P with their original run identity. No need to invent fresh results merely because evidence references an older documentation commit.",
+      "next": "Include actual current CI/stdio/package receipts in the candidate release inventory and retain semantic disabled/not_configured declarations for local scope."
+    },
+    {
+      "gate": "V19 / public DEV quality",
+      "existing": "At 2cd, run 37749276827 has four measured compat/native profiles, each 100 IDs × 3 repetitions, all original gate/replay exits 1. cc-switch profiles each 300 Partial; Flask each 270 Partial plus 30 NoMatch. Later canonical coverage diagnostics preserve four exits 2.",
+      "missing": "Current frozen candidate public DEV readiness and passing release quality assessment covering compat/native, independently reviewed native gold, hard negatives, facet/span, macro/micro and confidence intervals. Corpus schema/source validation or raw-only replay is not this measurement.",
+      "reuse": "The old failed gates are valuable diagnostics and regression references; they cannot be converted into current release passes or overwritten.",
+      "next": "Run or inspect the current candidate's authorized public DEV readiness diagnostics, fix any genuine product/coverage issue, and then execute the registered quality protocol with all outcomes retained. Do not weaken Partial handling or alter gold to clear the gate."
+    },
+    {
+      "gate": "clean_heldout / V19",
+      "existing": "The independent temporal Boltons protocol at 2cd ran once: 48 variants from 12 tasks, 288 total records; candidate gate 1, Top1 0.175, nDCG@10 0.1891629278415609, no-answer 0/24. Raw-only replay kept the gate failure. Its one-time permit is consumed and the questions are retired.",
+      "missing": "A fresh current-candidate holdout with the original prospective freeze, independent author/gold/custody review and run-specific release conditions satisfied, followed by a successful selected-scope assessment. No clean current holdout is demonstrated by the inspected committed evidence.",
+      "reuse": "Retain old scope/procedure acceptance and failures. Never call these exposed questions a fresh holdout after tuning, never reuse the consumed permit and never call successful replay a quality pass.",
+      "next": "Prepare the new candidate/protocol and independent custody before new question exposure. Formal execution waits for the protocol's real release/permit conditions; this is separate from paid/live model authorization."
+    },
+    {
+      "gate": "V20 / cold 1k–100k",
+      "existing": "cold150 is complete at 044: 5 scales × 30 original slots, one original binary, 15-table parity and workload sizes. f97 raw45 also contains five separately defined N=1 cold subset measurements.",
+      "missing": "Current selected-candidate cold profile evidence with the actual preregistered sample/environment/CI policy. 044→f97 has 103 changed paths including 14 production/evaluator source paths; cold150 therefore is not unchanged-current-product evidence.",
+      "reuse": "cold150 remains complete historical P8-005 evidence at 044. Its intact input/receipt inventory is not a license to relabel it G/P. The f97 N=1 subset remains descriptive and cannot fill 30-slot populations.",
+      "next": "Use a newly frozen current local candidate and the selected release cold protocol; plan the actual capacity and runtime before dispatch. Preserve all 150 historical slots and original 044 binary."
+    },
+    {
+      "gate": "V20 / incremental and fanout",
+      "existing": "f97 raw45 has 45 accepted cells, 85 measurement objects, all retained originals and exact unchanged validators. Its N=1 task study is independent from the N=30 isolated 1350-slot study or old sequential study. Current body/API/config 100k closure is slower than its respective full control in these descriptive observations.",
+      "missing": "Full selected release profile evidence with fixed N, same-type samples and confidence intervals where required; current N=1 does not establish stable tails, causal speedup or a formal regression ratio. No unexecuted N=30 slot can be filled by duplicated N=1 data.",
+      "reuse": "Because crates and Cargo roots at f97 equal G/P, the original raw45 observations are current-product-relevant historical evidence when config/binary/observer scope remains explicit. This is not a new G/P execution, complete G8 or redefined source in the original manifest.",
+      "next": "Investigate repeated resume scanning/prepare/commit work using original raw first. If implementing a fix, preserve dirty budget 200/1024, fanout 8/128, freshness and full original 15-table oracle; freeze the changed candidate before new registered measurements."
+    },
+    {
+      "gate": "V20 / concurrency, warm/cold, resource and soak",
+      "existing": "Historical task acceptance includes G275 C1/4/8/16, Gc8 1230 warm/cold samples across 431 sessions, process attribution, one-hour soak, plus distinct current G2 engineering soak and terminal checks.",
+      "missing": "A current-release applicability and metric inventory covering actual offered load/active concurrency, queue/service/end-to-end latency, errors, process-tree attribution, unavailable values, storage and all required resource scopes. Older source matrices are not automatically current package evidence.",
+      "reuse": "Preserve these measured engineering scopes separately. C4/16 requested is not a statement of actual peaks; snapshots are not process-tree or interval peaks; unavailable remains unavailable. Do not pool old and current environments.",
+      "next": "Select existing same-product current receipts where proven applicable, then execute only genuinely missing current local profile cells under the fixed sampling plan. Local/fake workloads do not authorize paid provider calls."
+    },
+    {
+      "gate": "V21 / fresh platform and packages",
+      "existing": "Gc8 has historical Linux/macOS × MSRV/stable × default/semantic fresh-target cells; G2/current engineering regressions are separate. Historical Gc8 Cargo.lock and product crates differ from f97.",
+      "missing": "Selected current release binaries/packages and supported-platform/MSRV/SDK receipts, including semantic-feature package engineering compatibility as required by V21 while real provider effectiveness remains excluded from local scope.",
+      "reuse": "Old platform acceptance stays attached to Gc8 and its actual package. A source guard or current unit-test pass does not transform that old package into the release candidate.",
+      "next": "Obtain current ordinary platform CI/fresh target build outputs and exact package identities. Keep unavailable target coverage explicit rather than inventing a platform pass."
+    },
+    {
+      "gate": "V21 / rollback and documentation",
+      "existing": "P8-016 retains historical 25→24→25 rebuild/cache-format/default-offline rollback and package fallback; P8-018 preserves current facts, 14 tools, schema 25, 30 base tables + 5 FTS. Historical baseline script recorded 3 DRIFT entries.",
+      "missing": "Selected current candidate/package rollback drill and final documentation-fact evidence with the exact prior verified binary/config. No published release/tag rollback is demonstrated merely by an engineering fallback test.",
+      "reuse": "Preserve mechanism acceptance and explicit historical drift. No tag publication is needed just to validate the local rollback mechanism, but the chosen package identities must be real.",
+      "next": "Run the existing rollback/compatibility controls against the frozen current and verified prior local packages; record the actual command, exit and resulting schema/cache/default state."
+    },
+    {
+      "gate": "raw_reports / original scorer replay",
+      "existing": "All raw45 ZIP bytes/leaves are retained and independently validated; cold150 custody/matrix bindings are audited; original quality and holdout raw/replay reports preserve failures.",
+      "missing": "One verified release inventory joining exact selected candidate inputs, actual numerical report replays and all existing/missing validation scopes. The recordless preparer reports only records supplied to it, not global absence; even a fully populated preparer cannot grant acceptance.",
+      "reuse": "Direct originals may be included as scoped_engineering records with exact historical sources and digests. Never hand-edit status/source/digest into passed to satisfy the metadata tool.",
+      "next": "Build a factual evidence applicability inventory from actual originals once the candidate is fixed; replay only with the original runner on disposable copies and retain original failure exits."
+    },
+    {
+      "gate": "Independent G8 acceptance / P8-020",
+      "existing": "All 17 direct local dependencies are now ledger done; original 192 definitions and current 176/16 count are unchanged. #202 expressly left whole D4/V20/G8 and release selection open.",
+      "missing": "Independent selected local release acceptance with actual blockers zero, current required regressions complete, clean holdout/100k/raw/rollback and V01/V18–V21 evidence. The source preparer always returns not_accepted; no metadata-only route can close this TODO.",
+      "reuse": "Historical component TODO acceptances are prerequisites, not the final G8 acceptance. Exclude P8-014 from local/semantic dependencies; keep P7-018/P8-015 blocked for semantic.",
+      "next": "Advance the concrete local candidate/quality/performance evidence chain; when complete, independent review may close exactly original P8-020 once. Until then new closures remain zero."
+    }
+  ],
+  "actionable_original_todos": {
+    "now": "P8-020 local is the only remaining original TODO whose hard dependency chain is ledger complete and can advance without live-provider/judge scope. It is not fully accepted by the inspected evidence and cannot be closed by read-only audit.",
+    "not_now": [
+      "P7-018 requires separately authorized real provider inputs and budget.",
+      "P8-014 optional judge requires its explicit input/budget approval; it is not a prerequisite for local G8.",
+      "P8-015 depends on P7-018 real-provider acceptance.",
+      "P9-001..012 depend directly or transitively on P8-020; early read-only design work is allowed but deferred/no-op/spec/PR/test work cannot count as done."
+    ]
+  },
+  "concrete_next_authorized_step": "Finish exact G ordinary CI and concrete current candidate preparation. In parallel, use public DEV readiness/quality diagnostics and the directly verified repeated 100k resume-work observations to select a genuine product fix. The next code change must receive normal source review/CI; any changed candidate must then be newly frozen before formal measurements. No paid/live provider or reused holdout permit is needed or authorized by this audit.",
+  "repeated_work_receipt": "g8-current100k-repeated-work.readonly.json",
+  "source_evidence": [
+    {
+      "key": "local-validation",
+      "path": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+      "read_ref": "c2b726538cacfdf6ae9f01977a7b93da48d2e2b2",
+      "git_blob": "fcbcf9e9280d41a4e8e138543d2bd217137a2c5e",
+      "url": "https://github.com/jyqj/codecortex/blob/c2b726538cacfdf6ae9f01977a7b93da48d2e2b2/docs/roadmap/code-index-v2/06-VALIDATION.md"
+    },
+    {
+      "key": "release-doc",
+      "path": "docs/roadmap/code-index-v2/P8-RELEASE-EVIDENCE.md",
+      "read_ref": "c2b726538cacfdf6ae9f01977a7b93da48d2e2b2",
+      "git_blob": "a42b65ef36c155cfefd7894a06faf9338db4fb63",
+      "url": "https://github.com/jyqj/codecortex/blob/c2b726538cacfdf6ae9f01977a7b93da48d2e2b2/docs/roadmap/code-index-v2/P8-RELEASE-EVIDENCE.md"
+    },
+    {
+      "key": "quality-original-review",
+      "path": "artifacts/checkpoints/p8-release-evidence-20261008/runs/37749276827/review/independent-original-review.json",
+      "read_ref": "c2b726538cacfdf6ae9f01977a7b93da48d2e2b2",
+      "git_blob": "b594c125d2049dd7bc86106cbf82dda7e5d3bf87",
+      "url": "https://github.com/jyqj/codecortex/blob/c2b726538cacfdf6ae9f01977a7b93da48d2e2b2/artifacts/checkpoints/p8-release-evidence-20261008/runs/37749276827/review/independent-original-review.json"
+    },
+    {
+      "key": "quality-003-acceptance",
+      "path": "artifacts/checkpoints/p8-joint-public-validation-20261008/p8-003-independent-acceptance.json",
+      "read_ref": "c2b726538cacfdf6ae9f01977a7b93da48d2e2b2",
+      "git_blob": "5d961a11f0a0f2a1536cba589f250651d57edc4f",
+      "url": "https://github.com/jyqj/codecortex/blob/c2b726538cacfdf6ae9f01977a7b93da48d2e2b2/artifacts/checkpoints/p8-joint-public-validation-20261008/p8-003-independent-acceptance.json"
+    },
+    {
+      "key": "quality-gate",
+      "path": "artifacts/checkpoints/p8-corpus-external-holdout-20261008/canonical/results/cc-switch-native/gate.json",
+      "read_ref": "c2b726538cacfdf6ae9f01977a7b93da48d2e2b2",
+      "git_blob": "c933fab6f31e044ed0463a0a72a58ee1909675ad",
+      "url": "https://github.com/jyqj/codecortex/blob/c2b726538cacfdf6ae9f01977a7b93da48d2e2b2/artifacts/checkpoints/p8-corpus-external-holdout-20261008/canonical/results/cc-switch-native/gate.json"
+    },
+    {
+      "key": "quality-replay",
+      "path": "artifacts/checkpoints/p8-corpus-external-holdout-20261008/canonical/replay-receipt.json",
+      "read_ref": "c2b726538cacfdf6ae9f01977a7b93da48d2e2b2",
+      "git_blob": "b4c1395ba7a3bef7deee6be97a1adc5b86eb47c6",
+      "url": "https://github.com/jyqj/codecortex/blob/c2b726538cacfdf6ae9f01977a7b93da48d2e2b2/artifacts/checkpoints/p8-corpus-external-holdout-20261008/canonical/replay-receipt.json"
+    },
+    {
+      "key": "holdout-report",
+      "path": "artifacts/benchmarks/prospective-temporal-v2/FINAL-REPORT.md",
+      "read_ref": "c2b726538cacfdf6ae9f01977a7b93da48d2e2b2",
+      "git_blob": "e8dbac3410ec66d075c69e68406f673aab10705c",
+      "url": "https://github.com/jyqj/codecortex/blob/c2b726538cacfdf6ae9f01977a7b93da48d2e2b2/artifacts/benchmarks/prospective-temporal-v2/FINAL-REPORT.md"
+    },
+    {
+      "key": "holdout-acceptance",
+      "path": "artifacts/benchmarks/prospective-temporal-v2/workflow-control/reviews/P8_004_manual_acceptance.json",
+      "read_ref": "c2b726538cacfdf6ae9f01977a7b93da48d2e2b2",
+      "git_blob": "756b9a81fcc083dd99bfb0889ea7bb3b19945cf5",
+      "url": "https://github.com/jyqj/codecortex/blob/c2b726538cacfdf6ae9f01977a7b93da48d2e2b2/artifacts/benchmarks/prospective-temporal-v2/workflow-control/reviews/P8_004_manual_acceptance.json"
+    }
+  ],
+  "source_root_observations": [
+    {
+      "queried_ref": "044c008c9459cfa61e7701db2eb868342c508a39",
+      "api_url": "https://api.github.com/repos/jyqj/codecortex/git/trees/044c008c9459cfa61e7701db2eb868342c508a39",
+      "root_entries": [
+        {
+          "path": ".github",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "7c6d29ae5c10aa5afba78a61803b57400ee7baa7",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/7c6d29ae5c10aa5afba78a61803b57400ee7baa7"
+        },
+        {
+          "path": ".gitignore",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "c045b34b396009a2a6a1273d305f289f3a5552ca",
+          "size": 636,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/c045b34b396009a2a6a1273d305f289f3a5552ca"
+        },
+        {
+          "path": "CONTRIBUTING.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "e70d34871f78f394578a6e4273df75dd92afa35f",
+          "size": 3565,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/e70d34871f78f394578a6e4273df75dd92afa35f"
+        },
+        {
+          "path": "Cargo.lock",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "0c0bdc1601013b195c3580be4b0a9238557251cd",
+          "size": 82701,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/0c0bdc1601013b195c3580be4b0a9238557251cd"
+        },
+        {
+          "path": "Cargo.toml",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "c376fdc70465a237022de8a05b7b27cc28f72cc8",
+          "size": 1594,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/c376fdc70465a237022de8a05b7b27cc28f72cc8"
+        },
+        {
+          "path": "DESIGN.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "2fd4f9a7c8b4cd787b622e1c457c9e07984f8733",
+          "size": 4283,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/2fd4f9a7c8b4cd787b622e1c457c9e07984f8733"
+        },
+        {
+          "path": "HANDOVER-20261003.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "38531b85f2d458d049ca7379eb65188132388ed4",
+          "size": 7961,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/38531b85f2d458d049ca7379eb65188132388ed4"
+        },
+        {
+          "path": "README.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "5fcd4b058de3b9f13dfb9567526112fd3c4692c4",
+          "size": 7665,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/5fcd4b058de3b9f13dfb9567526112fd3c4692c4"
+        },
+        {
+          "path": "artifacts",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "94f9ab5aaaaa2fd495f0bec8b807a17c3c6b0c09",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/94f9ab5aaaaa2fd495f0bec8b807a17c3c6b0c09"
+        },
+        {
+          "path": "crates",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "12959b92b35c7b3cc255f6e1adecd9fc7e0c849b",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/12959b92b35c7b3cc255f6e1adecd9fc7e0c849b"
+        },
+        {
+          "path": "docs",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "4edd3992695e5e15486978d669ba3b2b698d1d6e",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/4edd3992695e5e15486978d669ba3b2b698d1d6e"
+        },
+        {
+          "path": "scripts",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "33d3b129e293e55879776819f26a2fc95cf7c4d1",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/33d3b129e293e55879776819f26a2fc95cf7c4d1"
+        },
+        {
+          "path": "tests",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "b3e8744962f9e4b25ff9104001a3e57d3168735d",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/b3e8744962f9e4b25ff9104001a3e57d3168735d"
+        }
+      ]
+    },
+    {
+      "queried_ref": "f97c5068d056969705e8387ba1f37d83847f5bee",
+      "api_url": "https://api.github.com/repos/jyqj/codecortex/git/trees/f97c5068d056969705e8387ba1f37d83847f5bee",
+      "root_entries": [
+        {
+          "path": ".github",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "ede4a22fef1d3b8c776e225d847ed9c80e4e3f56",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/ede4a22fef1d3b8c776e225d847ed9c80e4e3f56"
+        },
+        {
+          "path": ".gitignore",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "c045b34b396009a2a6a1273d305f289f3a5552ca",
+          "size": 636,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/c045b34b396009a2a6a1273d305f289f3a5552ca"
+        },
+        {
+          "path": "CONTRIBUTING.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "e70d34871f78f394578a6e4273df75dd92afa35f",
+          "size": 3565,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/e70d34871f78f394578a6e4273df75dd92afa35f"
+        },
+        {
+          "path": "Cargo.lock",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "0c0bdc1601013b195c3580be4b0a9238557251cd",
+          "size": 82701,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/0c0bdc1601013b195c3580be4b0a9238557251cd"
+        },
+        {
+          "path": "Cargo.toml",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "c376fdc70465a237022de8a05b7b27cc28f72cc8",
+          "size": 1594,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/c376fdc70465a237022de8a05b7b27cc28f72cc8"
+        },
+        {
+          "path": "DESIGN.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "2fd4f9a7c8b4cd787b622e1c457c9e07984f8733",
+          "size": 4283,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/2fd4f9a7c8b4cd787b622e1c457c9e07984f8733"
+        },
+        {
+          "path": "HANDOVER-20261003.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "38531b85f2d458d049ca7379eb65188132388ed4",
+          "size": 7961,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/38531b85f2d458d049ca7379eb65188132388ed4"
+        },
+        {
+          "path": "README.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "daa99f15ca21e62d3b6231f25ef0da918110641c",
+          "size": 7590,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/daa99f15ca21e62d3b6231f25ef0da918110641c"
+        },
+        {
+          "path": "artifacts",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "0f5dd336d8da3b995cf6eca17436d44f89a6ac29",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/0f5dd336d8da3b995cf6eca17436d44f89a6ac29"
+        },
+        {
+          "path": "crates",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "7cb70a9b0843fa9c222996b626b78fd97a5ad63b",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/7cb70a9b0843fa9c222996b626b78fd97a5ad63b"
+        },
+        {
+          "path": "docs",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "3c3e2eeda2d4bff96e413b1b34579301314369d6",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/3c3e2eeda2d4bff96e413b1b34579301314369d6"
+        },
+        {
+          "path": "scripts",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "f6bd02b2fb83c34d7b9182604a5d34325b63c0ef",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/f6bd02b2fb83c34d7b9182604a5d34325b63c0ef"
+        },
+        {
+          "path": "tests",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "b3e8744962f9e4b25ff9104001a3e57d3168735d",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/b3e8744962f9e4b25ff9104001a3e57d3168735d"
+        }
+      ]
+    },
+    {
+      "queried_ref": "c2b726538cacfdf6ae9f01977a7b93da48d2e2b2",
+      "api_url": "https://api.github.com/repos/jyqj/codecortex/git/trees/c2b726538cacfdf6ae9f01977a7b93da48d2e2b2",
+      "root_entries": [
+        {
+          "path": ".github",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "ede4a22fef1d3b8c776e225d847ed9c80e4e3f56",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/ede4a22fef1d3b8c776e225d847ed9c80e4e3f56"
+        },
+        {
+          "path": ".gitignore",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "c045b34b396009a2a6a1273d305f289f3a5552ca",
+          "size": 636,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/c045b34b396009a2a6a1273d305f289f3a5552ca"
+        },
+        {
+          "path": "CONTRIBUTING.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "e70d34871f78f394578a6e4273df75dd92afa35f",
+          "size": 3565,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/e70d34871f78f394578a6e4273df75dd92afa35f"
+        },
+        {
+          "path": "Cargo.lock",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "0c0bdc1601013b195c3580be4b0a9238557251cd",
+          "size": 82701,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/0c0bdc1601013b195c3580be4b0a9238557251cd"
+        },
+        {
+          "path": "Cargo.toml",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "c376fdc70465a237022de8a05b7b27cc28f72cc8",
+          "size": 1594,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/c376fdc70465a237022de8a05b7b27cc28f72cc8"
+        },
+        {
+          "path": "DESIGN.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "2fd4f9a7c8b4cd787b622e1c457c9e07984f8733",
+          "size": 4283,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/2fd4f9a7c8b4cd787b622e1c457c9e07984f8733"
+        },
+        {
+          "path": "HANDOVER-20261003.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "38531b85f2d458d049ca7379eb65188132388ed4",
+          "size": 7961,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/38531b85f2d458d049ca7379eb65188132388ed4"
+        },
+        {
+          "path": "README.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "2b3c16f1ff298e3cf5ae92ef8059dbffc7e81182",
+          "size": 6397,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/2b3c16f1ff298e3cf5ae92ef8059dbffc7e81182"
+        },
+        {
+          "path": "artifacts",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "0f5dd336d8da3b995cf6eca17436d44f89a6ac29",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/0f5dd336d8da3b995cf6eca17436d44f89a6ac29"
+        },
+        {
+          "path": "crates",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "7cb70a9b0843fa9c222996b626b78fd97a5ad63b",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/7cb70a9b0843fa9c222996b626b78fd97a5ad63b"
+        },
+        {
+          "path": "docs",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "7d5b523036d17d461675efe651f534ae8373fb6b",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/7d5b523036d17d461675efe651f534ae8373fb6b"
+        },
+        {
+          "path": "scripts",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "f6bd02b2fb83c34d7b9182604a5d34325b63c0ef",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/f6bd02b2fb83c34d7b9182604a5d34325b63c0ef"
+        },
+        {
+          "path": "tests",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "b3e8744962f9e4b25ff9104001a3e57d3168735d",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/b3e8744962f9e4b25ff9104001a3e57d3168735d"
+        }
+      ]
+    },
+    {
+      "queried_ref": "0692ed27c4f86a254484e76155fe07a55ab2e09c",
+      "api_url": "https://api.github.com/repos/jyqj/codecortex/git/trees/0692ed27c4f86a254484e76155fe07a55ab2e09c",
+      "root_entries": [
+        {
+          "path": ".github",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "0872c73c2b47c37d1e837a669fde33e17b1ede77",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/0872c73c2b47c37d1e837a669fde33e17b1ede77"
+        },
+        {
+          "path": ".gitignore",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "c045b34b396009a2a6a1273d305f289f3a5552ca",
+          "size": 636,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/c045b34b396009a2a6a1273d305f289f3a5552ca"
+        },
+        {
+          "path": "CONTRIBUTING.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "e70d34871f78f394578a6e4273df75dd92afa35f",
+          "size": 3565,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/e70d34871f78f394578a6e4273df75dd92afa35f"
+        },
+        {
+          "path": "Cargo.lock",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "0c0bdc1601013b195c3580be4b0a9238557251cd",
+          "size": 82701,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/0c0bdc1601013b195c3580be4b0a9238557251cd"
+        },
+        {
+          "path": "Cargo.toml",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "c376fdc70465a237022de8a05b7b27cc28f72cc8",
+          "size": 1594,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/c376fdc70465a237022de8a05b7b27cc28f72cc8"
+        },
+        {
+          "path": "DESIGN.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "2fd4f9a7c8b4cd787b622e1c457c9e07984f8733",
+          "size": 4283,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/2fd4f9a7c8b4cd787b622e1c457c9e07984f8733"
+        },
+        {
+          "path": "HANDOVER-20261003.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "38531b85f2d458d049ca7379eb65188132388ed4",
+          "size": 7961,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/38531b85f2d458d049ca7379eb65188132388ed4"
+        },
+        {
+          "path": "README.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "2b3c16f1ff298e3cf5ae92ef8059dbffc7e81182",
+          "size": 6397,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/2b3c16f1ff298e3cf5ae92ef8059dbffc7e81182"
+        },
+        {
+          "path": "artifacts",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "0f5dd336d8da3b995cf6eca17436d44f89a6ac29",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/0f5dd336d8da3b995cf6eca17436d44f89a6ac29"
+        },
+        {
+          "path": "crates",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "7cb70a9b0843fa9c222996b626b78fd97a5ad63b",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/7cb70a9b0843fa9c222996b626b78fd97a5ad63b"
+        },
+        {
+          "path": "docs",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "6f26a0499c33edd5dd2a782051f7a6017903eb46",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/6f26a0499c33edd5dd2a782051f7a6017903eb46"
+        },
+        {
+          "path": "scripts",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "f6bd02b2fb83c34d7b9182604a5d34325b63c0ef",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/f6bd02b2fb83c34d7b9182604a5d34325b63c0ef"
+        },
+        {
+          "path": "tests",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "b3e8744962f9e4b25ff9104001a3e57d3168735d",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/b3e8744962f9e4b25ff9104001a3e57d3168735d"
+        }
+      ]
+    },
+    {
+      "queried_ref": "f631350e07841164c5d27f23769483ef71aadea4",
+      "api_url": "https://api.github.com/repos/jyqj/codecortex/git/trees/f631350e07841164c5d27f23769483ef71aadea4",
+      "root_entries": [
+        {
+          "path": ".github",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "0872c73c2b47c37d1e837a669fde33e17b1ede77",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/0872c73c2b47c37d1e837a669fde33e17b1ede77"
+        },
+        {
+          "path": ".gitignore",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "c045b34b396009a2a6a1273d305f289f3a5552ca",
+          "size": 636,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/c045b34b396009a2a6a1273d305f289f3a5552ca"
+        },
+        {
+          "path": "CONTRIBUTING.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "e70d34871f78f394578a6e4273df75dd92afa35f",
+          "size": 3565,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/e70d34871f78f394578a6e4273df75dd92afa35f"
+        },
+        {
+          "path": "Cargo.lock",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "0c0bdc1601013b195c3580be4b0a9238557251cd",
+          "size": 82701,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/0c0bdc1601013b195c3580be4b0a9238557251cd"
+        },
+        {
+          "path": "Cargo.toml",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "c376fdc70465a237022de8a05b7b27cc28f72cc8",
+          "size": 1594,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/c376fdc70465a237022de8a05b7b27cc28f72cc8"
+        },
+        {
+          "path": "DESIGN.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "2fd4f9a7c8b4cd787b622e1c457c9e07984f8733",
+          "size": 4283,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/2fd4f9a7c8b4cd787b622e1c457c9e07984f8733"
+        },
+        {
+          "path": "HANDOVER-20261003.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "38531b85f2d458d049ca7379eb65188132388ed4",
+          "size": 7961,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/38531b85f2d458d049ca7379eb65188132388ed4"
+        },
+        {
+          "path": "README.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "2b3c16f1ff298e3cf5ae92ef8059dbffc7e81182",
+          "size": 6397,
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/blobs/2b3c16f1ff298e3cf5ae92ef8059dbffc7e81182"
+        },
+        {
+          "path": "artifacts",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "cc9b31f9ade1f3a79c8399113644e37a3279b9a6",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/cc9b31f9ade1f3a79c8399113644e37a3279b9a6"
+        },
+        {
+          "path": "crates",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "7cb70a9b0843fa9c222996b626b78fd97a5ad63b",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/7cb70a9b0843fa9c222996b626b78fd97a5ad63b"
+        },
+        {
+          "path": "docs",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "6f26a0499c33edd5dd2a782051f7a6017903eb46",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/6f26a0499c33edd5dd2a782051f7a6017903eb46"
+        },
+        {
+          "path": "scripts",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "6ac3aa0c980f341dcf46971821ad5f38078f7a2a",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/6ac3aa0c980f341dcf46971821ad5f38078f7a2a"
+        },
+        {
+          "path": "tests",
+          "mode": "040000",
+          "type": "tree",
+          "sha": "b3e8744962f9e4b25ff9104001a3e57d3168735d",
+          "url": "https://api.github.com/repos/jyqj/codecortex/git/trees/b3e8744962f9e4b25ff9104001a3e57d3168735d"
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "This round did not rerun all historical native workloads or the 150 cold original validators.",
+    "The sibling raw45 audit is an independent 45-original validation; this round separately rehashed three full raw files and extracted their recorded work counts without native execution.",
+    "No claim that the 12 rows exhaust every historical file in the repository; they cover the original G8 requirements and the authoritative acceptance evidence inspected.",
+    "All source and count conclusions are pinned to fixed main/P/G, independent of later PR #203 status."
+  ]
+}
+

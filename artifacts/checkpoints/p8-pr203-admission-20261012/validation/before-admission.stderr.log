@@ -1,0 +1,15 @@
+Traceback (most recent call last):
+  File "/workspace/scratch/2509e1756d27/codecortex/scripts/verify_reviewed_source_v15.py", line 245, in <module>
+    main()
+  File "/workspace/scratch/2509e1756d27/codecortex/scripts/verify_reviewed_source_v15.py", line 231, in main
+    expected = approved_union(load_registry())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/2509e1756d27/codecortex/scripts/verify_reviewed_source_v15.py", line 201, in approved_union
+    verify_validation_inputs(root, validation_inventory(PRODUCT))
+  File "/workspace/scratch/2509e1756d27/codecortex/scripts/verify_reviewed_source_v15.py", line 131, in verify_validation_inputs
+    unchanged_file(root, path, raw, "v15 reviewed validation input changed")
+  File "/workspace/scratch/2509e1756d27/codecortex/scripts/verify_reviewed_source_v15.py", line 89, in unchanged_file
+    require(target.is_file() and target.read_bytes() == raw, label + ": " + path)
+  File "/workspace/scratch/2509e1756d27/codecortex/scripts/verify_reviewed_source.py", line 68, in require
+    raise AssertionError(message)
+AssertionError: v15 reviewed validation input changed: .github/workflows/p8-task-profile.yml

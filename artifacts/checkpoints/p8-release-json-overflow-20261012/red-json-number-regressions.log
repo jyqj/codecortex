@@ -1,0 +1,113 @@
+test_preserves_finite_float_values (test_p8_release_evidence_json_numbers.ReleaseEvidenceJsonNumberTests) ... ok
+test_preserves_integer_boolean_and_string_types (test_p8_release_evidence_json_numbers.ReleaseEvidenceJsonNumberTests) ... ok
+test_rejects_overflow_in_nested_objects_and_arrays (test_p8_release_evidence_json_numbers.ReleaseEvidenceJsonNumberTests) ... test_rejects_positive_and_negative_exponent_overflow (test_p8_release_evidence_json_numbers.ReleaseEvidenceJsonNumberTests) ... test_still_rejects_duplicate_keys (test_p8_release_evidence_json_numbers.ReleaseEvidenceJsonNumberTests) ... ok
+test_still_rejects_nonstandard_constants (test_p8_release_evidence_json_numbers.ReleaseEvidenceJsonNumberTests) ... ok
+test_verify_cli_reports_invalid_input_without_traceback_or_mutation (test_p8_release_evidence_json_numbers.ReleaseEvidenceJsonNumberTests) ... 
+======================================================================
+FAIL: test_rejects_overflow_in_nested_objects_and_arrays (test_p8_release_evidence_json_numbers.ReleaseEvidenceJsonNumberTests) (raw='{"record":{"value":1e999}}')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<EXECUTION_CHECKPOINT>/source/scripts/tests/test_p8_release_evidence_json_numbers.py", line 42, in test_rejects_overflow_in_nested_objects_and_arrays
+    self.read(raw)
+AssertionError: Invalid not raised
+
+======================================================================
+FAIL: test_rejects_overflow_in_nested_objects_and_arrays (test_p8_release_evidence_json_numbers.ReleaseEvidenceJsonNumberTests) (raw='{"record":[0,{"value":-1e999}]}')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<EXECUTION_CHECKPOINT>/source/scripts/tests/test_p8_release_evidence_json_numbers.py", line 42, in test_rejects_overflow_in_nested_objects_and_arrays
+    self.read(raw)
+AssertionError: Invalid not raised
+
+======================================================================
+FAIL: test_rejects_positive_and_negative_exponent_overflow (test_p8_release_evidence_json_numbers.ReleaseEvidenceJsonNumberTests) (token='1e999')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<EXECUTION_CHECKPOINT>/source/scripts/tests/test_p8_release_evidence_json_numbers.py", line 35, in test_rejects_positive_and_negative_exponent_overflow
+    self.read('{"measurement":' + token + '}')
+AssertionError: Invalid not raised
+
+======================================================================
+FAIL: test_rejects_positive_and_negative_exponent_overflow (test_p8_release_evidence_json_numbers.ReleaseEvidenceJsonNumberTests) (token='-1e999')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<EXECUTION_CHECKPOINT>/source/scripts/tests/test_p8_release_evidence_json_numbers.py", line 35, in test_rejects_positive_and_negative_exponent_overflow
+    self.read('{"measurement":' + token + '}')
+AssertionError: Invalid not raised
+
+======================================================================
+FAIL: test_rejects_positive_and_negative_exponent_overflow (test_p8_release_evidence_json_numbers.ReleaseEvidenceJsonNumberTests) (token='1.7976931348623159e308')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<EXECUTION_CHECKPOINT>/source/scripts/tests/test_p8_release_evidence_json_numbers.py", line 35, in test_rejects_positive_and_negative_exponent_overflow
+    self.read('{"measurement":' + token + '}')
+AssertionError: Invalid not raised
+
+======================================================================
+FAIL: test_verify_cli_reports_invalid_input_without_traceback_or_mutation (test_p8_release_evidence_json_numbers.ReleaseEvidenceJsonNumberTests) (kind='candidate')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<EXECUTION_CHECKPOINT>/source/scripts/tests/test_p8_release_evidence_json_numbers.py", line 84, in test_verify_cli_reports_invalid_input_without_traceback_or_mutation
+    self.assertEqual(result.returncode, 2, result.stderr)
+AssertionError: 1 != 2 : Traceback (most recent call last):
+  File "<EXECUTION_CHECKPOINT>/source/scripts/p8_release_evidence.py", line 641, in <module>
+    sys.exit(main())
+  File "<EXECUTION_CHECKPOINT>/source/scripts/p8_release_evidence.py", line 621, in main
+    manifest = verify_candidate(args.candidate, args.expected_sha256)
+  File "<EXECUTION_CHECKPOINT>/source/scripts/p8_release_evidence.py", line 456, in verify_candidate
+    manifest = checked_manifest(root, "candidate.json", "p8_local_candidate", "candidate_sha256", expected)
+  File "<EXECUTION_CHECKPOINT>/source/scripts/p8_release_evidence.py", line 404, in checked_manifest
+    require(digest({k: v for k, v in manifest.items() if k != digest_field}) == actual,
+  File "<EXECUTION_CHECKPOINT>/source/scripts/p8_release_evidence.py", line 49, in digest
+    return hashlib.sha256(canonical(value)).hexdigest()
+  File "<EXECUTION_CHECKPOINT>/source/scripts/p8_release_evidence.py", line 44, in canonical
+    return (json.dumps(value, sort_keys=True, indent=2, ensure_ascii=True,
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/json/__init__.py", line 234, in dumps
+    return cls(
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/json/encoder.py", line 201, in encode
+    chunks = list(chunks)
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/json/encoder.py", line 431, in _iterencode
+    yield from _iterencode_dict(o, _current_indent_level)
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/json/encoder.py", line 397, in _iterencode_dict
+    yield _floatstr(value)
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/json/encoder.py", line 239, in floatstr
+    raise ValueError(
+ValueError: Out of range float values are not JSON compliant: inf
+
+
+======================================================================
+FAIL: test_verify_cli_reports_invalid_input_without_traceback_or_mutation (test_p8_release_evidence_json_numbers.ReleaseEvidenceJsonNumberTests) (kind='archive')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<EXECUTION_CHECKPOINT>/source/scripts/tests/test_p8_release_evidence_json_numbers.py", line 84, in test_verify_cli_reports_invalid_input_without_traceback_or_mutation
+    self.assertEqual(result.returncode, 2, result.stderr)
+AssertionError: 1 != 2 : Traceback (most recent call last):
+  File "<EXECUTION_CHECKPOINT>/source/scripts/p8_release_evidence.py", line 641, in <module>
+    sys.exit(main())
+  File "<EXECUTION_CHECKPOINT>/source/scripts/p8_release_evidence.py", line 623, in main
+    manifest = verify_archive(args.archive, args.expected_sha256)
+  File "<EXECUTION_CHECKPOINT>/source/scripts/p8_release_evidence.py", line 491, in verify_archive
+    manifest = checked_manifest(root, "archive.json", "p8_local_archive", "archive_sha256", expected)
+  File "<EXECUTION_CHECKPOINT>/source/scripts/p8_release_evidence.py", line 404, in checked_manifest
+    require(digest({k: v for k, v in manifest.items() if k != digest_field}) == actual,
+  File "<EXECUTION_CHECKPOINT>/source/scripts/p8_release_evidence.py", line 49, in digest
+    return hashlib.sha256(canonical(value)).hexdigest()
+  File "<EXECUTION_CHECKPOINT>/source/scripts/p8_release_evidence.py", line 44, in canonical
+    return (json.dumps(value, sort_keys=True, indent=2, ensure_ascii=True,
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/json/__init__.py", line 234, in dumps
+    return cls(
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/json/encoder.py", line 201, in encode
+    chunks = list(chunks)
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/json/encoder.py", line 431, in _iterencode
+    yield from _iterencode_dict(o, _current_indent_level)
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/json/encoder.py", line 397, in _iterencode_dict
+    yield _floatstr(value)
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/json/encoder.py", line 239, in floatstr
+    raise ValueError(
+ValueError: Out of range float values are not JSON compliant: inf
+
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.091s
+
+FAILED (failures=7)

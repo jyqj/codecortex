@@ -4,6 +4,7 @@
 import argparse
 import hashlib
 import json
+import math
 import os
 from pathlib import Path, PurePosixPath
 import platform
@@ -160,8 +161,14 @@ def read_json(source):
             require(key not in result, "duplicate JSON key")
             result[key] = value
         return result
+    def finite_float(token):
+        # parse_constant rejects NaN/Infinity, but not finite JSON syntax such
+        # as 1e999 that overflows Python's float during decoding.
+        value = float(token)
+        require(math.isfinite(value), "nonfinite JSON number")
+        return value
     try:
-        value = json.loads(data, object_pairs_hook=unique,
+        value = json.loads(data, object_pairs_hook=unique, parse_float=finite_float,
                            parse_constant=lambda _: (_ for _ in ()).throw(Invalid("nonfinite JSON")))
     except (ValueError, UnicodeError, RecursionError) as exc:
         raise Invalid("invalid JSON input") from exc

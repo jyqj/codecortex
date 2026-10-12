@@ -1,0 +1,961 @@
+{
+  "local_direct_all_declared_done": true,
+  "local_direct_count": 17,
+  "release_certified": false,
+  "root_decision_scope_limits": [
+    "N1 descriptive measurements are not performance-threshold or stable-tail certification; current100k body/API/config closure is slower than each full control.",
+    "Original Actions42-input failure, old incomplete/failed150/1350 studies, not_run and ignored cases keep original identities and outcomes.",
+    "Whole-program D4/V20/G8 and release selection remain open. The next_task P8-020 is navigation, not release approval.",
+    "No paid/live provider or LLM judging, holdout execution, or release publishing is authorized by this candidate progress update."
+  ],
+  "root_decision_source": {
+    "commit": "e21a9ae93b0a9d017909ab02d2c4a38245e35b42",
+    "git_blob_sha1": "b1aad0d7a6d1becd14e9174dade812dc9db03367",
+    "path": "artifacts/checkpoints/p8-round48-acceptance-bfcc-20261010/ROOT-CLOSEOUT-DECISION.json",
+    "sha256": "b16fdcb7dbe45dd015081564c622ac14e7ef1a6bed33b190415812f699deadfa"
+  },
+  "state_commit": "c2b726538cacfdf6ae9f01977a7b93da48d2e2b2",
+  "state_sha256": "09dfc2535054f2721bd6d260d9ae47a1564a4d3a7a7a497c994080f89a1a355f",
+  "tasks": [
+    {
+      "declared_status": "done",
+      "formal_acceptance_reference": null,
+      "independent_review_reference": null,
+      "latest_evidence_status": "accepted_20261008_original_task_scope",
+      "latest_scope": "固定当前795源输入的default DEV候选，冻结binary/config/corpus/scorer/model/环境并实际执行原单题基线及原scorer重放；7类真实输入漂移均被拒绝，原gate为baseline_recorded_not_quality_certified。完成输入冻结机制及具体候选验收，未作G8 release/heldout/规模质量认证。",
+      "latest_summary": null,
+      "latest_target_sha": null,
+      "meaning": "existing original-task acceptance; no implied full G8 release acceptance",
+      "original_validations": [
+        "V01",
+        "V02"
+      ],
+      "release_evidence_submitted_to_preparer": false,
+      "root_formal_acceptance": null,
+      "source_evidence": null,
+      "task": "P8-001",
+      "title": "锁定release候选与证据输入"
+    },
+    {
+      "declared_status": "done",
+      "formal_acceptance_reference": null,
+      "independent_review_reference": null,
+      "latest_evidence_status": "additional_execution_evidence_for_original_task_already_merged_by_PR153",
+      "latest_scope": "Original data/execution/sealing scope only; task definitions and dependencies are unchanged. Prior PR #153 evidence, authorship and fixed run identities remain intact.",
+      "latest_summary": null,
+      "latest_target_sha": null,
+      "meaning": "existing original-task acceptance; no implied full G8 release acceptance",
+      "original_validations": [
+        "V02",
+        "V19"
+      ],
+      "release_evidence_submitted_to_preparer": false,
+      "root_formal_acceptance": null,
+      "source_evidence": null,
+      "task": "P8-002",
+      "title": "完成真实多仓native语料认证"
+    },
+    {
+      "declared_status": "done",
+      "formal_acceptance_reference": null,
+      "independent_review_reference": null,
+      "latest_evidence_status": "additional_execution_evidence_for_original_task_already_merged_by_PR153",
+      "latest_scope": "Original data/execution/sealing scope only; task definitions and dependencies are unchanged. Prior PR #153 evidence, authorship and fixed run identities remain intact.",
+      "latest_summary": null,
+      "latest_target_sha": null,
+      "meaning": "existing original-task acceptance; no implied full G8 release acceptance",
+      "original_validations": [
+        "V03",
+        "V04",
+        "V19"
+      ],
+      "release_evidence_submitted_to_preparer": false,
+      "root_formal_acceptance": null,
+      "source_evidence": null,
+      "task": "P8-003",
+      "title": "运行外部兼容套件"
+    },
+    {
+      "declared_status": "done",
+      "formal_acceptance_reference": null,
+      "independent_review_reference": null,
+      "latest_evidence_status": null,
+      "latest_scope": "Additional prospective temporal-v2 evidence for the same original P8-004, already done by PR #156. Preserve all 192 original definitions and all task statuses; no new TODO or done count. Candidate 2cd04485 formal gate_failed/exit1 stays failed; no G8 or quality certification for this candidate or later main product 1ed3c7df.",
+      "latest_summary": "2026-10-08 追加：首次候选/测量逻辑封存后以新作者/独立gold审查建立Boltons12任务48变体；真实零查询freeze/validate、数据封存、一次许可、48×2×3全部288原结果和完整ZIP独审完成。正式候选141Partial/3NoMatch，Top1=0.175、nDCG@10=0.1891629278415609、无答案0/24，原gate1保留。独立raw-only回放run37773318110成功且新增产品查询0；323原输入、18派生文件、288raw与完整报告保持原字节。同一P8-004不重复计数；保持PR156源码/600DEV/说明，未知旧custody与完整V19/G8不认证。",
+      "latest_target_sha": "2cd04485b0e0b23483f64671d56538bbaa47f442",
+      "meaning": "existing original-task acceptance; no implied full G8 release acceptance",
+      "original_validations": [
+        "V19"
+      ],
+      "release_evidence_submitted_to_preparer": false,
+      "root_formal_acceptance": null,
+      "source_evidence": null,
+      "task": "P8-004",
+      "title": "封存holdout与反过拟合检查"
+    },
+    {
+      "declared_status": "done",
+      "formal_acceptance_reference": null,
+      "independent_review_reference": null,
+      "latest_evidence_status": "accepted_complete_fixed_source_cold_scale_scope",
+      "latest_scope": null,
+      "latest_summary": "固定 source044、单一原 release binary、seed12648430，1k/5k/10k/50k/100k 每档30个原冷启动槽，共150个原cold pairs。原aggregate在真实044 checkout执行原validate_build及全部150原validate_shard后返回complete_cold_measurement_coverage；独立接收与原聚合复核全部通过。保留每样本symbols/chunks/各edge表/完整15表、DB+WAL+SHM量与两次fresh build完整parity；不同容量不直接算性能倍数。只关闭P8-005完整冷规模测量scope，不宣称整个V20/G8发行认证或未测semantic。",
+      "latest_target_sha": "044c008c9459cfa61e7701db2eb868342c508a39",
+      "meaning": "existing original-task acceptance; no implied full G8 release acceptance",
+      "original_validations": [
+        "V20"
+      ],
+      "release_evidence_submitted_to_preparer": false,
+      "root_formal_acceptance": null,
+      "source_evidence": null,
+      "task": "P8-005",
+      "title": "完整规模1k到100k"
+    },
+    {
+      "declared_status": "done",
+      "formal_acceptance_reference": {
+        "commit": "7d9acb9ccd31011ed106b41e8ac2e3c65338ee17",
+        "git_blob": "3bed889ae51544a1dafca53411800d54da9fbf4d",
+        "path": "artifacts/checkpoints/p8-round47-complete-bfcc-20261010/formal-twelve/47-clause-acceptance.final.json",
+        "url": "https://github.com/jyqj/codecortex/blob/7d9acb9ccd31011ed106b41e8ac2e3c65338ee17/artifacts/checkpoints/p8-round47-complete-bfcc-20261010/formal-twelve/47-clause-acceptance.final.json"
+      },
+      "independent_review_reference": {
+        "commit": "7d9acb9ccd31011ed106b41e8ac2e3c65338ee17",
+        "git_blob": "9cbbad89952010d13b05bedb176d69a9f5ef4fff",
+        "path": "artifacts/checkpoints/p8-round47-complete-bfcc-20261010/final-twelve/independent-peer/independent-original47-clause-twelve-task-review.json",
+        "url": "https://github.com/jyqj/codecortex/blob/7d9acb9ccd31011ed106b41e8ac2e3c65338ee17/artifacts/checkpoints/p8-round47-complete-bfcc-20261010/final-twelve/independent-peer/independent-original47-clause-twelve-task-review.json"
+      },
+      "latest_evidence_status": "accepted_original_task_scope",
+      "latest_scope": "当前G2/main源码适用性；各原测量source/run保留在source_evidence中，不重标执行身份。",
+      "latest_summary": "固定 f97c/run38026411200/a1 的独立 profile_task_descriptive_v1 完整45格/85记录，覆盖8种fresh变更×5规模及5个fanout；40个setup、40个mutation、5个fanout，五cold点仅取预登记no_op setup子集。原15表完整对账、闭包状态、各phase和build计数逐条留证。原Actions只取42格而失败，另由同源未改原程序对完整45原输入一次聚合恢复通过，未重跑测量。只作N=1、各环境分列描述；旧150/1500、1350、失败/未完研究和完整D4/V20/G8发布界限保留。",
+      "latest_target_sha": "f97c5068d056969705e8387ba1f37d83847f5bee",
+      "meaning": "existing original-task acceptance; no implied full G8 release acceptance",
+      "original_validations": [
+        "V07",
+        "V20"
+      ],
+      "release_evidence_submitted_to_preparer": false,
+      "root_formal_acceptance": {
+        "bytes": 12202,
+        "commit": "e21a9ae93b0a9d017909ab02d2c4a38245e35b42",
+        "git_blob": "b1aad0d7a6d1becd14e9174dade812dc9db03367",
+        "path": "artifacts/checkpoints/p8-round48-acceptance-bfcc-20261010/ROOT-CLOSEOUT-DECISION.json",
+        "sha256": "b16fdcb7dbe45dd015081564c622ac14e7ef1a6bed33b190415812f699deadfa",
+        "url": "https://github.com/jyqj/codecortex/blob/e21a9ae93b0a9d017909ab02d2c4a38245e35b42/artifacts/checkpoints/p8-round48-acceptance-bfcc-20261010/ROOT-CLOSEOUT-DECISION.json"
+      },
+      "source_evidence": {
+        "G2": {
+          "description": "当前固定研究/代码与main同树；原主CI及全部26工程检查/soak",
+          "main": "0da9a2800d2b3112d584a8bad4f79785e01162a9",
+          "main_CI_job": 114135224079,
+          "main_CI_run": 38025451919,
+          "main_log_git": "b42f2f685f4f2caaaa0497db6706399d9f89d998",
+          "main_review_git": "a1c7594462f7d33ea7ebcb8998a46d0e3163086a",
+          "soak_job": 114135223703,
+          "soak_run": 38025451807,
+          "source": "f97c5068d056969705e8387ba1f37d83847f5bee",
+          "terminal26_review_git": "52e0f0c71349f509244c72dc4428604d88aaf488",
+          "terminal_publication_commit": "6fffd5c5bcbf80df47066660a48fb5964463db73",
+          "tree": "39a053ae49b486764751a570d164e7cd41d7ff29"
+        },
+        "S45": {
+          "api100k_intake_git": "99600080f8851fddde2c9c5b3d2c2f6b4f4f5cd9",
+          "api100k_peer_git": "aa37eea73e8a77a9b1391fa88fe3e1e85fe8feba",
+          "attempt": 1,
+          "build_job": 114138076763,
+          "build_publication_commit": "3f5928a6acf8172fb04e0c7f5474846b45a0dd20",
+          "build_review_git": "767527f7cccf372e6ca1dd866466d6bf66c86da3",
+          "complete45_all_raw_custody": {
+            "bytes": 87729,
+            "commit": "e21a9ae93b0a9d017909ab02d2c4a38245e35b42",
+            "git_blob": "062cd1b36269c2a4f8c7b5fe0e03b79b9eaf8e1b",
+            "path": "artifacts/checkpoints/p8-round48-acceptance-bfcc-20261010/complete-45-raw-custody.published.json",
+            "sha256": "57c1ca94d499845bf84a1345efbc20ce7060583f5cd840aaa64ffcdf4f7be771",
+            "url": "https://github.com/jyqj/codecortex/blob/e21a9ae93b0a9d017909ab02d2c4a38245e35b42/artifacts/checkpoints/p8-round48-acceptance-bfcc-20261010/complete-45-raw-custody.published.json"
+          },
+          "complete45_receipt_custody_catalog": {
+            "bytes": 141754,
+            "commit": "7d9acb9ccd31011ed106b41e8ac2e3c65338ee17",
+            "git_blob": "f0aa11b1949e6177f7dcf05cb75ccf5c95c55406",
+            "path": "artifacts/checkpoints/p8-round47-complete-bfcc-20261010/final45/complete45-receipt-custody-catalog.json",
+            "sha256": "1057fbbda5818185ecfbb3d2c6487516a2a9843dab9251cef91a0b5254ffa663",
+            "url": "https://github.com/jyqj/codecortex/blob/7d9acb9ccd31011ed106b41e8ac2e3c65338ee17/artifacts/checkpoints/p8-round47-complete-bfcc-20261010/final45/complete45-receipt-custody-catalog.json"
+          },
+          "current_cells": 45,
+          "current_records": 85,
+          "description": "45完整原样本及独立完整45原函数聚合恢复通过；原Actions42失败独立保留",
+          "final_aggregate": {
+            "bytes": 6033,
+            "commit": "7d9acb9ccd31011ed106b41e8ac2e3c65338ee17",
+            "git_blob": "ca75e2ec7f81603b6f587cb6ae25c7ccc43f5656",
+            "path": "artifacts/checkpoints/p8-round47-complete-bfcc-20261010/aggregate-recovery/complete45-recovery-execution-review.json",
+            "sha256": "918d39d7a1b2eece6f20ed9393d6d1a625ccd5b98b7d38e9fedcf73b50073225",
+            "url": "https://github.com/jyqj/codecortex/blob/7d9acb9ccd31011ed106b41e8ac2e3c65338ee17/artifacts/checkpoints/p8-round47-complete-bfcc-20261010/aggregate-recovery/complete45-recovery-execution-review.json"
+          },
+          "final_descriptive_results": {
+            "bytes": 1517505,
+            "commit": "7d9acb9ccd31011ed106b41e8ac2e3c65338ee17",
+            "git_blob": "03c84c14d804fdc827b810aadc697960479dc1ae",
+            "path": "artifacts/checkpoints/p8-round47-complete-bfcc-20261010/final45/final45-descriptive-results.json",
+            "sha256": "c3931ba2170fd3895b2ec5ae890400e80c5d9eb65e5ec0eb0105e87da1b3487e",
+            "url": "https://github.com/jyqj/codecortex/blob/7d9acb9ccd31011ed106b41e8ac2e3c65338ee17/artifacts/checkpoints/p8-round47-complete-bfcc-20261010/final45/final45-descriptive-results.json"
+          },
+          "full45_recovery_complete_originals": {
+            "bytes": 5963846,
+            "commit": "7d9acb9ccd31011ed106b41e8ac2e3c65338ee17",
+            "git_blob": "40c8167281112da91faffd2e101e16c534a06269",
+            "path": "artifacts/checkpoints/p8-round47-complete-bfcc-20261010/aggregate-recovery/complete45-original-aggregate-recovery-support.zip",
+            "sha256": "4b658973f717356c57c6606ee8af10149a47d43d98f53955c8ff5b5d75b14325",
+            "url": "https://github.com/jyqj/codecortex/blob/7d9acb9ccd31011ed106b41e8ac2e3c65338ee17/artifacts/checkpoints/p8-round47-complete-bfcc-20261010/aggregate-recovery/complete45-original-aggregate-recovery-support.zip"
+          },
+          "full45_recovery_peer_git": "d9b9bb0b332e14793405c8848a2ab1eac1c60835",
+          "original_006_four_clause_decision": {
+            "bytes": 8418,
+            "commit": "7d9acb9ccd31011ed106b41e8ac2e3c65338ee17",
+            "git_blob": "bec2e50dead756411bcead85d64152eb20b86069",
+            "path": "artifacts/checkpoints/p8-round47-complete-bfcc-20261010/final45/P8-006-original-clause-decision.applyfalse.json",
+            "sha256": "c5da240a413fbbbc583eb135e62a5eb62d30cc11cc6a2a0b63f47f60c10b36e2",
+            "url": "https://github.com/jyqj/codecortex/blob/7d9acb9ccd31011ed106b41e8ac2e3c65338ee17/artifacts/checkpoints/p8-round47-complete-bfcc-20261010/final45/P8-006-original-clause-decision.applyfalse.json"
+          },
+          "original_Actions_failure_review_git": "e6ab7248a27e731171f0d741499486c59ea11bb5",
+          "profile": "profile_task_descriptive_v1",
+          "registered_population": {
+            "cells": 45,
+            "cold_subset": 5,
+            "fanout": 5,
+            "mutation": 40,
+            "records": 85,
+            "setup": 40
+          },
+          "run": 38026411200,
+          "source": "f97c5068d056969705e8387ba1f37d83847f5bee",
+          "status": "actual_complete_original45_recovery_accepted_preserving_Actions_failure42"
+        }
+      },
+      "task": "P8-006",
+      "title": "增量规模与fanout曲线"
+    },
+    {
+      "declared_status": "done",
+      "formal_acceptance_reference": {
+        "commit": "7d9acb9ccd31011ed106b41e8ac2e3c65338ee17",
+        "git_blob": "3bed889ae51544a1dafca53411800d54da9fbf4d",
+        "path": "artifacts/checkpoints/p8-round47-complete-bfcc-20261010/formal-twelve/47-clause-acceptance.final.json",
+        "url": "https://github.com/jyqj/codecortex/blob/7d9acb9ccd31011ed106b41e8ac2e3c65338ee17/artifacts/checkpoints/p8-round47-complete-bfcc-20261010/formal-twelve/47-clause-acceptance.final.json"
+      },
+      "independent_review_reference": {
+        "commit": "7d9acb9ccd31011ed106b41e8ac2e3c65338ee17",
+        "git_blob": "9cbbad89952010d13b05bedb176d69a9f5ef4fff",
+        "path": "artifacts/checkpoints/p8-round47-complete-bfcc-20261010/final-twelve/independent-peer/independent-original47-clause-twelve-task-review.json",
+        "url": "https://github.com/jyqj/codecortex/blob/7d9acb9ccd31011ed106b41e8ac2e3c65338ee17/artifacts/checkpoints/p8-round47-complete-bfcc-20261010/final-twelve/independent-peer/independent-original47-clause-twelve-task-review.json"
+      },
+      "latest_evidence_status": "accepted_original_task_scope",
+      "latest_scope": "当前G2/main源码适用性；各原测量source/run保留在source_evidence中，不重标执行身份。",
+      "latest_summary": "按原并发/mixed/backfill步骤保留实际source：G275/run37890757030 的C1/4/8/16各900offered、实际峰1/4/7/12；独立backfill artifact11597519732含24格/768请求、每seed四workers及最终排空。另source4d18/run37930392164提供四档实际DB acquisition wait组件。两运行不池化、不重标为当前G2；吞吐、timeout、排队和尾部按原记录解释。",
+      "latest_target_sha": "f97c5068d056969705e8387ba1f37d83847f5bee",
+      "meaning": "existing original-task acceptance; no implied full G8 release acceptance",
+      "original_validations": [
+        "V11",
+        "V20"
+      ],
+      "release_evidence_submitted_to_preparer": false,
+      "root_formal_acceptance": {
+        "bytes": 12202,
+        "commit": "e21a9ae93b0a9d017909ab02d2c4a38245e35b42",
+        "git_blob": "b1aad0d7a6d1becd14e9174dade812dc9db03367",
+        "path": "artifacts/checkpoints/p8-round48-acceptance-bfcc-20261010/ROOT-CLOSEOUT-DECISION.json",
+        "sha256": "b16fdcb7dbe45dd015081564c622ac14e7ef1a6bed33b190415812f699deadfa",
+        "url": "https://github.com/jyqj/codecortex/blob/e21a9ae93b0a9d017909ab02d2c4a38245e35b42/artifacts/checkpoints/p8-round48-acceptance-bfcc-20261010/ROOT-CLOSEOUT-DECISION.json"
+      },
+      "source_evidence": {
+        "G2": {
+          "description": "当前固定研究/代码与main同树；原主CI及全部26工程检查/soak",
+          "main": "0da9a2800d2b3112d584a8bad4f79785e01162a9",
+          "main_CI_job": 114135224079,
+          "main_CI_run": 38025451919,
+          "main_log_git": "b42f2f685f4f2caaaa0497db6706399d9f89d998",
+          "main_review_git": "a1c7594462f7d33ea7ebcb8998a46d0e3163086a",
+          "soak_job": 114135223703,
+          "soak_run": 38025451807,
+          "source": "f97c5068d056969705e8387ba1f37d83847f5bee",
+          "terminal26_review_git": "52e0f0c71349f509244c72dc4428604d88aaf488",
+          "terminal_publication_commit": "6fffd5c5bcbf80df47066660a48fb5964463db73",
+          "tree": "39a053ae49b486764751a570d164e7cd41d7ff29"
+        },
+        "G275-MIX": {
+          "backfill_artifact": 11597519732,
+          "description": "原mixed+独立backfill明文步骤",
+          "mixed_artifacts": [
+            11598875346,
+            11598690899,
+            11598815621,
+            11598543621
+          ],
+          "publication_commit": "67574177439009bdbe75751a4e8fe0c2d1737399",
+          "review_git": "8fc2ad32460594dd060347e960d06660397bd30c",
+          "run": 37890757030,
+          "source": "275e8799d4947d297329073eaa3ca675d3fd0777"
+        },
+        "LOCK-G2": {
+          "description": "另一次实际DB acquisition四并发组件，与当前研究G2不是同source",
+          "publication_commit": "3548736f0dd42304e6b5f06f40007a756df6a361",
+          "review_member": "complete-four-C-cohort/complete-G2-four-C-independent-review.json",
+          "run": 37930392164,
+          "source": "4d18dcdb34b5d7a277566b57801cc882d8b1eb61"
+        }
+      },
+      "task": "P8-007",
+      "title": "多并发与混合负载"
+    },
+    {
+      "declared_status": "done",
+      "formal_acceptance_reference": {
+        "commit": "7d9acb9ccd31011ed106b41e8ac2e3c65338ee17",
+        "git_blob": "3bed889ae51544a1dafca53411800d54da9fbf4d",
+        "path": "artifacts/checkpoints/p8-round47-complete-bfcc-20261010/formal-twelve/47-clause-acceptance.final.json",
+        "url": "https://github.com/jyqj/codecortex/blob/7d9acb9ccd31011ed106b41e8ac2e3c65338ee17/artifacts/checkpoints/p8-round47-complete-bfcc-20261010/formal-twelve/47-clause-acceptance.final.json"
+      },
+      "independent_review_reference": {
+        "commit": "7d9acb9ccd31011ed106b41e8ac2e3c65338ee17",
+        "git_blob": "9cbbad89952010d13b05bedb176d69a9f5ef4fff",
+        "path": "artifacts/checkpoints/p8-round47-complete-bfcc-20261010/final-twelve/independent-peer/independent-original47-clause-twelve-task-review.json",
+        "url": "https://github.com/jyqj/codecortex/blob/7d9acb9ccd31011ed106b41e8ac2e3c65338ee17/artifacts/checkpoints/p8-round47-complete-bfcc-20261010/final-twelve/independent-peer/independent-original47-clause-twelve-task-review.json"
+      },
+      "latest_evidence_status": "accepted_original_task_scope",
+      "latest_scope": "当前G2/main源码适用性；各原测量source/run保留在source_evidence中，不重标执行身份。",
+      "latest_summary": "复用Gc8原分层生命周期全部1230样本/431会话：30process-cold、400reopen、400uncached和400cache-hit；不做best-of、不把未清OS cache写为disk-cold。原N/分布及允许缺失的尾部CI按原方法与理由保留，未把新N1变更曲线充作本项统计结果。",
+      "latest_target_sha": "f97c5068d056969705e8387ba1f37d83847f5bee",
+      "meaning": "existing original-task acceptance; no implied full G8 release acceptance",
+      "original_validations": [
+        "V20"
+      ],
+      "release_evidence_submitted_to_preparer": false,
+      "root_formal_acceptance": {
+        "bytes": 12202,
+        "commit": "e21a9ae93b0a9d017909ab02d2c4a38245e35b42",
+        "git_blob": "b1aad0d7a6d1becd14e9174dade812dc9db03367",
+        "path": "artifacts/checkpoints/p8-round48-acceptance-bfcc-20261010/ROOT-CLOSEOUT-DECISION.json",
+        "sha256": "b16fdcb7dbe45dd015081564c622ac14e7ef1a6bed33b190415812f699deadfa",
+        "url": "https://github.com/jyqj/codecortex/blob/e21a9ae93b0a9d017909ab02d2c4a38245e35b42/artifacts/checkpoints/p8-round48-acceptance-bfcc-20261010/ROOT-CLOSEOUT-DECISION.json"
+      },
+      "source_evidence": {
+        "G2": {
+          "description": "当前固定研究/代码与main同树；原主CI及全部26工程检查/soak",
+          "main": "0da9a2800d2b3112d584a8bad4f79785e01162a9",
+          "main_CI_job": 114135224079,
+          "main_CI_run": 38025451919,
+          "main_log_git": "b42f2f685f4f2caaaa0497db6706399d9f89d998",
+          "main_review_git": "a1c7594462f7d33ea7ebcb8998a46d0e3163086a",
+          "soak_job": 114135223703,
+          "soak_run": 38025451807,
+          "source": "f97c5068d056969705e8387ba1f37d83847f5bee",
+          "terminal26_review_git": "52e0f0c71349f509244c72dc4428604d88aaf488",
+          "terminal_publication_commit": "6fffd5c5bcbf80df47066660a48fb5964463db73",
+          "tree": "39a053ae49b486764751a570d164e7cd41d7ff29"
+        },
+        "GC8-LIFE": {
+          "accepted_map_publication": "b66afc3a4967d7047b038fa8e6f9e20118018b5c",
+          "artifacts": [
+            11604870469,
+            11604162920
+          ],
+          "description": "原cold/reopen/uncached/cache-hit分层与资源组件",
+          "publication_commit": "da00e2802bd9304de698b263be9924e2dc96242f",
+          "runs": [
+            37901930818,
+            37901930897
+          ],
+          "source": "c8be5afaac568ffd40ef86d3795423c3b73c9f39"
+        }
+      },
+      "task": "P8-008",
+      "title": "冷建/重开/热查分层"
+    },
+    {
+      "declared_status": "done",
+      "formal_acceptance_reference": {
+        "commit": "7d9acb9ccd31011ed106b41e8ac2e3c65338ee17",
+        "git_blob": "3bed889ae51544a1dafca53411800d54da9fbf4d",
+        "path": "artifacts/checkpoints/p8-round47-complete-bfcc-20261010/formal-twelve/47-clause-acceptance.final.json",
+        "url": "https://github.com/jyqj/codecortex/blob/7d9acb9ccd31011ed106b41e8ac2e3c65338ee17/artifacts/checkpoints/p8-round47-complete-bfcc-20261010/formal-twelve/47-clause-acceptance.final.json"
+      },
+      "independent_review_reference": {
+        "commit": "7d9acb9ccd31011ed106b41e8ac2e3c65338ee17",
+        "git_blob": "9cbbad89952010d13b05bedb176d69a9f5ef4fff",
+        "path": "artifacts/checkpoints/p8-round47-complete-bfcc-20261010/final-twelve/independent-peer/independent-original47-clause-twelve-task-review.json",
+        "url": "https://github.com/jyqj/codecortex/blob/7d9acb9ccd31011ed106b41e8ac2e3c65338ee17/artifacts/checkpoints/p8-round47-complete-bfcc-20261010/final-twelve/independent-peer/independent-original47-clause-twelve-task-review.json"
+      },
+      "latest_evidence_status": "accepted_original_task_scope",
+      "latest_scope": "当前G2/main源码适用性；各原测量source/run保留在source_evidence中，不重标执行身份。",
+      "latest_summary": "复用原client/server/process-tree与artifact/FTS归属记录，保reported/estimated分栏及单位；过程快照不冒称全进程树峰值，runner不冒称server。unavailable/未计费及disabled项保持null/原因，不填0。原来源保持，当前源码适用性及回归另列。",
+      "latest_target_sha": "f97c5068d056969705e8387ba1f37d83847f5bee",
+      "meaning": "existing original-task acceptance; no implied full G8 release acceptance",
+      "original_validations": [
+        "V20"
+      ],
+      "release_evidence_submitted_to_preparer": false,
+      "root_formal_acceptance": {
+        "bytes": 12202,
+        "commit": "e21a9ae93b0a9d017909ab02d2c4a38245e35b42",
+        "git_blob": "b1aad0d7a6d1becd14e9174dade812dc9db03367",
+        "path": "artifacts/checkpoints/p8-round48-acceptance-bfcc-20261010/ROOT-CLOSEOUT-DECISION.json",
+        "sha256": "b16fdcb7dbe45dd015081564c622ac14e7ef1a6bed33b190415812f699deadfa",
+        "url": "https://github.com/jyqj/codecortex/blob/e21a9ae93b0a9d017909ab02d2c4a38245e35b42/artifacts/checkpoints/p8-round48-acceptance-bfcc-20261010/ROOT-CLOSEOUT-DECISION.json"
+      },
+      "source_evidence": {
+        "G2": {
+          "description": "当前固定研究/代码与main同树；原主CI及全部26工程检查/soak",
+          "main": "0da9a2800d2b3112d584a8bad4f79785e01162a9",
+          "main_CI_job": 114135224079,
+          "main_CI_run": 38025451919,
+          "main_log_git": "b42f2f685f4f2caaaa0497db6706399d9f89d998",
+          "main_review_git": "a1c7594462f7d33ea7ebcb8998a46d0e3163086a",
+          "soak_job": 114135223703,
+          "soak_run": 38025451807,
+          "source": "f97c5068d056969705e8387ba1f37d83847f5bee",
+          "terminal26_review_git": "52e0f0c71349f509244c72dc4428604d88aaf488",
+          "terminal_publication_commit": "6fffd5c5bcbf80df47066660a48fb5964463db73",
+          "tree": "39a053ae49b486764751a570d164e7cd41d7ff29"
+        },
+        "GC8-LIFE": {
+          "accepted_map_publication": "b66afc3a4967d7047b038fa8e6f9e20118018b5c",
+          "artifacts": [
+            11604870469,
+            11604162920
+          ],
+          "description": "原cold/reopen/uncached/cache-hit分层与资源组件",
+          "publication_commit": "da00e2802bd9304de698b263be9924e2dc96242f",
+          "runs": [
+            37901930818,
+            37901930897
+          ],
+          "source": "c8be5afaac568ffd40ef86d3795423c3b73c9f39"
+        },
+        "GC8-SOAK": {
+          "artifact": 11609019055,
+          "description": "原一小时修改/分支/catalog/cache和终点15表",
+          "publication_commit": "b66afc3a4967d7047b038fa8e6f9e20118018b5c",
+          "run": 37901930897,
+          "source": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+          "support_git": "20777261354d804b7811672cee454c0803949306"
+        }
+      },
+      "task": "P8-009",
+      "title": "内存/磁盘/费用总账"
+    },
+    {
+      "declared_status": "done",
+      "formal_acceptance_reference": {
+        "commit": "7d9acb9ccd31011ed106b41e8ac2e3c65338ee17",
+        "git_blob": "3bed889ae51544a1dafca53411800d54da9fbf4d",
+        "path": "artifacts/checkpoints/p8-round47-complete-bfcc-20261010/formal-twelve/47-clause-acceptance.final.json",
+        "url": "https://github.com/jyqj/codecortex/blob/7d9acb9ccd31011ed106b41e8ac2e3c65338ee17/artifacts/checkpoints/p8-round47-complete-bfcc-20261010/formal-twelve/47-clause-acceptance.final.json"
+      },
+      "independent_review_reference": {
+        "commit": "7d9acb9ccd31011ed106b41e8ac2e3c65338ee17",
+        "git_blob": "9cbbad89952010d13b05bedb176d69a9f5ef4fff",
+        "path": "artifacts/checkpoints/p8-round47-complete-bfcc-20261010/final-twelve/independent-peer/independent-original47-clause-twelve-task-review.json",
+        "url": "https://github.com/jyqj/codecortex/blob/7d9acb9ccd31011ed106b41e8ac2e3c65338ee17/artifacts/checkpoints/p8-round47-complete-bfcc-20261010/final-twelve/independent-peer/independent-original47-clause-twelve-task-review.json"
+      },
+      "latest_evidence_status": "accepted_original_task_scope",
+      "latest_scope": "当前G2/main源码适用性；各原测量source/run保留在source_evidence中，不重标执行身份。",
+      "latest_summary": "复用Gc8/run37901930897的一小时真实修改/删除/分支切换/catalog压实/cache复用与终点15表完整对账：3600.054553094秒、3601操作、1201build和2400复合读。原增长/队列与终点一致结论保其实际观察范围；当前G2一小时工程soak及26项终态另证，不互相重标运行身份。",
+      "latest_target_sha": "f97c5068d056969705e8387ba1f37d83847f5bee",
+      "meaning": "existing original-task acceptance; no implied full G8 release acceptance",
+      "original_validations": [
+        "V07",
+        "V17",
+        "V20"
+      ],
+      "release_evidence_submitted_to_preparer": false,
+      "root_formal_acceptance": {
+        "bytes": 12202,
+        "commit": "e21a9ae93b0a9d017909ab02d2c4a38245e35b42",
+        "git_blob": "b1aad0d7a6d1becd14e9174dade812dc9db03367",
+        "path": "artifacts/checkpoints/p8-round48-acceptance-bfcc-20261010/ROOT-CLOSEOUT-DECISION.json",
+        "sha256": "b16fdcb7dbe45dd015081564c622ac14e7ef1a6bed33b190415812f699deadfa",
+        "url": "https://github.com/jyqj/codecortex/blob/e21a9ae93b0a9d017909ab02d2c4a38245e35b42/artifacts/checkpoints/p8-round48-acceptance-bfcc-20261010/ROOT-CLOSEOUT-DECISION.json"
+      },
+      "source_evidence": {
+        "G2": {
+          "description": "当前固定研究/代码与main同树；原主CI及全部26工程检查/soak",
+          "main": "0da9a2800d2b3112d584a8bad4f79785e01162a9",
+          "main_CI_job": 114135224079,
+          "main_CI_run": 38025451919,
+          "main_log_git": "b42f2f685f4f2caaaa0497db6706399d9f89d998",
+          "main_review_git": "a1c7594462f7d33ea7ebcb8998a46d0e3163086a",
+          "soak_job": 114135223703,
+          "soak_run": 38025451807,
+          "source": "f97c5068d056969705e8387ba1f37d83847f5bee",
+          "terminal26_review_git": "52e0f0c71349f509244c72dc4428604d88aaf488",
+          "terminal_publication_commit": "6fffd5c5bcbf80df47066660a48fb5964463db73",
+          "tree": "39a053ae49b486764751a570d164e7cd41d7ff29"
+        },
+        "GC8-SOAK": {
+          "artifact": 11609019055,
+          "description": "原一小时修改/分支/catalog/cache和终点15表",
+          "publication_commit": "b66afc3a4967d7047b038fa8e6f9e20118018b5c",
+          "run": 37901930897,
+          "source": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+          "support_git": "20777261354d804b7811672cee454c0803949306"
+        }
+      },
+      "task": "P8-010",
+      "title": "长时soak与连续修改"
+    },
+    {
+      "declared_status": "done",
+      "formal_acceptance_reference": {
+        "commit": "7d9acb9ccd31011ed106b41e8ac2e3c65338ee17",
+        "git_blob": "3bed889ae51544a1dafca53411800d54da9fbf4d",
+        "path": "artifacts/checkpoints/p8-round47-complete-bfcc-20261010/formal-twelve/47-clause-acceptance.final.json",
+        "url": "https://github.com/jyqj/codecortex/blob/7d9acb9ccd31011ed106b41e8ac2e3c65338ee17/artifacts/checkpoints/p8-round47-complete-bfcc-20261010/formal-twelve/47-clause-acceptance.final.json"
+      },
+      "independent_review_reference": {
+        "commit": "7d9acb9ccd31011ed106b41e8ac2e3c65338ee17",
+        "git_blob": "9cbbad89952010d13b05bedb176d69a9f5ef4fff",
+        "path": "artifacts/checkpoints/p8-round47-complete-bfcc-20261010/final-twelve/independent-peer/independent-original47-clause-twelve-task-review.json",
+        "url": "https://github.com/jyqj/codecortex/blob/7d9acb9ccd31011ed106b41e8ac2e3c65338ee17/artifacts/checkpoints/p8-round47-complete-bfcc-20261010/final-twelve/independent-peer/independent-original47-clause-twelve-task-review.json"
+      },
+      "latest_evidence_status": "accepted_original_task_scope",
+      "latest_scope": "当前G2/main源码适用性；各原测量source/run保留在source_evidence中，不重标执行身份。",
+      "latest_summary": "按五类原演练逐项补齐：G275/run37890757129的local三项通过保持，原local四项not_run不涂改；另同源SIGKILL12+15覆盖事务/发布边界，seeds223/227/229四类active控制覆盖断网、语义cache损坏、未知格式与换库，七个原Rust目标通过。费用影响未实测部分仍null，owned-loopback/dev演练不冒称真实provider计费或物理断电发布认证。",
+      "latest_target_sha": "f97c5068d056969705e8387ba1f37d83847f5bee",
+      "meaning": "existing original-task acceptance; no implied full G8 release acceptance",
+      "original_validations": [
+        "V14",
+        "V17",
+        "V18"
+      ],
+      "release_evidence_submitted_to_preparer": false,
+      "root_formal_acceptance": {
+        "bytes": 12202,
+        "commit": "e21a9ae93b0a9d017909ab02d2c4a38245e35b42",
+        "git_blob": "b1aad0d7a6d1becd14e9174dade812dc9db03367",
+        "path": "artifacts/checkpoints/p8-round48-acceptance-bfcc-20261010/ROOT-CLOSEOUT-DECISION.json",
+        "sha256": "b16fdcb7dbe45dd015081564c622ac14e7ef1a6bed33b190415812f699deadfa",
+        "url": "https://github.com/jyqj/codecortex/blob/e21a9ae93b0a9d017909ab02d2c4a38245e35b42/artifacts/checkpoints/p8-round48-acceptance-bfcc-20261010/ROOT-CLOSEOUT-DECISION.json"
+      },
+      "source_evidence": {
+        "G2": {
+          "description": "当前固定研究/代码与main同树；原主CI及全部26工程检查/soak",
+          "main": "0da9a2800d2b3112d584a8bad4f79785e01162a9",
+          "main_CI_job": 114135224079,
+          "main_CI_run": 38025451919,
+          "main_log_git": "b42f2f685f4f2caaaa0497db6706399d9f89d998",
+          "main_review_git": "a1c7594462f7d33ea7ebcb8998a46d0e3163086a",
+          "soak_job": 114135223703,
+          "soak_run": 38025451807,
+          "source": "f97c5068d056969705e8387ba1f37d83847f5bee",
+          "terminal26_review_git": "52e0f0c71349f509244c72dc4428604d88aaf488",
+          "terminal_publication_commit": "6fffd5c5bcbf80df47066660a48fb5964463db73",
+          "tree": "39a053ae49b486764751a570d164e7cd41d7ff29"
+        },
+        "G275-FAULT": {
+          "artifact": 11597639035,
+          "description": "五类故障步骤的精确原件映射",
+          "publication_commit": "67574177439009bdbe75751a4e8fe0c2d1737399",
+          "review_git": "bf56de9bbc5a3250aee70f946fbed3ff7860dee9",
+          "run": 37890757129,
+          "source": "275e8799d4947d297329073eaa3ca675d3fd0777",
+          "support_git": "a9d5be4f0172af5b74e88bc433e8708eab9e3082"
+        }
+      },
+      "task": "P8-011",
+      "title": "端到端故障与恢复认证"
+    },
+    {
+      "declared_status": "done",
+      "formal_acceptance_reference": {
+        "commit": "7d9acb9ccd31011ed106b41e8ac2e3c65338ee17",
+        "git_blob": "3bed889ae51544a1dafca53411800d54da9fbf4d",
+        "path": "artifacts/checkpoints/p8-round47-complete-bfcc-20261010/formal-twelve/47-clause-acceptance.final.json",
+        "url": "https://github.com/jyqj/codecortex/blob/7d9acb9ccd31011ed106b41e8ac2e3c65338ee17/artifacts/checkpoints/p8-round47-complete-bfcc-20261010/formal-twelve/47-clause-acceptance.final.json"
+      },
+      "independent_review_reference": {
+        "commit": "7d9acb9ccd31011ed106b41e8ac2e3c65338ee17",
+        "git_blob": "9cbbad89952010d13b05bedb176d69a9f5ef4fff",
+        "path": "artifacts/checkpoints/p8-round47-complete-bfcc-20261010/final-twelve/independent-peer/independent-original47-clause-twelve-task-review.json",
+        "url": "https://github.com/jyqj/codecortex/blob/7d9acb9ccd31011ed106b41e8ac2e3c65338ee17/artifacts/checkpoints/p8-round47-complete-bfcc-20261010/final-twelve/independent-peer/independent-original47-clause-twelve-task-review.json"
+      },
+      "latest_evidence_status": "accepted_original_task_scope",
+      "latest_scope": "当前G2/main源码适用性；各原测量source/run保留在source_evidence中，不重标执行身份。",
+      "latest_summary": "原Gc8/run37901931021完成Linux/macOS×MSRV/stable×default/semantic八个fresh-target平台格及SDK边界，保完整原producer/回执。当前G2同树工程CI提供变化范围回归，旧freshbuild不重标为新源执行；不以cached tests替代原cold build。",
+      "latest_target_sha": "f97c5068d056969705e8387ba1f37d83847f5bee",
+      "meaning": "existing original-task acceptance; no implied full G8 release acceptance",
+      "original_validations": [
+        "V01",
+        "V21"
+      ],
+      "release_evidence_submitted_to_preparer": false,
+      "root_formal_acceptance": {
+        "bytes": 12202,
+        "commit": "e21a9ae93b0a9d017909ab02d2c4a38245e35b42",
+        "git_blob": "b1aad0d7a6d1becd14e9174dade812dc9db03367",
+        "path": "artifacts/checkpoints/p8-round48-acceptance-bfcc-20261010/ROOT-CLOSEOUT-DECISION.json",
+        "sha256": "b16fdcb7dbe45dd015081564c622ac14e7ef1a6bed33b190415812f699deadfa",
+        "url": "https://github.com/jyqj/codecortex/blob/e21a9ae93b0a9d017909ab02d2c4a38245e35b42/artifacts/checkpoints/p8-round48-acceptance-bfcc-20261010/ROOT-CLOSEOUT-DECISION.json"
+      },
+      "source_evidence": {
+        "G2": {
+          "description": "当前固定研究/代码与main同树；原主CI及全部26工程检查/soak",
+          "main": "0da9a2800d2b3112d584a8bad4f79785e01162a9",
+          "main_CI_job": 114135224079,
+          "main_CI_run": 38025451919,
+          "main_log_git": "b42f2f685f4f2caaaa0497db6706399d9f89d998",
+          "main_review_git": "a1c7594462f7d33ea7ebcb8998a46d0e3163086a",
+          "soak_job": 114135223703,
+          "soak_run": 38025451807,
+          "source": "f97c5068d056969705e8387ba1f37d83847f5bee",
+          "terminal26_review_git": "52e0f0c71349f509244c72dc4428604d88aaf488",
+          "terminal_publication_commit": "6fffd5c5bcbf80df47066660a48fb5964463db73",
+          "tree": "39a053ae49b486764751a570d164e7cd41d7ff29"
+        },
+        "GC8-PLATFORM": {
+          "collector_artifact": 11605154697,
+          "description": "8个全新target平台/工具链/feature格与回滚原件",
+          "old_schema_binary_source": "277f2490fad3fa30f2812b5547bad033867c9ea5",
+          "publication_commits": [
+            "56cf243df673a0745644ff17351353c8e416d349",
+            "16ce2a5623b51b6dc4ae23df4912f939791fe7d8"
+          ],
+          "recovery_artifact": 11604900056,
+          "run": 37901931021,
+          "source": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+          "support_git": "7e347fd2391070c506fbbf39334a85357bdaf88d"
+        }
+      },
+      "task": "P8-012",
+      "title": "MSRV与平台冷构建矩阵"
+    },
+    {
+      "declared_status": "done",
+      "formal_acceptance_reference": {
+        "commit": "7d9acb9ccd31011ed106b41e8ac2e3c65338ee17",
+        "git_blob": "3bed889ae51544a1dafca53411800d54da9fbf4d",
+        "path": "artifacts/checkpoints/p8-round47-complete-bfcc-20261010/formal-twelve/47-clause-acceptance.final.json",
+        "url": "https://github.com/jyqj/codecortex/blob/7d9acb9ccd31011ed106b41e8ac2e3c65338ee17/artifacts/checkpoints/p8-round47-complete-bfcc-20261010/formal-twelve/47-clause-acceptance.final.json"
+      },
+      "independent_review_reference": {
+        "commit": "7d9acb9ccd31011ed106b41e8ac2e3c65338ee17",
+        "git_blob": "9cbbad89952010d13b05bedb176d69a9f5ef4fff",
+        "path": "artifacts/checkpoints/p8-round47-complete-bfcc-20261010/final-twelve/independent-peer/independent-original47-clause-twelve-task-review.json",
+        "url": "https://github.com/jyqj/codecortex/blob/7d9acb9ccd31011ed106b41e8ac2e3c65338ee17/artifacts/checkpoints/p8-round47-complete-bfcc-20261010/final-twelve/independent-peer/independent-original47-clause-twelve-task-review.json"
+      },
+      "latest_evidence_status": "accepted_original_task_scope",
+      "latest_scope": "当前G2/main源码适用性；各原测量source/run保留在source_evidence中，不重标执行身份。",
+      "latest_summary": "复用Gc8原六个Rust failure控制及七次compare CLI非零退出[1,1,1,1,2,2,2]，quality/perf/lock红线、inconclusive和raw保留按原证据逐项核。门机制通过不代表当前完整发布质量/性能门已经通过；历史失败继续保留。",
+      "latest_target_sha": "f97c5068d056969705e8387ba1f37d83847f5bee",
+      "meaning": "existing original-task acceptance; no implied full G8 release acceptance",
+      "original_validations": [
+        "V03",
+        "V04",
+        "V20"
+      ],
+      "release_evidence_submitted_to_preparer": false,
+      "root_formal_acceptance": {
+        "bytes": 12202,
+        "commit": "e21a9ae93b0a9d017909ab02d2c4a38245e35b42",
+        "git_blob": "b1aad0d7a6d1becd14e9174dade812dc9db03367",
+        "path": "artifacts/checkpoints/p8-round48-acceptance-bfcc-20261010/ROOT-CLOSEOUT-DECISION.json",
+        "sha256": "b16fdcb7dbe45dd015081564c622ac14e7ef1a6bed33b190415812f699deadfa",
+        "url": "https://github.com/jyqj/codecortex/blob/e21a9ae93b0a9d017909ab02d2c4a38245e35b42/artifacts/checkpoints/p8-round48-acceptance-bfcc-20261010/ROOT-CLOSEOUT-DECISION.json"
+      },
+      "source_evidence": {
+        "G2": {
+          "description": "当前固定研究/代码与main同树；原主CI及全部26工程检查/soak",
+          "main": "0da9a2800d2b3112d584a8bad4f79785e01162a9",
+          "main_CI_job": 114135224079,
+          "main_CI_run": 38025451919,
+          "main_log_git": "b42f2f685f4f2caaaa0497db6706399d9f89d998",
+          "main_review_git": "a1c7594462f7d33ea7ebcb8998a46d0e3163086a",
+          "soak_job": 114135223703,
+          "soak_run": 38025451807,
+          "source": "f97c5068d056969705e8387ba1f37d83847f5bee",
+          "terminal26_review_git": "52e0f0c71349f509244c72dc4428604d88aaf488",
+          "terminal_publication_commit": "6fffd5c5bcbf80df47066660a48fb5964463db73",
+          "tree": "39a053ae49b486764751a570d164e7cd41d7ff29"
+        },
+        "GC8-GATES": {
+          "CI_run": 37901930820,
+          "description": "6原Rust failure控制及7原compare CLI非零结果",
+          "gate_artifact": 11603892263,
+          "gate_run": 37901930843,
+          "publication_commit": "56cf243df673a0745644ff17351353c8e416d349",
+          "source": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+          "support_git": "dd75ae4b9faaddf4a66a1b6f78c83051c5c173eb"
+        }
+      },
+      "task": "P8-013",
+      "title": "指标/门槛与失败退出最终认证"
+    },
+    {
+      "declared_status": "done",
+      "formal_acceptance_reference": {
+        "commit": "7d9acb9ccd31011ed106b41e8ac2e3c65338ee17",
+        "git_blob": "3bed889ae51544a1dafca53411800d54da9fbf4d",
+        "path": "artifacts/checkpoints/p8-round47-complete-bfcc-20261010/formal-twelve/47-clause-acceptance.final.json",
+        "url": "https://github.com/jyqj/codecortex/blob/7d9acb9ccd31011ed106b41e8ac2e3c65338ee17/artifacts/checkpoints/p8-round47-complete-bfcc-20261010/formal-twelve/47-clause-acceptance.final.json"
+      },
+      "independent_review_reference": {
+        "commit": "7d9acb9ccd31011ed106b41e8ac2e3c65338ee17",
+        "git_blob": "9cbbad89952010d13b05bedb176d69a9f5ef4fff",
+        "path": "artifacts/checkpoints/p8-round47-complete-bfcc-20261010/final-twelve/independent-peer/independent-original47-clause-twelve-task-review.json",
+        "url": "https://github.com/jyqj/codecortex/blob/7d9acb9ccd31011ed106b41e8ac2e3c65338ee17/artifacts/checkpoints/p8-round47-complete-bfcc-20261010/final-twelve/independent-peer/independent-original47-clause-twelve-task-review.json"
+      },
+      "latest_evidence_status": "accepted_original_task_scope",
+      "latest_scope": "当前G2/main源码适用性；各原测量source/run保留在source_evidence中，不重标执行身份。",
+      "latest_summary": "复用原25→24→25旧binary/schema实际恢复、cache格式隔离、package/default离线与semantic关闭fallback证据，保用户源码/backup及不误读向量的原控制。当前V21及相关回归支持main适用性；dev演练不是已发布release标签或未经记录的生产回滚。",
+      "latest_target_sha": "f97c5068d056969705e8387ba1f37d83847f5bee",
+      "meaning": "existing original-task acceptance; no implied full G8 release acceptance",
+      "original_validations": [
+        "V13",
+        "V17",
+        "V21"
+      ],
+      "release_evidence_submitted_to_preparer": false,
+      "root_formal_acceptance": {
+        "bytes": 12202,
+        "commit": "e21a9ae93b0a9d017909ab02d2c4a38245e35b42",
+        "git_blob": "b1aad0d7a6d1becd14e9174dade812dc9db03367",
+        "path": "artifacts/checkpoints/p8-round48-acceptance-bfcc-20261010/ROOT-CLOSEOUT-DECISION.json",
+        "sha256": "b16fdcb7dbe45dd015081564c622ac14e7ef1a6bed33b190415812f699deadfa",
+        "url": "https://github.com/jyqj/codecortex/blob/e21a9ae93b0a9d017909ab02d2c4a38245e35b42/artifacts/checkpoints/p8-round48-acceptance-bfcc-20261010/ROOT-CLOSEOUT-DECISION.json"
+      },
+      "source_evidence": {
+        "G2": {
+          "description": "当前固定研究/代码与main同树；原主CI及全部26工程检查/soak",
+          "main": "0da9a2800d2b3112d584a8bad4f79785e01162a9",
+          "main_CI_job": 114135224079,
+          "main_CI_run": 38025451919,
+          "main_log_git": "b42f2f685f4f2caaaa0497db6706399d9f89d998",
+          "main_review_git": "a1c7594462f7d33ea7ebcb8998a46d0e3163086a",
+          "soak_job": 114135223703,
+          "soak_run": 38025451807,
+          "source": "f97c5068d056969705e8387ba1f37d83847f5bee",
+          "terminal26_review_git": "52e0f0c71349f509244c72dc4428604d88aaf488",
+          "terminal_publication_commit": "6fffd5c5bcbf80df47066660a48fb5964463db73",
+          "tree": "39a053ae49b486764751a570d164e7cd41d7ff29"
+        },
+        "GC8-PLATFORM": {
+          "collector_artifact": 11605154697,
+          "description": "8个全新target平台/工具链/feature格与回滚原件",
+          "old_schema_binary_source": "277f2490fad3fa30f2812b5547bad033867c9ea5",
+          "publication_commits": [
+            "56cf243df673a0745644ff17351353c8e416d349",
+            "16ce2a5623b51b6dc4ae23df4912f939791fe7d8"
+          ],
+          "recovery_artifact": 11604900056,
+          "run": 37901931021,
+          "source": "c8be5afaac568ffd40ef86d3795423c3b73c9f39",
+          "support_git": "7e347fd2391070c506fbbf39334a85357bdaf88d"
+        }
+      },
+      "task": "P8-016",
+      "title": "数据库/配置/包回滚演练"
+    },
+    {
+      "declared_status": "done",
+      "formal_acceptance_reference": {
+        "commit": "7d9acb9ccd31011ed106b41e8ac2e3c65338ee17",
+        "git_blob": "3bed889ae51544a1dafca53411800d54da9fbf4d",
+        "path": "artifacts/checkpoints/p8-round47-complete-bfcc-20261010/formal-twelve/47-clause-acceptance.final.json",
+        "url": "https://github.com/jyqj/codecortex/blob/7d9acb9ccd31011ed106b41e8ac2e3c65338ee17/artifacts/checkpoints/p8-round47-complete-bfcc-20261010/formal-twelve/47-clause-acceptance.final.json"
+      },
+      "independent_review_reference": {
+        "commit": "7d9acb9ccd31011ed106b41e8ac2e3c65338ee17",
+        "git_blob": "9cbbad89952010d13b05bedb176d69a9f5ef4fff",
+        "path": "artifacts/checkpoints/p8-round47-complete-bfcc-20261010/final-twelve/independent-peer/independent-original47-clause-twelve-task-review.json",
+        "url": "https://github.com/jyqj/codecortex/blob/7d9acb9ccd31011ed106b41e8ac2e3c65338ee17/artifacts/checkpoints/p8-round47-complete-bfcc-20261010/final-twelve/independent-peer/independent-original47-clause-twelve-task-review.json"
+      },
+      "latest_evidence_status": "accepted_original_task_scope",
+      "latest_scope": "当前G2/main源码适用性；各原测量source/run保留在source_evidence中，不重标执行身份。",
+      "latest_summary": "原所有权/删除/wire兼容证据、后续完整claim map与当前11个owner源路径逐OID一致；旧重复控制删除有保留控制回归。当前31个具名方法/41配置观察覆盖相关V18/V21，不把配置重复计作唯一方法。PR198所有权说明已合入；四机制变体仅prepare的历史状态不改称编译或性能通过。",
+      "latest_target_sha": "f97c5068d056969705e8387ba1f37d83847f5bee",
+      "meaning": "existing original-task acceptance; no implied full G8 release acceptance",
+      "original_validations": [
+        "V18",
+        "V21"
+      ],
+      "release_evidence_submitted_to_preparer": false,
+      "root_formal_acceptance": {
+        "bytes": 12202,
+        "commit": "e21a9ae93b0a9d017909ab02d2c4a38245e35b42",
+        "git_blob": "b1aad0d7a6d1becd14e9174dade812dc9db03367",
+        "path": "artifacts/checkpoints/p8-round48-acceptance-bfcc-20261010/ROOT-CLOSEOUT-DECISION.json",
+        "sha256": "b16fdcb7dbe45dd015081564c622ac14e7ef1a6bed33b190415812f699deadfa",
+        "url": "https://github.com/jyqj/codecortex/blob/e21a9ae93b0a9d017909ab02d2c4a38245e35b42/artifacts/checkpoints/p8-round48-acceptance-bfcc-20261010/ROOT-CLOSEOUT-DECISION.json"
+      },
+      "source_evidence": {
+        "G2": {
+          "description": "当前固定研究/代码与main同树；原主CI及全部26工程检查/soak",
+          "main": "0da9a2800d2b3112d584a8bad4f79785e01162a9",
+          "main_CI_job": 114135224079,
+          "main_CI_run": 38025451919,
+          "main_log_git": "b42f2f685f4f2caaaa0497db6706399d9f89d998",
+          "main_review_git": "a1c7594462f7d33ea7ebcb8998a46d0e3163086a",
+          "soak_job": 114135223703,
+          "soak_run": 38025451807,
+          "source": "f97c5068d056969705e8387ba1f37d83847f5bee",
+          "terminal26_review_git": "52e0f0c71349f509244c72dc4428604d88aaf488",
+          "terminal_publication_commit": "6fffd5c5bcbf80df47066660a48fb5964463db73",
+          "tree": "39a053ae49b486764751a570d164e7cd41d7ff29"
+        },
+        "OWN": {
+          "complete_claim_map_git": "e863b8b3fe42a5fe3797fac251f48f158362087d",
+          "current_peer_git": "1664f89789179c5b690247e3542ef26721cbf408",
+          "current_scope_report_git": "30bc665e25e0e4983c2a91e30b0a3bbb848e8606",
+          "deletion_source": "b069c73a0d76736e1dfb3eb64e79cad6980b773f",
+          "description": "所有权/删除/必要wire兼容原审；当前11owner叶OID与原记录相同",
+          "lane_source": "fa6562ad70c6a6f2a7a1e65594df23f807e62f18",
+          "original_owner_review_git": "0e5fd5de6599825486e60cea567572c8010fd23a"
+        }
+      },
+      "task": "P8-017",
+      "title": "删除临时兼容和重复模块"
+    },
+    {
+      "declared_status": "done",
+      "formal_acceptance_reference": {
+        "commit": "7d9acb9ccd31011ed106b41e8ac2e3c65338ee17",
+        "git_blob": "3bed889ae51544a1dafca53411800d54da9fbf4d",
+        "path": "artifacts/checkpoints/p8-round47-complete-bfcc-20261010/formal-twelve/47-clause-acceptance.final.json",
+        "url": "https://github.com/jyqj/codecortex/blob/7d9acb9ccd31011ed106b41e8ac2e3c65338ee17/artifacts/checkpoints/p8-round47-complete-bfcc-20261010/formal-twelve/47-clause-acceptance.final.json"
+      },
+      "independent_review_reference": {
+        "commit": "7d9acb9ccd31011ed106b41e8ac2e3c65338ee17",
+        "git_blob": "9cbbad89952010d13b05bedb176d69a9f5ef4fff",
+        "path": "artifacts/checkpoints/p8-round47-complete-bfcc-20261010/final-twelve/independent-peer/independent-original47-clause-twelve-task-review.json",
+        "url": "https://github.com/jyqj/codecortex/blob/7d9acb9ccd31011ed106b41e8ac2e3c65338ee17/artifacts/checkpoints/p8-round47-complete-bfcc-20261010/final-twelve/independent-peer/independent-original47-clause-twelve-task-review.json"
+      },
+      "latest_evidence_status": "accepted_original_task_scope",
+      "latest_scope": "当前G2/main源码适用性；各原测量source/run保留在source_evidence中，不重标执行身份。",
+      "latest_summary": "PR198已修正15表清单并保14个MCP工具；当前facts检查核8crate/schema25/30基础表+5FTS、工具/config/default-offline及设计与实现标识，安装/故障控制具原执行证据。固定b9/Wde14/run38020782259原baseline脚本实际0并有3条历史DRIFT；2815/76是命令footer汇总，TEST_PLAN是历史c86基线，均不冒称本PR执行/唯一测试/无漂移。追加对账记录保留且不部分刷写历史表。",
+      "latest_target_sha": "f97c5068d056969705e8387ba1f37d83847f5bee",
+      "meaning": "existing original-task acceptance; no implied full G8 release acceptance",
+      "original_validations": [
+        "V18",
+        "V21"
+      ],
+      "release_evidence_submitted_to_preparer": false,
+      "root_formal_acceptance": {
+        "bytes": 12202,
+        "commit": "e21a9ae93b0a9d017909ab02d2c4a38245e35b42",
+        "git_blob": "b1aad0d7a6d1becd14e9174dade812dc9db03367",
+        "path": "artifacts/checkpoints/p8-round48-acceptance-bfcc-20261010/ROOT-CLOSEOUT-DECISION.json",
+        "sha256": "b16fdcb7dbe45dd015081564c622ac14e7ef1a6bed33b190415812f699deadfa",
+        "url": "https://github.com/jyqj/codecortex/blob/e21a9ae93b0a9d017909ab02d2c4a38245e35b42/artifacts/checkpoints/p8-round48-acceptance-bfcc-20261010/ROOT-CLOSEOUT-DECISION.json"
+      },
+      "source_evidence": {
+        "BASELINE": {
+          "DRIFT": 3,
+          "actual_exit": 0,
+          "attempt": 1,
+          "description": "原脚本真实执行与历史DRIFT解释",
+          "job": 114121097102,
+          "peer_git": "c1a9c241793a4c29e411249a5ea0af6dbca56462",
+          "publication_commit": "5f6814a0c0ce5c11f692d8c09023694754d89ea3",
+          "review_git": "565e1c18e24a382c43f18f8bf9ecef8873d4b4d0",
+          "run": 38020782259,
+          "source": "b9b089bb4eae072affe9326681d4980eae15fd84",
+          "workflow": "de14e6c7e80524efb0e43bec74bb48f518cfbc67"
+        },
+        "DOCS": {
+          "PR198_merge": "09d4454fa45455dc5a8bfdfec67e31bb7ed162c7",
+          "benchmark_doc_git": "39513e0fa62eeab815e0c503594846d48b75c8e6",
+          "description": "已合PR198三文档；当前facts和安装控制",
+          "installer_original_log_git": "907b9a33cb22d7a13b947e4fac6aaa121c594d55",
+          "installer_original_source": "51138c236cf2ed47858e2306f9c7bfd3600aaef9",
+          "ownership_doc_git": "487fef20517cac0b1ebab12a6ff10669ac476bba",
+          "release_evidence_doc_git": "a42b65ef36c155cfefd7894a06faf9338db4fb63"
+        },
+        "G2": {
+          "description": "当前固定研究/代码与main同树；原主CI及全部26工程检查/soak",
+          "main": "0da9a2800d2b3112d584a8bad4f79785e01162a9",
+          "main_CI_job": 114135224079,
+          "main_CI_run": 38025451919,
+          "main_log_git": "b42f2f685f4f2caaaa0497db6706399d9f89d998",
+          "main_review_git": "a1c7594462f7d33ea7ebcb8998a46d0e3163086a",
+          "soak_job": 114135223703,
+          "soak_run": 38025451807,
+          "source": "f97c5068d056969705e8387ba1f37d83847f5bee",
+          "terminal26_review_git": "52e0f0c71349f509244c72dc4428604d88aaf488",
+          "terminal_publication_commit": "6fffd5c5bcbf80df47066660a48fb5964463db73",
+          "tree": "39a053ae49b486764751a570d164e7cd41d7ff29"
+        }
+      },
+      "task": "P8-018",
+      "title": "文档事实与安装契约同步"
+    },
+    {
+      "declared_status": "done",
+      "formal_acceptance_reference": {
+        "commit": "7d9acb9ccd31011ed106b41e8ac2e3c65338ee17",
+        "git_blob": "3bed889ae51544a1dafca53411800d54da9fbf4d",
+        "path": "artifacts/checkpoints/p8-round47-complete-bfcc-20261010/formal-twelve/47-clause-acceptance.final.json",
+        "url": "https://github.com/jyqj/codecortex/blob/7d9acb9ccd31011ed106b41e8ac2e3c65338ee17/artifacts/checkpoints/p8-round47-complete-bfcc-20261010/formal-twelve/47-clause-acceptance.final.json"
+      },
+      "independent_review_reference": {
+        "commit": "7d9acb9ccd31011ed106b41e8ac2e3c65338ee17",
+        "git_blob": "9cbbad89952010d13b05bedb176d69a9f5ef4fff",
+        "path": "artifacts/checkpoints/p8-round47-complete-bfcc-20261010/final-twelve/independent-peer/independent-original47-clause-twelve-task-review.json",
+        "url": "https://github.com/jyqj/codecortex/blob/7d9acb9ccd31011ed106b41e8ac2e3c65338ee17/artifacts/checkpoints/p8-round47-complete-bfcc-20261010/final-twelve/independent-peer/independent-original47-clause-twelve-task-review.json"
+      },
+      "latest_evidence_status": "accepted_original_task_scope",
+      "latest_scope": "当前G2/main源码适用性；各原测量source/run保留在source_evidence中，不重标执行身份。",
+      "latest_summary": "原exact binary/checksum/manifest/raw/gates、不可覆盖历史与latest仅指向run的实现及42archive控制、3个native replay具名控制有实际证据。verify_archive只验完整性，数值复算在独立副本对实际单run子目录使用固定来源cc-eval，derived输出不写原归档。门/归档机制通过不等于完整V20/G8发布通过。",
+      "latest_target_sha": "f97c5068d056969705e8387ba1f37d83847f5bee",
+      "meaning": "existing original-task acceptance; no implied full G8 release acceptance",
+      "original_validations": [
+        "V01",
+        "V04",
+        "V21"
+      ],
+      "release_evidence_submitted_to_preparer": false,
+      "root_formal_acceptance": {
+        "bytes": 12202,
+        "commit": "e21a9ae93b0a9d017909ab02d2c4a38245e35b42",
+        "git_blob": "b1aad0d7a6d1becd14e9174dade812dc9db03367",
+        "path": "artifacts/checkpoints/p8-round48-acceptance-bfcc-20261010/ROOT-CLOSEOUT-DECISION.json",
+        "sha256": "b16fdcb7dbe45dd015081564c622ac14e7ef1a6bed33b190415812f699deadfa",
+        "url": "https://github.com/jyqj/codecortex/blob/e21a9ae93b0a9d017909ab02d2c4a38245e35b42/artifacts/checkpoints/p8-round48-acceptance-bfcc-20261010/ROOT-CLOSEOUT-DECISION.json"
+      },
+      "source_evidence": {
+        "ARCHIVE": {
+          "archive_source_blob": "79c8ab476d1c9fb17a190a1c280f82c614a5dc1a",
+          "archive_tests_blob": "855d03942af118ebdbfef2506a437e9a2b313ec7",
+          "current_scope_peer_git": "1664f89789179c5b690247e3542ef26721cbf408",
+          "description": "原archive/no-clobber/latest和native replay",
+          "native_replay_tests_blob": "e2ec2f623b9bbe44e0c0f7d10688d7301129127b",
+          "native_report_blob": "8d633bd75772e2ef4cfead559688a6fea4ca6644",
+          "original_scope_review_git": "383b475fed125e507bf1add78c1b7d287ceb029e"
+        },
+        "DOCS": {
+          "PR198_merge": "09d4454fa45455dc5a8bfdfec67e31bb7ed162c7",
+          "benchmark_doc_git": "39513e0fa62eeab815e0c503594846d48b75c8e6",
+          "description": "已合PR198三文档；当前facts和安装控制",
+          "installer_original_log_git": "907b9a33cb22d7a13b947e4fac6aaa121c594d55",
+          "installer_original_source": "51138c236cf2ed47858e2306f9c7bfd3600aaef9",
+          "ownership_doc_git": "487fef20517cac0b1ebab12a6ff10669ac476bba",
+          "release_evidence_doc_git": "a42b65ef36c155cfefd7894a06faf9338db4fb63"
+        },
+        "G2": {
+          "description": "当前固定研究/代码与main同树；原主CI及全部26工程检查/soak",
+          "main": "0da9a2800d2b3112d584a8bad4f79785e01162a9",
+          "main_CI_job": 114135224079,
+          "main_CI_run": 38025451919,
+          "main_log_git": "b42f2f685f4f2caaaa0497db6706399d9f89d998",
+          "main_review_git": "a1c7594462f7d33ea7ebcb8998a46d0e3163086a",
+          "soak_job": 114135223703,
+          "soak_run": 38025451807,
+          "source": "f97c5068d056969705e8387ba1f37d83847f5bee",
+          "terminal26_review_git": "52e0f0c71349f509244c72dc4428604d88aaf488",
+          "terminal_publication_commit": "6fffd5c5bcbf80df47066660a48fb5964463db73",
+          "tree": "39a053ae49b486764751a570d164e7cd41d7ff29"
+        }
+      },
+      "task": "P8-019",
+      "title": "发布工件与完整报告归档"
+    }
+  ]
+}
